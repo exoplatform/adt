@@ -220,16 +220,16 @@ do_download_server() {
 #
 do_unpack_server() 
 {
-  rm -rf $TMP_DIR/$PRODUCT-$VERSION $SRV_DIR/$PRODUCT-$VERSION
+  rm -rf $TMP_DIR/$PRODUCT-$VERSION
   echo "[INFO] Unpacking server ..."
   mkdir -p $TMP_DIR/$PRODUCT-$VERSION
   case $PACKAGING in
     zip)
-      unzip -q $DL_DIR/$PRODUCT-$VERSION.$PACKAGING -d $TMP_DIR/$PRODUCT-$VERSION
+      unzip $DL_DIR/$PRODUCT-$VERSION.$PACKAGING -d $TMP_DIR/$PRODUCT-$VERSION
       ;;
     tar.gz)
       cd $TMP_DIR/$PRODUCT-$VERSION
-      tar -xzf $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
+      tar -xzvf $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
       cd -
       ;;
     *)
@@ -238,6 +238,7 @@ do_unpack_server()
       exit 1
       ;;
   esac
+  rm -rf $SRV_DIR/$PRODUCT-$VERSION
   mkdir -p $SRV_DIR
   find $TMP_DIR/$PRODUCT-$VERSION -maxdepth 1 -mindepth 1 -type d -exec cp -rf {} $SRV_DIR/$PRODUCT-$VERSION \;
   rm -rf $TMP_DIR/$PRODUCT-$VERSION
