@@ -290,6 +290,7 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
     ProxyPreserveHost       On
     ProxyPass               /exo-static/   !
     ProxyPass               /logs/         !
+    ProxyPass               /icons/        !
     ProxyPass               /       ajp://localhost:$AJP_PORT/ acquire=1000 retry=30
     ProxyPassReverse        /       ajp://localhost:$AJP_PORT/
     <Proxy *>
