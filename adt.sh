@@ -299,6 +299,10 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
     </Proxy>    
 </VirtualHost>
 EOF
+# Restart Apache to activate the new config
+if $linux; then
+  sudo -u www-data /usr/sbin/apache2ctl restart
+fi
 }
 
 #
