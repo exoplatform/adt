@@ -134,6 +134,18 @@ do_init()
 
     # Validate args    
     case "$PRODUCT" in
+      ks)
+        GROUPID="org.exoplatform.ks"
+        ARTIFACTID="exo.ks.packaging.assembly"
+        CLASSIFIER="tomcat"
+        PACKAGING="zip"
+        ;;
+      cs)
+        GROUPID="org.exoplatform.cs"
+        ARTIFACTID="exo.cs.packaging.assembly"
+        CLASSIFIER="tomcat"
+        PACKAGING="zip"
+        ;;
       social)
         GROUPID="org.exoplatform.social"
         ARTIFACTID="exo.social.packaging.pkg"
