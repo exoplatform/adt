@@ -146,6 +146,12 @@ do_init()
         CLASSIFIER="tomcat"
         PACKAGING="zip"
         ;;
+      platform)
+        GROUPID="org.exoplatform.platform"
+        ARTIFACTID="exo.platform.packaging.assembly"
+        CLASSIFIER="tomcat"
+        PACKAGING="zip"
+        ;;
       stop)
         ;;
       *)
