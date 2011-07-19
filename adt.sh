@@ -182,7 +182,7 @@ do_download_server() {
   fi;
   url="http://repository.exoplatform.org/$repository/${GROUPID//.//}/$ARTIFACTID/$VERSION"
   echo "[INFO] Downloading metadata ..."
-  curl --progress-bar $credentials "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT-$VERSION-maven-metadata.xml
+  curl $credentials "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT-$VERSION-maven-metadata.xml
   if [ "$?" -ne "0" ]; then
     echo "Sorry, cannot download artifact metadata"
     exit 1
@@ -207,7 +207,7 @@ do_download_server() {
   name="$name:$PACKAGING"
   echo "[INFO] Archive          : $name "
   echo "[INFO] Repository       : $repository "
-  curl --progress-bar $credentials "$url/$filename" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
+  curl $credentials "$url/$filename" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
   if [ "$?" -ne "0" ]; then
     echo "Sorry, cannot download $name"
     exit 1
