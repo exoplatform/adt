@@ -68,6 +68,22 @@ EOF
 #
 do_init()
 {
+
+    cygwin=false;
+    linux=false;
+    darwin=false;
+    case "`uname`" in
+        CYGWIN*) 
+          cygwin=true;
+          echo "[INFO] Environment : Cygwin";;
+        Linux*) 
+          linux=true;
+          echo "[INFO] Environment : Linux";;
+        Darwin*) 
+          darwin=true;
+          echo "[INFO] Environment : Darwin";;
+    esac
+    
     #
     # without enough parameters, provide help
     #
@@ -142,10 +158,13 @@ do_init()
 
 #
 # Function that downloads the app server from nexus
+# Because Nexus REST APIs don't use Maven 3 metadata to download the latest SNAPSHOT
+# of a given GAVCE we need to manually get the timestamp using xpath
+# see https://issues.sonatype.org/browse/NEXUS-4423
 #
 do_download_server() {
   rm -f $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
-
+  mkdir -p $DL_DIR
   echo "[INFO] Downloading server ..."
   if [ -n $CREDENTIALS ]; then
     repository=private
@@ -155,20 +174,33 @@ do_download_server() {
     repository=public
     credentials="--location"
   fi;
-  params="g=$GROUPID&a=$ARTIFACTID&v=$VERSION&r=$repository"
-  name="$GROUPID:$ARTIFACTID:$VERSION"
+  url="http://repository.exoplatform.org/$repository/${GROUPID//.//}/$ARTIFACTID/$VERSION"
+  echo "[INFO] Downloading metadata ..."
+  curl --progress-bar $credentials "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT-$VERSION-maven-metadata.xml
+  if [ "$?" -ne "0" ]; then
+    echo "Sorry, cannot download artifact metadata"
+    exit 1
+  fi
+  echo "[INFO] Metadata downloaded"
+  local QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$CLASSIFIER\")and(extension=\"$PACKAGING\")]/value/text()"
+  local FILENAME=$DL_DIR/$PRODUCT-$VERSION-maven-metadata.xml
+  if $darwin; then
+    TIMESTAMP=`xpath $FILENAME $QUERY`
+  fi 
+  if $linux; then
+    TIMESTAMP=`xpath -q -e $QUERY $FILENAME`
+  fi
+  echo "[INFO] Latest timestamp : $TIMESTAMP"
+  filename=$ARTIFACTID-$TIMESTAMP  
   if [ -n $CLASSIFIER ]; then
-    params="$params&c=$CLASSIFIER"
+    filename="$filename-$CLASSIFIER"
     name="$name:$CLASSIFIER"
   fi;
-  if [ -n $PACKAGING ]; then
-    params="$params&p=$PACKAGING"
-    name="$name:$PACKAGING"
-  fi;
+  filename="$filename.$PACKAGING"
+  name="$name:$PACKAGING"
   echo "[INFO] Archive    : $name "
   echo "[INFO] Repository : $repository "
-  mkdir -p $DL_DIR
-  curl --progress-bar $credentials "http://repository.exoplatform.org/service/local/artifact/maven/redirect?$params" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
+  curl --progress-bar $credentials "$url/$filename" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
   if [ "$?" -ne "0" ]; then
     echo "Sorry, cannot download $name"
     exit 1
@@ -267,8 +299,8 @@ case "$ACTION" in
     if [ ! $SKIP_DL ]; then
       do_download_server
     fi
-    do_unpack_server
-    do_start
+#    do_unpack_server
+ #   do_start
     ;;
   restart)
     do_stop
