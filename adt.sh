@@ -266,6 +266,8 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
     LogLevel        warn
     CustomLog       \${APACHE_LOG_DIR}/$PRODUCT-$VERSION.acceptance.exoplatform.org-access.log combined  
     
+    Alias /logs/ $SRV_DIR/$PRODUCT-$VERSION/logs
+    
     #
     # Compression via GZIP
     #
@@ -325,7 +327,8 @@ do_start()
   #  sleep 5    
   #done
   echo "[INFO] Server started"
-  echo "[INFO] Server available here : http://$PRODUCT-$VERSION.acceptance.exoplatform.org"
+  echo "[INFO] URL  : http://$PRODUCT-$VERSION.acceptance.exoplatform.org"
+  echo "[INFO] Logs : http://$PRODUCT-$VERSION.acceptance.exoplatform.org/logs/"
 }
 
 #
