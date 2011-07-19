@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/bin/bash -e
 
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="${0%/*}"
@@ -192,14 +192,15 @@ do_download_server() {
   fi
   echo "[INFO] Latest timestamp : $TIMESTAMP"
   filename=$ARTIFACTID-$TIMESTAMP  
+  name=$GROUPID:$ARTIFACTID:$VERSION
   if [ -n $CLASSIFIER ]; then
     filename="$filename-$CLASSIFIER"
     name="$name:$CLASSIFIER"
   fi;
   filename="$filename.$PACKAGING"
   name="$name:$PACKAGING"
-  echo "[INFO] Archive    : $name "
-  echo "[INFO] Repository : $repository "
+  echo "[INFO] Archive          : $name "
+  echo "[INFO] Repository       : $repository "
   curl --progress-bar $credentials "$url/$filename" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
   if [ "$?" -ne "0" ]; then
     echo "Sorry, cannot download $name"
@@ -232,7 +233,7 @@ do_unpack_server()
       ;;
   esac
   mkdir -p $SRV_DIR
-  find $TMP_DIR/$PRODUCT-$VERSION -type d -depth 1 -exec cp -rf {} $SRV_DIR/$PRODUCT-$VERSION \;
+  find $TMP_DIR/$PRODUCT-$VERSION -maxdepth 1 -mindepth 1 -type d -exec cp -rf {} $SRV_DIR/$PRODUCT-$VERSION \;
   rm -rf $TMP_DIR/$PRODUCT-$VERSION
   echo "[INFO] Server unpacked"
 }
@@ -245,6 +246,42 @@ do_patch_server()
   sed -i -e "s|8005|${SHUTDOWN_PORT}|g" $SRV_DIR/$PRODUCT-$VERSION/conf/server.xml
   sed -i -e "s|8080|${HTTP_PORT}|g" $SRV_DIR/$PRODUCT-$VERSION/conf/server.xml
   sed -i -e "s|8009|${AJP_PORT}|g" $SRV_DIR/$PRODUCT-$VERSION/conf/server.xml
+}
+
+do_create_apache_vhost()
+{
+mkdir -p $APACHE_CONF_DIR
+cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
+<VirtualHost *:80>
+    Include /home/swfcommons/etc/apache2/includes/default.conf
+    ServerName  $PRODUCT-$VERSION.acceptance.exoplatform.org
+
+    ErrorLog        \${APACHE_LOG_DIR}/$PRODUCT-$VERSION.acceptance.exoplatform.org-error.log
+    LogLevel        warn
+    CustomLog       \${APACHE_LOG_DIR}/$PRODUCT-$VERSION.acceptance.exoplatform.org-access.log combined  
+    
+    #
+    # Compression via GZIP
+    #
+    SetOutputFilter DEFLATE
+    SetInputFilter DEFLATE
+    DeflateFilterNote Input instream
+    DeflateFilterNote Output outstream
+    DeflateFilterNote Ratio ratio
+    # Higher Compression 9 - Medium 5
+    DeflateCompressionLevel 5
+
+    ProxyRequests           Off
+    ProxyPreserveHost       On
+    ProxyPass               /exo-static/   !
+    ProxyPass               /       ajp://localhost:$AJP_PORT/ acquire=1000 retry=30
+    ProxyPassReverse        /       ajp://localhost:$AJP_PORT/
+    <Proxy *>
+        Order deny,allow
+        Allow from all
+    </Proxy>    
+</VirtualHost>
+EOF
 }
 
 #
@@ -261,6 +298,12 @@ do_configure_server()
 #
 do_start()
 {
+  if [ ! $SKIP_DL ]; then
+    do_download_server
+  fi
+  do_unpack_server
+  do_patch_server
+  do_create_apache_vhost
   echo "[INFO] Starting server ..."
   chmod 755 $SRV_DIR/$PRODUCT-$VERSION/bin/*.sh
   $SRV_DIR/$PRODUCT-$VERSION/bin/gatein.sh start
@@ -296,23 +339,14 @@ do_init $@
 
 case "$ACTION" in
   start)
-    if [ ! $SKIP_DL ]; then
-      do_download_server
-    fi
-    do_unpack_server
-    do_start
-    ;;
-  restart)
-    do_stop
-    if [ ! $SKIP_DL ]; then
-      do_download_server
-    fi
-    do_unpack_server
-    do_patch_server
     do_start
     ;;
   stop) 
     do_stop
+    ;;
+  restart)
+    do_stop
+    do_start
     ;;
   *)
     echo "[ERROR] Invalid action \"$ACTION\"" 
