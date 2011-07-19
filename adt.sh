@@ -266,7 +266,13 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
     LogLevel        warn
     CustomLog       \${APACHE_LOG_DIR}/$PRODUCT-$VERSION.acceptance.exoplatform.org-access.log combined  
     
-    Alias /logs/ $SRV_DIR/$PRODUCT-$VERSION/logs
+    Alias /logs/ "$SRV_DIR/$PRODUCT-$VERSION/logs/"
+    <Directory "$SRV_DIR/$PRODUCT-$VERSION/logs/">
+        Options Indexes MultiViews
+        AllowOverride None
+        Order allow,deny
+        Allow from all
+    </Directory>
     
     #
     # Compression via GZIP
