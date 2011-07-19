@@ -240,7 +240,11 @@ do_unpack_server()
   esac
   rm -rf $SRV_DIR/$PRODUCT-$VERSION
   mkdir -p $SRV_DIR
-  find $TMP_DIR/$PRODUCT-$VERSION -maxdepth 1 -mindepth 1 -type d -exec cp -rf {} $SRV_DIR/$PRODUCT-$VERSION \;
+  if [ -d "$TMP_DIR/$PRODUCT-$VERSION/gatein/" ]; then
+    cp -rf $TMP_DIR/$PRODUCT-$VERSION $SRV_DIR/$PRODUCT-$VERSION
+  else
+    find $TMP_DIR/$PRODUCT-$VERSION -maxdepth 1 -mindepth 1 -type d -exec cp -rf {} $SRV_DIR/$PRODUCT-$VERSION \;
+  fi
   rm -rf $TMP_DIR/$PRODUCT-$VERSION
   echo "[INFO] Server unpacked"
 }
