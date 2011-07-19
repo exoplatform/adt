@@ -299,8 +299,8 @@ case "$ACTION" in
     if [ ! $SKIP_DL ]; then
       do_download_server
     fi
-#    do_unpack_server
- #   do_start
+    do_unpack_server
+    do_start
     ;;
   restart)
     do_stop
