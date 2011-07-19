@@ -325,6 +325,7 @@ do_start()
   #  sleep 5    
   #done
   echo "[INFO] Server started"
+  echo "[INFO] Server available here : http://$PRODUCT-$VERSION.acceptance.exoplatform.org"
 }
 
 #
