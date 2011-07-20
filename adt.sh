@@ -158,7 +158,7 @@ do_init()
         CLASSIFIER="tomcat"
         PACKAGING="zip"
         ;;
-      platform)
+      plf)
         GROUPID="org.exoplatform.platform"
         ARTIFACTID="exo.platform.packaging.assembly"
         CLASSIFIER="tomcat"
