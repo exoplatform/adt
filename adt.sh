@@ -134,15 +134,15 @@ do_init()
 
     # Validate args    
     case "$PRODUCT" in
-      ks)
-        GROUPID="org.exoplatform.ks"
-        ARTIFACTID="exo.ks.packaging.assembly"
+      gatein)
+        GROUPID="org.exoplatform.portal"
+        ARTIFACTID="exo.portal.packaging.assembly"
         CLASSIFIER="tomcat"
         PACKAGING="zip"
         ;;
-      cs)
-        GROUPID="org.exoplatform.cs"
-        ARTIFACTID="exo.cs.packaging.assembly"
+      ecms)
+        GROUPID="org.exoplatform.ecms"
+        ARTIFACTID="exo-ecms-delivery-wcm-assembly"
         CLASSIFIER="tomcat"
         PACKAGING="zip"
         ;;
@@ -152,9 +152,15 @@ do_init()
         CLASSIFIER="tomcat"
         PACKAGING="zip"
         ;;
-      ecms)
-        GROUPID="org.exoplatform.ecms"
-        ARTIFACTID="exo-ecms-delivery-wcm-assembly"
+      ks)
+        GROUPID="org.exoplatform.ks"
+        ARTIFACTID="exo.ks.packaging.assembly"
+        CLASSIFIER="tomcat"
+        PACKAGING="zip"
+        ;;
+      cs)
+        GROUPID="org.exoplatform.cs"
+        ARTIFACTID="exo.cs.packaging.assembly"
         CLASSIFIER="tomcat"
         PACKAGING="zip"
         ;;
