@@ -318,6 +318,21 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
     <Proxy *>
         Order deny,allow
         Allow from all
+
+        AuthName "eXo Employees only"
+        AuthType Basic
+        AuthBasicProvider crowd
+
+        CrowdAppName \${CROWD_ACCEPTANCE_APP_NAME}
+        CrowdAppPassword \${CROWD_ACCEPTANCE_APP_PASSWORD}
+        CrowdURL https://identity.exoplatform.org/
+
+        # Activate SSO 
+        CrowdAcceptSSO On
+        CrowdCreateSSO On
+
+        # Only exo-employees can access
+        Require group exo-employees
     </Proxy>    
 </VirtualHost>
 EOF
