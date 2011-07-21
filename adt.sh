@@ -364,6 +364,8 @@ do_start()
   do_create_apache_vhost
   echo "[INFO] Starting server ..."
   chmod 755 $SRV_DIR/$PRODUCT-$VERSION/bin/*.sh
+  export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
+  export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid
   $SRV_DIR/$PRODUCT-$VERSION/bin/gatein.sh start
   #STARTING=true
   #while [ $STARTING ];
@@ -388,7 +390,9 @@ do_stop()
 {
   if [ -e $SRV_DIR/$PRODUCT-$VERSION ]; then
     echo "[INFO] Stopping server ..."
-    $SRV_DIR/$PRODUCT-$VERSION/bin/gatein.sh stop
+    export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
+    export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid    
+    $SRV_DIR/$PRODUCT-$VERSION/bin/catalina.sh stop -force 60
     echo "[INFO] Server stopped"
   else
     echo "[WARN] No server directory to stop it"
