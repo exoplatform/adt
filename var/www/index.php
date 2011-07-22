@@ -3,8 +3,8 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 <title>Acceptance Live Instances</title>
-<link rel="shortcut icon" type="image/x-icon" href="/exo-static/images/favicon.ico" />
-<link href="/exo-static/style.css" media="screen" rel="stylesheet" type="text/css"/>
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
+<link href="/style.css" media="screen" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div class="UIForgePages">
@@ -60,7 +60,7 @@
             <td><?=$descriptor_array['deployment.product']?></td>
             <td><?=$descriptor_array['artifact.version']?></td>
             <td><?=$descriptor_array['deployment.date']?></td>
-            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue"><img src="/exo-static/images/ButDownload.gif" width="19" height="19" alt="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus" /><?=$descriptor_array['artifact.timestamp']?>
+            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue"><img src="/images/ButDownload.gif" width="19" height="19" alt="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus" /> <?=$descriptor_array['artifact.timestamp']?>
             </a></td>
             <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue">
               <?=$descriptor_array['deployment.url']?>
