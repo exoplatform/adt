@@ -1,0 +1,12 @@
+#!/bin/sh
+# Configuration directory
+PHPRC="/etc/php5/cgi"
+export PHPRC
+# How much children per manager
+PHP_FCGI_CHILDREN=4
+export PHP_FCGI_CHILDREN
+# How much requests should be queued per child
+PHP_FCGI_MAX_REQUESTS=5
+export PHP_FCGI_MAX_REQUESTS
+# What binary to run with above settings
+exec /usr/lib/cgi-bin/php5

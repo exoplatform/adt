@@ -1,0 +1,77 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<title>502 - Bad Gateway</title>
+<link rel="shortcut icon" type="image/x-icon" href="/exo-static/images/favicon.ico" />
+<link href="/exo-static/style.css" media="screen" rel="stylesheet" type="text/css"/>
+<script type="text/javascript"> 
+var reloadTimer = null;
+window.onload = function()
+{
+    setReloadTime(10);
+}
+function setReloadTime(secs) 
+{
+    if (arguments.length == 1) {
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout("setReloadTime()", Math.ceil(parseFloat(secs) * 1000));
+    }
+    else {
+        location.reload();
+    }
+}
+</script>
+<script type="text/javascript">
+  var _gaq = _gaq || [];
+  _gaq.push(['_setAccount', 'UA-1292368-26']);
+  _gaq.push(['_trackPageview']);
+
+  (function() {
+    var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+    ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+    var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+  })();
+
+</script>
+<script src="https://lfov.net/webrecorder/js/listen.js" type="text/Javascript"></script>
+<script type="text/Javascript">
+_lf_cid = "LF_df197061";
+_lf_remora();
+</script>
+</head>
+<body>
+<div class="UIForgePages">
+  <div class="Header ClearFix"> <a href="#" class="Logo"></a><span class="AddressWeb">forge.exoplatform.org</span> </div>
+  <div class="TitleForgePages">502 - Bad Gateway</div>
+  <div class="ContentCenter ClearFix">
+    <div class="ContentLeft FL">
+      <div class="BlockPlatform3">
+        <h2>What went wrong?</h2>
+        <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
+      </div>
+      <div class="BlockPlatform2">
+        <h2>How can I contact eXo SWF?</h2>
+        <p>You can contact eXo Software Factory by sending an email to <span class="TxtBlue"><a href="mailto:exo-swf@exoplatform.com">exo-swf AT exoplatform DOT com</a></span></p>
+        <p class="TxtBoldContact">eXo - The Software Factory Team</p>
+      </div>
+    </div>
+    <div class="ContentRight FR">
+      <div class="BlockAccount">
+        <h2>Software Factory Services</h2>
+        <p>eXo SWF provides dedicated servers for the following set of services:</p>
+        <ul>
+          <li><a href="http://ci.exoplatform.org" class="TxtBlue">http://ci.exoplatform.org</a> (Hudson CI)</li>
+          <li><a href="http://repository.exoplatform.org" class="TxtBlue">http://repository.exoplatform.org</a> (Sonatype Nexus) </li>
+          <li><a href="http://svn.exoplatform.org" class="TxtBlue">http://svn.exoplatform.org </a>(Apache Subversion)</li>
+          <li><a href="http://fisheye.exoplatform.org" class="TxtBlue">http://fisheye.exoplatform.org </a>(Atlassian Ficheye &amp; Crucible)</li>
+          <li><a href="http://jira.exoplatform.org" class="TxtBlue">http://jira.exoplatform.org</a> (Atlassian Jira)</li>
+          <li><a href="http://sonar.exoplatform.org" class="TxtBlue">http://sonar.exoplatform.org</a> (Sonar)</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <div class="Footer">eXo Platform SAS</div>
+</div>
+</body>
+</html>

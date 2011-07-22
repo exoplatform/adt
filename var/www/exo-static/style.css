@@ -1,0 +1,211 @@
+body {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+	height:100%;
+	margin:0px;
+	overflow-x:hidden;
+	padding:0px;
+	background: #f2f2f2;
+}
+img {
+	border: none;
+}
+a {
+	text-decoration: none;
+}
+h1, h2, h3, h4, h5, h6, p {
+	margin: 0;
+}
+ul, li {
+	padding: 0px;
+	margin: 0px;
+}
+h1 {
+	font-size: 22px;
+}
+h2 {
+	font-size: 20px;
+}
+h3 {
+	font-size: 16px;
+}
+h4 {
+	font-size: 14px;
+}
+h5 {
+	font-size: 12px;
+}
+h6 {
+	font-size: 11px;
+}
+.ClearFix:after {
+	content: ".";
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
+.ClearFix {
+ !display: inline-block;
+ !zoom: 1;
+ !display: block;
+}
+.FL {
+	float: left;
+}
+.FR {
+	float: right;
+}
+.UIHeader .Logo {
+	background: url('/exo-static/images/Logo.png') no-repeat;
+	height: 65px;
+	width: 92px;
+	margin-left: 30px;
+	display: block;
+}
+.UIForgePages {
+	color: #686868;
+	background: url('/exo-static/images/Header.png') repeat-x top;
+}
+.UIForgePages h3 {
+	font-size: 18px;
+	font-weight: normal;
+	margin:0px;
+}
+.UIForgePages .Header {
+	width: 570px;
+	margin: auto;
+	height: 115px;
+}
+.UIForgePages .Header .Logo {
+	background: url("/exo-static/images/Logo2.png") no-repeat scroll left center transparent;
+	width: 158px;
+	height: 110px;
+	float: left;
+	display: block;
+}
+.UIForgePages .Header .AddressWeb {
+	color: #E3EBF0;
+	font-size: 24px;
+	line-height: 96px;
+	padding: 7px 0 0;
+	float: right;
+}
+.UIForgePages .ContentPages {
+	padding: 18px 7px 7px 7px;
+	width: 570px;
+	margin: auto;
+}
+.UIForgePages .ContentPages ul{
+	list-style: none;
+	padding: 0px;
+}
+.UIForgePages .ContentPages .MenuPage {
+	width: 48%;
+}
+.UIForgePages .ContentPages .MenuPage .Button {
+	border-radius: 15px 15px 15px 15px;
+	-moz-border-radius: 15px 15px 15px 15px;
+	-webkit-border-radius: 15px 15px 15px 15px;
+	background: url("/exo-static/images/Button.gif") repeat-x scroll 0 0 transparent;
+	border: 1px solid #CFCFCF;
+	color: #686868;
+	display: block;
+	font-size: 16px;
+	line-height: 31px;
+	margin: 0 0 8px 0;
+	text-align: center;
+	text-decoration: none;
+}
+.UIForgePages .ContentPages .MenuPage .Button:hover {
+	background: url("/exo-static/images/ButtonHV.gif") repeat-x scroll 0 0 transparent;
+	border: 1px solid #186abd;
+	color: white;
+}
+.UIForgePages .TitleForgePages {
+	font-size: 24px;
+	color: #fbad18;
+	padding-left: 20px;
+	text-align: left;
+	line-height: 85px;
+	margin: auto;
+	width: 1064px;	
+}
+.UIForgePages .TxtBlue {
+	color: #005abf;
+}
+.UIForgePages .TxtOrange {
+	color: #f47920;
+}
+.UIForgePages .TxtBoldContact {
+	font-weight: bold;
+	margin-top: 10px;
+}
+.UIForgePages .Footer {
+	background: url("/exo-static/images/Footer.png") no-repeat center;
+	color: #7e7e7e;
+	padding: 21px 0px 0px 0px;
+	text-align: center;
+	height: 44px;
+}
+.UIForgePages .UIFooter {
+	background: #dfdfdf;
+	height: 40px;
+	color: #7b7b7b;
+	text-align: center;
+	line-height: 40px;
+	font-size: 11px;
+	margin-top: 40px;
+}
+.UIForgePages .ContentCenter {
+	padding: 18px 7px 7px 7px;
+	width: 1064px;	
+	margin: auto;
+}
+.UIForgePages .ContentCenter .ContentLeft {
+	width: 525px;
+	margin-right: 13px;
+	font-size: 14px;
+}
+.UIForgePages .ContentCenter .ContentRight {
+	width: 525px;
+	height: 264px;
+	font-size: 14px;
+}
+.UIForgePages .ContentCenter .ContentRight .BlockAccount {
+	background: url('/exo-static/images/BgBlock.jpg') no-repeat;
+	height: 264px;
+	padding: 0px 17px 0px 20px;
+	text-align: justify;
+}
+.UIForgePages .ContentCenter .ContentLeft .BlockPlatform3 {
+	background: url('/exo-static/images/BgBlock.jpg') no-repeat left -266px;
+	height: 127px;
+	padding: 0px 17px 0px 20px;
+	text-align: justify;
+	margin-bottom: 10px;
+}
+.UIForgePages .ContentCenter .ContentLeft .BlockPlatform2 {
+	background: url('/exo-static/images/BgBlock.jpg') no-repeat left -397px;
+	height: 127px;
+	padding: 0px 17px 0px 20px;
+	text-align: justify;
+}
+.UIForgePages .ContentCenter h2 {
+	font-size: 23px;
+	font-weight: bold;
+	padding-top: 20px;
+	color: #20263f;
+	margin-bottom: 8px;
+	text-align: left;
+}
+.UIForgePages .ContentCenter ul {
+	list-style-type: none;
+	font-size: 13px;
+	margin-top: 10px;
+}
+.UIForgePages .ContentCenter ul li {
+	background: url('/exo-static/images/Arrow.gif') no-repeat left center;
+	padding-left: 11px;
+	line-height: 20px;
+}
