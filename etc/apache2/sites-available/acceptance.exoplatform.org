@@ -26,6 +26,11 @@
     # Higher Compression 9 - Medium 5
     DeflateCompressionLevel 5
 
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+
     DocumentRoot ${ADT_HOME}/var/www/
     <Directory ${ADT_HOME}/var/www/>
         Options Indexes FollowSymLinks MultiViews
