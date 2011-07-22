@@ -13,16 +13,19 @@
   <div class="ContentCenter ClearFix">
     <div class="BlockAccount">
       <p>These instances are deployed to be used for acceptance tests.<br/>
-        They are deployed from latest successful binaries produced by </p>
-      <table>
+        They are deployed from latest successful binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
+      <table width="100%" align="center" class="FL">
         <thead>
           <tr>
-            <th>Product</th>
+            <th colspan="2">Product</th>
+            <th colspan="3">Current deployment</th>
+          </tr>
+          <tr>
+            <th>Name</th>
             <th>Version</th>
-            <th>Timestamp</th>
+            <th>Date</th>
+            <th>Artifact</th>
             <th>URL</th>
-            <th></th>
-            <th>Deployment date</th>
           </tr>
         </thead>
         <tbody>
@@ -56,12 +59,12 @@
           <tr>
             <td><?=$descriptor_array['deployment.product']?></td>
             <td><?=$descriptor_array['artifact.version']?></td>
-            <td><?=$descriptor_array['artifact.timestamp']?></td>
+            <td><?=$descriptor_array['deployment.date']?></td>
+            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue"><img src="/exo-static/images/ButDownload.gif" width="19" height="19" alt="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus" /><?=$descriptor_array['artifact.timestamp']?>
+            </a></td>
             <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue">
               <?=$descriptor_array['deployment.url']?>
               </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange">logs</a>]</td>
-            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue">Download Archive</a></td>
-            <td><?=$descriptor_array['deployment.date']?></td>
           </tr>
           <?php 
 		  } 

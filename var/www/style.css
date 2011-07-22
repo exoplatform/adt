@@ -38,6 +38,12 @@ h5 {
 h6 {
 	font-size: 11px;
 }
+td, th {
+	padding: 5px 5px 5px 5px;
+}
+th {
+	text-align: left;
+}
 .ClearFix:after {
 	content: ".";
 	display: block;
@@ -57,7 +63,7 @@ h6 {
 	float: right;
 }
 .UIHeader .Logo {
-	background: url('/exo-static/images/Logo.png') no-repeat;
+	background: url('/images/Logo.png') no-repeat;
 	height: 65px;
 	width: 92px;
 	margin-left: 30px;
@@ -65,7 +71,7 @@ h6 {
 }
 .UIForgePages {
 	color: #686868;
-	background: url('/exo-static/images/Header.png') repeat-x top;
+	background: url('/images/Header.png') repeat-x top;
 }
 .UIForgePages h3 {
 	font-size: 18px;
@@ -78,7 +84,7 @@ h6 {
 	height: 115px;
 }
 .UIForgePages .Header .Logo {
-	background: url("/exo-static/images/Logo2.png") no-repeat scroll left center transparent;
+	background: url("/images/Logo2.png") no-repeat scroll left center transparent;
 	width: 158px;
 	height: 110px;
 	float: left;
@@ -107,7 +113,7 @@ h6 {
 	border-radius: 15px 15px 15px 15px;
 	-moz-border-radius: 15px 15px 15px 15px;
 	-webkit-border-radius: 15px 15px 15px 15px;
-	background: url("/exo-static/images/Button.gif") repeat-x scroll 0 0 transparent;
+	background: url("/images/Button.gif") repeat-x scroll 0 0 transparent;
 	border: 1px solid #CFCFCF;
 	color: #686868;
 	display: block;
@@ -118,7 +124,7 @@ h6 {
 	text-decoration: none;
 }
 .UIForgePages .ContentPages .MenuPage .Button:hover {
-	background: url("/exo-static/images/ButtonHV.gif") repeat-x scroll 0 0 transparent;
+	background: url("/images/ButtonHV.gif") repeat-x scroll 0 0 transparent;
 	border: 1px solid #186abd;
 	color: white;
 }
@@ -142,7 +148,7 @@ h6 {
 	margin-top: 10px;
 }
 .UIForgePages .Footer {
-	background: url("/exo-static/images/Footer.png") no-repeat center;
+	background: url("/images/Footer.png") no-repeat center;
 	color: #7e7e7e;
 	padding: 21px 0px 0px 0px;
 	text-align: center;
@@ -173,20 +179,20 @@ h6 {
 	font-size: 14px;
 }
 .UIForgePages .ContentCenter .ContentRight .BlockAccount {
-	background: url('/exo-static/images/BgBlock.jpg') no-repeat;
+	background: url('/images/BgBlock.jpg') no-repeat;
 	height: 264px;
 	padding: 0px 17px 0px 20px;
 	text-align: justify;
 }
 .UIForgePages .ContentCenter .ContentLeft .BlockPlatform3 {
-	background: url('/exo-static/images/BgBlock.jpg') no-repeat left -266px;
+	background: url('/images/BgBlock.jpg') no-repeat left -266px;
 	height: 127px;
 	padding: 0px 17px 0px 20px;
 	text-align: justify;
 	margin-bottom: 10px;
 }
 .UIForgePages .ContentCenter .ContentLeft .BlockPlatform2 {
-	background: url('/exo-static/images/BgBlock.jpg') no-repeat left -397px;
+	background: url('/images/BgBlock.jpg') no-repeat left -397px;
 	height: 127px;
 	padding: 0px 17px 0px 20px;
 	text-align: justify;
@@ -205,7 +211,7 @@ h6 {
 	margin-top: 10px;
 }
 .UIForgePages .ContentCenter ul li {
-	background: url('/exo-static/images/Arrow.gif') no-repeat left center;
+	background: url('/images/Arrow.gif') no-repeat left center;
 	padding-left: 11px;
 	line-height: 20px;
 }

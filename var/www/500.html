@@ -2,26 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-<title>502 - Bad Gateway</title>
-<link rel="shortcut icon" type="image/x-icon" href="/exo-static/images/favicon.ico" />
-<link href="/exo-static/style.css" media="screen" rel="stylesheet" type="text/css"/>
-<script type="text/javascript"> 
-var reloadTimer = null;
-window.onload = function()
-{
-    setReloadTime(10);
-}
-function setReloadTime(secs) 
-{
-    if (arguments.length == 1) {
-        if (reloadTimer) clearTimeout(reloadTimer);
-        reloadTimer = setTimeout("setReloadTime()", Math.ceil(parseFloat(secs) * 1000));
-    }
-    else {
-        location.reload();
-    }
-}
-</script>
+<title>500 - Internal Server Error</title>
+<link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
+<link href="/style.css" media="screen" rel="stylesheet" type="text/css"/>
 <script type="text/javascript">
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-1292368-26']);
@@ -43,12 +26,12 @@ _lf_remora();
 <body>
 <div class="UIForgePages">
   <div class="Header ClearFix"> <a href="#" class="Logo"></a><span class="AddressWeb">forge.exoplatform.org</span> </div>
-  <div class="TitleForgePages">502 - Bad Gateway</div>
+  <div class="TitleForgePages">500 - Internal Server Error</div>
   <div class="ContentCenter ClearFix">
     <div class="ContentLeft FL">
       <div class="BlockPlatform3">
         <h2>What went wrong?</h2>
-        <p>The server is temporarily unable to service your request due to maintenance downtime or capacity problems. Please try again later.</p>
+        <p>The server has encountered a problem. Please retry later or contact us if the problem persists.</p>
       </div>
       <div class="BlockPlatform2">
         <h2>How can I contact eXo SWF?</h2>

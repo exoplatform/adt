@@ -6,10 +6,10 @@
     DirectoryIndex index.php
 
     # Error pages    
-    ErrorDocument 404 /exo-static/404.html
-    ErrorDocument 500 /exo-static/500.html
-    ErrorDocument 502 /exo-static/502.html
-    ErrorDocument 503 /exo-static/503.html
+    ErrorDocument 404 /404.html
+    ErrorDocument 500 /500.html
+    ErrorDocument 502 /502.html
+    ErrorDocument 503 /503.html
 
     ErrorLog        ${APACHE_LOG_DIR}/acceptance.exoplatform.org-error.log
     LogLevel        warn
@@ -25,6 +25,15 @@
     DeflateFilterNote Ratio ratio
     # Higher Compression 9 - Medium 5
     DeflateCompressionLevel 5
+
+    # don't loose time with IP address lookups
+    HostnameLookups Off
+
+    # needed for named virtual hosts
+    UseCanonicalName Off
+
+    # configures the footer on server-generated documents
+    ServerSignature Off
 
     <Directory />
         Options FollowSymLinks
@@ -67,15 +76,7 @@
     # otherwise put this line in every VirtualHost that needs php access
     AddHandler php5-fastcgi .php
 
-    # don't loose time with IP address lookups
-    HostnameLookups Off
-
-    # needed for named virtual hosts
-    UseCanonicalName Off
-
-    # configures the footer on server-generated documents
-    ServerSignature Off
-
+    # Security
     <Location />
         Order deny,allow
         Allow from all
