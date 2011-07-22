@@ -392,7 +392,7 @@ do_stop()
     echo "[INFO] Stopping server ..."
     export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
     export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid    
-    $SRV_DIR/$PRODUCT-$VERSION/bin/catalina.sh -force 60 stop || true
+    $SRV_DIR/$PRODUCT-$VERSION/bin/catalina.sh stop 60 -force || true
     echo "[INFO] Server stopped"
   else
     echo "[WARN] No server directory to stop it"
