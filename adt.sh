@@ -360,22 +360,22 @@ do_create_deployment_descriptor()
 {
 mkdir -p $ADT_CONF_DIR
 cat << EOF > $ADT_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
-deployment.date=$CURR_DATE
-deployment.product=$PRODUCT
-deployment.directory=$SRV_DIR/$PRODUCT-$VERSION
-deployment.url=http://$PRODUCT-$VERSION.acceptance.exoplatform.org
-deployment.logs=http//$PRODUCT-$VERSION.acceptance.exoplatform.org/logs/catalina.out
+deployment.date="$CURR_DATE"
+deployment.product="$PRODUCT"
+deployment.directory="$SRV_DIR/$PRODUCT-$VERSION"
+deployment.url="http://$PRODUCT-$VERSION.acceptance.exoplatform.org"
+deployment.logs="http//$PRODUCT-$VERSION.acceptance.exoplatform.org/logs/catalina.out"
 deployment.shutdown.port=$SHUTDOWN_PORT
 deployment.http.port=$HTTP_PORT
 deployment.ajp.port=$AJP_PORT
-deployment.pid.file=$SRV_DIR/$PRODUCT-$VERSION.pid
-artifact.groupid=$GROUPID
-artifact.artifactid=$ARTIFACTID
-artifact.version=$VERSION
-artifact.timestamp=$TIMESTAMP
-artifact.classifier=$CLASSIFIER
-artifact.packaging=$PACKAGING
-artifact.url=$ARTIFACT_URL
+deployment.pid.file="$SRV_DIR/$PRODUCT-$VERSION.pid"
+artifact.groupid="$GROUPID"
+artifact.artifactid="$ARTIFACTID"
+artifact.version="$VERSION"
+artifact.timestamp="$TIMESTAMP"
+artifact.classifier="$CLASSIFIER"
+artifact.packaging="$PACKAGING"
+artifact.url="$ARTIFACT_URL"
 EOF
 #Display the deployment descriptor
 echo "[INFO] ========================= Deployment Descriptor ========================="
