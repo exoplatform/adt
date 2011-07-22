@@ -435,7 +435,7 @@ do_stop()
     ${CATALINA_HOME}/bin/gatein.sh stop 60 -force || true
     echo "[INFO] Server stopped"
   else
-    echo "[WARN] No server directory to stop it"
+    echo "[WARNING] No server directory to stop it"
   fi
 }
 
