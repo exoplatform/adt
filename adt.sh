@@ -20,7 +20,7 @@ if [ ! $ADT_DATA ]; then
 fi
 
 # Convert to an absolute path
-pushd `dirname $ADT_DATA` > /dev/null
+pushd $ADT_DATA > /dev/null
 ADT_DATA=`pwd -P`
 popd > /dev/null
 
