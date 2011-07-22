@@ -18,6 +18,16 @@ if [ ! $ADT_DATA ]; then
   echo "[ERROR] ADT_DATA environment variable not set !"
   exit 1;
 fi
+
+# Convert to an absolute path
+pushd `dirname $ADT_DATA` > /dev/null
+ADT_DATA=`pwd -P`
+popd > /dev/null
+
+echo "[INFO] ADT_DATA = $ADT_DATA"
+
+
+# Create ADT_DATA if required
 mkdir -p $ADT_DATA
 
 TMP_DIR=$ADT_DATA/tmp
@@ -25,10 +35,13 @@ DL_DIR=$ADT_DATA/downloads
 SRV_DIR=$ADT_DATA/servers
 CONF_DIR=$ADT_DATA/conf
 APACHE_CONF_DIR=$ADT_DATA/conf/apache
+ADT_CONF_DIR=$ADT_DATA/conf/adt
 
 SHUTDOWN_PORT=8005
 HTTP_PORT=8080
 AJP_PORT=8009
+
+CURR_DATE=`date "+%Y-%m-%d-%H%M%S"`" CET"
 
 #
 # Usage message
@@ -225,7 +238,8 @@ do_download_server() {
   name="$name:$PACKAGING"
   echo "[INFO] Archive          : $name "
   echo "[INFO] Repository       : $repository "
-  curl $credentials "$url/$filename" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
+  ARTIFACT_URL=$url/$filename
+  curl $credentials "$ARTIFACT_URL" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
   if [ "$?" -ne "0" ]; then
     echo "Sorry, cannot download $name"
     exit 1
@@ -342,6 +356,33 @@ if $linux; then
 fi
 }
 
+do_create_deployment_descriptor()
+{
+mkdir -p $ADT_CONF_DIR
+cat << EOF > $ADT_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
+deployment.date=$CURR_DATE
+deployment.product=$PRODUCT
+deployment.directory=$SRV_DIR/$PRODUCT-$VERSION
+deployment.url=http://$PRODUCT-$VERSION.acceptance.exoplatform.org
+deployment.logs=http//$PRODUCT-$VERSION.acceptance.exoplatform.org/logs/catalina.out
+deployment.shutdown.port=$SHUTDOWN_PORT
+deployment.http.port=$HTTP_PORT
+deployment.ajp.port=$AJP_PORT
+deployment.pid.file=$SRV_DIR/$PRODUCT-$VERSION.pid
+artifact.groupid=$GROUPID
+artifact.artifactid=$ARTIFACTID
+artifact.version=$VERSION
+artifact.timestamp=$TIMESTAMP
+artifact.classifier=$CLASSIFIER
+artifact.packaging=$PACKAGING
+artifact.url=$ARTIFACT_URL
+EOF
+#Display the deployment descriptor
+echo "[INFO] ========================= Deployment Descriptor ========================="
+cat $ADT_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
+echo "[INFO] ========================================================================="
+}
+
 #
 # Function that configure the app server archive
 #
@@ -356,17 +397,16 @@ do_configure_server()
 #
 do_start()
 {
-  if [ ! $SKIP_DL ]; then
-    do_download_server
-  fi
+  do_download_server
   do_unpack_server
   do_patch_server
   do_create_apache_vhost
+  do_create_deployment_descriptor
   echo "[INFO] Starting server ..."
   chmod 755 $SRV_DIR/$PRODUCT-$VERSION/bin/*.sh
   export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
   export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid
-  $SRV_DIR/$PRODUCT-$VERSION/bin/gatein.sh start
+  ${CATALINA_HOME}/bin/gatein.sh start
   #STARTING=true
   #while [ $STARTING ];
   #do    
@@ -391,8 +431,8 @@ do_stop()
   if [ -e $SRV_DIR/$PRODUCT-$VERSION ]; then
     echo "[INFO] Stopping server ..."
     export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
-    export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid    
-    $SRV_DIR/$PRODUCT-$VERSION/bin/catalina.sh stop 60 -force || true
+    export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid
+    ${CATALINA_HOME}/bin/gatein.sh stop 60 -force || true
     echo "[INFO] Server stopped"
   else
     echo "[WARN] No server directory to stop it"
