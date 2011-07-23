@@ -13,7 +13,7 @@
   <div class="ContentCenter ClearFix">
     <div class="BlockAccount">
       <p>These instances are deployed to be used for acceptance tests.<br/>
-        They are deployed from latest successful binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
+        They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
       <p>&nbsp;</p>
       <p>&nbsp;</p>
       <table width="100%" align="center" class="FL">
