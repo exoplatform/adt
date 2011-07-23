@@ -38,11 +38,14 @@ h5 {
 h6 {
 	font-size: 11px;
 }
-td, th {
-	padding: 5px 5px 5px 5px;
-}
 th {
-	text-align: left;
+	padding: 5px 5px 5px 5px;
+	background: #e1e1e1;	
+}
+td {
+	padding: 5px 5px 5px 5px;
+    text-align: left;
+	background: #f4f4f4;	
 }
 .ClearFix:after {
 	content: ".";

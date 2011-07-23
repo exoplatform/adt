@@ -14,6 +14,8 @@
     <div class="BlockAccount">
       <p>These instances are deployed to be used for acceptance tests.<br/>
         They are deployed from latest successful binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
+      <p>&nbsp;</p>
+      <p>&nbsp;</p>
       <table width="100%" align="center" class="FL">
         <thead>
           <tr>
@@ -57,14 +59,14 @@
     $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
 ?>
           <tr>
-            <td><?=$descriptor_array['deployment.product']?></td>
+            <td><?=strtoupper($descriptor_array['deployment.product'])?></td>
             <td><?=$descriptor_array['artifact.version']?></td>
             <td><?=$descriptor_array['deployment.date']?></td>
-            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue"><img src="/images/ButDownload.gif" width="19" height="19" alt="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus" /> <?=$descriptor_array['artifact.timestamp']?>
+            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue" title="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="middle" /> <?=$descriptor_array['artifact.timestamp']?>
             </a></td>
-            <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue">
+            <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
               <?=$descriptor_array['deployment.url']?>
-              </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange">logs</a>]</td>
+              </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
           </tr>
           <?php 
 		  } 
