@@ -64,9 +64,7 @@
             <td><?=$descriptor_array['deployment.date']?></td>
             <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue" title="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="middle" /> <?=$descriptor_array['artifact.timestamp']?>
             </a></td>
-            <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
-              <?=$descriptor_array['deployment.url']?>
-              </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
+            <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['deployment.url']?></a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
           </tr>
           <?php 
 		  } 
