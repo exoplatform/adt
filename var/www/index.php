@@ -58,7 +58,7 @@
     // Parse deployment descriptor
     $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
 ?>
-          <tr>
+          <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
             <td><?=strtoupper($descriptor_array['deployment.product'])?></td>
             <td><?=$descriptor_array['artifact.version']?></td>
             <td><?=$descriptor_array['deployment.date']?></td>
