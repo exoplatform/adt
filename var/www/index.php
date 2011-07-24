@@ -16,7 +16,7 @@
         They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
       <p>&nbsp;</p>
       <p>&nbsp;</p>
-      <table width="100%" align="center">
+      <table align="center">
         <thead>
           <tr>
             <th colspan="2">Product</th>
@@ -61,7 +61,7 @@
 		  }
 		  function displayDate ($date_as_string) {
 		    $date = date_create_from_format('Ymd.His', $date_as_string);
-            return date_format($date, 'D d M Y - H:i:s CET');
+            return date_format($date, 'D d M Y - H:i:s T');
 		  }
 		  //print each file name
 		  $vhosts = getDirectoryList("/home/swfhudson/data/adt/conf/adt/");
