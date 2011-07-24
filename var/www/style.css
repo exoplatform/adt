@@ -45,6 +45,7 @@ th {
 td {
 	padding: 5px 5px 5px 5px;
     text-align: left;
+	white-space: nowrap;
 }
 .normal { background-color: #f6f6f6 }
 .normalActive { background-color: #FFFFFF }
@@ -149,7 +150,9 @@ td {
 }
 .UIForgePages .ContentCenter {
 	padding: 18px 7px 7px 7px;
+	width: 80%;
 	margin: auto;
+	background: #ffffff;
 }
 .UIForgePages .ContentCenter h2 {
 	font-size: 23px;
@@ -170,14 +173,13 @@ td {
 	line-height: 20px;
 }
 
-
 .Ribbon{
         position: relative;
         width: 20%;
         font-size: 1.5em;
         font-weight: bold;
-        padding: 6px 20px 6px 71px;
-        margin: 30px 10px 10px -71px;
+        padding: 6px 20px 6px 27px;
+        margin: 30px 10px 10px -27px;
         color: #EBB;
         background-color: #900;
         text-shadow: 0px 1px 2px #b00;
@@ -200,7 +202,7 @@ td {
         left: auto;
         right: -2px;
         top: 0px;
-        border-color: transparent #f2f2f2 transparent transparent;
+        border-color: transparent #fff transparent transparent;
 }
 .Ribbon:after{
         left: 0px;
