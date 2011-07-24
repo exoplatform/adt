@@ -407,17 +407,20 @@ do_start()
   export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
   export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid
   ${CATALINA_HOME}/bin/gatein.sh start
-  #STARTING=true
-  #while [ $STARTING ];
-  #do    
-  #  if [ -e $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out ]; then
-  #    if grep -q "Server startup in" $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out; then
-  #      STARTING=false
-  #    fi    
-  #  fi    
-  #  echo -n .
-  #  sleep 5    
-  #done
+  tail -f $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out &
+  tailPID=$!
+  set +e
+  while [ true ];
+  do    
+    if [ -e $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out ]; then
+      if grep -q "Server startup in" $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out; then
+        kill $tailPID
+        wait $tailPID 2>/dev/null
+        break
+      fi    
+    fi    
+  done
+  set -e
   echo "[INFO] Server started"
   echo "[INFO] URL  : http://$PRODUCT-$VERSION.acceptance.exoplatform.org"
   echo "[INFO] Logs : http://$PRODUCT-$VERSION.acceptance.exoplatform.org/logs/"
