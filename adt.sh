@@ -41,7 +41,7 @@ SHUTDOWN_PORT=8005
 HTTP_PORT=8080
 AJP_PORT=8009
 
-CURR_DATE=`date "+%Y-%m-%d-%H%M%S"`" CET"
+CURR_DATE=`date "+%Y%m%d.%H%M%S"`
 
 #
 # Usage message
@@ -373,6 +373,7 @@ artifact.groupid="$GROUPID"
 artifact.artifactid="$ARTIFACTID"
 artifact.version="$VERSION"
 artifact.timestamp="$TIMESTAMP"
+artifact.date=`expr "$TIMESTAMP" : '.*-\(.*\)-.*'`
 artifact.classifier="$CLASSIFIER"
 artifact.packaging="$PACKAGING"
 artifact.url="$ARTIFACT_URL"
