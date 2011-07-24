@@ -89,7 +89,7 @@ td {
 	height: 115px;
 }
 .UIForgePages .Header .Logo {
-	background: url("/images/Logo2.png") no-repeat scroll left center transparent;
+	background: url("/images/Logo.png") no-repeat scroll left center transparent;
 	width: 158px;
 	height: 110px;
 	float: left;
@@ -113,33 +113,13 @@ td {
 .UIForgePages .ContentPages .MenuPage {
 	width: 48%;
 }
-.UIForgePages .ContentPages .MenuPage .Button {
-	border-radius: 15px 15px 15px 15px;
-	-moz-border-radius: 15px 15px 15px 15px;
-	-webkit-border-radius: 15px 15px 15px 15px;
-	background: url("/images/Button.gif") repeat-x scroll 0 0 transparent;
-	border: 1px solid #CFCFCF;
-	color: #686868;
-	display: block;
-	font-size: 16px;
-	line-height: 31px;
-	margin: 0 0 8px 0;
-	text-align: center;
-	text-decoration: none;
-}
-.UIForgePages .ContentPages .MenuPage .Button:hover {
-	background: url("/images/ButtonHV.gif") repeat-x scroll 0 0 transparent;
-	border: 1px solid #186abd;
-	color: white;
-}
-.UIForgePages .TitleForgePages {
+ForgePages .TitleForgePages {
 	font-size: 24px;
 	color: #fbad18;
 	padding-left: 20px;
 	text-align: left;
 	line-height: 85px;
 	margin: auto;
-	width: 100%;	
 }
 .UIForgePages .TxtBlue {
 	color: #005abf;

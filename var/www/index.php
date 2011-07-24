@@ -9,31 +9,32 @@
 <body>
 <div class="UIForgePages">
   <div class="Header ClearFix"> <a href="#" class="Logo"></a><span class="AddressWeb">acceptance.exoplatform.org</span> </div>
-  <div class="TitleForgePages">Acceptance Live Instances</div>
-  <div class="ContentCenter ClearFix">
-    <div class="BlockAccount">
-      <p>These instances are deployed to be used for acceptance tests.<br/>
-        They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
-      <p>&nbsp;</p>
-      <p>&nbsp;</p>
-      <table align="center">
-        <thead>
-          <tr>
-            <th colspan="2">Product</th>
-            <th colspan="5">Current deployment</th>
-          </tr>
-          <tr>
-            <th>Name</th>
-            <th>Version</th>
-            <th>Artifact</th>
-            <th>Built on</th>
-            <th>Deployed on</th>
-            <th>URL</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          <?php
+  <div class="ContentCenter">
+    <div class="TitleForgePages">Acceptance Live Instances</div>
+    <div class="ContentCenter ClearFix">
+      <div>
+        <p>These instances are deployed to be used for acceptance tests.<br/>
+          They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
+        <p>&nbsp;</p>
+        <p>&nbsp;</p>
+        <table align="center">
+          <thead>
+            <tr>
+              <th colspan="2">Product</th>
+              <th colspan="5">Current deployment</th>
+            </tr>
+            <tr>
+              <th>Name</th>
+              <th>Version</th>
+              <th>Artifact</th>
+              <th>Built on</th>
+              <th>Deployed on</th>
+              <th>URL</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <?php
 		  function getDirectoryList ($directory) {
 			// create an array to hold directory list
 			$results = array();
@@ -70,30 +71,31 @@
 			// Parse deployment descriptor
 			$descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
 		  ?>
-          <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
-            <td><?=strtoupper($descriptor_array['deployment.product'])?></td>
-            <td><?=$descriptor_array['artifact.version']?></td>
-            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue" title="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="baseline" />
-              <?=$descriptor_array['artifact.timestamp']?>
-              </a></td>
-            <td><?=displayDate($descriptor_array['artifact.date'])?></td>
-            <td><?=displayDate($descriptor_array['deployment.date'])?></td>
-            <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
-              <?=$descriptor_array['deployment.url']?>
-              </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
-            <?php
+            <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
+              <td><?=strtoupper($descriptor_array['deployment.product'])?></td>
+              <td><?=$descriptor_array['artifact.version']?></td>
+              <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue" title="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="baseline" />
+                <?=$descriptor_array['artifact.timestamp']?>
+                </a></td>
+              <td><?=displayDate($descriptor_array['artifact.date'])?></td>
+              <td><?=displayDate($descriptor_array['deployment.date'])?></td>
+              <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
+                <?=$descriptor_array['deployment.url']?>
+                </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
+              <?php
 			if (file_exists ($descriptor_array['deployment.pid.file']) && processIsRunning(file_get_contents ($descriptor_array['deployment.pid.file'])))
 			  $status="<img src=\"/images/green_ball.png\" alt=\"Up\"/> Up";
 			else
 			  $status="<img src=\"/images/red_ball.png\" alt=\"Down\"/> Down !";
 			?>
-            <td><?=$status?></td>
-          </tr>
-          <?php 
+              <td><?=$status?></td>
+            </tr>
+            <?php 
 		  } 
 		  ?>
-        </tbody>
-      </table>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
   <div class="Footer">eXo Platform SAS</div>
