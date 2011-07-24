@@ -77,7 +77,7 @@
               </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
             <?php
 			if (file_exists ($descriptor_array['deployment.pid.file']) && processIsRunning(file_get_contents ($descriptor_array['deployment.pid.file'])))
-			  $status="<img src=\"/images/green_ball.png\" alt=\"Up\"/> Up ...";
+			  $status="<img src=\"/images/green_ball.png\" alt=\"Up\"/> Up \o/";
 			else
 			  $status="<img src=\"/images/red_ball.png\" alt=\"Down\"/> Down !";
 			?>
