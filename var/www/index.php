@@ -16,7 +16,7 @@
         They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
       <p>&nbsp;</p>
       <p>&nbsp;</p>
-      <table width="100%" align="center" class="FL">
+      <table width="100%" align="center">
         <thead>
           <tr>
             <th colspan="2">Product</th>
@@ -25,9 +25,9 @@
           <tr>
             <th>Name</th>
             <th>Version</th>
-            <th>Deployed on</th>
             <th>Artifact</th>
             <th>Built on</th>
+            <th>Deployed on</th>
             <th>URL</th>
             <th>Status</th>
           </tr>
@@ -59,8 +59,8 @@
 			// The process is running if there is a row N#1 (N#0 is the header)
 			return isset($output[1]);
 		  }
-		  function displayDate ($string) {
-		    $date = date_create_from_format('ymd.His', $string);
+		  function displayDate ($date_as_string) {
+		    $date = date_create_from_format('Ymd.His', $date_as_string);
             return date_format($date, 'D d M Y - H:i:s CET');
 		  }
 		  //print each file name
@@ -73,11 +73,11 @@
           <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
             <td><?=strtoupper($descriptor_array['deployment.product'])?></td>
             <td><?=$descriptor_array['artifact.version']?></td>
-            <td><?=displayDate($descriptor_array['deployment.date'])?></td>
-            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue" title="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="middle" />
+            <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue" title="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="baseline" />
               <?=$descriptor_array['artifact.timestamp']?>
               </a></td>
             <td><?=displayDate($descriptor_array['artifact.date'])?></td>
+            <td><?=displayDate($descriptor_array['deployment.date'])?></td>
             <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
               <?=$descriptor_array['deployment.url']?>
               </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>

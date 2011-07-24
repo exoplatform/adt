@@ -104,8 +104,7 @@ td {
 }
 .UIForgePages .ContentPages {
 	padding: 18px 7px 7px 7px;
-	width: 570px;
-	margin: auto;
+    margin: auto;
 }
 .UIForgePages .ContentPages ul{
 	list-style: none;
@@ -140,7 +139,7 @@ td {
 	text-align: left;
 	line-height: 85px;
 	margin: auto;
-	width: 1064px;	
+	width: 100%;	
 }
 .UIForgePages .TxtBlue {
 	color: #005abf;
@@ -170,37 +169,7 @@ td {
 }
 .UIForgePages .ContentCenter {
 	padding: 18px 7px 7px 7px;
-	width: 1064px;	
 	margin: auto;
-}
-.UIForgePages .ContentCenter .ContentLeft {
-	width: 525px;
-	margin-right: 13px;
-	font-size: 14px;
-}
-.UIForgePages .ContentCenter .ContentRight {
-	width: 525px;
-	height: 264px;
-	font-size: 14px;
-}
-.UIForgePages .ContentCenter .ContentRight .BlockAccount {
-	background: url('/images/BgBlock.jpg') no-repeat;
-	height: 264px;
-	padding: 0px 17px 0px 20px;
-	text-align: justify;
-}
-.UIForgePages .ContentCenter .ContentLeft .BlockPlatform3 {
-	background: url('/images/BgBlock.jpg') no-repeat left -266px;
-	height: 127px;
-	padding: 0px 17px 0px 20px;
-	text-align: justify;
-	margin-bottom: 10px;
-}
-.UIForgePages .ContentCenter .ContentLeft .BlockPlatform2 {
-	background: url('/images/BgBlock.jpg') no-repeat left -397px;
-	height: 127px;
-	padding: 0px 17px 0px 20px;
-	text-align: justify;
 }
 .UIForgePages .ContentCenter h2 {
 	font-size: 23px;
