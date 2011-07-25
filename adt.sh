@@ -333,13 +333,36 @@ do_unpack_server()
   rm -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
   echo "[INFO] Unpacking server ..."
   mkdir -p $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+  set +e
   case $ARTIFACT_PACKAGING in
     zip)
       unzip $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING -d $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+      if [ "$?" -ne "0" ]; then
+        # If unpack fails we try to redownload the archive
+        echo "[WARNING] unpack of the server failed. We will try to download it a second time."
+        rm $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+        do_download_server
+        unzip $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING -d $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+        if [ "$?" -ne "0" ]; then
+          echo "[ERROR] Unable to unpack the server."
+          exit 1
+        fi
+      fi      
       ;;
     tar.gz)
       cd $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
       tar -xzvf $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+      if [ "$?" -ne "0" ]; then
+        # If unpack fails we try to redownload the archive
+        echo "[WARNING] unpack of the server failed. We will try to download it a second time."
+        rm $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+        do_download_server
+        tar -xzvf $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+        if [ "$?" -ne "0" ]; then
+          echo "[ERROR] Unable to unpack the server."
+          exit 1
+        fi
+      fi      
       cd -
       ;;
     *)
@@ -348,6 +371,7 @@ do_unpack_server()
       exit 1
       ;;
   esac
+  set -e
   DEPLOYMENT_DIR=$SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
   DEPLOYMENT_PID_FILE=$SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.pid
   rm -rf $DEPLOYMENT_DIR
