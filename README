@@ -1,0 +1,75 @@
+This project is a set of tools used to automate the deployment of eXo products.
+
+How to use ?
+============
+
+Prepare your environment
+------------------------
+Fork this project :
+
+    git clone https://git.exoplatform.org/public/tools/adt
+    
+Define the environment variable ADT_DATA, which will be the path to a working directory used by ADT.
+
+    export ADT_DATA=~/adt_data
+    
+You're ready to go
+------------------
+
+Deploy a server : download and configure it
+
+    # adt.sh deploy social 1.3.0-SNAPSHOT
+    
+Start a server : start a deployed instance
+    
+    # adt.sh start social 1.3.0-SNAPSHOT
+
+Stop a server : stop a deployed instance
+
+    # adt.sh stop social 1.3.0-SNAPSHOT
+
+Restart a server : restart a deployed instance
+
+    # adt.sh restart social 1.3.0-SNAPSHOT
+
+Undeploy a server : stop a deployed instance if already running and delete it.
+
+    # adt.sh undeploy social 1.3.0-SNAPSHOT
+
+List all deployed instances
+
+    # adt.sh list
+
+Usage
+-----
+
+    usage: ./adt.sh action [product] [version] [options]
+    
+    This script manages automated deployment of eXo products
+    
+    ACTION :
+      deploy     Deploys (Download+Configure) the server
+      start      Starts the server
+      stop       Stops the server
+      restart    Restarts the server
+      undeploy   Undeploys (Delete) the server
+      list       Lists all deployed servers
+      
+    PRODUCT (for deploy, start, stop, restart, undeploy actions) :
+      social     eXo Social
+      ecms       eXo Content
+      ks         eXo Knowledge
+      cs         eXo Collaboration
+      platform   eXo Platform
+    
+    VERSION (for deploy, start, stop, restart, undeploy actions) :
+      version of the product
+    
+    GLOBAL OPTIONS :
+      -h         Show this message  
+    
+    DEPLOY OPTIONS :
+      -A         AJP Port
+      -H         HTTP Port
+      -S         SHUTDOWN Port 
+      -u         user credentials (value in "username:password" format) to download the server package (default: none)

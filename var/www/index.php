@@ -36,64 +36,64 @@
           </thead>
           <tbody>
             <?php
-		  function getDirectoryList ($directory) {
-			// create an array to hold directory list
-			$results = array();
-			// create a handler for the directory
-			$handler = opendir($directory);
-			// open directory and walk through the filenames
-			while ($file = readdir($handler)) {
-			  // if file isn't this directory or its parent, add it to the results
-			  if ($file != "." && $file != "..") {
-				$results[] = $file;
-			  }
-			}
-			// tidy up: close the handler
-			closedir($handler);
-			// done!
-			return $results;
-		  }
-		  function processIsRunning ($pid) {
-			// create an array to hold the result
-			$output = array();
-			// execute a ps for the given pid
-			exec("ps -p ".$pid, $output);
-			// The process is running if there is a row N#1 (N#0 is the header)
-			return isset($output[1]);
-		  }
-		  function displayDate ($date_as_string) {
-		    $date = date_create_from_format('Ymd.His', $date_as_string);
+          function getDirectoryList ($directory) {
+            // create an array to hold directory list
+            $results = array();
+            // create a handler for the directory
+            $handler = opendir($directory);
+            // open directory and walk through the filenames
+            while ($file = readdir($handler)) {
+              // if file isn't this directory or its parent, add it to the results
+              if ($file != "." && $file != "..") {
+                $results[] = $file;
+              }
+            }
+            // tidy up: close the handler
+            closedir($handler);
+            // done!
+            return $results;
+          }
+          function processIsRunning ($pid) {
+            // create an array to hold the result
+            $output = array();
+            // execute a ps for the given pid
+            exec("ps -p ".$pid, $output);
+            // The process is running if there is a row N#1 (N#0 is the header)
+            return isset($output[1]);
+          }
+          function displayDate ($date_as_string) {
+            $date = date_create_from_format('Ymd.His', $date_as_string);
             return date_format($date, 'D d M Y - H:i:s T');
-		  }
-		  //print each file name
-		  $vhosts = getDirectoryList("/home/swfhudson/data/adt/conf/adt/");
-		  sort($vhosts);
-		  foreach( $vhosts as $vhost) {
-			// Parse deployment descriptor
-			$descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
-		  ?>
+          }
+          //print each file name
+          $vhosts = getDirectoryList("/home/swfhudson/data/adt/conf/adt/");
+          sort($vhosts);
+          foreach( $vhosts as $vhost) {
+            // Parse deployment descriptor
+            $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
+          ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
-              <td><?=strtoupper($descriptor_array['deployment.product'])?></td>
-              <td><?=$descriptor_array['artifact.version']?></td>
-              <td><a href="<?=$descriptor_array['artifact.url']?>" class="TxtBlue" title="Download <?=$descriptor_array['artifact.groupid']?>:<?=$descriptor_array['artifact.artifactid']?>:<?=$descriptor_array['artifact.timestamp']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="baseline" />
-                <?=$descriptor_array['artifact.timestamp']?>
+              <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
+              <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
+              <td><a href="<?=$descriptor_array['ARTIFACT_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="baseline" />
+                <?=$descriptor_array['ARTIFACT_TIMESTAMP']?>
                 </a></td>
-              <td><?=displayDate($descriptor_array['artifact.date'])?></td>
-              <td><?=displayDate($descriptor_array['deployment.date'])?></td>
-              <td><a href="<?=$descriptor_array['deployment.url']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
-                <?=$descriptor_array['deployment.url']?>
-                </a> [<a href="<?=$descriptor_array['deployment.logs']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
+              <td><?=displayDate($descriptor_array['ARTIFACT_DATE'])?></td>
+              <td><?=displayDate($descriptor_array['DEPLOYMENT_DATE'])?></td>
+              <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
+                <?=$descriptor_array['DEPLOYMENT_URL']?>
+                </a> [<a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
               <?php
-			if (file_exists ($descriptor_array['deployment.pid.file']) && processIsRunning(file_get_contents ($descriptor_array['deployment.pid.file'])))
-			  $status="<img src=\"/images/green_ball.png\" alt=\"Up\"/> Up";
-			else
-			  $status="<img src=\"/images/red_ball.png\" alt=\"Down\"/> Down !";
-			?>
+            if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
+              $status="<img src=\"/images/green_ball.png\" alt=\"Up\"/> Up";
+            else
+              $status="<img src=\"/images/red_ball.png\" alt=\"Down\"/> Down !";
+            ?>
               <td><?=$status?></td>
             </tr>
             <?php 
-		  } 
-		  ?>
+          } 
+          ?>
           </tbody>
         </table>
       </div>

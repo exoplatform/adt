@@ -1,78 +1,105 @@
-#!/bin/bash -e
+#!/bin/bash -eu                                                                                                                                                                                                                         -e
 
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="${0%/*}"
 
-# if the script was started from the base directory, then the
-# expansion returns a period
-if test "$SCRIPT_DIR" == "." ; then
-  SCRIPT_DIR="$PWD"
-# if the script was not called with an absolute path, then we need to add the
-# current working directory to the relative path of the script
-elif test "${SCRIPT_DIR:0:1}" != "/" ; then
-  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
-fi
+#
+# Initializes the script and various variables
+#
+initialize()
+{
+  # if the script was started from the base directory, then the
+  # expansion returns a period
+  if test "$SCRIPT_DIR" == "." ; then
+    SCRIPT_DIR="$PWD"
+  # if the script was not called with an absolute path, then we need to add the
+  # current working directory to the relative path of the script
+  elif test "${SCRIPT_DIR:0:1}" != "/" ; then
+    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+  fi
 
-# ADT_DATA is the working area for ADT script
-if [ ! $ADT_DATA ]; then
-  echo "[ERROR] ADT_DATA environment variable not set !"
-  exit 1;
-fi
+  # ADT_DATA is the working area for ADT script
+  if [ ! $ADT_DATA ]; then
+    echo "[ERROR] ADT_DATA environment variable not set !"
+    exit 1;
+  fi
 
-# Convert to an absolute path
-pushd $ADT_DATA > /dev/null
-ADT_DATA=`pwd -P`
-popd > /dev/null
+  # Convert to an absolute path
+  pushd $ADT_DATA > /dev/null
+  ADT_DATA=`pwd -P`
+  popd > /dev/null
 
-echo "[INFO] ADT_DATA = $ADT_DATA"
+  echo "[INFO] ADT_DATA = $ADT_DATA"
 
+  # Create ADT_DATA if required
+  mkdir -p $ADT_DATA
 
-# Create ADT_DATA if required
-mkdir -p $ADT_DATA
+  TMP_DIR=$ADT_DATA/tmp
+  DL_DIR=$ADT_DATA/downloads
+  SRV_DIR=$ADT_DATA/servers
+  CONF_DIR=$ADT_DATA/conf
+  APACHE_CONF_DIR=$ADT_DATA/conf/apache
+  ADT_CONF_DIR=$ADT_DATA/conf/adt
 
-TMP_DIR=$ADT_DATA/tmp
-DL_DIR=$ADT_DATA/downloads
-SRV_DIR=$ADT_DATA/servers
-CONF_DIR=$ADT_DATA/conf
-APACHE_CONF_DIR=$ADT_DATA/conf/apache
-ADT_CONF_DIR=$ADT_DATA/conf/adt
+  DEPLOYMENT_SHUTDOWN_PORT=8005
+  DEPLOYMENT_HTTP_PORT=8080
+  DEPLOYMENT_AJP_PORT=8009
+  
+  CREDENTIALS=""
 
-SHUTDOWN_PORT=8005
-HTTP_PORT=8080
-AJP_PORT=8009
+  CURR_DATE=`date "+%Y%m%d.%H%M%S"`
 
-CURR_DATE=`date "+%Y%m%d.%H%M%S"`
+  # OS specific support.  $var _must_ be set to either true or false.
+  CYGWIN=false
+  LINUX=false;
+  OS400=false
+  DARWIN=false
+  case "`uname`" in
+    CYGWIN*) CYGWIN=true;;
+    Linux*) LINUX=true;;
+    OS400*) OS400=true;;
+    Darwin*) DARWIN=true;;
+  esac  
+}
 
 #
 # Usage message
 #
 print_usage()
-{
+{ 
 cat << EOF
-usage: $0 <options> <product> <version> <action>
 
-This script manages deployment of acceptance instances
+usage: $0 action [product] [version] [options]
 
-OPTIONS :
-  -h         Show this message
-  -A         AJP Port
-  -H         HTTP Port
-  -S         SHUTDOWN Port 
-  -u         user credentials (value in "username:password" format) to download the server package (default: none)
+This script manages automated deployment of eXo products
 
-PRODUCT :
+ACTION :
+  deploy     Deploys (Download+Configure) the server
+  start      Starts the server
+  stop       Stops the server
+  restart    Restarts the server
+  undeploy   Undeploys (Delete) the server
+  list       Lists all deployed servers
+  
+PRODUCT (for deploy, start, stop, restart, undeploy actions) :
   social     eXo Social
   ecms       eXo Content
   ks         eXo Knowledge
   cs         eXo Collaboration
   platform   eXo Platform
 
-VERSION :
+VERSION (for deploy, start, stop, restart, undeploy actions) :
   version of the product
 
-ACTIONS :
-  start      Starts the server
-  stop       Stops the server
+GLOBAL OPTIONS :
+  -h         Show this message  
+
+DEPLOY OPTIONS :
+  -A         AJP Port
+  -H         HTTP Port
+  -S         SHUTDOWN Port 
+  -u         user credentials (value in "username:password" format) to download the server package (default: none)
+
 EOF
 }
 
@@ -80,53 +107,144 @@ EOF
 # Decode command line parameters
 #
 do_init()
-{
-
-    cygwin=false;
-    linux=false;
-    darwin=false;
-    case "`uname`" in
-        CYGWIN*) 
-          cygwin=true;
-          echo "[INFO] Environment : Cygwin";;
-        Linux*) 
-          linux=true;
-          echo "[INFO] Environment : Linux";;
-        Darwin*) 
-          darwin=true;
-          echo "[INFO] Environment : Darwin";;
-    esac
-    
-    #
-    # without enough parameters, provide help
-    #
-    if [ $# -lt 3 ]; then
+{   
+    # no action ? provide help
+    if [ $# -lt 1 ]; then
+      echo ""
+      echo "[ERROR] No action defined !"
       print_usage
       exit 1;
     fi
+    
+    # If help is asked
+    if [ $1 == "-h" ]; then
+      print_usage
+      exit    
+    fi
 
-    while getopts "hsA:H:S:u:" OPTION
+    # Action to do
+    ACTION=$1
+    shift    
+    
+    #
+    # validate additional parameters
+    case "$ACTION" in
+      deploy|start|stop|restart|undeploy)
+        if [ $# -lt 2 ]; then
+          echo ""
+          echo "[ERROR] product and version parameters are mandatory for action \"$ACTION\" !"
+          print_usage
+        exit 1;
+        fi
+        # Product
+        PRODUCT_NAME=$1
+        shift
+        # Validate product and load artifact details
+        case "$PRODUCT_NAME" in
+          gatein)
+            ARTIFACT_GROUPID="org.exoplatform.portal"
+            ARTIFACT_ARTIFACTID="exo.portal.packaging.assembly"
+            ARTIFACT_CLASSIFIER="tomcat"
+            ARTIFACT_PACKAGING="zip"
+            ;;
+          ecms)
+            ARTIFACT_GROUPID="org.exoplatform.ecms"
+            ARTIFACT_ARTIFACTID="exo-ecms-delivery-wcm-assembly"
+            ARTIFACT_CLASSIFIER="tomcat"
+            ARTIFACT_PACKAGING="zip"
+            ;;
+          social)
+            ARTIFACT_GROUPID="org.exoplatform.social"
+            ARTIFACT_ARTIFACTID="exo.social.packaging.pkg"
+            ARTIFACT_CLASSIFIER="tomcat"
+            ARTIFACT_PACKAGING="zip"
+            ;;
+          ks)
+            ARTIFACT_GROUPID="org.exoplatform.ks"
+            ARTIFACT_ARTIFACTID="exo.ks.packaging.assembly"
+            ARTIFACT_CLASSIFIER="tomcat"
+            ARTIFACT_PACKAGING="zip"
+            ;;
+          cs)
+            ARTIFACT_GROUPID="org.exoplatform.cs"
+            ARTIFACT_ARTIFACTID="exo.cs.packaging.assembly"
+            ARTIFACT_CLASSIFIER="tomcat"
+            ARTIFACT_PACKAGING="zip"
+            ;;
+          plf)
+            ARTIFACT_GROUPID="org.exoplatform.platform"
+            ARTIFACT_ARTIFACTID="exo.platform.packaging.assembly"
+            ARTIFACT_CLASSIFIER="tomcat"
+            ARTIFACT_PACKAGING="zip"
+            ;;
+          ?)
+            echo "[ERROR] Invalid product \"$PRODUCT_NAME\"" 
+            print_usage
+            exit 1
+            ;;
+        esac        
+        # Version
+        PRODUCT_VERSION=$1
+        shift        
+        ;;
+      list)
+        # Nothing to do
+        ;;
+      ?)
+        echo "[ERROR] Invalid action \"$ACTION\"" 
+        print_usage
+        exit 1
+        ;;
+    esac    
+
+    # Additional options
+    while getopts "hA:H:S:u:" OPTION
     do
          case $OPTION in
              h)
                  print_usage
-                 exit 1
+                 exit
                  ;;
              H)
-                 HTTP_PORT=$OPTARG
+                 if ["$ACTION" == "deploy"]; then
+                   DEPLOYMENT_HTTP_PORT=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
                  ;;
              A)
-                 AJP_PORT=$OPTARG
+                 if ["$ACTION" == "deploy"]; then
+                   DEPLOYMENT_AJP_PORT=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
                  ;;
              S)
-                 SHUTDOWN_PORT=$OPTARG
+                 if ["$ACTION" == "deploy"]; then
+                   DEPLOYMENT_SHUTDOWN_PORT=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
                  ;;
              u)
-                 CREDENTIALS=$OPTARG
+                 if ["$ACTION" == "deploy"]; then
+                   CREDENTIALS=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
                  ;;
              ?)
                  print_usage
-                 exit
+                 echo "[ERROR] Invalid option \"$OPTARG\"" 
+                 exit 1
                  ;;
          esac
     done
@@ -134,63 +252,6 @@ do_init()
     # skip getopt parms
     shift $((OPTIND-1))
 
-    # Product to deploy
-    PRODUCT=$1
-    
-    # Version to deploy
-    shift
-    VERSION=$1
-
-    # Action to do
-    shift
-    ACTION=$1
-
-    # Validate args    
-    case "$PRODUCT" in
-      gatein)
-        GROUPID="org.exoplatform.portal"
-        ARTIFACTID="exo.portal.packaging.assembly"
-        CLASSIFIER="tomcat"
-        PACKAGING="zip"
-        ;;
-      ecms)
-        GROUPID="org.exoplatform.ecms"
-        ARTIFACTID="exo-ecms-delivery-wcm-assembly"
-        CLASSIFIER="tomcat"
-        PACKAGING="zip"
-        ;;
-      social)
-        GROUPID="org.exoplatform.social"
-        ARTIFACTID="exo.social.packaging.pkg"
-        CLASSIFIER="tomcat"
-        PACKAGING="zip"
-        ;;
-      ks)
-        GROUPID="org.exoplatform.ks"
-        ARTIFACTID="exo.ks.packaging.assembly"
-        CLASSIFIER="tomcat"
-        PACKAGING="zip"
-        ;;
-      cs)
-        GROUPID="org.exoplatform.cs"
-        ARTIFACTID="exo.cs.packaging.assembly"
-        CLASSIFIER="tomcat"
-        PACKAGING="zip"
-        ;;
-      plf)
-        GROUPID="org.exoplatform.platform"
-        ARTIFACTID="exo.platform.packaging.assembly"
-        CLASSIFIER="tomcat"
-        PACKAGING="zip"
-        ;;
-      stop)
-        ;;
-      *)
-        echo "[ERROR] Invalid action \"$PACKAGING\"" 
-        print_usage
-        exit 1
-        ;;
-    esac
 }
 
 #
@@ -200,51 +261,68 @@ do_init()
 # see https://issues.sonatype.org/browse/NEXUS-4423
 #
 do_download_server() {
-  rm -f $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
+  # We can compute the artifact date only for SNAPSHOTs
+  ARTIFACT_DATE=""
+  # Where we will download it
   mkdir -p $DL_DIR
-  echo "[INFO] Downloading server ..."
+  # Credentials and repository options
   if [ -n $CREDENTIALS ]; then
-    repository=private
-    credentials="--user $CREDENTIALS --location-trusted"
+    local repository=private
+    local credentials="--user $CREDENTIALS --location-trusted"
   fi;
   if [ -z $CREDENTIALS ]; then
-    repository=public
-    credentials="--location"
+    local repository=public
+    local credentials="--location"
   fi;
-  url="http://repository.exoplatform.org/$repository/${GROUPID//.//}/$ARTIFACTID/$VERSION"
-  echo "[INFO] Downloading metadata ..."
-  curl $credentials "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT-$VERSION-maven-metadata.xml
-  if [ "$?" -ne "0" ]; then
-    echo "Sorry, cannot download artifact metadata"
-    exit 1
+  # By default the timestamp is the version (for a release)
+  ARTIFACT_TIMESTAMP=$PRODUCT_VERSION
+  # base url where to download from
+  local url="http://repository.exoplatform.org/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
+
+  # For a SNAPSHOT we will ne to manually compute the TIMESTAMP of the SNAPSHOT
+  if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]
+  then
+    echo "[INFO] Downloading metadata ..."
+    curl $credentials "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
+    if [ "$?" -ne "0" ]; then
+      echo "Sorry, cannot download artifact metadata"
+      exit 1
+    fi
+    echo "[INFO] Metadata downloaded"
+    local QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$ARTIFACT_CLASSIFIER\")and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
+    local FILENAME=$DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
+    if $DARWIN; then
+      ARTIFACT_TIMESTAMP=`xpath $FILENAME $QUERY`
+    fi 
+    if $LINUX; then
+      ARTIFACT_TIMESTAMP=`xpath -q -e $QUERY $FILENAME`
+    fi
+    echo "[INFO] Latest timestamp : $ARTIFACT_TIMESTAMP"
+    ARTIFACT_DATE=`expr "$ARTIFACT_TIMESTAMP" : '.*-\(.*\)-.*'`    
   fi
-  echo "[INFO] Metadata downloaded"
-  local QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$CLASSIFIER\")and(extension=\"$PACKAGING\")]/value/text()"
-  local FILENAME=$DL_DIR/$PRODUCT-$VERSION-maven-metadata.xml
-  if $darwin; then
-    TIMESTAMP=`xpath $FILENAME $QUERY`
-  fi 
-  if $linux; then
-    TIMESTAMP=`xpath -q -e $QUERY $FILENAME`
-  fi
-  echo "[INFO] Latest timestamp : $TIMESTAMP"
-  filename=$ARTIFACTID-$TIMESTAMP  
-  name=$GROUPID:$ARTIFACTID:$VERSION
-  if [ -n $CLASSIFIER ]; then
-    filename="$filename-$CLASSIFIER"
-    name="$name:$CLASSIFIER"
+  local filename=$ARTIFACT_ARTIFACTID-$ARTIFACT_TIMESTAMP  
+  local name=$ARTIFACT_GROUPID:$ARTIFACT_ARTIFACTID:$PRODUCT_VERSION
+  if [ -n $ARTIFACT_CLASSIFIER ]; then
+    filename="$filename-$ARTIFACT_CLASSIFIER"
+    name="$name:$ARTIFACT_CLASSIFIER"
   fi;
-  filename="$filename.$PACKAGING"
-  name="$name:$PACKAGING"
-  echo "[INFO] Archive          : $name "
-  echo "[INFO] Repository       : $repository "
+  filename="$filename.$ARTIFACT_PACKAGING"
+  name="$name:$ARTIFACT_PACKAGING"  
   ARTIFACT_URL=$url/$filename
-  curl $credentials "$ARTIFACT_URL" > $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
-  if [ "$?" -ne "0" ]; then
-    echo "Sorry, cannot download $name"
-    exit 1
+  if [ -e $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING ]; then
+    echo "[WARNING] $name was already downloaded. Skip server download !"
+  else
+    echo "[INFO] Downloading server ..."
+    echo "[INFO] Archive          : $name "
+    echo "[INFO] Repository       : $repository "
+    echo "[INFO] Url              : $ARTIFACT_URL "
+    curl $credentials "$ARTIFACT_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+    if [ "$?" -ne "0" ]; then
+      echo "Sorry, cannot download $name"
+      exit 1
+    fi
+    echo "[INFO] Server downloaded"
   fi
-  echo "[INFO] Server downloaded"
 }
 
 #
@@ -252,32 +330,34 @@ do_download_server() {
 #
 do_unpack_server() 
 {
-  rm -rf $TMP_DIR/$PRODUCT-$VERSION
+  rm -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
   echo "[INFO] Unpacking server ..."
-  mkdir -p $TMP_DIR/$PRODUCT-$VERSION
-  case $PACKAGING in
+  mkdir -p $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+  case $ARTIFACT_PACKAGING in
     zip)
-      unzip $DL_DIR/$PRODUCT-$VERSION.$PACKAGING -d $TMP_DIR/$PRODUCT-$VERSION
+      unzip $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING -d $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
       ;;
     tar.gz)
-      cd $TMP_DIR/$PRODUCT-$VERSION
-      tar -xzvf $DL_DIR/$PRODUCT-$VERSION.$PACKAGING
+      cd $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+      tar -xzvf $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
       cd -
       ;;
     *)
-      echo "[ERROR] Invalid packaging \"$PACKAGING\""
+      echo "[ERROR] Invalid packaging \"$ARTIFACT_PACKAGING\""
       print_usage
       exit 1
       ;;
   esac
-  rm -rf $SRV_DIR/$PRODUCT-$VERSION
+  DEPLOYMENT_DIR=$SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+  DEPLOYMENT_PID_FILE=$SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.pid
+  rm -rf $DEPLOYMENT_DIR
   mkdir -p $SRV_DIR
-  if [ -d "$TMP_DIR/$PRODUCT-$VERSION/gatein/" ]; then
-    cp -rf $TMP_DIR/$PRODUCT-$VERSION $SRV_DIR/$PRODUCT-$VERSION
+  if [ -d "$TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION/gatein/" ]; then
+    cp -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION $DEPLOYMENT_DIR
   else
-    find $TMP_DIR/$PRODUCT-$VERSION -maxdepth 1 -mindepth 1 -type d -exec cp -rf {} $SRV_DIR/$PRODUCT-$VERSION \;
+    find $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION -maxdepth 1 -mindepth 1 -type d -exec cp -rf {} $DEPLOYMENT_DIR \;
   fi
-  rm -rf $TMP_DIR/$PRODUCT-$VERSION
+  rm -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
   echo "[INFO] Server unpacked"
 }
 
@@ -286,25 +366,25 @@ do_unpack_server()
 #
 do_patch_server()
 {
-  sed -i -e "s|8005|${SHUTDOWN_PORT}|g" $SRV_DIR/$PRODUCT-$VERSION/conf/server.xml
-  sed -i -e "s|8080|${HTTP_PORT}|g" $SRV_DIR/$PRODUCT-$VERSION/conf/server.xml
-  sed -i -e "s|8009|${AJP_PORT}|g" $SRV_DIR/$PRODUCT-$VERSION/conf/server.xml
+  sed -i -e "s|8005|${DEPLOYMENT_SHUTDOWN_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
+  sed -i -e "s|8080|${DEPLOYMENT_HTTP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
+  sed -i -e "s|8009|${DEPLOYMENT_AJP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
 }
 
 do_create_apache_vhost()
 {
 mkdir -p $APACHE_CONF_DIR
-cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
+cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 <VirtualHost *:80>
     Include /home/swfcommons/etc/apache2/includes/default.conf
-    ServerName  $PRODUCT-$VERSION.acceptance.exoplatform.org
+    ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 
-    ErrorLog        \${APACHE_LOG_DIR}/$PRODUCT-$VERSION.acceptance.exoplatform.org-error.log
+    ErrorLog        \${APACHE_LOG_DIR}/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-error.log
     LogLevel        warn
-    CustomLog       \${APACHE_LOG_DIR}/$PRODUCT-$VERSION.acceptance.exoplatform.org-access.log combined  
+    CustomLog       \${APACHE_LOG_DIR}/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-access.log combined  
     
-    Alias /logs/ "$SRV_DIR/$PRODUCT-$VERSION/logs/"
-    <Directory "$SRV_DIR/$PRODUCT-$VERSION/logs/">
+    Alias /logs/ "$DEPLOYMENT_DIR/logs/"
+    <Directory "$DEPLOYMENT_DIR/logs/">
         Options Indexes MultiViews
         AllowOverride None
         Order allow,deny
@@ -327,8 +407,8 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
     ProxyPass               /exo-static/   !
     ProxyPass               /logs/         !
     ProxyPass               /icons/        !
-    ProxyPass               /       ajp://localhost:$AJP_PORT/ acquire=1000 retry=30
-    ProxyPassReverse        /       ajp://localhost:$AJP_PORT/
+    ProxyPass               /       ajp://localhost:$DEPLOYMENT_AJP_PORT/ acquire=1000 retry=30
+    ProxyPassReverse        /       ajp://localhost:$DEPLOYMENT_AJP_PORT/
     <Proxy *>
         Order deny,allow
         Allow from all
@@ -350,47 +430,68 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
     </Proxy>    
 </VirtualHost>
 EOF
-# Restart Apache to activate the new config
-if $linux; then
+# Reload Apache to activate the new config
+if $LINUX; then
   sudo /usr/sbin/service apache2 reload
 fi
+DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
 }
 
 do_create_deployment_descriptor()
 {
-mkdir -p $ADT_CONF_DIR
-cat << EOF > $ADT_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
-deployment.date=$CURR_DATE
-deployment.product=$PRODUCT
-deployment.directory=$SRV_DIR/$PRODUCT-$VERSION
-deployment.url=http://$PRODUCT-$VERSION.acceptance.exoplatform.org
-deployment.logs=http://$PRODUCT-$VERSION.acceptance.exoplatform.org/logs/catalina.out
-deployment.shutdown.port=$SHUTDOWN_PORT
-deployment.http.port=$HTTP_PORT
-deployment.ajp.port=$AJP_PORT
-deployment.pid.file=$SRV_DIR/$PRODUCT-$VERSION.pid
-artifact.groupid=$GROUPID
-artifact.artifactid=$ARTIFACTID
-artifact.version=$VERSION
-artifact.timestamp=$TIMESTAMP
-artifact.date=`expr "$TIMESTAMP" : '.*-\(.*\)-.*'`
-artifact.classifier=$CLASSIFIER
-artifact.packaging=$PACKAGING
-artifact.url=$ARTIFACT_URL
+  mkdir -p $ADT_CONF_DIR
+  cat << EOF > $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+PRODUCT_NAME=$PRODUCT_NAME
+PRODUCT_VERSION=$PRODUCT_VERSION
+DEPLOYMENT_DATE=$CURR_DATE
+DEPLOYMENT_DIR=$DEPLOYMENT_DIR
+DEPLOYMENT_URL=$DEPLOYMENT_URL
+DEPLOYMENT_LOG_URL=$DEPLOYMENT_LOG_URL
+DEPLOYMENT_SHUTDOWN_PORT=$DEPLOYMENT_SHUTDOWN_PORT
+DEPLOYMENT_HTTP_PORT=$DEPLOYMENT_HTTP_PORT
+DEPLOYMENT_AJP_PORT=$DEPLOYMENT_AJP_PORT
+DEPLOYMENT_PID_FILE=$DEPLOYMENT_PID_FILE
+ARTIFACT_GROUPID=$ARTIFACT_GROUPID
+ARTIFACT_ARTIFACTID=$ARTIFACT_ARTIFACTID
+ARTIFACT_TIMESTAMP=$ARTIFACT_TIMESTAMP
+ARTIFACT_DATE=$ARTIFACT_DATE
+ARTIFACT_CLASSIFIER=$ARTIFACT_CLASSIFIER
+ARTIFACT_PACKAGING=$ARTIFACT_PACKAGING
+ARTIFACT_URL=$ARTIFACT_URL
 EOF
-#Display the deployment descriptor
-echo "[INFO] ========================= Deployment Descriptor ========================="
-cat $ADT_CONF_DIR/$PRODUCT-$VERSION.acceptance.exoplatform.org
-echo "[INFO] ========================================================================="
+  #Display the deployment descriptor
+  echo "[INFO] ========================= Deployment Descriptor ========================="
+  cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  echo "[INFO] ========================================================================="
+}
+
+do_load_deployment_descriptor()
+{
+  if [ ! -e $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org ]; then
+    echo "[ERROR] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
+    echo "[ERROR] You need to deploy it first."
+    exit 1    
+  fi
+  source $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  #Display the deployment descriptor
+  echo "[INFO] ========================= Deployment Descriptor ========================="
+  cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  echo "[INFO] ========================================================================="  
 }
 
 #
-# Function that configure the app server archive
+# Function that deploys (Download+configure) the app server
 #
-do_configure_server()
+do_deploy()
 {
-  echo "[INFO] Configuring server ..."
-  echo "[INFO] Server configured"
+  echo "[INFO] Deploying server ..."
+  do_download_server
+  do_unpack_server
+  do_patch_server
+  do_create_apache_vhost
+  do_create_deployment_descriptor
+  echo "[INFO] Server deployed"
 }
 
 #
@@ -398,23 +499,27 @@ do_configure_server()
 #
 do_start()
 {
-  do_download_server
-  do_unpack_server
-  do_patch_server
-  do_create_apache_vhost
-  do_create_deployment_descriptor
   echo "[INFO] Starting server ..."
-  chmod 755 $SRV_DIR/$PRODUCT-$VERSION/bin/*.sh
-  export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
-  export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid
+  chmod 755 $DEPLOYMENT_DIR/bin/*.sh
+  export CATALINA_HOME=$DEPLOYMENT_DIR
+  export CATALINA_PID=$DEPLOYMENT_PID_FILE
   ${CATALINA_HOME}/bin/gatein.sh start
-  tail -f $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out &
-  tailPID=$!
+  # Wait for logs availability
+  while [ true ];
+  do    
+    if [ -e $DEPLOYMENT_DIR/logs/catalina.out ]; then
+      break
+    fi    
+  done
+  # Display logs
+  tail -f $DEPLOYMENT_DIR/logs/catalina.out &
+  local tailPID=$!
+  # Check for the end of startup
   set +e
   while [ true ];
   do    
-    if [ -e $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out ]; then
-      if grep -q "Server startup in" $SRV_DIR/$PRODUCT-$VERSION/logs/catalina.out; then
+    if [ -e $DEPLOYMENT_DIR/logs/catalina.out ]; then
+      if grep -q "Server startup in" $DEPLOYMENT_DIR/logs/catalina.out; then
         kill $tailPID
         wait $tailPID 2>/dev/null
         break
@@ -423,8 +528,8 @@ do_start()
   done
   set -e
   echo "[INFO] Server started"
-  echo "[INFO] URL  : http://$PRODUCT-$VERSION.acceptance.exoplatform.org"
-  echo "[INFO] Logs : http://$PRODUCT-$VERSION.acceptance.exoplatform.org/logs/"
+  echo "[INFO] URL  : $DEPLOYMENT_URL"
+  echo "[INFO] Logs : $DEPLOYMENT_LOG_URL"
 }
 
 #
@@ -432,10 +537,10 @@ do_start()
 #
 do_stop()
 {
-  if [ -e $SRV_DIR/$PRODUCT-$VERSION ]; then
+  if [ -e $DEPLOYMENT_DIR ]; then
     echo "[INFO] Stopping server ..."
-    export CATALINA_HOME=$SRV_DIR/$PRODUCT-$VERSION
-    export CATALINA_PID=$SRV_DIR/$PRODUCT-$VERSION.pid
+    export CATALINA_HOME=$DEPLOYMENT_DIR
+    export CATALINA_PID=$DEPLOYMENT_PID_FILE
     ${CATALINA_HOME}/bin/gatein.sh stop 60 -force || true
     echo "[INFO] Server stopped"
   else
@@ -443,18 +548,69 @@ do_stop()
   fi
 }
 
+#
+# Function that undeploys (delete) the app server
+#
+do_undeploy()
+{
+  # Stop the server
+  do_stop
+  echo "[INFO] Undeploying server ..."
+  # Delete the vhost
+  rm $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  # Reload Apache to deactivate the config  
+  if $LINUX; then
+    sudo /usr/sbin/service apache2 reload
+  fi
+  # Delete the deployment descriptor
+  rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  # Delete the server
+  rm -rf $DEPLOYMENT_DIR
+  echo "[INFO] Server undeployed"
+}
+
+#
+# Function that lists all deployed servers
+#
+do_list()
+{
+  echo "[INFO] Deployed servers : "
+  printf "%-10s %-20s\n" "Product" "Version"
+  printf "%-10s %-20s\n" "=======" "======="  
+  for f in $ADT_CONF_DIR/*
+  do
+    source $f
+    printf "%-10s %-20s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION
+  done  
+}
+
+initialize
+
 do_init $@
 
 case "$ACTION" in
+  deploy)
+    do_deploy
+    ;;
   start)
+    do_load_deployment_descriptor
     do_start
     ;;
   stop) 
+    do_load_deployment_descriptor
     do_stop
     ;;
   restart)
+    do_load_deployment_descriptor
     do_stop
     do_start
+    ;;
+  undeploy) 
+    do_load_deployment_descriptor
+    do_undeploy
+    ;;
+  list) 
+    do_list
     ;;
   *)
     echo "[ERROR] Invalid action \"$ACTION\"" 
