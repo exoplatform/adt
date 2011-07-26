@@ -325,7 +325,7 @@ do_download_server() {
   filename="$filename.$ARTIFACT_PACKAGING"
   name="$name:$ARTIFACT_PACKAGING"  
   ARTIFACT_URL=$url/$filename
-  if [ -f $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING ]; then
+  if [ -e $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING ]; then
     echo "[WARNING] $name was already downloaded. Skip server download !"
   else
     echo "[INFO] Downloading server ..."
@@ -508,7 +508,7 @@ EOF
 
 do_load_deployment_descriptor()
 {
-  if [ ! -f $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org ]; then
+  if [ ! -e $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org ]; then
     echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
     echo "[WARNING] You need to deploy it first."
   else
@@ -547,7 +547,7 @@ do_start()
   # Wait for logs availability
   while [ true ];
   do    
-    if [ -f $DEPLOYMENT_DIR/logs/catalina.out ]; then
+    if [ -e $DEPLOYMENT_DIR/logs/catalina.out ]; then
       break
     fi    
   done
@@ -558,12 +558,10 @@ do_start()
   set +e
   while [ true ];
   do    
-    if [ -f $DEPLOYMENT_DIR/logs/catalina.out ]; then
-      if grep -q "Server startup in" $DEPLOYMENT_DIR/logs/catalina.out; then
-        kill $tailPID
-        wait $tailPID 2>/dev/null
-        break
-      fi    
+    if grep -q "Server startup in" $DEPLOYMENT_DIR/logs/catalina.out; then
+      kill $tailPID
+      wait $tailPID 2>/dev/null
+      break
     fi    
   done
   set -e
@@ -577,7 +575,7 @@ do_start()
 #
 do_stop()
 {
-  if [ ! -z $DEPLOYMENT_DIR ] && [ -f $DEPLOYMENT_DIR ]; then
+  if [ ! -z $DEPLOYMENT_DIR ] && [ -e $DEPLOYMENT_DIR ]; then
     echo "[INFO] Stopping server ..."
     export CATALINA_HOME=$DEPLOYMENT_DIR
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
