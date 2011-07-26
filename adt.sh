@@ -230,7 +230,7 @@ do_init()
     esac    
 
     # Additional options
-    while getopts "hA:H:S:u:" OPTION
+    while getopts "hA:H:S:R:V:u:" OPTION
     do
          case $OPTION in
              h)
