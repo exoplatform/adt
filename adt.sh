@@ -441,18 +441,17 @@ do_unpack_server()
 do_patch_server()
 {
   # Reconfigure server.xml
-  cp $ETC_DIR/tomcat6/server.xml.patch $TMP_DIR/server.xml.patch
+  cp $ETC_DIR/tomcat6/server.xml.patch $DEPLOYMENT_DIR/conf/server.xml.patch
   local sed_options="-i -e"
   if $DARWIN; then
     local sed_options="-i \"\" -e"
   fi
-  sed $sed_options "s|@SHUTDOWN_PORT@|${DEPLOYMENT_SHUTDOWN_PORT}|g" $TMP_DIR/server.xml.patch
-  sed $sed_options "s|@HTTP_PORT@|${DEPLOYMENT_HTTP_PORT}|g" $TMP_DIR/server.xml.patch
-  sed $sed_options "s|@AJP_PORT@|${DEPLOYMENT_AJP_PORT}|g" $TMP_DIR/server.xml.patch
-  sed $sed_options "s|@JMX_RMI_REGISTRY_PORT@|${DEPLOYMENT_RMI_REG_PORT}|g" $TMP_DIR/server.xml.patch
-  sed $sed_options "s|@JMX_RMI_SERVER_PORT@|${DEPLOYMENT_RMI_SRV_PORT}|g" $TMP_DIR/server.xml.patch
-  patch -p0 $DEPLOYMENT_DIR/conf/server.xml < $TMP_DIR/server.xml.patch
-  rm -f $TMP_DIR/server.xml.patch
+  sed $sed_options "s|@SHUTDOWN_PORT@|${DEPLOYMENT_SHUTDOWN_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
+  sed $sed_options "s|@HTTP_PORT@|${DEPLOYMENT_HTTP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
+  sed $sed_options "s|@AJP_PORT@|${DEPLOYMENT_AJP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
+  sed $sed_options "s|@JMX_RMI_REGISTRY_PORT@|${DEPLOYMENT_RMI_REG_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
+  sed $sed_options "s|@JMX_RMI_SERVER_PORT@|${DEPLOYMENT_RMI_SRV_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
+  patch -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server.xml.patch
   
   # Install jmx jar
   JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
