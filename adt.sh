@@ -513,10 +513,6 @@ do_load_deployment_descriptor()
     echo "[WARNING] You need to deploy it first."
   else
     source $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
-    #Display the deployment descriptor
-    echo "[INFO] ========================= Deployment Descriptor ========================="
-    cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
-    echo "[INFO] ========================================================================="  
   fi
 }
 
