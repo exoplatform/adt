@@ -406,9 +406,13 @@ do_unpack_server()
 #
 do_patch_server()
 {
-  sed -i -e "s|8005|${DEPLOYMENT_SHUTDOWN_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
-  sed -i -e "s|8080|${DEPLOYMENT_HTTP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
-  sed -i -e "s|8009|${DEPLOYMENT_AJP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
+  local sed-options="-i -e"
+  if $DARWIN; then
+    local sed-options="-i \"\" -e"
+  fi
+  sed $sed-options "s|8005|${DEPLOYMENT_SHUTDOWN_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
+  sed $sed-options "s|8080|${DEPLOYMENT_HTTP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
+  sed $sed-options "s|8009|${DEPLOYMENT_AJP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
 }
 
 do_create_apache_vhost()
