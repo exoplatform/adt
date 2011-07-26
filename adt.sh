@@ -222,7 +222,7 @@ do_init()
                  exit
                  ;;
              H)
-                 if ["$ACTION" == "deploy"]; then
+                 if [[ "$ACTION" == "deploy" ]]; then
                    DEPLOYMENT_HTTP_PORT=$OPTARG
                  else
                    echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
@@ -231,7 +231,7 @@ do_init()
                  fi
                  ;;
              A)
-                 if ["$ACTION" == "deploy"]; then
+                 if [[ "$ACTION" == "deploy" ]]; then
                    DEPLOYMENT_AJP_PORT=$OPTARG
                  else
                    echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
@@ -240,7 +240,7 @@ do_init()
                  fi
                  ;;
              S)
-                 if ["$ACTION" == "deploy"]; then
+                 if [[ "$ACTION" == "deploy" ]]; then
                    DEPLOYMENT_SHUTDOWN_PORT=$OPTARG
                  else
                    echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
@@ -249,7 +249,7 @@ do_init()
                  fi
                  ;;
              u)
-                 if ["$ACTION" == "deploy"]; then
+                 if [[ "$ACTION" == "deploy" ]]; then
                    CREDENTIALS=$OPTARG
                  else
                    echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
