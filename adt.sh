@@ -41,9 +41,25 @@ initialize()
   APACHE_CONF_DIR=$ADT_DATA/conf/apache
   ADT_CONF_DIR=$ADT_DATA/conf/adt
 
+  PRODUCT_NAME=""
+  PRODUCT_VERSION=""
+
+  DEPLOYMENT_DATE=""
+  DEPLOYMENT_DIR=""
+  DEPLOYMENT_URL=""
+  DEPLOYMENT_LOG_URL=""
   DEPLOYMENT_SHUTDOWN_PORT=8005
   DEPLOYMENT_HTTP_PORT=8080
   DEPLOYMENT_AJP_PORT=8009
+  DEPLOYMENT_PID_FILE=""
+  
+  ARTIFACT_GROUPID=""
+  ARTIFACT_ARTIFACTID=""
+  ARTIFACT_TIMESTAMP=""
+  ARTIFACT_DATE=""
+  ARTIFACT_CLASSIFIER=""
+  ARTIFACT_PACKAGING=""
+  ARTIFACT_URL=""
   
   CREDENTIALS=""
 
@@ -493,9 +509,8 @@ EOF
 do_load_deployment_descriptor()
 {
   if [ ! -e $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org ]; then
-    echo "[ERROR] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
-    echo "[ERROR] You need to deploy it first."
-    exit 1    
+    echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
+    echo "[WARNING] You need to deploy it first."
   fi
   source $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
   #Display the deployment descriptor
