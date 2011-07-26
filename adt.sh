@@ -29,6 +29,8 @@ initialize()
   ADT_DATA=`pwd -P`
   popd > /dev/null
 
+  ETC_DIR=$SCRIPT_DIR/etc
+
   echo "[INFO] ADT_DATA = $ADT_DATA"
 
   # Create ADT_DATA if required
@@ -48,9 +50,12 @@ initialize()
   DEPLOYMENT_DIR=""
   DEPLOYMENT_URL=""
   DEPLOYMENT_LOG_URL=""
+  DEPLOYMENT_JMX_URL=""
   DEPLOYMENT_SHUTDOWN_PORT=8005
   DEPLOYMENT_HTTP_PORT=8080
   DEPLOYMENT_AJP_PORT=8009
+  DEPLOYMENT_RMI_REG_PORT=10001
+  DEPLOYMENT_RMI_SRV_PORT=10002
   DEPLOYMENT_PID_FILE=""
   
   ARTIFACT_GROUPID=""
@@ -114,9 +119,12 @@ DEPLOY OPTIONS :
   -A         AJP Port
   -H         HTTP Port
   -S         SHUTDOWN Port 
+  -R         RMI Registry Port for JMX
+  -V         RMI Server Port for JMX
   -u         user credentials (value in "username:password" format) to download the server package (default: none)
 
 EOF
+
 }
 
 #
@@ -242,6 +250,24 @@ do_init()
              S)
                  if [[ "$ACTION" == "deploy" ]]; then
                    DEPLOYMENT_SHUTDOWN_PORT=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
+                 ;;
+             R)
+                 if [[ "$ACTION" == "deploy" ]]; then
+                   DEPLOYMENT_RMI_REG_PORT=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
+                 ;;
+             V)
+                 if [[ "$ACTION" == "deploy" ]]; then
+                   DEPLOYMENT_RMI_SRV_PORT=$OPTARG
                  else
                    echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
                    print_usage
@@ -406,13 +432,49 @@ do_unpack_server()
 #
 do_patch_server()
 {
-  local sed-options="-i -e"
+  # Reconfigure server.xml
+  cp $ETC_DIR/tomcat6/server.xml.patch $TMP_DIR/server.xml.patch
+  local sed_options="-i -e"
   if $DARWIN; then
-    local sed-options="-i \"\" -e"
+    local sed_options="-i \"\" -e"
   fi
-  sed $sed-options "s|8005|${DEPLOYMENT_SHUTDOWN_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
-  sed $sed-options "s|8080|${DEPLOYMENT_HTTP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
-  sed $sed-options "s|8009|${DEPLOYMENT_AJP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml
+  sed $sed_options "s|@SHUTDOWN_PORT@|${DEPLOYMENT_SHUTDOWN_PORT}|g" $TMP_DIR/server.xml.patch
+  sed $sed_options "s|@HTTP_PORT@|${DEPLOYMENT_HTTP_PORT}|g" $TMP_DIR/server.xml.patch
+  sed $sed_options "s|@AJP_PORT@|${DEPLOYMENT_AJP_PORT}|g" $TMP_DIR/server.xml.patch
+  sed $sed_options "s|@JMX_RMI_REGISTRY_PORT@|${DEPLOYMENT_RMI_REG_PORT}|g" $TMP_DIR/server.xml.patch
+  sed $sed_options "s|@JMX_RMI_SERVER_PORT@|${DEPLOYMENT_RMI_SRV_PORT}|g" $TMP_DIR/server.xml.patch
+  patch -p0 $DEPLOYMENT_DIR/conf/server.xml < $TMP_DIR/server.xml.patch
+  rm -f $TMP_DIR/server.xml.patch
+  
+  # Install jmx jar
+  JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
+  echo "Download and install JMX remote lib ..."
+  curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar
+  if [ ! -e ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar ]; then
+    echo "!!! Sorry, cannot download ${JMX_JAR_URL}"
+    exit 1
+  fi
+  echo "Done."
+  
+  
+  # JMX settings
+  
+  cat << EOF > $DEPLOYMENT_DIR/conf/jmxremote.access
+acceptanceMonitor readonly
+EOF
+
+  cat << EOF > $DEPLOYMENT_DIR/conf/jmxremote.password
+acceptanceMonitor monitorAcceptance!
+EOF
+
+  chmod 400 $DEPLOYMENT_DIR/conf/jmxremote.password
+  # Open firewall ports
+  if $LINUX; then
+    sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
+    sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}    
+  fi
+  
+  DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 }
 
 do_create_apache_vhost()
@@ -492,10 +554,13 @@ DEPLOYMENT_DATE=$CURR_DATE
 DEPLOYMENT_DIR=$DEPLOYMENT_DIR
 DEPLOYMENT_URL=$DEPLOYMENT_URL
 DEPLOYMENT_LOG_URL=$DEPLOYMENT_LOG_URL
+DEPLOYMENT_JMX_URL=$DEPLOYMENT_JMX_URL
 DEPLOYMENT_SHUTDOWN_PORT=$DEPLOYMENT_SHUTDOWN_PORT
 DEPLOYMENT_HTTP_PORT=$DEPLOYMENT_HTTP_PORT
 DEPLOYMENT_AJP_PORT=$DEPLOYMENT_AJP_PORT
 DEPLOYMENT_PID_FILE=$DEPLOYMENT_PID_FILE
+DEPLOYMENT_RMI_REG_PORT=$DEPLOYMENT_RMI_REG_PORT
+DEPLOYMENT_RMI_SRV_PORT=$DEPLOYMENT_RMI_SRV_PORT
 ARTIFACT_GROUPID=$ARTIFACT_GROUPID
 ARTIFACT_ARTIFACTID=$ARTIFACT_ARTIFACTID
 ARTIFACT_TIMESTAMP=$ARTIFACT_TIMESTAMP
@@ -543,6 +608,8 @@ do_start()
   chmod 755 $DEPLOYMENT_DIR/bin/*.sh
   export CATALINA_HOME=$DEPLOYMENT_DIR
   export CATALINA_PID=$DEPLOYMENT_PID_FILE
+  export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
+  export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS"
   ${CATALINA_HOME}/bin/gatein.sh start
   # Wait for logs availability
   while [ true ];
@@ -568,6 +635,7 @@ do_start()
   echo "[INFO] Server started"
   echo "[INFO] URL  : $DEPLOYMENT_URL"
   echo "[INFO] Logs : $DEPLOYMENT_LOG_URL"
+  echo "[INFO] JMX  : $DEPLOYMENT_JMX_URL"
 }
 
 #
@@ -604,6 +672,11 @@ do_undeploy()
   rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
   # Delete the server
   rm -rf $DEPLOYMENT_DIR
+  # Close firewall ports
+  if $LINUX; then
+    sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
+    sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
+  fi  
   echo "[INFO] Server undeployed"
 }
 

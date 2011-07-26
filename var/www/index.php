@@ -16,7 +16,7 @@
       <div>
         <p>These instances are deployed to be used for acceptance tests.<br/>
           They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
-        <p>&nbsp;</p>
+        <p>Each instance can be accessed using JMX with the given URL and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
         <p>&nbsp;</p>
         <table align="center">
           <thead>
@@ -82,7 +82,7 @@
               <td><?=displayDate($descriptor_array['DEPLOYMENT_DATE'])?></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
                 <?=$descriptor_array['DEPLOYMENT_URL']?>
-                </a> [<a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs">logs</a>]</td>
+                </a> [<a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs">logs</a>] [<a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring">jmx</a>]</td>
               <?php
             if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
               $status="<img src=\"/images/green_ball.png\" alt=\"Up\"/> Up";

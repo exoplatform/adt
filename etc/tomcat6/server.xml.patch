@@ -1,0 +1,39 @@
+--- server.xml	2011-07-26 14:42:35.000000000 +0200
++++ server.xml	2011-07-26 14:44:25.000000000 +0200
+@@ -23,7 +23,7 @@
+      define subcomponents such as "Valves" at this level.
+      Documentation at /docs/config/server.html
+  -->
+-<Server port="8005" shutdown="SHUTDOWN">
++<Server port="@SHUTDOWN_PORT@" shutdown="SHUTDOWN">
+ 
+   <!--APR library loader. Documentation at /docs/apr.html -->
+   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+@@ -32,6 +32,9 @@
+   <!-- JMX Support for the Tomcat server. Documentation at /docs/non-existent.html -->
+   <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
+   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
++  <!-- JMX fixed ports -->
++  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" 
++          rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" />
+ 
+   <!-- Global JNDI resources
+        Documentation at /docs/jndi-resources-howto.html
+@@ -61,7 +64,7 @@
+          APR (HTTP/AJP) Connector: /docs/apr.html
+          Define a non-SSL HTTP/1.1 Connector on port 8080
+     -->
+-    <Connector port="8080" protocol="HTTP/1.1" 
++    <Connector port="@HTTP_PORT@" protocol="HTTP/1.1" 
+                maxThreads="150" connectionTimeout="20000" 
+                redirectPort="8443" URIEncoding="UTF-8"/>
+ 
+@@ -76,7 +79,7 @@
+     -->
+ 
+     <!-- Define an AJP 1.3 Connector on port 8009 -->
+-    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443"/>
++    <Connector port="@AJP_PORT@" protocol="AJP/1.3" redirectPort="8443"/>
+ 
+ 
+     <!-- An Engine represents the entry point (within Catalina) that processes
