@@ -105,6 +105,7 @@ td {
 }
 .UIForgePages .ContentPages {
 	padding: 18px 7px 7px 7px;
+	width: 570px;
     margin: auto;
 }
 .UIForgePages .ContentPages ul{
@@ -114,8 +115,27 @@ td {
 .UIForgePages .ContentPages .MenuPage {
 	width: 48%;
 }
-.UIForgePages .ContentCenter .TitleForgePages {
-	font-size: 24px;
+.UIForgePages .ContentPages .MenuPage .Button {
+	border-radius: 15px 15px 15px 15px;
+	-moz-border-radius: 15px 15px 15px 15px;
+	-webkit-border-radius: 15px 15px 15px 15px;
+	background: url("/exo-static/images/Button.gif") repeat-x scroll 0 0 transparent;
+	border: 1px solid #CFCFCF;
+	color: #686868;
+	display: block;
+	font-size: 16px;
+	line-height: 31px;
+	margin: 0 0 8px 0;
+	text-align: center;
+	text-decoration: none;
+}
+.UIForgePages .ContentPages .MenuPage .Button:hover {
+	background: url("/exo-static/images/ButtonHV.gif") repeat-x scroll 0 0 transparent;
+	border: 1px solid #186abd;
+	color: white;
+}
+.UIForgePages .TitleForgePages {
+font-size: 24px;
 	color: #fbad18;
 	padding-left: 20px;
 	text-align: left;
@@ -150,10 +170,38 @@ td {
 }
 .UIForgePages .ContentCenter {
 	padding: 18px 7px 7px 7px;
-	width: 80%;
+	width: 1064px;
 	margin: auto;
-	background: #ffffff;
 }
+.UIForgePages .ContentCenter .ContentLeft {
+	width: 525px;
+	margin-right: 13px;
+	font-size: 14px;
+}
+.UIForgePages .ContentCenter .ContentRight {
+	width: 525px;
+	height: 264px;
+	font-size: 14px;
+}
+.UIForgePages .ContentCenter .ContentRight .BlockAccount {
+	background: url('/images/BgBlock.jpg') no-repeat;
+	height: 264px;
+	padding: 0px 17px 0px 20px;
+	text-align: justify;
+}
+.UIForgePages .ContentCenter .ContentLeft .BlockPlatform3 {
+	background: url('/images/BgBlock.jpg') no-repeat left -266px;
+	height: 127px;
+	padding: 0px 17px 0px 20px;
+	text-align: justify;
+	margin-bottom: 10px;
+}
+.UIForgePages .ContentCenter .ContentLeft .BlockPlatform2 {
+	background: url('/images/BgBlock.jpg') no-repeat left -397px;
+	height: 127px;
+	padding: 0px 17px 0px 20px;
+	text-align: justify;
+ }
 .UIForgePages .ContentCenter h2 {
 	font-size: 23px;
 	font-weight: bold;
@@ -173,6 +221,10 @@ td {
 	line-height: 20px;
 }
 
+.MainContent{
+	width:80%;
+	background-color: #ffffff;
+}
 .Ribbon{
         position: relative;
         width: 20%;
