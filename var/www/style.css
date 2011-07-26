@@ -222,6 +222,8 @@ font-size: 24px;
 }
 
 .MainContent{
+	padding: 18px 7px 7px 7px;
+    margin: auto;	
 	width:80%;
 	background-color: #ffffff;
 }
