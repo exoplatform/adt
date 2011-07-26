@@ -12,7 +12,7 @@
   <div class="MainContent">
     <div class="Ribbon">Beta !</div>
     <div class="TitleForgePages">Acceptance Live Instances</div>
-    <div class="ContentCenter ClearFix">
+    <div>
       <div>
         <p>These instances are deployed to be used for acceptance tests.<br/>
           They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
