@@ -1,6 +1,6 @@
 --- server.xml	2011-07-26 14:42:35.000000000 +0200
 +++ server.xml	2011-07-26 14:44:25.000000000 +0200
-@@ -23,7 +23,7 @@
+@@ -2,7 +2,7 @@
       define subcomponents such as "Valves" at this level.
       Documentation at /docs/config/server.html
   -->
@@ -9,7 +9,7 @@
  
    <!--APR library loader. Documentation at /docs/apr.html -->
    <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
-@@ -32,6 +32,9 @@
+@@ -11,6 +11,9 @@
    <!-- JMX Support for the Tomcat server. Documentation at /docs/non-existent.html -->
    <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
    <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
@@ -19,7 +19,7 @@
  
    <!-- Global JNDI resources
         Documentation at /docs/jndi-resources-howto.html
-@@ -61,7 +64,7 @@
+@@ -40,7 +43,7 @@
           APR (HTTP/AJP) Connector: /docs/apr.html
           Define a non-SSL HTTP/1.1 Connector on port 8080
      -->
@@ -28,7 +28,7 @@
                 maxThreads="150" connectionTimeout="20000" 
                 redirectPort="8443" URIEncoding="UTF-8"/>
  
-@@ -76,7 +79,7 @@
+@@ -55,7 +58,7 @@
      -->
  
      <!-- Define an AJP 1.3 Connector on port 8009 -->
