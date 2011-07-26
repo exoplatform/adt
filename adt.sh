@@ -103,6 +103,8 @@ ACTION :
   list       Lists all deployed servers
   
 PRODUCT (for deploy, start, stop, restart, undeploy actions) :
+  gatein     eXo GateIn
+  webos      eXo WebOS
   social     eXo Social
   ecms       eXo Content
   ks         eXo Knowledge
@@ -168,6 +170,12 @@ do_init()
           gatein)
             ARTIFACT_GROUPID="org.exoplatform.portal"
             ARTIFACT_ARTIFACTID="exo.portal.packaging.assembly"
+            ARTIFACT_CLASSIFIER="tomcat"
+            ARTIFACT_PACKAGING="zip"
+            ;;
+          webos)
+            ARTIFACT_GROUPID="org.exoplatform.webos"
+            ARTIFACT_ARTIFACTID="exo.webos.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
             ;;
