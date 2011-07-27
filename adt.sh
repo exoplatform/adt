@@ -532,18 +532,16 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatf
 
     # Netscape 4.x has some problems...
     BrowserMatch ^Mozilla/4 gzip-only-text/html
-
     # Netscape 4.06-4.08 have some more problems
     BrowserMatch ^Mozilla/4\.0[678] no-gzip
-
     # MSIE masquerades as Netscape, but it is fine
     BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    
     # Don't compress images
-    SetEnvIfNoCase Request_URI \\
-    \.(?:gif|jpe?g|png)\$ no-gzip dont-vary
+    SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png)\$" no-gzip dont-vary
     # Make sure proxies don't deliver the wrong content
     Header append Vary User-Agent env=!dont-vary
-
+    
     ProxyRequests           Off
     ProxyPreserveHost       On
     ProxyPass               /exo-static/   !

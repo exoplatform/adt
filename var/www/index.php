@@ -2,6 +2,9 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<meta http-equiv="CACHE-CONTROL" content="NO-CACHE">
+<meta http-equiv="EXPIRES" content="Mon, 22 Jul 2002 11:12:01 GMT">
+<meta http-equiv="PRAGMA" content="NO-CACHE">
 <title>Acceptance Live Instances</title>
 <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
 <link href="/style.css" media="screen" rel="stylesheet" type="text/css"/>
@@ -85,9 +88,9 @@
                 </a> [<a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs">logs</a>] [<a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring">jmx</a>]</td>
               <?php
             if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
-              $status="<img src=\"/images/green_ball.png\" alt=\"Up\"/> Up";
+              $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"/> Up";
             else
-              $status="<img src=\"/images/red_ball.png\" alt=\"Down\"/> Down !";
+              $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"/> Down !";
             ?>
               <td><?=$status?></td>
             </tr>
