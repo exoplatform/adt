@@ -16,8 +16,9 @@
     CustomLog       ${APACHE_LOG_DIR}/acceptance.exoplatform.org-access.log combined    
     
     #
-    # Compression via GZIP
+    # Compression using GZIP
     #
+    # Insert filter
     SetOutputFilter DEFLATE
     SetInputFilter DEFLATE
     DeflateFilterNote Input instream
@@ -25,6 +26,20 @@
     DeflateFilterNote Ratio ratio
     # Higher Compression 9 - Medium 5
     DeflateCompressionLevel 5
+
+    # Netscape 4.x has some problems...
+    BrowserMatch ^Mozilla/4 gzip-only-text/html
+
+    # Netscape 4.06-4.08 have some more problems
+    BrowserMatch ^Mozilla/4\.0[678] no-gzip
+
+    # MSIE masquerades as Netscape, but it is fine
+    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+    # Don't compress images
+    SetEnvIfNoCase Request_URI \
+    \.(?:gif|jpe?g|png)$ no-gzip dont-vary
+    # Make sure proxies don't deliver the wrong content
+    Header append Vary User-Agent env=!dont-vary
 
     # don't loose time with IP address lookups
     HostnameLookups Off
