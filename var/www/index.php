@@ -83,7 +83,7 @@
               <td><?=displayDate($descriptor_array['ARTIFACT_DATE'])?></td>
               <td><?=displayDate($descriptor_array['DEPLOYMENT_DATE'])?></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a></td>
-              <td><a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs"><img src="/images/file_extension_log.png" width="16" height="16" alt="instance logs"  class="centered" /></a></td>
+              <td><a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs"  class="centered" /></a></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="centered" /></a></td>
               <?php
             if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
