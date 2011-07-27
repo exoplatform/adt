@@ -436,22 +436,36 @@ do_unpack_server()
 }
 
 #
+#
+#
+replace_in_file()
+{
+  mv $1 $1.orig
+  sed "s|$2|$3|g" $1.orig > $1
+  rm $1.orig
+}
+
+#
 # Function that configure the server for ours needs
 #
 do_patch_server()
 {
   # Reconfigure server.xml
+  
+  # Prepare the patch
   cp $ETC_DIR/tomcat6/server.xml.patch $DEPLOYMENT_DIR/conf/server.xml.patch
-  local sed_options="-i -e"
-  if $DARWIN; then
-    local sed_options="-i \"\" -e"
-  fi
-  sed $sed_options "s|@SHUTDOWN_PORT@|${DEPLOYMENT_SHUTDOWN_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
-  sed $sed_options "s|@HTTP_PORT@|${DEPLOYMENT_HTTP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
-  sed $sed_options "s|@AJP_PORT@|${DEPLOYMENT_AJP_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
-  sed $sed_options "s|@JMX_RMI_REGISTRY_PORT@|${DEPLOYMENT_RMI_REG_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
-  sed $sed_options "s|@JMX_RMI_SERVER_PORT@|${DEPLOYMENT_RMI_SRV_PORT}|g" $DEPLOYMENT_DIR/conf/server.xml.patch
-  patch -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server.xml.patch
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@SHUTDOWN_PORT@" "${DEPLOYMENT_SHUTDOWN_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@JMX_RMI_REGISTRY_PORT@" "${DEPLOYMENT_RMI_REG_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
+
+  # Ensure the server.xml doesn't have some windows end line characters
+  # '\015' is Ctrl+V Ctrl+M = ^M
+  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.orig
+  tr -d '\015' < $DEPLOYMENT_DIR/conf/server.xml.orig > $DEPLOYMENT_DIR/conf/server.xml
+  
+  patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server.xml.patch
   
   # Install jmx jar
   JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
