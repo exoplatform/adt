@@ -39,6 +39,35 @@
     # Make sure proxies don't deliver the wrong content
     Header append Vary User-Agent env=!dont-vary
 
+    # Turn on Expires and set default to 0
+    ExpiresActive On
+    ExpiresDefault A0
+
+    # Set up caching on media files for 1 year (forever?)
+    <FilesMatch "\.(ico|flv|pdf|mov|mp3|wmv|ppt)$">
+      ExpiresDefault A29030400
+      Header append Cache-Control "public"
+    </FilesMatch>
+
+    # Set up caching on media files for 1 week
+    <FilesMatch "\.(gif|jpg|jpeg|png|swf)$">
+      ExpiresDefault A604800
+      Header append Cache-Control "public, proxy-revalidate"
+    </FilesMatch>
+
+    # Set up 2 Hour caching on commonly updated files
+    <FilesMatch "\.(xml|txt|html|js|css)$">
+      ExpiresDefault A7200 
+      Header append Cache-Control "private, proxy-revalidate, must-revalidate"
+    </FilesMatch>
+
+    # Force no caching for dynamic files
+    <FilesMatch "\.(php|cgi|pl|htm)$">
+      ExpiresDefault A0 
+      Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0, proxy-revalidate, no-transform"
+      Header set Pragma "no-cache"
+    </FilesMatch>
+
     # don't loose time with IP address lookups
     HostnameLookups Off
 
