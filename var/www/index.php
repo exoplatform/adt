@@ -77,9 +77,7 @@
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
-              <td><a href="<?=$descriptor_array['ARTIFACT_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="left" />
-                <?=$descriptor_array['ARTIFACT_TIMESTAMP']?>
-                </a></td>
+              <td><a href="<?=$descriptor_array['ARTIFACT_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img src="/images/ButDownload.gif" alt="Download" width="19" height="19" align="left" />&nbsp;<?=$descriptor_array['ARTIFACT_TIMESTAMP']?></a></td>
               <td><?=displayDate($descriptor_array['ARTIFACT_DATE'])?></td>
               <td><?=displayDate($descriptor_array['DEPLOYMENT_DATE'])?></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a></td>
@@ -87,9 +85,9 @@
               <td><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="centered" /></a></td>
               <?php
             if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
-              $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  align=\"left\"/> Up";
+              $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  align=\"left\"/>&nbsp;Up";
             else
-              $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  align=\"left\"/> Down !";
+              $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  align=\"left\"/>&nbsp;Down !";
             ?>
               <td><?=$status?></td>
             </tr>
