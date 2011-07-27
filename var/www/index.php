@@ -76,9 +76,9 @@
             $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
 			$artifact_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['ARTIFACT_DATE']),$now,true)
 			if($artifact_age->days)
-			  $artifact_age_string = $artifact_age->days . " day(s) ago"
+			  $artifact_age_string = $artifact_age->days . " day(s) ago";
 			else
-			  $artifact_age_string = $artifact_age->h . " hour(s) ago"
+			  $artifact_age_string = $artifact_age->h . " hour(s) ago";
           ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
