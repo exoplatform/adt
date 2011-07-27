@@ -28,7 +28,7 @@
               <th>Name</th>
               <th>Version</th>
               <th>Artifact</th>
-              <th>Built on</th>
+              <th>Built</th>
               <th>Deployed on</th>
               <th>URL</th>
               <th>Logs</th>
@@ -70,15 +70,21 @@
           //print each file name
           $vhosts = getDirectoryList("/home/swfhudson/data/adt/conf/adt/");
           sort($vhosts);
+		  $now = date_create();
           foreach( $vhosts as $vhost) {
             // Parse deployment descriptor
             $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
+			$artifact_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['ARTIFACT_DATE']),$now,true)
+			if($artifact_age->days)
+			  $artifact_age_string = $artifact_age->days . " day(s) ago"
+			else
+			  $artifact_age_string = $artifact_age->h . " hour(s) ago"
           ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
               <td><a href="<?=$descriptor_array['ARTIFACT_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;yo yo <?=$descriptor_array['ARTIFACT_TIMESTAMP']?></a></td>
-              <td><?=displayDate($descriptor_array['ARTIFACT_DATE'])?></td>
+              <td><?=$artifact_age_string?></td>
               <td><?=displayDate($descriptor_array['DEPLOYMENT_DATE'])?></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs"  class="center" /></a></td>
