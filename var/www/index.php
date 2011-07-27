@@ -74,7 +74,7 @@
           foreach( $vhosts as $vhost) {
             // Parse deployment descriptor
             $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
-			$artifact_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['ARTIFACT_DATE']),$now,true)
+			$artifact_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['ARTIFACT_DATE']),$now,true);
 			if($artifact_age->days)
 			  $artifact_age_string = $artifact_age->days . " day(s) ago";
 			else
