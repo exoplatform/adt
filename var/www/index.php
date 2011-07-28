@@ -29,7 +29,7 @@
               <th>Version</th>
               <th>Artifact</th>
               <th>Built</th>
-              <th>Deployed on</th>
+              <th>Deployed</th>
               <th>URL</th>
               <th>Logs</th>
               <th>JMX</th>
@@ -79,13 +79,18 @@
 			  $artifact_age_string = $artifact_age->days . " day(s) ago";
 			else
 			  $artifact_age_string = $artifact_age->h . " hour(s) ago";
+			$deployment_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['DEPLOYMENT_DATE']),$now,true);
+			if($deployment_age->days)
+			  $deployment_age_string = $deployment_age->days . " day(s) ago";
+			else
+			  $deployment_age_string = $deployment_age->h . " hour(s) ago";
           ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
               <td><a href="<?=$descriptor_array['ARTIFACT_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;<?=$descriptor_array['ARTIFACT_TIMESTAMP']?></a></td>
               <td><?=$artifact_age_string?></td>
-              <td><?=displayDate($descriptor_array['DEPLOYMENT_DATE'])?></td>
+              <td><?=$deployment_age_string?></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs"  class="center" /></a></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a></td>
