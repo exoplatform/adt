@@ -318,21 +318,21 @@ do_download_server() {
   # Credentials and repository options
   if [ -n $CREDENTIALS ]; then
     local repository=private
-    local credentials="--user $CREDENTIALS --location-trusted"
+    local credentials="--location-trusted -u $CREDENTIALS"
   fi;
   if [ -z $CREDENTIALS ]; then
     local repository=public
-    local credentials="--location"
+    local credentials="--location-trusted"
   fi;
   # By default the timestamp is the version (for a release)
   ARTIFACT_TIMESTAMP=$PRODUCT_VERSION
   # base url where to download from
-  local url="http://repository.exoplatform.org/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
+  local url="http://repository.exoplatform.org/content/groups/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
 
   # For a SNAPSHOT we will ne to manually compute the TIMESTAMP of the SNAPSHOT
-  if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]
+  if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]    
   then
-    echo "[INFO] Downloading metadata ..."
+    echo "[INFO] Downloading metadata $url/maven-metadata.xml ..."
     curl $credentials "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
     if [ "$?" -ne "0" ]; then
       echo "Sorry, cannot download artifact metadata"
