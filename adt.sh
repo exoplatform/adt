@@ -317,7 +317,7 @@ do_download_server() {
   mkdir -p $DL_DIR
   # Credentials and repository options
   if [ -n $CREDENTIALS ]; then
-    local repository=private
+    local repository=staging
     local credentials="--location-trusted -u $CREDENTIALS"
   fi;
   if [ -z $CREDENTIALS ]; then
@@ -327,7 +327,7 @@ do_download_server() {
   # By default the timestamp is the version (for a release)
   ARTIFACT_TIMESTAMP=$PRODUCT_VERSION
   # base url where to download from
-  local url="http://repository.exoplatform.org/content/groups/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
+  local url="http://repository.exoplatform.org/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
 
   # For a SNAPSHOT we will ne to manually compute the TIMESTAMP of the SNAPSHOT
   if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]    
