@@ -69,6 +69,8 @@ initialize()
   CREDENTIALS=""
 
   CURR_DATE=`date "+%Y%m%d.%H%M%S"`
+  
+  SERVER_SCRIPT="/bin/gatein.sh"
 
   # OS specific support.  $var _must_ be set to either true or false.
   CYGWIN=false
@@ -178,6 +180,7 @@ do_init()
             ARTIFACT_ARTIFACTID="exo.webos.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
+            SERVER_SCRIPT="/bin/eXo.sh"
             ;;
           ecms)
             ARTIFACT_GROUPID="org.exoplatform.ecms"
@@ -644,7 +647,7 @@ do_start()
   export CATALINA_PID=$DEPLOYMENT_PID_FILE
   export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
   export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS"
-  ${CATALINA_HOME}/bin/gatein.sh start
+  ${CATALINA_HOME}${SERVER_SCRIPT} start
   # Wait for logs availability
   while [ true ];
   do    
@@ -681,7 +684,7 @@ do_stop()
     echo "[INFO] Stopping server ..."
     export CATALINA_HOME=$DEPLOYMENT_DIR
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
-    ${CATALINA_HOME}/bin/gatein.sh stop 60 -force || true
+    ${CATALINA_HOME}${SERVER_SCRIPT} stop 60 -force || true
     echo "[INFO] Server stopped"
   else
     echo "[WARNING] No server directory to stop it"
