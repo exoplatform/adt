@@ -18,7 +18,7 @@
           They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
         <p>Each instance can be accessed using JMX with the given URL and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
         <p>&nbsp;</p>
-        <table>
+        <table class="center">
           <thead>
             <tr>
               <th colspan="2">Product</th>
