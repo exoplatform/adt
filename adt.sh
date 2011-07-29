@@ -4,6 +4,16 @@ SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="${0%/*}"
 
 #
+# Replace in file $1 the value $2 by $3
+#
+replace_in_file()
+{
+  mv $1 $1.orig
+  sed "s|$2|$3|g" $1.orig > $1
+  rm $1.orig
+}
+
+#
 # Initializes the script and various variables
 #
 initialize()
@@ -436,16 +446,6 @@ do_unpack_server()
   fi
   rm -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
   echo "[INFO] Server unpacked"
-}
-
-#
-#
-#
-replace_in_file()
-{
-  mv $1 $1.orig
-  sed "s|$2|$3|g" $1.orig > $1
-  rm $1.orig
 }
 
 #
