@@ -230,6 +230,9 @@ do_init()
         esac        
         # Version
         PRODUCT_VERSION=$1
+        # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
+        # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
+        PRODUCT_BRANCH=`expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"
         shift        
         ;;
       list)
@@ -453,51 +456,58 @@ do_unpack_server()
 #
 do_patch_server()
 {
+  # Install jmx jar
+  JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
+  echo "[INFO] Downloading and installing JMX remote lib ..."
+  curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar
+  if [ ! -e ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar ]; then
+    echo "[ERROR] !!! Sorry, cannot download ${JMX_JAR_URL}"
+    exit 1
+  fi
+  echo "[INFO] Done."
+
   # Reconfigure server.xml
+  # First we need to find which patch to apply
+  # We'll try to find it in the directory $ETC_DIR/tomcat6/ and we'll select it in this order :
+  # $PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch
+  # $PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch
+  # server.xml.patch
+  #
   
+  local patch="$ETC_DIR/tomcat6/server.xml.patch"
+  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch ] && patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
+  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch ] && patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch"
+  echo "[INFO] Applying on server.xml the patch $patch ..."
   # Prepare the patch
-  cp $ETC_DIR/tomcat6/server.xml.patch $DEPLOYMENT_DIR/conf/server.xml.patch
+  cp $patch $DEPLOYMENT_DIR/conf/server.xml.patch
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@SHUTDOWN_PORT@" "${DEPLOYMENT_SHUTDOWN_PORT}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@JMX_RMI_REGISTRY_PORT@" "${DEPLOYMENT_RMI_REG_PORT}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
-
   # Ensure the server.xml doesn't have some windows end line characters
   # '\015' is Ctrl+V Ctrl+M = ^M
   cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.orig
-  tr -d '\015' < $DEPLOYMENT_DIR/conf/server.xml.orig > $DEPLOYMENT_DIR/conf/server.xml
-  
-  patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server.xml.patch
-  
-  # Install jmx jar
-  JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
-  echo "Download and install JMX remote lib ..."
-  curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar
-  if [ ! -e ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar ]; then
-    echo "!!! Sorry, cannot download ${JMX_JAR_URL}"
-    exit 1
-  fi
-  echo "Done."
-  
-  
+  tr -d '\015' < $DEPLOYMENT_DIR/conf/server.xml.orig > $DEPLOYMENT_DIR/conf/server.xml  
+  patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server.xml.patch  
+  echo "[INFO] Done."
   # JMX settings
-  
+  echo "[INFO] Creating JMX configuration files ..."  
   cat << EOF > $DEPLOYMENT_DIR/conf/jmxremote.access
 acceptanceMonitor readonly
 EOF
-
   cat << EOF > $DEPLOYMENT_DIR/conf/jmxremote.password
 acceptanceMonitor monitorAcceptance!
 EOF
-
   chmod 400 $DEPLOYMENT_DIR/conf/jmxremote.password
+  echo "[INFO] Done."
+  echo "[INFO] Opening firewall ports ..."
   # Open firewall ports
   if $LINUX; then
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}    
-  fi
-  
+  fi  
+  echo "[INFO] Done."
   DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 }
 
@@ -587,6 +597,7 @@ do_create_deployment_descriptor()
   cat << EOF > $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 PRODUCT_NAME=$PRODUCT_NAME
 PRODUCT_VERSION=$PRODUCT_VERSION
+PRODUCT_BRANCH=$PRODUCT_BRANCH
 DEPLOYMENT_DATE=$CURR_DATE
 DEPLOYMENT_DIR=$DEPLOYMENT_DIR
 DEPLOYMENT_URL=$DEPLOYMENT_URL
