@@ -18,7 +18,7 @@
           They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
         <p>Each instance can be accessed using JMX with the given URL and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
         <p>&nbsp;</p>
-        <table align="center">
+        <table>
           <thead>
             <tr>
               <th colspan="2">Product</th>
@@ -88,10 +88,14 @@
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
-              <td><a href="<?=$descriptor_array['ARTIFACT_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;<?=$descriptor_array['ARTIFACT_TIMESTAMP']?></a></td>
+              <td><a href="<?=$descriptor_array['ARTIFACT_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;
+                <?=$descriptor_array['ARTIFACT_TIMESTAMP']?>
+              </a></td>
               <td><?=$artifact_age_string?></td>
               <td><?=$deployment_age_string?></td>
-              <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a></td>
+              <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
+                <?=$descriptor_array['DEPLOYMENT_URL']?>
+              </a></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_LOG_URL']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs"  class="center" /></a></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a></td>
               <?php
