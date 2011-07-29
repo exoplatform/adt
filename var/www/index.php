@@ -81,7 +81,7 @@
 			  $artifact_age_string = $artifact_age->format('%h hour(s) ago');
 			else
 			  $artifact_age_string = $artifact_age->format('%i minute(s) ago');
-			$deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff$now,true);
+			$deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
 			if($deployment_age->days)
 			  $deployment_age_string = $deployment_age->format('%a day(s) ago');
 			else if($deployment_age->h > 0)
