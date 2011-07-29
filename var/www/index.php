@@ -77,13 +77,17 @@
 			$artifact_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['ARTIFACT_DATE']),$now,true);
 			if($artifact_age->days)
 			  $artifact_age_string = $artifact_age->days . " day(s) ago";
-			else
+			else if($artifact_age->h > 0)
 			  $artifact_age_string = $artifact_age->h . " hour(s) ago";
+			else
+			  $artifact_age_string = $artifact_age->m . " minute(s) ago";
 			$deployment_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['DEPLOYMENT_DATE']),$now,true);
 			if($deployment_age->days)
 			  $deployment_age_string = $deployment_age->days . " day(s) ago";
-			else
+			else if($deployment_age->h > 0)
 			  $deployment_age_string = $deployment_age->h . " hour(s) ago";
+			else
+			  $deployment_age_string = $deployment_age->m . " minutes(s) ago";
           ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
