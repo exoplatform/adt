@@ -144,7 +144,7 @@ EOF
 #
 # Decode command line parameters
 #
-do_init()
+do_read_cl()
 {   
     # no action ? provide help
     if [ $# -lt 1 ]; then
@@ -745,7 +745,7 @@ do_list()
 
 initialize
 
-do_init $@
+do_read_cl $@
 
 case "$ACTION" in
   deploy)
