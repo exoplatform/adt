@@ -76,14 +76,14 @@
             $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
 			$artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
 			if($artifact_age->days)
-			  $artifact_age_string = $artifact_age->format('%days day(s) ago');
+			  $artifact_age_string = $artifact_age->format('%a day(s) ago');
 			else if($artifact_age->h > 0)
 			  $artifact_age_string = $artifact_age->format('%h hour(s) ago');
 			else
 			  $artifact_age_string = $artifact_age->format('%i minute(s) ago');
 			$deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff$now,true);
 			if($deployment_age->days)
-			  $deployment_age_string = $deployment_age->format('%days day(s) ago');
+			  $deployment_age_string = $deployment_age->format('%a day(s) ago');
 			else if($deployment_age->h > 0)
 			  $deployment_age_string = $deployment_age->format('%h hour(s) ago');
 			else
