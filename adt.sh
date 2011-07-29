@@ -1,5 +1,8 @@
 #!/bin/bash -eu                                                                                                                                                                                                                         -e
 
+# Load local config from $HOME/.adtrc
+[ -e $HOME/.adtrc ] && source $HOME/.adtrc
+
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="${0%/*}"
 
@@ -31,6 +34,7 @@ initialize()
   # ADT_DATA is the working area for ADT script
   if [ ! $ADT_DATA ]; then
     echo "[ERROR] ADT_DATA environment variable not set !"
+    echo "[ERROR] You can define it in \$HOME/.adtrc"
     exit 1;
   fi
 
@@ -61,12 +65,15 @@ initialize()
   DEPLOYMENT_URL=""
   DEPLOYMENT_LOG_URL=""
   DEPLOYMENT_JMX_URL=""
-  DEPLOYMENT_SHUTDOWN_PORT=8005
-  DEPLOYMENT_HTTP_PORT=8080
-  DEPLOYMENT_AJP_PORT=8009
-  DEPLOYMENT_RMI_REG_PORT=10001
-  DEPLOYMENT_RMI_SRV_PORT=10002
   DEPLOYMENT_PID_FILE=""
+  # These variables can be loaded from the env or $HOME/.adtrc
+  set +u
+  [ -z $DEPLOYMENT_SHUTDOWN_PORT ] && DEPLOYMENT_SHUTDOWN_PORT=8005
+  [ -z $DEPLOYMENT_HTTP_PORT ] && DEPLOYMENT_HTTP_PORT=8080
+  [ -z $DEPLOYMENT_AJP_PORT ] && DEPLOYMENT_AJP_PORT=8009
+  [ -z $DEPLOYMENT_RMI_REG_PORT ] && DEPLOYMENT_RMI_REG_PORT=10001
+  [ -z $DEPLOYMENT_RMI_SRV_PORT ] && DEPLOYMENT_RMI_SRV_PORT=10002
+  set -u
   
   ARTIFACT_GROUPID=""
   ARTIFACT_ARTIFACTID=""
@@ -76,13 +83,16 @@ initialize()
   ARTIFACT_PACKAGING=""
   ARTIFACT_URL=""
   
-  CREDENTIALS=""
-
+  # These variables can be loaded from the env or $HOME/.adtrc
+  set +u
+  [ -z $REPO_CREDENTIALS] && REPO_CREDENTIALS=""
+  set -u
+  
   CURR_DATE=`date "+%Y%m%d.%H%M%S"`
   
   SERVER_SCRIPT="/bin/gatein.sh"
 
-  # OS specific support.  $var _must_ be set to either true or false.
+  # OS specific support. $var _must_ be set to either true or false.
   CYGWIN=false
   LINUX=false;
   OS400=false
@@ -129,13 +139,13 @@ VERSION (for deploy, start, stop, restart, undeploy actions) :
 GLOBAL OPTIONS :
   -h         Show this message  
 
-DEPLOY OPTIONS :
-  -A         AJP Port
-  -H         HTTP Port
-  -S         SHUTDOWN Port 
-  -R         RMI Registry Port for JMX
-  -V         RMI Server Port for JMX
-  -u         user credentials (value in "username:password" format) to download the server package (default: none)
+DEPLOY OPTIONS [ environment variable to use to set a default value ] :
+  -A         AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
+  -H         HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
+  -S         SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
+  -R         RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
+  -V         RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
+  -u         user credentials (value in "username:password" format) to download the server package (default: none) [ \$REPO_CREDENTIALS ]
 
 EOF
 
@@ -144,7 +154,7 @@ EOF
 #
 # Decode command line parameters
 #
-do_read_cl()
+do_process_cl_params()
 {   
     # no action ? provide help
     if [ $# -lt 1 ]; then
@@ -300,7 +310,7 @@ do_read_cl()
                  ;;
              u)
                  if [[ "$ACTION" == "deploy" ]]; then
-                   CREDENTIALS=$OPTARG
+                   REPO_CREDENTIALS=$OPTARG
                  else
                    echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
                    print_usage
@@ -331,14 +341,14 @@ do_download_server() {
   ARTIFACT_DATE=""
   # Where we will download it
   mkdir -p $DL_DIR
-  # Credentials and repository options
-  if [ -n $CREDENTIALS ]; then
+  # REPO_CREDENTIALS and repository options
+  if [ -n $REPO_CREDENTIALS ]; then
     local repository=staging
-    local credentials="--location-trusted -u $CREDENTIALS"
+    local curl_options="--location-trusted -u $REPO_CREDENTIALS"
   fi;
-  if [ -z $CREDENTIALS ]; then
+  if [ -z $REPO_CREDENTIALS ]; then
     local repository=public
-    local credentials="--location-trusted"
+    local curl_options="--location-trusted"
   fi;
   # By default the timestamp is the version (for a release)
   ARTIFACT_TIMESTAMP=$PRODUCT_VERSION
@@ -346,10 +356,9 @@ do_download_server() {
   local url="http://repository.exoplatform.org/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
 
   # For a SNAPSHOT we will ne to manually compute the TIMESTAMP of the SNAPSHOT
-  if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]    
-  then
+  if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]; then
     echo "[INFO] Downloading metadata $url/maven-metadata.xml ..."
-    curl $credentials "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
+    curl $curl_options "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
     if [ "$?" -ne "0" ]; then
       echo "Sorry, cannot download artifact metadata"
       exit 1
@@ -382,7 +391,7 @@ do_download_server() {
     echo "[INFO] Archive          : $name "
     echo "[INFO] Repository       : $repository "
     echo "[INFO] Url              : $ARTIFACT_URL "
-    curl $credentials "$ARTIFACT_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+    curl $curl_options "$ARTIFACT_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
     if [ "$?" -ne "0" ]; then
       echo "Sorry, cannot download $name"
       exit 1
@@ -745,7 +754,7 @@ do_list()
 
 initialize
 
-do_read_cl $@
+do_process_cl_params $@
 
 case "$ACTION" in
   deploy)

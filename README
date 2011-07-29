@@ -11,7 +11,9 @@ Fork this project :
     
 Define the environment variable ADT_DATA, which will be the path to a working directory used by ADT.
 
-    export ADT_DATA=~/adt_data
+    export ADT_DATA=$HOME/adt_data
+    
+You can also define your settings in $HOME/.adtrc
     
 You're ready to go
 ------------------
@@ -43,33 +45,37 @@ List all deployed instances
 Usage
 -----
 
-    usage: ./adt.sh action [product] [version] [options]
-    
-    This script manages automated deployment of eXo products
-    
-    ACTION :
-      deploy     Deploys (Download+Configure) the server
-      start      Starts the server
-      stop       Stops the server
-      restart    Restarts the server
-      undeploy   Undeploys (Delete) the server
-      list       Lists all deployed servers
-      
-    PRODUCT (for deploy, start, stop, restart, undeploy actions) :
-      social     eXo Social
-      ecms       eXo Content
-      ks         eXo Knowledge
-      cs         eXo Collaboration
-      platform   eXo Platform
-    
-    VERSION (for deploy, start, stop, restart, undeploy actions) :
-      version of the product
-    
-    GLOBAL OPTIONS :
-      -h         Show this message  
-    
-    DEPLOY OPTIONS :
-      -A         AJP Port
-      -H         HTTP Port
-      -S         SHUTDOWN Port 
-      -u         user credentials (value in "username:password" format) to download the server package (default: none)
+usage: ./adt.sh action [product] [version] [options]
+
+This script manages automated deployment of eXo products
+
+ACTION :
+  deploy     Deploys (Download+Configure) the server
+  start      Starts the server
+  stop       Stops the server
+  restart    Restarts the server
+  undeploy   Undeploys (Delete) the server
+  list       Lists all deployed servers
+  
+PRODUCT (for deploy, start, stop, restart, undeploy actions) :
+  gatein     eXo GateIn
+  webos      eXo WebOS
+  social     eXo Social
+  ecms       eXo Content
+  ks         eXo Knowledge
+  cs         eXo Collaboration
+  platform   eXo Platform
+
+VERSION (for deploy, start, stop, restart, undeploy actions) :
+  version of the product
+
+GLOBAL OPTIONS :
+  -h         Show this message  
+
+DEPLOY OPTIONS [ environment variable to use to set a default value ] :
+  -A         AJP Port (default: 8009) [ $DEPLOYMENT_AJP_PORT ]
+  -H         HTTP Port (default: 8080) [ $DEPLOYMENT_HTTP_PORT ]
+  -S         SHUTDOWN Port (default: 8005) [ $DEPLOYMENT_SHUTDOWN_PORT ]
+  -R         RMI Registry Port for JMX (default: 10001) [ $DEPLOYMENT_RMI_REG_PORT ]
+  -V         RMI Server Port for JMX (default: 10002) [ $DEPLOYMENT_RMI_SRV_PORT ]
+  -u         user credentials (value in "username:password" format) to download the server package (default: none) [ $REPO_CREDENTIALS ]
