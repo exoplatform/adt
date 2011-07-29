@@ -64,24 +64,24 @@
             return isset($output[1]);
           }
           function displayDate ($date_as_string) {
-            $date = date_create_from_format('Ymd.His', $date_as_string);
-            return date_format($date, 'D d M Y - H:i:s T');
+            $date = DateTime::createFromFormat('Ymd.His', $date_as_string);
+            return $date->format('D d M Y - H:i:s T');
           }
           //print each file name
           $vhosts = getDirectoryList("/home/swfhudson/data/adt/conf/adt/");
           sort($vhosts);
-		  $now = date_create();
+		  $now = new DateTime();
           foreach( $vhosts as $vhost) {
             // Parse deployment descriptor
             $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
-			$artifact_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['ARTIFACT_DATE']),$now,true);
+			$artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
 			if($artifact_age->days)
 			  $artifact_age_string = $artifact_age->format('%days day(s) ago');
 			else if($artifact_age->h > 0)
 			  $artifact_age_string = $artifact_age->format('%h hour(s) ago');
 			else
 			  $artifact_age_string = $artifact_age->format('%i minute(s) ago');
-			$deployment_age = date_diff(date_create_from_format('Ymd.His',$descriptor_array['DEPLOYMENT_DATE']),$now,true);
+			$deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff$now,true);
 			if($deployment_age->days)
 			  $deployment_age_string = $deployment_age->format('%days day(s) ago');
 			else if($deployment_age->h > 0)
