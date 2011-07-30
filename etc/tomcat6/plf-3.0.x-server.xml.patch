@@ -1,0 +1,59 @@
+--- server.xml.ori	2011-07-31 00:09:06.000000000 +0200
++++ server.xml	2011-07-31 00:17:16.000000000 +0200
+@@ -23,7 +23,7 @@
+      define subcomponents such as "Valves" at this level.
+      Documentation at /docs/config/server.html
+  -->
+-<Server port="8005" shutdown="SHUTDOWN">
++<Server port="@SHUTDOWN_PORT@" shutdown="SHUTDOWN">
+ 
+   <!--APR library loader. Documentation at /docs/apr.html -->
+   <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
+@@ -32,6 +32,9 @@
+   <!-- JMX Support for the Tomcat server. Documentation at /docs/non-existent.html -->
+   <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
+   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
++  <!-- JMX fixed ports -->
++  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" 
++          rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" />
+ 
+   <!-- Global JNDI resources
+        Documentation at /docs/jndi-resources-howto.html
+@@ -50,15 +53,15 @@
+    <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
+                maxActive="128" maxIdle="32" maxWait="10000"
+                removeAbandoned="true" removeAbandonedTimeout="10" logAbandoned="true" minEvictableIdleTimeMillis="60000"
+-               username="sa" password="" driverClassName="org.hsqldb.jdbcDriver"
+-               url="jdbc:hsqldb:file:../gatein/data/hsql/exo-jcr_portal"/>
++               username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" validationQuery="Select 1"
++               url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@"/>
+ 
+     <!-- eXo IDM Datasource for portal -->                
+     <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
+                maxActive="128" maxIdle="32" maxWait="10000"
+                removeAbandoned="true" removeAbandonedTimeout="10" logAbandoned="true" minEvictableIdleTimeMillis="60000"
+-               username="sa" password="" driverClassName="org.hsqldb.jdbcDriver"
+-               url="jdbc:hsqldb:file:../gatein/data/hsql/exo-idm_portal"/>     
++               username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" validationQuery="Select 1"
++               url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@"/>     
+               
+   </GlobalNamingResources>
+ 
+@@ -76,7 +79,7 @@
+          APR (HTTP/AJP) Connector: /docs/apr.html
+          Define a non-SSL HTTP/1.1 Connector on port 8080
+     -->
+-    <Connector port="8080" protocol="HTTP/1.1" 
++    <Connector port="@HTTP_PORT@" protocol="HTTP/1.1" 
+                maxThreads="150" connectionTimeout="20000" 
+                redirectPort="8443" URIEncoding="UTF-8"
+                emptySessionPath="true"/>
+@@ -92,7 +95,7 @@
+     -->
+ 
+     <!-- Define an AJP 1.3 Connector on port 8009 -->
+-    <Connector port="8009" protocol="AJP/1.3" redirectPort="8443"/>
++    <Connector port="@AJP_PORT@" protocol="AJP/1.3" redirectPort="8443"/>
+ 
+ 
+     <!-- An Engine represents the entry point (within Catalina) that processes

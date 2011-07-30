@@ -564,11 +564,13 @@ do_patch_server()
   # We'll try to find it in the directory $ETC_DIR/tomcat6/ and we'll select it in this order :
   # $PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch
   # $PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch
+  # $PRODUCT_NAME-server.xml.patch  
   # server.xml.patch
   #
   local server_patch="$ETC_DIR/tomcat6/server.xml.patch"
-  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
+  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch"  
   [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch"
+  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
   # Prepare the patch
   cp $server_patch $DEPLOYMENT_DIR/conf/server.xml.patch
   echo "[INFO] Applying on server.xml the patch $server_patch ..."  
@@ -600,11 +602,13 @@ do_patch_server()
   # We'll try to find it in the directory $ETC_DIR/gatein/ and we'll select it in this order :
   # $PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch
   # $PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch
+  # $PRODUCT_NAME-configuration.properties.patch
   # configuration.properties.patch
   #
   local gatein_patch="$ETC_DIR/gatein/configuration.properties.patch"
-  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch"
+  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch"
   [ -e $ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch"
+  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch"
   # Prepare the patch
   cp $gatein_patch $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patch
   echo "[INFO] Applying on $GATEIN_CONF_PATH the patch $gatein_patch ..."  
