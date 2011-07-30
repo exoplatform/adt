@@ -78,4 +78,8 @@ DEPLOY OPTIONS [ environment variable to use to set a default value ] :
   -S         SHUTDOWN Port (default: 8005) [ $DEPLOYMENT_SHUTDOWN_PORT ]
   -R         RMI Registry Port for JMX (default: 10001) [ $DEPLOYMENT_RMI_REG_PORT ]
   -V         RMI Server Port for JMX (default: 10002) [ $DEPLOYMENT_RMI_SRV_PORT ]
-  -u         user credentials (value in "username:password" format) to download the server package (default: none) [ $REPO_CREDENTIALS ]
+  -r         user credentials in "username:password" format to download the server package (default: none) [ $REPO_CREDENTIALS ]
+             If user credentials are set for the repository then the package is downloaded from the staging group.
+
+DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :
+  -m         user credentials in "username:password" format to manage the database server (default: none) [ $MYSQL_CREDENTIALS ]  

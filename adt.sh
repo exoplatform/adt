@@ -32,7 +32,7 @@ initialize()
   fi
 
   # ADT_DATA is the working area for ADT script
-  if [ ! $ADT_DATA ]; then
+  if [ ! $ADT_DATA ]; then 
     echo "[ERROR] ADT_DATA environment variable not set !"
     echo "[ERROR] You can define it in \$HOME/.adtrc"
     exit 1;
@@ -85,7 +85,8 @@ initialize()
   
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
-  [ -z $REPO_CREDENTIALS] && REPO_CREDENTIALS=""
+  [ -z $REPO_CREDENTIALS ] && REPO_CREDENTIALS=""
+  [ -z $MYSQL_CREDENTIALS ] && MYSQL_CREDENTIALS=""  
   set -u
   
   CURR_DATE=`date "+%Y%m%d.%H%M%S"`
@@ -145,7 +146,11 @@ DEPLOY OPTIONS [ environment variable to use to set a default value ] :
   -S         SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
   -R         RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
   -V         RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
-  -u         user credentials (value in "username:password" format) to download the server package (default: none) [ \$REPO_CREDENTIALS ]
+  -r         user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
+             If user credentials are set for the repository then the package is downloaded from the staging group.
+
+DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :
+  -m         user credentials in "username:password" format to manage the database server (default: none) [ \$MYSQL_CREDENTIALS ]  
 
 EOF
 
@@ -194,6 +199,7 @@ do_process_cl_params()
             ARTIFACT_ARTIFACTID="exo.portal.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
+            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           webos)
             ARTIFACT_GROUPID="org.exoplatform.webos"
@@ -201,36 +207,42 @@ do_process_cl_params()
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
             SERVER_SCRIPT="/bin/eXo.sh"
+            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           ecms)
             ARTIFACT_GROUPID="org.exoplatform.ecms"
             ARTIFACT_ARTIFACTID="exo-ecms-delivery-wcm-assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
+            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           social)
             ARTIFACT_GROUPID="org.exoplatform.social"
             ARTIFACT_ARTIFACTID="exo.social.packaging.pkg"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
+            GATEIN_CONF_PATH="gatein/conf/portal/socialdemo/socialdemo.properties"
             ;;
           ks)
             ARTIFACT_GROUPID="org.exoplatform.ks"
             ARTIFACT_ARTIFACTID="exo.ks.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
+            GATEIN_CONF_PATH="gatein/conf/portal/ksdemo/ksdemo.properties"
             ;;
           cs)
             ARTIFACT_GROUPID="org.exoplatform.cs"
             ARTIFACT_ARTIFACTID="exo.cs.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
+            GATEIN_CONF_PATH="gatein/conf/portal/csdemo/configuration.xml"
             ;;
           plf)
             ARTIFACT_GROUPID="org.exoplatform.platform"
             ARTIFACT_ARTIFACTID="exo.platform.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
+            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           ?)
             echo "[ERROR] Invalid product \"$PRODUCT_NAME\"" 
@@ -240,10 +252,18 @@ do_process_cl_params()
         esac        
         # Version
         PRODUCT_VERSION=$1
+        shift        
         # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
         # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
         PRODUCT_BRANCH=`expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"
-        shift        
+        # Build a database name without dot, minus ... 
+        DEPLOYMENT_DATABASE_NAME="${PRODUCT_NAME}_${PRODUCT_VERSION}"
+        DEPLOYMENT_DATABASE_NAME="${DEPLOYMENT_DATABASE_NAME//./_}"
+        DEPLOYMENT_DATABASE_NAME="${DEPLOYMENT_DATABASE_NAME//-/_}"
+        # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
+        DEPLOYMENT_DATABASE_USER="${PRODUCT_NAME}_${PRODUCT_BRANCH}"
+        DEPLOYMENT_DATABASE_USER="${DEPLOYMENT_DATABASE_USER//./_}"
+        DEPLOYMENT_DATABASE_USER="${DEPLOYMENT_DATABASE_USER//-/_}"        
         ;;
       list)
         # Nothing to do
@@ -256,7 +276,7 @@ do_process_cl_params()
     esac    
 
     # Additional options
-    while getopts "hA:H:S:R:V:u:" OPTION
+    while getopts "hA:H:S:R:V:r:m:" OPTION
     do
          case $OPTION in
              h)
@@ -308,9 +328,18 @@ do_process_cl_params()
                    exit 1                 
                  fi
                  ;;
-             u)
+             r)
                  if [[ "$ACTION" == "deploy" ]]; then
                    REPO_CREDENTIALS=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
+                 ;;
+             m)
+                 if [[ ("$ACTION" == "deploy") ||  ("$ACTION" == "undeploy") ]]; then
+                   MYSQL_CREDENTIALS=$OPTARG
                  else
                    echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
                    print_usage
@@ -324,6 +353,13 @@ do_process_cl_params()
                  ;;
          esac
     done
+
+    if [[ (("$ACTION" == "deploy") || ("$ACTION" == "undeploy")) && -z $MYSQL_CREDENTIALS ]]; then
+      echo "[ERROR] DB Credentials aren't set !"
+      echo "[ERROR] Use the -m command line option or set the environment variable MYSQL_CREDENTIALS"
+      print_usage
+      exit 1;
+    fi
 
     # skip getopt parms
     shift $((OPTIND-1))
@@ -461,6 +497,39 @@ do_unpack_server()
 }
 
 #
+# Creates JCR & IDM databases for the instance. Drops them if it already exists.
+#
+do_create_databases()
+{
+  echo "[INFO] Creating new MySQL databases ..."
+  SQL=""
+  SQL=$SQL"DROP DATABASE IF EXISTS JCR_$DEPLOYMENT_DATABASE_NAME;"  
+  SQL=$SQL"DROP DATABASE IF EXISTS IDM_$DEPLOYMENT_DATABASE_NAME;"  
+  SQL=$SQL"CREATE DATABASE JCR_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
+  SQL=$SQL"CREATE DATABASE IDM_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
+  SQL=$SQL"GRANT ALL ON JCR_$DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
+  SQL=$SQL"GRANT ALL ON IDM_$DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
+  SQL=$SQL"FLUSH PRIVILEGES;"
+  SQL=$SQL"SHOW DATABASES;"
+  mysql -u ${MYSQL_CREDENTIALS%%:*} -p${MYSQL_CREDENTIALS##*:} -e "$SQL"
+  echo "[INFO] Done."
+}
+
+#
+# Drops JCR & IDM databases used by the instance.
+#
+do_drop_databases()
+{
+  echo "[INFO] Drops MySQL databases used by this instance ..."
+  SQL=""
+  SQL=$SQL"DROP DATABASE IF EXISTS JCR_$DEPLOYMENT_DATABASE_NAME;"  
+  SQL=$SQL"DROP DATABASE IF EXISTS IDM_$DEPLOYMENT_DATABASE_NAME;"  
+  SQL=$SQL"SHOW DATABASES;"
+  mysql -u ${MYSQL_CREDENTIALS%%:*} -p${MYSQL_CREDENTIALS##*:} -e "$SQL"
+  echo "[INFO] Done."
+}
+
+#
 # Function that configure the server for ours needs
 #
 do_patch_server()
@@ -468,38 +537,89 @@ do_patch_server()
   # Install jmx jar
   JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
   echo "[INFO] Downloading and installing JMX remote lib ..."
-  curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar
-  if [ ! -e ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar ]; then
+  curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
+  if [ ! -e ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL` ]; then
     echo "[ERROR] !!! Sorry, cannot download ${JMX_JAR_URL}"
     exit 1
   fi
   echo "[INFO] Done."
 
+  MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar"
+  echo "[INFO] Download and install MySQL JDBC driver ..."
+  curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
+  if [ ! -e ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL` ]; then
+    echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"
+    exit 1
+  fi
+  echo "[INFO] Done."
+
   # Reconfigure server.xml
+  
+  # Ensure the server.xml doesn't have some windows end line characters
+  # '\015' is Ctrl+V Ctrl+M = ^M
+  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.orig
+  tr -d '\015' < $DEPLOYMENT_DIR/conf/server.xml.orig > $DEPLOYMENT_DIR/conf/server.xml  
+
   # First we need to find which patch to apply
   # We'll try to find it in the directory $ETC_DIR/tomcat6/ and we'll select it in this order :
   # $PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch
   # $PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch
   # server.xml.patch
   #
-  
-  local patch="$ETC_DIR/tomcat6/server.xml.patch"
-  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch ] && patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
-  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch ] && patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch"
-  echo "[INFO] Applying on server.xml the patch $patch ..."
+  local server_patch="$ETC_DIR/tomcat6/server.xml.patch"
+  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
+  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch"
   # Prepare the patch
-  cp $patch $DEPLOYMENT_DIR/conf/server.xml.patch
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@SHUTDOWN_PORT@" "${DEPLOYMENT_SHUTDOWN_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@JMX_RMI_REGISTRY_PORT@" "${DEPLOYMENT_RMI_REG_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml.patch "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
-  # Ensure the server.xml doesn't have some windows end line characters
-  # '\015' is Ctrl+V Ctrl+M = ^M
-  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.orig
-  tr -d '\015' < $DEPLOYMENT_DIR/conf/server.xml.orig > $DEPLOYMENT_DIR/conf/server.xml  
+  cp $server_patch $DEPLOYMENT_DIR/conf/server.xml.patch
+  echo "[INFO] Applying on server.xml the patch $server_patch ..."  
+  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.ori
   patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server.xml.patch  
+  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.patched
+  
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@SHUTDOWN_PORT@" "${DEPLOYMENT_SHUTDOWN_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@JMX_RMI_REGISTRY_PORT@" "${DEPLOYMENT_RMI_REG_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_NAME@" "JCR_${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_NAME@" "IDM_${DEPLOYMENT_DATABASE_NAME}"
   echo "[INFO] Done."
+
+  # Reconfigure $GATEIN_CONF_PATH
+  
+  # Ensure the configuration.properties doesn't have some windows end line characters
+  # '\015' is Ctrl+V Ctrl+M = ^M
+  cp $DEPLOYMENT_DIR/$GATEIN_CONF_PATH $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.orig
+  tr -d '\015' < $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.orig > $DEPLOYMENT_DIR/$GATEIN_CONF_PATH  
+
+  # First we need to find which patch to apply
+  # We'll try to find it in the directory $ETC_DIR/gatein/ and we'll select it in this order :
+  # $PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch
+  # $PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch
+  # configuration.properties.patch
+  #
+  local gatein_patch="$ETC_DIR/gatein/configuration.properties.patch"
+  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch"
+  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch"
+  # Prepare the patch
+  cp $gatein_patch $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patch
+  echo "[INFO] Applying on $GATEIN_CONF_PATH the patch $gatein_patch ..."  
+  cp $DEPLOYMENT_DIR/$GATEIN_CONF_PATH $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.ori
+  patch -l -p0 $DEPLOYMENT_DIR/$GATEIN_CONF_PATH < $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patch  
+  cp $DEPLOYMENT_DIR/$GATEIN_CONF_PATH $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patched
+  
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_NAME@" "JCR_${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_NAME@" "IDM_${DEPLOYMENT_DATABASE_NAME}"
+  echo "[INFO] Done."
+
   # JMX settings
   echo "[INFO] Creating JMX configuration files ..."  
   cat << EOF > $DEPLOYMENT_DIR/conf/jmxremote.access
@@ -618,6 +738,7 @@ DEPLOYMENT_AJP_PORT=$DEPLOYMENT_AJP_PORT
 DEPLOYMENT_PID_FILE=$DEPLOYMENT_PID_FILE
 DEPLOYMENT_RMI_REG_PORT=$DEPLOYMENT_RMI_REG_PORT
 DEPLOYMENT_RMI_SRV_PORT=$DEPLOYMENT_RMI_SRV_PORT
+DEPLOYMENT_DATABASE_NAME=$DEPLOYMENT_DATABASE_NAME
 ARTIFACT_GROUPID=$ARTIFACT_GROUPID
 ARTIFACT_ARTIFACTID=$ARTIFACT_ARTIFACTID
 ARTIFACT_TIMESTAMP=$ARTIFACT_TIMESTAMP
@@ -650,6 +771,7 @@ do_deploy()
   echo "[INFO] Deploying server ..."
   do_download_server
   do_unpack_server
+  do_create_databases
   do_patch_server
   do_create_apache_vhost
   do_create_deployment_descriptor
@@ -735,6 +857,7 @@ do_undeploy()
     sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
   fi  
   echo "[INFO] Server undeployed"
+  do_drop_databases
 }
 
 #
