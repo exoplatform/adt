@@ -235,7 +235,7 @@ do_process_cl_params()
             ARTIFACT_ARTIFACTID="exo.cs.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/portal/csdemo/configuration.xml"
+            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           plf)
             ARTIFACT_GROUPID="org.exoplatform.platform"
