@@ -138,7 +138,7 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		if(!empty($res[3]) && is_array($res[3])) {
 			usort($res[3],"mysort");
 			foreach($res[3] as $error) {
-				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[3]."</p>";
+				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[2]."</p>";
 			}
 		} else {
 			echo "none<br />";
@@ -149,7 +149,7 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		if(!empty($res[2]) && is_array($res[2])) {
 			usort($res[2],"mysort");
 			foreach($res[2] as $error) {
-				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[3]."</p>";
+				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[2]."</p>";
 			}
 		} else {
 			echo "none<br />";
@@ -160,7 +160,7 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		if(!empty($res[1]) && is_array($res[1])) {
 			usort($res[1],"mysort");
 			foreach($res[1] as $error) {
-				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[3]."</p>";
+				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[2]."</p>";
 			}
 		} else {
 			echo "none<br />";
@@ -189,7 +189,7 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		$lines = explode("<br />",$output);
 		
 		for($i=0;$i<count($lines);$i++) {
-			echo "<a name='".($i+1)."'></a><font color='black'>***</font>&nbsp;";
+			echo "<a name='".($i+1)."'></a>&nbsp;";
 			?>
         <font color="black">
         <?=$i+1?>
