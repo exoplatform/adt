@@ -1,62 +1,6 @@
 <?php
-//================================================================================================
-//================================================================================================
-//==================Log Digester 1.1==============================================================
-/*
-	Released March 23, 2006 by Jake Olefsky
-	Copyright by Jake Olefsky
-	http://www.jakeo.com/software/logdigester/index.php
 
-	This software is free to use and modify for non-commercial purposes only.  For commercial use
-	of this software please contact me.  Please keep this readme intact at the top of this file.
-	
-	If you improve this script, please email me a copy of the improvement so everyone can benefit. 
-	
-	REQUIREMENTS:
-				PHP 4.3+ compiled with safe mode turned off or with permissions set so this script
-				can read the php error log file.
-	
-	SUMMARY:
-				It is highly recommended that you log your errors to a file instead of displaying
-				them in the browser.  As this log file grows, it can become difficult to find and 
-				react to errors. This script will read and analyze your php error log and spit out a
-				more readable version with the worst errors highlighted so you can fix those first.
-				
-				These are the recommended settings for your php.ini file.
-				
-				error_reporting  =  E_ALL
-				display_errors = Off
-				log_errors = On
-				ignore_repeated_errors = Off
-				ignore_repeated_source = Off
-				error_log = /path/to/php_error.log
-				
-	INSTALL:
-				Just drop this file somewhere where you can access it via the web. Then modify 
-				the $file variable below to point to your error log. If you run multiple websites
-				from the same server, you may want to add some filters so you can quickly narrow
-				down the errors by site.  Simple place a unique path identifier in the filter[] array.
-				Add more rows to add more filters.
-				
-				It would be a good idea to put a password on the webpage so only you can see it, 
-				especially if you leave the 'allow_show_source' option turned on since this allows you
-				to view the source code of any file on your server!  
-				
-				You may also want to setup a cron job to empty the error log file once a day, just to keep
-				things tidy.
-				
-	UN-INSTALL: 
-				Simply remove this script
-	
-	
-	VERSION HISTORY:
-	1.0		March 3, 2006
-	1.1		March 24, 2006  
-		Now you can view the actual source code that caused each error. Nifty.
-		Filters to narrow the results. Usefull for debuging a particular site.
-*/
-
-//$file = "/path/to/my/php_error.log"; //the path to your error log file
+$file = $_GET['file'];
 $num_latest = 5; //the number of errors to show in the "Last Few Errors" section
 $allow_show_source = 1; //whether to allow the ability to view the source code of your php files
 
@@ -69,7 +13,12 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 //================================================================================================
 //================================================================================================
 ?>
-<html><body><head><title>PHP Error Log Digested</title></head><body>
+<html>
+<body>
+<head>
+<title>PHP Error Log Digested</title>
+</head>
+<body>
 <style type="text/css">
 html,body,div,p {margin:0px;padding:0px;}
 p { white-space: nowrap }
@@ -90,21 +39,29 @@ input,select { margin-left: 5px; }
 a { color: #000; }
 a:hover { color: #009; }
 </style>
-
 <?php if(empty($_GET['display_error'])) { ?>
-	<div class="instructions">
-	<b><a href="http://www.jakeo.com/software/logdigester/index.php">Log Digester</a> Output</b> from <?=$file?>
-	</div>
-
-	<?php
+<div class="instructions"> <b><a href="http://www.jakeo.com/software/logdigester/index.php">Log Digester</a> Output</b> from
+  <?=$file?>
+</div>
+<?php
 	if(!empty($filter)) {
-		?><form action="logs.php" method="get"><select name='f'><option value="">NONE</option><?php
+		?>
+<form action="logs.php" method="get">
+  <select name='f'>
+    <option value="">NONE</option>
+    <?php
 		foreach($filter as $f) {
 			?>
-			<option value="<?=$f?>"><?=$f?></option>
-			<?php
+    <option value="<?=$f?>">
+    <?=$f?>
+    </option>
+    <?php
 		}
-		?></select><input type="submit" value="Filter" /></form><?php
+		?>
+  </select>
+  <input type="submit" value="Filter" />
+</form>
+<?php
 	}
 	
 	function mysort($a,$b) {
@@ -142,25 +99,25 @@ a:hover { color: #009; }
 				
 				//figures out severity of error
 				$severity=3; 
-				if(strstr($line,"Warning")!==FALSE) $severity=2;
-				if(strstr($line,"Notice")!==FALSE) $severity=1;
-				$line = ereg_replace("Notice:  ","",$line);
-				$line = ereg_replace("Warning:  ","",$line);
-				$line = ereg_replace("Error:  ","",$line);
+				if(strstr($line,"WARNING")!==FALSE) $severity=2;
+				if(strstr($line,"INFO")!==FALSE) $severity=1;
+				$line = ereg_replace("INFO: ","",$line);
+				$line = ereg_replace("WARNING: ","",$line);
+				$line = ereg_replace("ERROR: ","",$line);
 		
 				if(!empty($line)) {
 					if(empty($res[$severity][$hash])) { //stuff this error into an array or increment counter for existing error
 						$res[$severity][$hash][0]=1;
 						$res[$severity][$hash][1]=$line;
 						if(empty($allow_show_source)) $res[$severity][$hash][2]=$linenumber;
-						else $res[$severity][$hash][2]="<a href='logdigester.php?display_error=".urlencode($filepath)."&amp;line=".$linenumber."#jump'>".$linenumber."</a>";
+						else $res[$severity][$hash][2]="<a href='logs.php?display_error=".urlencode($filepath)."&amp;line=".$linenumber."#jump'>".$linenumber."</a>";
 						$res[$severity][$hash][3]=$filepath;
 						
 					} else {
 						$res[$severity][$hash][0]++; //repeat error, so increment the existsing value
 						if(strstr($res[$severity][$hash][2],$linenumber)==FALSE) {
 							if(empty($allow_show_source)) $res[$severity][$hash][2].=" ".$linenumber;
-							else $res[$severity][$hash][2].=" <a href='logdigester.php?display_error=".urlencode($filepath)."&amp;line=".$linenumber."#jump'>".$linenumber."</a>";
+							else $res[$severity][$hash][2].=" <a href='logs.php?display_error=".urlencode($filepath)."&amp;line=".$linenumber."#jump'>".$linenumber."</a>";
 						}
 					}
 				}
@@ -218,17 +175,18 @@ a:hover { color: #009; }
 		echo "Couldn't read error file.";
 	}
 	?>
-	<br /><br />
-	<b>Key:</b> The first number is the frequency count (bigger number=worse error).  This is followed by the error.  The numbers at the ends are the line numbers at which the errors have occurred in your php file.
-	<br />
+<br />
+<br />
+<b>Key:</b> The first number is the frequency count (bigger number=worse error).  This is followed by the error.  The numbers at the ends are the line numbers at which the errors have occurred in your php file. <br />
 <?php } else if(!empty($allow_show_source)) { ?>
-	<div class="instructions">
-	<b><a href="http://www.jakeo.com/software/logdigester/index.php">Log Digester</a> Output</b> from <a href="logs.php"><?=$file?></a><br />
-	Showing errors from: <?=$_GET['display_error']?>
-	</div>
-	
-	<div class="code">
-	<?php
+<div class="instructions"> <b><a href="http://www.jakeo.com/software/logdigester/index.php">Log Digester</a> Output</b> from <a href="logs.php">
+  <?=$file?>
+  </a><br />
+  Showing errors from:
+  <?=$_GET['display_error']?>
+</div>
+<div class="code">
+  <?php
 		$output = highlight_file($_GET['display_error'], true);
 	
 		//Line breaks are a little strange
@@ -243,12 +201,16 @@ a:hover { color: #009; }
 			if($i+1==$_GET['line']) echo "<a name='jump'></a><font color='black'>***</font>&nbsp;";
 			else echo "&nbsp;&nbsp;&nbsp;&nbsp;";
 			?>
-			<font color="black"><?=$i+1?></font>&nbsp;&nbsp;&nbsp;<?=$lines[$i]?><br />
-			<?php
+  <font color="black">
+  <?=$i+1?>
+  </font>&nbsp;&nbsp;&nbsp;
+  <?=$lines[$i]?>
+  <br />
+  <?php
 		}
 		
 	?>
-	</div>
-	
+</div>
 <? } ?>
-</body></html>
+</body>
+</html>
