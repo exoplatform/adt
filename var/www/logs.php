@@ -28,7 +28,6 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
     <div>
       <?php if(empty($_GET['display_error'])) { ?>
       <div class="instructions">File : <?=$file?></div>
-      <b>Key:</b> The first number is the frequency count (bigger number=worse error).  This is followed by the error.  The numbers at the ends are the line numbers at which the errors have occurred in your file. <br />
       <?php
 	if(!empty($filter)) {
 		?>
@@ -88,24 +87,30 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 				//figures out severity of error
 				$severity=1; 
 				if(strstr($line,"WARNING")!==FALSE) $severity=2;
+				if(strstr($line,"WARN")!==FALSE) $severity=2;
 				if(strstr($line,"ERROR")!==FALSE) $severity=3;
+				if(strstr($line,"SEVERE")!==FALSE) $severity=3;
 				$line = ereg_replace("INFO: ","",$line);
 				$line = ereg_replace("WARNING: ","",$line);
 				$line = ereg_replace("ERROR: ","",$line);
-		
+				$line = ereg_replace("[INFO]","",$line);
+				$line = ereg_replace("[WARNING]","",$line);
+				$line = ereg_replace("[WARN]","",$line);
+				$line = ereg_replace("[ERROR]","",$line);
+				
 				if(!empty($line)) {
 					if(empty($res[$severity][$hash])) { //stuff this error into an array or increment counter for existing error
 						$res[$severity][$hash][0]=1;
 						$res[$severity][$hash][1]=$line;
 						if(empty($allow_show_source)) $res[$severity][$hash][2]=$linenumber;
-						else $res[$severity][$hash][2]="<a href='logs.php?file=".urlencode($filepath)."#".$linenumber."'>".$linenumber."</a>";
-						$res[$severity][$hash][3]=$filepath;
+						else $res[$severity][$hash][2]="<a href='logs.php?file=".urlencode($file)."#".$linenumber."'>".$linenumber."</a>";
+						$res[$severity][$hash][3]=$file;
 						
 					} else {
 						$res[$severity][$hash][0]++; //repeat error, so increment the existsing value
 						if(strstr($res[$severity][$hash][2],$linenumber)==FALSE) {
 							if(empty($allow_show_source)) $res[$severity][$hash][2].=" ".$linenumber;
-							else $res[$severity][$hash][2].=" <a href='logs.php?file=".urlencode($filepath)."#".$linenumber."'>".$linenumber."</a>";
+							else $res[$severity][$hash][2].=" <a href='logs.php?file=".urlencode($file)."#".$linenumber."'>".$linenumber."</a>";
 						}
 					}
 				}
@@ -126,11 +131,14 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 			}
 			echo "</div><br />";
 		}
+		?>
+        <b>Key:</b> The first number is the frequency count (bigger number=worse error).  This is followed by the error.  The numbers at the ends are the line numbers at which the errors have occurred in your file. <br />
+        <?php
 		echo "<div class='errors'><b>Errors</b><br />";
 		if(!empty($res[3]) && is_array($res[3])) {
 			usort($res[3],"mysort");
 			foreach($res[3] as $error) {
-				echo "<p>".$error[0]." ".$error[1]." ".$error[3]." ".$error[2]."</p>";
+				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[3]." ".$error[2]."</p>";
 			}
 		} else {
 			echo "none<br />";
@@ -141,18 +149,18 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		if(!empty($res[2]) && is_array($res[2])) {
 			usort($res[2],"mysort");
 			foreach($res[2] as $error) {
-				echo "<p>".$error[0]." ".$error[1]." ".$error[3]." ".$error[2]."</p>";
+				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[3]." ".$error[2]."</p>";
 			}
 		} else {
 			echo "none<br />";
 		}
 		echo "</div><br />";
 		
-		echo "<div class='notices'><b>Notices</b><br />";
+		echo "<div class='notices'><b>Info</b><br />";
 		if(!empty($res[1]) && is_array($res[1])) {
 			usort($res[1],"mysort");
 			foreach($res[1] as $error) {
-				echo "<p>".$error[0]." ".$error[1]." ".$error[3]." ".$error[2]."</p>";
+				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[3]." ".$error[2]."</p>";
 			}
 		} else {
 			echo "none<br />";
