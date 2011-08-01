@@ -67,30 +67,16 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 				$latest[] = $line;
 				if(sizeof($latest)>1+$num_latest) array_shift($latest);
 				
-				//$line = ereg_replace(".* PHP ","",$line); //gets rid of timestamp
-				$line = ereg_replace("[0-9]*-[a-zA-Z]*-[0-9]* [0-9]*:[0-9]*:[0-9]*","",$line); //gets rid of timestamp
-				
-				//gets line number of error		
-				//ereg(" on line ([0-9]*)",$line,$linenumber); 
-				//$linenumber = $linenumber[1];
-				//if(empty($linenumber)) $linenumber=" ";
-				//$line = ereg_replace(" on line [0-9]*","",$line);
-				
 				$linenumber = $linenumber + 1;
-				$hash = md5($line); //make a unique id for this error
-				
-				//gets filepath
-				//ereg(" in ([^ ]*)",$line,$filepath); 
-				//$filepath = trim($filepath[1]);
-				//if(empty($filepath)) $filepath="";
-				//$line = ereg_replace(" in [^ ]*","",$line);
-				
+
 				//figures out severity of error
 				$severity=1; 
 				if(strstr($line,"WARNING")!==FALSE) $severity=2;
 				if(strstr($line,"WARN")!==FALSE) $severity=2;
 				if(strstr($line,"ERROR")!==FALSE) $severity=3;
 				if(strstr($line,"SEVERE")!==FALSE) $severity=3;
+
+				$line = ereg_replace("[0-9]*-[a-zA-Z]*-[0-9]* [0-9]*:[0-9]*:[0-9]*","",$line); //gets rid of timestamp
 				$line = str_replace("INFO: ","",$line);
 				$line = str_replace("WARNING: ","",$line);
 				$line = str_replace("ERROR: ","",$line);
@@ -99,21 +85,26 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 				$line = str_replace("[WARNING] ","",$line);
 				$line = str_replace("[WARN] ","",$line);
 				$line = str_replace("[ERROR] ","",$line);
+
+				$hash = md5($line); //make a unique id for this error
 				
+
 				if(!empty($line)) {
 					if(empty($res[$severity][$hash])) { //stuff this error into an array or increment counter for existing error
 						$res[$severity][$hash][0]=1;
 						$res[$severity][$hash][1]=$line;
-						if(empty($allow_show_source)) $res[$severity][$hash][2]=$linenumber;
-						else $res[$severity][$hash][2]="<a href='logs.php?file=".urlencode($file)."#".$linenumber."'>".$linenumber."</a>";
+						if(empty($allow_show_source)) 
+						  $res[$severity][$hash][2]=$linenumber;
+						else 
+						  $res[$severity][$hash][2]="<a href='logs.php?file=".urlencode($file)."#".$linenumber."'>".$linenumber."</a>";
 						$res[$severity][$hash][3]=$file;
 						
 					} else {
 						$res[$severity][$hash][0]++; //repeat error, so increment the existsing value
-						if(strstr($res[$severity][$hash][2],$linenumber)==FALSE) {
-							if(empty($allow_show_source)) $res[$severity][$hash][2].=" ".$linenumber;
-							else $res[$severity][$hash][2].=" <a href='logs.php?file=".urlencode($file)."#".$linenumber."'>".$linenumber."</a>";
-						}
+						if(empty($allow_show_source)) 
+						  $res[$severity][$hash][2].=" ".$linenumber;
+						else 
+						  $res[$severity][$hash][2].=" <a href='logs.php?file=".urlencode($file)."#".$linenumber."'>".$linenumber."</a>";
 					}
 				}
 			}
