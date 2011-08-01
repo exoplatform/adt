@@ -1,13 +1,15 @@
---- configuration.properties	2011-07-30 22:18:52.000000000 +0200
-+++ configuration.properties	2011-07-30 22:22:16.000000000 +0200
-@@ -30,10 +30,10 @@
+--- configuration.properties.ori	2011-08-01 09:47:21.000000000 +0200
++++ configuration.properties.patched	2011-08-01 09:53:23.000000000 +0200
+@@ -29,11 +29,11 @@
+ # JCR
  gatein.jcr.config.type=local
  gatein.jcr.datasource.name=jdbcjcr
- gatein.jcr.datasource.dialect=auto
+-gatein.jcr.datasource.dialect=auto
 -gatein.jcr.datasource.driver=org.hsqldb.jdbcDriver
 -gatein.jcr.datasource.url=jdbc:hsqldb:file:${gatein.db.data.dir}/data/jdbcjcr_${name}
 -gatein.jcr.datasource.username=sa
 -gatein.jcr.datasource.password=
++gatein.jcr.datasource.dialect=mysql-utf8
 +gatein.jcr.datasource.driver=com.mysql.jdbc.Driver
 +gatein.jcr.datasource.url=jdbc:mysql://localhost:3306/@DB_JCR_NAME@
 +gatein.jcr.datasource.username=@DB_JCR_USR@
