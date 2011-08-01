@@ -68,6 +68,7 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 				if(sizeof($latest)>1+$num_latest) array_shift($latest);
 				
 				//$line = ereg_replace(".* PHP ","",$line); //gets rid of timestamp
+				$line = ereg_replace("[0-9]*-[a-zA-Z]*-[0-9]* [0-9]*:[0-9]*:[0-9]*","",$line); //gets rid of timestamp
 				
 				//gets line number of error		
 				//ereg(" on line ([0-9]*)",$line,$linenumber); 
@@ -93,10 +94,11 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 				$line = str_replace("INFO: ","",$line);
 				$line = str_replace("WARNING: ","",$line);
 				$line = str_replace("ERROR: ","",$line);
-				$line = str_replace("[INFO]","",$line);
-				$line = str_replace("[WARNING]","",$line);
-				$line = str_replace("[WARN]","",$line);
-				$line = str_replace("[ERROR]","",$line);
+				$line = str_replace("SEVERE: ","",$line);
+				$line = str_replace("[INFO] ","",$line);
+				$line = str_replace("[WARNING] ","",$line);
+				$line = str_replace("[WARN] ","",$line);
+				$line = str_replace("[ERROR] ","",$line);
 				
 				if(!empty($line)) {
 					if(empty($res[$severity][$hash])) { //stuff this error into an array or increment counter for existing error
