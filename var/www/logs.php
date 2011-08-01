@@ -28,6 +28,7 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
     <div>
       <?php if(empty($_GET['display_error'])) { ?>
       <div class="instructions">File : <?=$file?></div>
+      <b>Key:</b> The first number is the frequency count (bigger number=worse error).  This is followed by the error.  The numbers at the ends are the line numbers at which the errors have occurred in your file. <br />
       <?php
 	if(!empty($filter)) {
 		?>
@@ -85,9 +86,9 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 				//$line = ereg_replace(" in [^ ]*","",$line);
 				
 				//figures out severity of error
-				$severity=3; 
+				$severity=1; 
 				if(strstr($line,"WARNING")!==FALSE) $severity=2;
-				if(strstr($line,"INFO")!==FALSE) $severity=1;
+				if(strstr($line,"ERROR")!==FALSE) $severity=3;
 				$line = ereg_replace("INFO: ","",$line);
 				$line = ereg_replace("WARNING: ","",$line);
 				$line = ereg_replace("ERROR: ","",$line);
@@ -97,14 +98,14 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 						$res[$severity][$hash][0]=1;
 						$res[$severity][$hash][1]=$line;
 						if(empty($allow_show_source)) $res[$severity][$hash][2]=$linenumber;
-						else $res[$severity][$hash][2]="<a href='logs.php?file=".urlencode($filepath)."&amp;line=".$linenumber."#jump'>".$linenumber."</a>";
+						else $res[$severity][$hash][2]="<a href='logs.php?file=".urlencode($filepath)."#".$linenumber."'>".$linenumber."</a>";
 						$res[$severity][$hash][3]=$filepath;
 						
 					} else {
 						$res[$severity][$hash][0]++; //repeat error, so increment the existsing value
 						if(strstr($res[$severity][$hash][2],$linenumber)==FALSE) {
 							if(empty($allow_show_source)) $res[$severity][$hash][2].=" ".$linenumber;
-							else $res[$severity][$hash][2].=" <a href='logs.php?file=".urlencode($filepath)."&amp;line=".$linenumber."#jump'>".$linenumber."</a>";
+							else $res[$severity][$hash][2].=" <a href='logs.php?file=".urlencode($filepath)."#".$linenumber."'>".$linenumber."</a>";
 						}
 					}
 				}
@@ -164,8 +165,8 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 	?>
       <br />
       <br />
-      <b>Key:</b> The first number is the frequency count (bigger number=worse error).  This is followed by the error.  The numbers at the ends are the line numbers at which the errors have occurred in your file. <br />
-      <?php } if(!empty($allow_show_source)) { ?>
+      <?php } 
+	  if(!empty($allow_show_source)) { ?>
       <div class="instructions">File : <?=$file?></div>
       <div class="code">
         <?php
@@ -180,7 +181,7 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		$lines = explode("<br />",$output);
 		
 		for($i=0;$i<count($lines);$i++) {
-			if($i+1==$_GET['line']) echo "<a name='jump'></a><font color='black'>***</font>&nbsp;";
+			if($i+1==$_GET['line']) echo "<a name='".($i+1)."'></a><font color='black'>***</font>&nbsp;";
 			else echo "&nbsp;&nbsp;&nbsp;&nbsp;";
 			?>
         <font color="black">
