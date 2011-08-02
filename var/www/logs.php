@@ -149,17 +149,6 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		}
 		echo "</div><br />";
 		
-		echo "<div class='notices'><b>Info</b><br />";
-		if(!empty($res[1]) && is_array($res[1])) {
-			usort($res[1],"mysort");
-			foreach($res[1] as $error) {
-				echo "<p><b>".$error[0]."</b> ".$error[1]." ".$error[2]."</p>";
-			}
-		} else {
-			echo "none<br />";
-		}
-		echo "</div>";
-	
 	} else {
 		echo "Couldn't read error file.";
 	}
@@ -168,7 +157,6 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
       <br />
       <?php } 
 	  if(!empty($allow_show_source)) { ?>
-      <div class="instructions">File : <?=$file?></div>
       <div class="code">
         <?php
 		$output = highlight_file($_GET['file'], true);
