@@ -697,6 +697,15 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatf
     ProxyPass               /icons/        !
     ProxyPass               /       ajp://localhost:$DEPLOYMENT_AJP_PORT/ acquire=1000 retry=30
     ProxyPassReverse        /       ajp://localhost:$DEPLOYMENT_AJP_PORT/
+    
+    # No security for gadgets
+    <ProxyMatch "^.*/eXoGadgetServer/.*\$">
+        Order allow,deny
+        Allow from all
+        Satisfy any
+    </ProxyMatch>
+    
+    # Everything else is secured
     <Proxy *>
         Order deny,allow
         Allow from all
