@@ -91,7 +91,7 @@ initialize()
   set -u
   
   CURR_DATE=`date "+%Y%m%d.%H%M%S"`
-  
+  KEEP_DB=false  
   SERVER_SCRIPT="/bin/gatein.sh"
 
   # OS specific support. $var _must_ be set to either true or false.
@@ -142,16 +142,17 @@ GLOBAL OPTIONS :
   -h         Show this message  
 
 DEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -A         AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
-  -H         HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
-  -S         SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
-  -R         RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
-  -V         RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
-  -r         user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
+  -A <value> AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
+  -H <value> HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
+  -S <value> SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
+  -R <value> RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
+  -V <value> RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
+  -r <value> user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
              If user credentials are set for the repository then the package is downloaded from the staging group.
+  -k         Keep the current database content. By default the deployment process drops the database if it already exists.
 
 DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -m         user credentials in "username:password" format to manage the database server (default: none) [ \$MYSQL_CREDENTIALS ]  
+  -m <value> user credentials in "username:password" format to manage the database server (default: none) [ \$MYSQL_CREDENTIALS ]  
 
 EOF
 
@@ -277,12 +278,21 @@ do_process_cl_params()
     esac    
 
     # Additional options
-    while getopts "hA:H:S:R:V:r:m:" OPTION
+    while getopts "hkA:H:S:R:V:r:m:" OPTION
     do
          case $OPTION in
              h)
                  print_usage
                  exit
+                 ;;
+             k)
+                 if [[ "$ACTION" == "deploy" ]]; then
+                   KEEP_DB=true
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
                  ;;
              H)
                  if [[ "$ACTION" == "deploy" ]]; then
@@ -503,12 +513,15 @@ do_unpack_server()
 #
 do_create_databases()
 {
-  echo "[INFO] Creating new MySQL databases ..."
+  echo "[INFO] Creating MySQL databases ..."
   SQL=""
-  SQL=$SQL"DROP DATABASE IF EXISTS JCR_$DEPLOYMENT_DATABASE_NAME;"  
-  SQL=$SQL"DROP DATABASE IF EXISTS IDM_$DEPLOYMENT_DATABASE_NAME;"  
-  SQL=$SQL"CREATE DATABASE JCR_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
-  SQL=$SQL"CREATE DATABASE IDM_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
+  if( ! $KEEP_DB ); then
+    SQL=$SQL"DROP DATABASE IF EXISTS JCR_$DEPLOYMENT_DATABASE_NAME;"  
+    SQL=$SQL"DROP DATABASE IF EXISTS IDM_$DEPLOYMENT_DATABASE_NAME;"
+    echo "[INFO] Existing databases will be dropped !"
+  fi;
+  SQL=$SQL"CREATE DATABASE IF NOT EXISTS JCR_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
+  SQL=$SQL"CREATE DATABASE IF NOT EXISTS IDM_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
   SQL=$SQL"GRANT ALL ON JCR_$DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
   SQL=$SQL"GRANT ALL ON IDM_$DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
   SQL=$SQL"FLUSH PRIVILEGES;"

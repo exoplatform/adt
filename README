@@ -73,13 +73,14 @@ GLOBAL OPTIONS :
   -h         Show this message  
 
 DEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -A         AJP Port (default: 8009) [ $DEPLOYMENT_AJP_PORT ]
-  -H         HTTP Port (default: 8080) [ $DEPLOYMENT_HTTP_PORT ]
-  -S         SHUTDOWN Port (default: 8005) [ $DEPLOYMENT_SHUTDOWN_PORT ]
-  -R         RMI Registry Port for JMX (default: 10001) [ $DEPLOYMENT_RMI_REG_PORT ]
-  -V         RMI Server Port for JMX (default: 10002) [ $DEPLOYMENT_RMI_SRV_PORT ]
-  -r         user credentials in "username:password" format to download the server package (default: none) [ $REPO_CREDENTIALS ]
+  -A <value> AJP Port (default: 8009) [ $DEPLOYMENT_AJP_PORT ]
+  -H <value> HTTP Port (default: 8080) [ $DEPLOYMENT_HTTP_PORT ]
+  -S <value> SHUTDOWN Port (default: 8005) [ $DEPLOYMENT_SHUTDOWN_PORT ]
+  -R <value> RMI Registry Port for JMX (default: 10001) [ $DEPLOYMENT_RMI_REG_PORT ]
+  -V <value> RMI Server Port for JMX (default: 10002) [ $DEPLOYMENT_RMI_SRV_PORT ]
+  -r <value> user credentials in "username:password" format to download the server package (default: none) [ $REPO_CREDENTIALS ]
              If user credentials are set for the repository then the package is downloaded from the staging group.
+  -k         Keep the current database content. By default the deployment process drops the database if it already exists.
 
 DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -m         user credentials in "username:password" format to manage the database server (default: none) [ $MYSQL_CREDENTIALS ]  
+  -m <value> user credentials in "username:password" format to manage the database server (default: none) [ $MYSQL_CREDENTIALS ]  
