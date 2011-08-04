@@ -183,13 +183,8 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 		$lines = explode("<br />",$output);
 		
 		for($i=0;$i<count($lines);$i++) {
-			echo "<a name='".($i+1)."'></a>&nbsp;";
 			?>
-        <font color="black">
-        <?=$i+1?>
-        </font>&nbsp;&nbsp;&nbsp;
-        <?=$lines[$i]?>
-        <br />
+        <p><a name="<?=($i+1)?>"></a>&nbsp;<?=$i+1?>&nbsp;&nbsp;&nbsp;<?=$lines[$i]?></p>
         <?php
 		}	
 	?>
