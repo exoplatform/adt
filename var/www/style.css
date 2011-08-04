@@ -276,7 +276,7 @@ img.center {
     margin-right: auto;
 	padding:1px; 
 	border:0px;
-    vertical-align:text-top;	
+    vertical-align:middle;	
 }
 
 img.left {
@@ -285,7 +285,7 @@ img.left {
 	margin:2px 2px 2px 2px ;  
 	padding:1px; 
 	border:0px;
-    vertical-align:text-top;	
+    vertical-align:middle;	
 }
 
 img.right {
@@ -294,7 +294,7 @@ img.right {
 	margin:2px 2px 2px 2px ;  
 	padding:1px; 
 	border:0px;
-    vertical-align:text-top;	
+    vertical-align:middle;	
 }
 
 p { white-space: nowrap }
