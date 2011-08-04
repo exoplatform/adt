@@ -27,10 +27,12 @@
     <div class="TitleForgePages">Acceptance Live Instances</div>
     <div>
       <div>
-        <p>These instances are deployed to be used for acceptance tests.<br/>
-          They are deployed from latest  binaries produced by packaging jobs on <a href="https://ci.exoplatform.org">https://ci.exoplatform.org</a></p>
-        <p>Each instance can be accessed using JMX with the given URL and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
         <p>&nbsp;</p>
+        <p>Welcome on Acceptance Live Instances !</p>
+        <p>These instances are deployed to be used for acceptance tests.</p>
+        <p> Terms of usage and others documentations about this service are detailled in our <a href="https://wiki-int.exoplatform.org/x/84FrAg">internal wiki</a>.</p>
+        <p><br/>
+        </p>
         <table class="center">
           <thead>
             <tr>
@@ -128,6 +130,9 @@
           ?>
           </tbody>
         </table>
+        <p>&nbsp;</p>
+        <p>Each instance can be accessed using JMX with the  URL linked to the monitoring icon and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
+        <p>&nbsp;</p>
       </div>
     </div>
   </div>
