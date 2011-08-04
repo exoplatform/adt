@@ -282,7 +282,16 @@ img.center {
 img.left {
     display: inline-block;
 	float:left; 
-	margin:0 -2px; 
+	margin:1px;  
+	padding:1px; 
+	border:0px;
+    vertical-align:text-top;	
+}
+
+img.right {
+    display: inline-block;
+	float:right; 
+	margin:1px; 
 	padding:1px; 
 	border:0px;
     vertical-align:text-top;	
