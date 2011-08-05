@@ -119,40 +119,44 @@ usage: $0 action [product] [version] [options]
 This script manages automated deployment of eXo products
 
 ACTION :
-  deploy     Deploys (Download+Configure) the server
-  start      Starts the server
-  stop       Stops the server
-  restart    Restarts the server
-  undeploy   Undeploys (Delete) the server
-  list       Lists all deployed servers
+  deploy       Deploys (Download+Configure) the server
+  start        Starts the server
+  start-all    Starts all deployed servers
+  stop         Stops the server
+  stop-all     Stops all deployed servers
+  restart      Restarts the server
+  restart-all  Restarts all deployed servers
+  undeploy     Undeploys (deletes) the server
+  undeploy-all Undeploys (deletes) all deployed servers
+  list         Lists all deployed servers
   
 PRODUCT (for deploy, start, stop, restart, undeploy actions) :
-  gatein     eXo GateIn
-  webos      eXo WebOS
-  social     eXo Social
-  ecms       eXo Content
-  ks         eXo Knowledge
-  cs         eXo Collaboration
-  platform   eXo Platform
+  gatein       eXo GateIn
+  webos        eXo WebOS
+  social       eXo Social
+  ecms         eXo Content
+  ks           eXo Knowledge
+  cs           eXo Collaboration
+  platform     eXo Platform
 
 VERSION (for deploy, start, stop, restart, undeploy actions) :
   version of the product
 
 GLOBAL OPTIONS :
-  -h         Show this message  
+  -h           Show this message  
 
 DEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -A <value> AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
-  -H <value> HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
-  -S <value> SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
-  -R <value> RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
-  -V <value> RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
-  -r <value> user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
-             If user credentials are set for the repository then the package is downloaded from the staging group.
-  -k         Keep the current database content. By default the deployment process drops the database if it already exists.
+  -A <value>   AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
+  -H <value>   HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
+  -S <value>   SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
+  -R <value>   RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
+  -V <value>   RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
+  -r <value>   user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
+               If user credentials are set for the repository then the package is downloaded from the staging group.
+  -k           Keep the current database content. By default the deployment process drops the database if it already exists.
 
 DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -m <value> user credentials in "username:password" format to manage the database server (default: none) [ \$MYSQL_CREDENTIALS ]  
+  -m <value>   user credentials in "username:password" format to manage the database server (default: none) [ \$MYSQL_CREDENTIALS ]  
 
 EOF
 
@@ -797,7 +801,7 @@ do_load_deployment_descriptor()
 #
 do_deploy()
 {
-  echo "[INFO] Deploying server ..."
+  echo "[INFO] Deploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
   do_download_server
   do_unpack_server
   do_create_databases
@@ -812,7 +816,7 @@ do_deploy()
 #
 do_start()
 {
-  echo "[INFO] Starting server ..."
+  echo "[INFO] Starting server $PRODUCT_NAME $PRODUCT_VERSION ..."
   chmod 755 $DEPLOYMENT_DIR/bin/*.sh
   export CATALINA_HOME=$DEPLOYMENT_DIR
   export CATALINA_PID=$DEPLOYMENT_PID_FILE
@@ -852,7 +856,7 @@ do_start()
 do_stop()
 {
   if [ ! -z $DEPLOYMENT_DIR ] && [ -e $DEPLOYMENT_DIR ]; then
-    echo "[INFO] Stopping server ..."
+    echo "[INFO] Stopping server $PRODUCT_NAME $PRODUCT_VERSION ..."
     export CATALINA_HOME=$DEPLOYMENT_DIR
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
     ${CATALINA_HOME}${SERVER_SCRIPT} stop 60 -force || true
@@ -869,7 +873,7 @@ do_undeploy()
 {
   # Stop the server
   do_stop
-  echo "[INFO] Undeploying server ..."
+  echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
   # Delete the vhost
   rm $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
   # Reload Apache to deactivate the config  
@@ -894,14 +898,91 @@ do_undeploy()
 #
 do_list()
 {
-  echo "[INFO] Deployed servers : "
-  printf "%-10s %-20s\n" "Product" "Version"
-  printf "%-10s %-20s\n" "=======" "======="  
-  for f in $ADT_CONF_DIR/*
-  do
-    source $f
-    printf "%-10s %-20s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION
-  done  
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Deployed servers : "
+    printf "%-10s %-20s\n" "Product" "Version"
+    printf "%-10s %-20s\n" "=======" "======="  
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      printf "%-10s %-20s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION
+    done  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that starts all deployed servers
+#
+do_start_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Starting all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_start
+    done
+    echo "[INFO] All servers started"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that restarts all deployed servers
+#
+do_restart_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Restarting all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_stop
+      do_start
+    done
+    echo "[INFO] All servers restarted"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that stops all deployed servers
+#
+do_stops_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Stopping all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_stop
+    done
+    echo "[INFO] All servers stopped"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that undeploys all deployed servers
+#
+do_undeploy_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Undeploying all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_undeploy
+    done
+    echo "[INFO] All servers undeployed"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
 }
 
 initialize
@@ -931,6 +1012,18 @@ case "$ACTION" in
     ;;
   list) 
     do_list
+    ;;
+  start-all) 
+    do_start_all
+    ;;
+  stop-all) 
+    do_stop_all
+    ;;
+  restart-all) 
+    do_restart_all
+    ;;
+  undeploy-all) 
+    do_undeploy_all
     ;;
   *)
     echo "[ERROR] Invalid action \"$ACTION\"" 
