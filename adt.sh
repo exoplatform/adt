@@ -1,5 +1,8 @@
 #!/bin/bash -eu                                                                                                                                                                                                                         -e
 
+# Load server config from /etc/default/adt
+[ -e /etc/default/adt ] && source /etc/default/adt
+
 # Load local config from $HOME/.adtrc
 [ -e $HOME/.adtrc ] && source $HOME/.adtrc
 
