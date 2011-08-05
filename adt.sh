@@ -516,21 +516,18 @@ do_unpack_server()
 }
 
 #
-# Creates JCR & IDM databases for the instance. Drops them if it already exists.
+# Creates a database for the instance. Drops it if it already exists.
 #
-do_create_databases()
+do_create_database()
 {
-  echo "[INFO] Creating MySQL databases ..."
+  echo "[INFO] Creating MySQL database $DEPLOYMENT_DATABASE_NAME ..."
   SQL=""
   if( ! $KEEP_DB ); then
-    SQL=$SQL"DROP DATABASE IF EXISTS JCR_$DEPLOYMENT_DATABASE_NAME;"  
-    SQL=$SQL"DROP DATABASE IF EXISTS IDM_$DEPLOYMENT_DATABASE_NAME;"
+    SQL=$SQL"DROP DATABASE IF EXISTS $DEPLOYMENT_DATABASE_NAME;"
     echo "[INFO] Existing databases will be dropped !"
   fi;
-  SQL=$SQL"CREATE DATABASE IF NOT EXISTS JCR_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
-  SQL=$SQL"CREATE DATABASE IF NOT EXISTS IDM_$DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
-  SQL=$SQL"GRANT ALL ON JCR_$DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
-  SQL=$SQL"GRANT ALL ON IDM_$DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
+  SQL=$SQL"CREATE DATABASE IF NOT EXISTS $DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
+  SQL=$SQL"GRANT ALL ON $DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
   SQL=$SQL"FLUSH PRIVILEGES;"
   SQL=$SQL"SHOW DATABASES;"
   mysql -u ${MYSQL_CREDENTIALS%%:*} -p${MYSQL_CREDENTIALS##*:} -e "$SQL"
@@ -538,14 +535,13 @@ do_create_databases()
 }
 
 #
-# Drops JCR & IDM databases used by the instance.
+# Drops the database used by the instance.
 #
-do_drop_databases()
+do_drop_database()
 {
-  echo "[INFO] Drops MySQL databases used by this instance ..."
+  echo "[INFO] Drops MySQL database $DEPLOYMENT_DATABASE_NAME ..."
   SQL=""
-  SQL=$SQL"DROP DATABASE IF EXISTS JCR_$DEPLOYMENT_DATABASE_NAME;"  
-  SQL=$SQL"DROP DATABASE IF EXISTS IDM_$DEPLOYMENT_DATABASE_NAME;"  
+  SQL=$SQL"DROP DATABASE IF EXISTS $DEPLOYMENT_DATABASE_NAME;"  
   SQL=$SQL"SHOW DATABASES;"
   mysql -u ${MYSQL_CREDENTIALS%%:*} -p${MYSQL_CREDENTIALS##*:} -e "$SQL"
   echo "[INFO] Done."
@@ -607,10 +603,10 @@ do_patch_server()
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_NAME@" "JCR_${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_NAME@" "IDM_${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
   echo "[INFO] Done."
 
   # Reconfigure $GATEIN_CONF_PATH
@@ -640,10 +636,10 @@ do_patch_server()
   
   replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
   replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_NAME@" "JCR_${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
   replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
   replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_NAME@" "IDM_${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
   echo "[INFO] Done."
 
   # JMX settings
@@ -782,8 +778,8 @@ do_deploy()
 {
   echo "[INFO] Deploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
   do_download_server
+  do_create_database
   do_unpack_server
-  do_create_databases
   do_patch_server
   do_create_apache_vhost
   do_create_deployment_descriptor
@@ -852,6 +848,7 @@ do_undeploy()
 {
   # Stop the server
   do_stop
+  do_drop_database
   echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
   # Delete the vhost
   rm $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
@@ -869,7 +866,6 @@ do_undeploy()
     sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
   fi  
   echo "[INFO] Server undeployed"
-  do_drop_databases
 }
 
 #
