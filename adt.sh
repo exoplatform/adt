@@ -793,12 +793,30 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatf
     </Proxy>    
 </VirtualHost>
 EOF
-# Reload Apache to activate the new config
-if $LINUX; then
-  sudo /usr/sbin/service apache2 reload
-fi
 DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
+}
+
+do_log_rotate()
+{
+  cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
+${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-*.log {
+    missingok
+    rotate 52
+    compress
+    delaycompress
+    notifempty
+    create 640 www-data www-data
+    sharedscripts
+    postrotate
+            sudo /usr/sbin/service apache2 reload > /dev/null
+    endscript
+}
+EOF  
+  if $LINUX; then
+    logrotate -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
+  fi
+  rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
 }
 
 do_create_deployment_descriptor()
@@ -858,6 +876,7 @@ do_deploy()
   do_unpack_server
   do_patch_server
   do_create_apache_vhost
+  do_log_rotate
   do_create_deployment_descriptor
   echo "[INFO] Server deployed"
 }
