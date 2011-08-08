@@ -3,7 +3,6 @@ body {
 	font-size:12px;
 	height:100%;
 	margin:0px;
-	overflow-x:hidden;
 	padding:0px;
 	background: #f2f2f2;
 }
@@ -297,7 +296,7 @@ img.right {
     vertical-align:middle;	
 }
 
-p { white-space: nowrap }
+p { white-space: nowrap; }
 .instructions { padding: 5px; margin-bottom: 10px; }
 .latest { border-top: 1px solid #666; border-bottom: 1px solid #666; background-color: #eee; padding: 5px; font-family: Courier,monospace;}
 .errors { border-top: 1px solid #600; border-bottom: 1px solid #600; background-color: #fee; padding: 5px; font-family: Courier,monospace;}
