@@ -815,7 +815,6 @@ ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatfor
     compress
     delaycompress
     notifempty
-    create 640 www-data www-data
     sharedscripts
     postrotate
             sudo /usr/sbin/service apache2 reload > /dev/null
