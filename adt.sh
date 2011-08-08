@@ -46,8 +46,6 @@ initialize()
   ADT_DATA=`pwd -P`
   popd > /dev/null
 
-  ETC_DIR=$SCRIPT_DIR/etc
-
   echo "[INFO] ADT_DATA = $ADT_DATA"
 
   # Create ADT_DATA if required
@@ -64,6 +62,7 @@ initialize()
   CONF_DIR=$ADT_DATA/conf
   APACHE_CONF_DIR=$ADT_DATA/conf/apache
   ADT_CONF_DIR=$ADT_DATA/conf/adt
+  ETC_DIR=$ADT_DATA/etc
 
   PRODUCT_NAME=""
   PRODUCT_VERSION=""
@@ -706,11 +705,12 @@ EOF
   DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 }
 
-do_create_apache_vhost()
+do_configure_apache()
 {
-  echo "[INFO] Creating Apache Virtual Host ..."  
-  mkdir -p $APACHE_CONF_DIR
-  cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  if $LINUX; then
+    echo "[INFO] Creating Apache Virtual Host ..."  
+    mkdir -p $APACHE_CONF_DIR
+    cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 <VirtualHost *:80>
     ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 
@@ -810,14 +810,17 @@ do_create_apache_vhost()
 </VirtualHost>
 EOF
 
-  DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
-  DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
-  echo "[INFO] Done."
-}
-
-do_log_rotate()
-{
-  if $LINUX; then
+    DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
+    echo "[INFO] Done."
+    echo "[INFO] Configure and update AWStats ..."
+    cp $ADT_DATA/etc/awstats/awstats.model.conf $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf"
+    # Regenerates stats for this Vhosts
+    sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org -update
+    # Regenerates stats for root vhosts
+    sudo /usr/lib/cgi-bin/awstats.pl -config=acceptance.exoplatform.org -update
+    echo "[INFO] Done."    
     echo "[INFO] Rotate Apache logs ..."  
     cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
 ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-*.log {
@@ -895,8 +898,7 @@ do_deploy()
   do_create_database
   do_unpack_server
   do_patch_server
-  do_create_apache_vhost
-  do_log_rotate
+  do_configure_apache
   do_create_deployment_descriptor
   echo "[INFO] Server deployed"
 }
