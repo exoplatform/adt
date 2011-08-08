@@ -814,12 +814,14 @@ EOF
     DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
     echo "[INFO] Done."
     echo "[INFO] Configure and update AWStats ..."
+    # Regenerates stats for this Vhosts
     cp $ADT_DATA/etc/awstats/awstats.model.conf $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf
     replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org"
     replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf "@ADT_DATA@" "$ADT_DATA"    
-    # Regenerates stats for this Vhosts
     sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org -update
     # Regenerates stats for root vhosts
+    cp $ADT_DATA/etc/awstats/awstats.model.conf $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf "@DOMAIN@" "acceptance.exoplatform.org"
     replace_in_file $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf "@ADT_DATA@" "$ADT_DATA"    
     sudo /usr/lib/cgi-bin/awstats.pl -config=acceptance.exoplatform.org -update
     echo "[INFO] Done."    
