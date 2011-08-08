@@ -85,7 +85,8 @@ initialize()
   ARTIFACT_DATE=""
   ARTIFACT_CLASSIFIER=""
   ARTIFACT_PACKAGING=""
-  ARTIFACT_URL=""
+  ARTIFACT_REPO_URL=""
+  ARTIFACT_DL_URL=""
   
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
@@ -420,7 +421,7 @@ do_download_server() {
     set +e
     curl $curl_options "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
     if [ "$?" -ne "0" ]; then
-      echo "Sorry, cannot download artifact metadata"
+      echo "[ERROR] Sorry, cannot download artifact metadata"
       exit 1
     fi
     set -e
@@ -461,23 +462,24 @@ do_download_server() {
   fi;
   filename="$filename.$ARTIFACT_PACKAGING"
   name="$name:$ARTIFACT_PACKAGING"  
-  ARTIFACT_URL=$url/$filename
+  ARTIFACT_REPO_URL=$url/$filename
   if [ -e $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING ]; then
     echo "[WARNING] $name was already downloaded. Skip server download !"
   else
     echo "[INFO] Downloading server ..."
     echo "[INFO] Archive          : $name "
     echo "[INFO] Repository       : $repository "
-    echo "[INFO] Url              : $ARTIFACT_URL "
+    echo "[INFO] Url              : $ARTIFACT_REPO_URL "
     set +e
-    curl $curl_options "$ARTIFACT_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+    curl $curl_options "$ARTIFACT_REPO_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
     if [ "$?" -ne "0" ]; then
-      echo "Sorry, cannot download $name"
+      echo "[ERROR] Sorry, cannot download $name"
       exit 1
     fi
     set -e
     echo "[INFO] Server downloaded"
   fi
+  ARTIFACT_DL_URL="http://acceptance.exoplatform.org/downloads/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING"
 }
 
 #
@@ -779,7 +781,8 @@ ARTIFACT_TIMESTAMP=$ARTIFACT_TIMESTAMP
 ARTIFACT_DATE=$ARTIFACT_DATE
 ARTIFACT_CLASSIFIER=$ARTIFACT_CLASSIFIER
 ARTIFACT_PACKAGING=$ARTIFACT_PACKAGING
-ARTIFACT_URL=$ARTIFACT_URL
+ARTIFACT_REPO_URL=$ARTIFACT_REPO_URL
+ARTIFACT_DL_URL=$ARTIFACT_DL_URL
 EOF
   #Display the deployment descriptor
   echo "[INFO] ========================= Deployment Descriptor ========================="

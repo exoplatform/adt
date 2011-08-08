@@ -98,6 +98,14 @@
         Allow from all
     </Directory>
 
+    Alias /downloads/ "${ADT_HOME}/downloads/"
+    <Directory "${ADT_HOME}/downloads/">
+        Options Indexes MultiViews
+        AllowOverride None
+        Order allow,deny
+        Allow from all
+    </Directory>
+
     # fastcgi with suexec needs the cgi script in the webroot
     ScriptAlias /cgi-bin ${ADT_HOME}/var/www/cgi-bin/
     <Directory ${ADT_HOME}/var/www/cgi-bin/>
