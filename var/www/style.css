@@ -279,21 +279,19 @@ img.center {
 }
 
 img.left {
-    display: inline-block;
-	float:left; 
-	margin:2px 2px 2px 2px ;  
-	padding:1px; 
+	float:left;
+	margin:2px 2px 2px 2px;
+	padding:1px;
 	border:0px;
-    vertical-align:middle;	
+	vertical-align:middle;
 }
 
 img.right {
-    display: inline-block;
 	float:right; 
 	margin:2px 2px 2px 2px ;  
 	padding:1px; 
 	border:0px;
-    vertical-align:middle;	
+	vertical-align:middle;
 }
 
 p { white-space: nowrap; }
