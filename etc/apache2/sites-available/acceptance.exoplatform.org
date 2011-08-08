@@ -82,8 +82,8 @@
         AllowOverride None
     </Directory>
 
-    DocumentRoot ${ADT_HOME}/var/www/
-    <Directory ${ADT_HOME}/var/www/>
+    DocumentRoot ${ADT_DATA}/var/www/
+    <Directory ${ADT_DATA}/var/www/>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
@@ -115,8 +115,8 @@
     </Directory>
 
     # fastcgi with suexec needs the cgi script in the webroot
-    ScriptAlias /cgi-bin ${ADT_HOME}/var/www/cgi-bin/
-    <Directory ${ADT_HOME}/var/www/cgi-bin/>
+    ScriptAlias /cgi-bin ${ADT_DATA}/var/www/cgi-bin/
+    <Directory ${ADT_DATA}/var/www/cgi-bin/>
         AllowOverride None
         Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
         Order allow,deny

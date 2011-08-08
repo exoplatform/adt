@@ -52,6 +52,9 @@ initialize()
 
   # Create ADT_DATA if required
   mkdir -p $ADT_DATA
+  
+  # Copy everything in it
+  cp -rf $SCRIPT_DIR/* $ADT_DATA
 
   TMP_DIR=$ADT_DATA/tmp
   DL_DIR=$ADT_DATA/downloads
@@ -732,8 +735,8 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatf
         AllowOverride None
     </Directory>
 
-    DocumentRoot ${ADT_HOME}/var/www/
-    <Directory ${ADT_HOME}/var/www/>
+    DocumentRoot ${ADT_DATA}/var/www/
+    <Directory ${ADT_DATA}/var/www/>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
