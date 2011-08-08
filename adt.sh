@@ -835,8 +835,20 @@ ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatfor
 }
 EOF
     logrotate -s $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION.status -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
-    sudo /usr/sbin/service apache2 reload
     rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
+    cat << EOF > $TMP_DIR/logrotate-acceptance
+${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-*.log {
+  missingok
+  rotate 52
+  compress
+  delaycompress
+  notifempty
+  sharedscripts
+}
+EOF
+    logrotate -s $TMP_DIR/logrotate-acceptance.status -f $TMP_DIR/logrotate-acceptance
+    sudo /usr/sbin/service apache2 reload
+    rm $TMP_DIR/logrotate-acceptance
     echo "[INFO] Done."
   fi
 }
