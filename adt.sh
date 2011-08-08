@@ -814,12 +814,14 @@ EOF
     DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
     echo "[INFO] Done."
     echo "[INFO] Configure and update AWStats ..."
+    # Regenerates stats for this Vhosts
     cp $ADT_DATA/etc/awstats/awstats.model.conf $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf
     replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org"
     replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf "@ADT_DATA@" "$ADT_DATA"    
-    # Regenerates stats for this Vhosts
     sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org -update
     # Regenerates stats for root vhosts
+    cp $ADT_DATA/etc/awstats/awstats.model.conf $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf "@DOMAIN@" "acceptance.exoplatform.org"
     replace_in_file $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf "@ADT_DATA@" "$ADT_DATA"    
     sudo /usr/lib/cgi-bin/awstats.pl -config=acceptance.exoplatform.org -update
     echo "[INFO] Done."    
@@ -835,7 +837,7 @@ ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatfor
   sharedscripts
 }
 EOF
-    logrotate -s $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION.status -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
+    sudo logrotate -s $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION.status -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
     rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
     cat << EOF > $TMP_DIR/logrotate-acceptance
 ${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-*.log {
@@ -848,7 +850,7 @@ ${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-*.log {
   sharedscripts
 }
 EOF
-    logrotate -s $TMP_DIR/logrotate-acceptance.status -f $TMP_DIR/logrotate-acceptance
+    sudo logrotate -s $TMP_DIR/logrotate-acceptance.status -f $TMP_DIR/logrotate-acceptance
     sudo /usr/sbin/service apache2 reload
     rm $TMP_DIR/logrotate-acceptance
     echo "[INFO] Done."
