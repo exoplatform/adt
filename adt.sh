@@ -844,7 +844,7 @@ ${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-*.log {
   compress
   delaycompress
   notifempty
-  create 640 www-data www-data
+  create 664 www-data www-data
   sharedscripts
 }
 EOF
