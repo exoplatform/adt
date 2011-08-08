@@ -54,7 +54,9 @@ initialize()
   mkdir -p $ADT_DATA
   
   # Copy everything in it
-  cp -rf $SCRIPT_DIR/* $ADT_DATA
+  cp -rf $SCRIPT_DIR/etc $ADT_DATA
+  cp -rf $SCRIPT_DIR/var $ADT_DATA
+  #cp -rf $SCRIPT_DIR/bin $ADT_DATA
 
   TMP_DIR=$ADT_DATA/tmp
   DL_DIR=$ADT_DATA/downloads
@@ -796,6 +798,7 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatf
     </Proxy>    
 </VirtualHost>
 EOF
+
 DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
 }
@@ -815,7 +818,8 @@ ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatfor
             sudo /usr/sbin/service apache2 reload > /dev/null
     endscript
 }
-EOF  
+EOF
+
   if $LINUX; then
     logrotate -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
   fi
@@ -852,6 +856,7 @@ ARTIFACT_REPO_GROUP=$ARTIFACT_REPO_GROUP
 ARTIFACT_REPO_URL=$ARTIFACT_REPO_URL
 ARTIFACT_DL_URL=$ARTIFACT_DL_URL
 EOF
+
   #Display the deployment descriptor
   echo "[INFO] ========================= Deployment Descriptor ========================="
   cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
