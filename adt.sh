@@ -823,7 +823,7 @@ ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatfor
 EOF
 
   if $LINUX; then
-    logrotate -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
+    logrotate -s $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION.status -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
   fi
   rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
   echo "[INFO] Done."
