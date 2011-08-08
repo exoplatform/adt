@@ -706,13 +706,48 @@ do_create_apache_vhost()
 mkdir -p $APACHE_CONF_DIR
 cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 <VirtualHost *:80>
-    Include /home/swfcommons/etc/apache2/includes/default.conf
     ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 
-    ErrorLog        \${APACHE_LOG_DIR}/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-error.log
+    ErrorLog        \${ADT_HOME}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-error.log
     LogLevel        warn
-    CustomLog       \${APACHE_LOG_DIR}/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-access.log combined  
-    
+    CustomLog       \${ADT_HOME}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-access.log combined  
+
+    # Error pages    
+    ErrorDocument 404 /404.html
+    ErrorDocument 500 /500.html
+    ErrorDocument 502 /502.html
+    ErrorDocument 503 /503.html
+
+    # don't loose time with IP address lookups
+    HostnameLookups Off
+
+    # needed for named virtual hosts
+    UseCanonicalName Off
+
+    # configures the footer on server-generated documents
+    ServerSignature Off
+
+    <Directory />
+        Options FollowSymLinks
+        AllowOverride None
+    </Directory>
+
+    DocumentRoot ${ADT_HOME}/var/www/
+    <Directory ${ADT_HOME}/var/www/>
+        Options Indexes FollowSymLinks MultiViews
+        AllowOverride None
+        Order allow,deny
+        allow from all
+    </Directory>
+
+    Alias /icons/ "/usr/share/apache2/icons/"
+    <Directory "/usr/share/apache2/icons">
+        Options Indexes MultiViews
+        AllowOverride None
+        Order allow,deny
+        Allow from all
+    </Directory>
+        
     Alias /logs/ "$DEPLOYMENT_DIR/logs/"
     <Directory "$DEPLOYMENT_DIR/logs/">
         Options Indexes MultiViews
@@ -720,7 +755,7 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatf
         Order allow,deny
         Allow from all
     </Directory>
-    
+
     ProxyRequests           Off
     ProxyPreserveHost       On
     ProxyPass               /exo-static/   !
