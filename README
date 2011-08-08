@@ -82,8 +82,8 @@ DEPLOY OPTIONS [ environment variable to use to set a default value ] :
   -S <value>   SHUTDOWN Port (default: 8005) [ $DEPLOYMENT_SHUTDOWN_PORT ]
   -R <value>   RMI Registry Port for JMX (default: 10001) [ $DEPLOYMENT_RMI_REG_PORT ]
   -V <value>   RMI Server Port for JMX (default: 10002) [ $DEPLOYMENT_RMI_SRV_PORT ]
+  -g <value>   Repository group where to download the artifact from. Values : public | staging | private (default: public) [ $ARTIFACT_REPO_GROUP ]
   -r <value>   user credentials in "username:password" format to download the server package (default: none) [ $REPO_CREDENTIALS ]
-               If user credentials are set for the repository then the package is downloaded from the staging group.
   -k           Keep the current database content. By default the deployment process drops the database if it already exists.
 
 DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :

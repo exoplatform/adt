@@ -87,6 +87,10 @@ initialize()
   ARTIFACT_PACKAGING=""
   ARTIFACT_REPO_URL=""
   ARTIFACT_DL_URL=""
+  # These variables can be loaded from the env or $HOME/.adtrc
+  set +u
+  [ -z $ARTIFACT_REPO_GROUP ] && ARTIFACT_REPO_GROUP="public"
+  set -u
   
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
@@ -155,8 +159,8 @@ DEPLOY OPTIONS [ environment variable to use to set a default value ] :
   -S <value>   SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
   -R <value>   RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
   -V <value>   RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
+  -g <value>   Repository group where to download the artifact from. Values : public | staging | private (default: public) [ \$ARTIFACT_REPO_GROUP ]
   -r <value>   user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
-               If user credentials are set for the repository then the package is downloaded from the staging group.
   -k           Keep the current database content. By default the deployment process drops the database if it already exists.
 
 DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :
@@ -286,7 +290,7 @@ do_process_cl_params()
     esac    
 
     # Additional options
-    while getopts "hkA:H:S:R:V:r:m:" OPTION
+    while getopts "hkA:H:S:R:V:g:r:m:" OPTION
     do
          case $OPTION in
              h)
@@ -347,6 +351,15 @@ do_process_cl_params()
                    exit 1                 
                  fi
                  ;;
+             g)
+                 if [[ "$ACTION" == "deploy" ]]; then
+                   ARTIFACT_REPO_GROUP=$OPTARG
+                 else
+                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
+                   print_usage
+                   exit 1                 
+                 fi
+                 ;;
              r)
                  if [[ "$ACTION" == "deploy" ]]; then
                    REPO_CREDENTIALS=$OPTARG
@@ -398,17 +411,15 @@ do_download_server() {
   mkdir -p $DL_DIR
   # REPO_CREDENTIALS and repository options
   if [ -n $REPO_CREDENTIALS ]; then
-    local repository=staging
     local curl_options="--location-trusted -u $REPO_CREDENTIALS"
   fi;
   if [ -z $REPO_CREDENTIALS ]; then
-    local repository=public
     local curl_options="--location-trusted"
   fi;
   # By default the timestamp is the version (for a release)
   ARTIFACT_TIMESTAMP=$PRODUCT_VERSION
   # base url where to download from
-  local url="http://repository.exoplatform.org/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
+  local url="http://repository.exoplatform.org/${ARTIFACT_REPO_GROUP}/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
 
   # For a SNAPSHOT we will need to manually compute the TIMESTAMP of the SNAPSHOT
   if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]; then
@@ -781,6 +792,7 @@ ARTIFACT_TIMESTAMP=$ARTIFACT_TIMESTAMP
 ARTIFACT_DATE=$ARTIFACT_DATE
 ARTIFACT_CLASSIFIER=$ARTIFACT_CLASSIFIER
 ARTIFACT_PACKAGING=$ARTIFACT_PACKAGING
+ARTIFACT_REPO_GROUP=$ARTIFACT_REPO_GROUP
 ARTIFACT_REPO_URL=$ARTIFACT_REPO_URL
 ARTIFACT_DL_URL=$ARTIFACT_DL_URL
 EOF
