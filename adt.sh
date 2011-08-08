@@ -409,25 +409,49 @@ do_download_server() {
   # base url where to download from
   local url="http://repository.exoplatform.org/$repository/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
 
-  # For a SNAPSHOT we will ne to manually compute the TIMESTAMP of the SNAPSHOT
+  # For a SNAPSHOT we will need to manually compute the TIMESTAMP of the SNAPSHOT
   if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]; then
+    local METADATA=$DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
+    # Backup lastest metadata to be able to use them if newest are wrong (don't have delivery)
+    if [ -e $METADATA ]; then
+      mv $METADATA $METADATA.bck
+    fi
     echo "[INFO] Downloading metadata $url/maven-metadata.xml ..."
+    set +e
     curl $curl_options "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
     if [ "$?" -ne "0" ]; then
       echo "Sorry, cannot download artifact metadata"
       exit 1
     fi
+    set -e
     echo "[INFO] Metadata downloaded"
-    local QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$ARTIFACT_CLASSIFIER\")and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
-    local FILENAME=$DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
+    local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$ARTIFACT_CLASSIFIER\")and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
+    set +e
     if $DARWIN; then
-      ARTIFACT_TIMESTAMP=`xpath $FILENAME $QUERY`
+      ARTIFACT_TIMESTAMP=`xpath $METADATA $XPATH_QUERY`
     fi 
     if $LINUX; then
-      ARTIFACT_TIMESTAMP=`xpath -q -e $QUERY $FILENAME`
+      ARTIFACT_TIMESTAMP=`xpath -q -e $XPATH_QUERY $METADATA`
     fi
+    set -e
+    if [ -z $ARTIFACT_TIMESTAMP ] && [ -e $METADATA.bck ]; then
+      # We will restore the previous one to get its timestamp and redeploy it
+      echo "[WARNING] Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
+      mv $METADATA.bck $METADATA
+      if $DARWIN; then
+        ARTIFACT_TIMESTAMP=`xpath $METADATA $XPATH_QUERY`
+      fi 
+      if $LINUX; then
+        ARTIFACT_TIMESTAMP=`xpath -q -e $XPATH_QUERY $METADATA`
+      fi
+    fi
+    if [ -z $ARTIFACT_TIMESTAMP ]; then
+      echo "[ERROR] No package available in the remote repository and no previous version available locally."
+      exit 1;
+    fi
+    rm -f $METADATA.bck
     echo "[INFO] Latest timestamp : $ARTIFACT_TIMESTAMP"
-    ARTIFACT_DATE=`expr "$ARTIFACT_TIMESTAMP" : '.*-\(.*\)-.*'`    
+    ARTIFACT_DATE=`expr "$ARTIFACT_TIMESTAMP" : '.*-\(.*\)-.*'`
   fi
   local filename=$ARTIFACT_ARTIFACTID-$ARTIFACT_TIMESTAMP  
   local name=$ARTIFACT_GROUPID:$ARTIFACT_ARTIFACTID:$PRODUCT_VERSION
@@ -445,11 +469,13 @@ do_download_server() {
     echo "[INFO] Archive          : $name "
     echo "[INFO] Repository       : $repository "
     echo "[INFO] Url              : $ARTIFACT_URL "
+    set +e
     curl $curl_options "$ARTIFACT_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
     if [ "$?" -ne "0" ]; then
       echo "Sorry, cannot download $name"
       exit 1
     fi
+    set -e
     echo "[INFO] Server downloaded"
   fi
 }
