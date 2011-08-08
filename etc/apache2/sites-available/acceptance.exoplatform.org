@@ -11,9 +11,9 @@
     ErrorDocument 502 /502.html
     ErrorDocument 503 /503.html
 
-    ErrorLog        ${ADT_HOME}/var/log/apache2/acceptance.exoplatform.org-error.log
+    ErrorLog        ${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-error.log
     LogLevel        warn
-    CustomLog       ${ADT_HOME}/var/log/apache2/acceptance.exoplatform.org-access.log combined  
+    CustomLog       ${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-access.log combined  
 
     #
     # Compression using GZIP
@@ -98,16 +98,16 @@
         Allow from all
     </Directory>
 
-    Alias /downloads/ "${ADT_HOME}/downloads/"
-    <Directory "${ADT_HOME}/downloads/">
+    Alias /downloads/ "${ADT_DATA}/downloads/"
+    <Directory "${ADT_DATA}/downloads/">
         Options Indexes MultiViews
         AllowOverride None
         Order allow,deny
         Allow from all
     </Directory>
 
-    Alias /logs/ "${ADT_HOME}/var/log/apache2/"
-    <Directory "${ADT_HOME}/var/log/apache2/">
+    Alias /logs/ "${ADT_DATA}/var/log/apache2/"
+    <Directory "${ADT_DATA}/var/log/apache2/">
         Options Indexes MultiViews
         AllowOverride None
         Order allow,deny
