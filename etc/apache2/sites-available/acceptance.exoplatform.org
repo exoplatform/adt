@@ -2,6 +2,8 @@
 
     ServerName  acceptance.exoplatform.org
     ServerAdmin exo-swf@exoplatform.com
+
+    RewriteEngine           On
     
     DirectoryIndex index.php
 
@@ -119,9 +121,11 @@
     Alias /awstats-icon/ "/usr/share/awstats/icon/"
     Alias /awstatscss "/usr/share/doc/awstats/examples/css"
     ScriptAlias /stats/ /usr/lib/cgi-bin/
-    Options ExecCGI -MultiViews +SymLinksIfOwnerMatch    
+    #Redirect by default to our public projects repositories
+    RedirectMatch "^stats/?$" "/stats/awstats.pl"    
+    Options ExecCGI -MultiViews +SymLinksIfOwnerMatch
 
-    # fastcgi with suexec needs the cgi script in the webroot
+    # Php
     ScriptAlias /cgi-bin ${ADT_DATA}/var/www/cgi-bin/
     <Directory ${ADT_DATA}/var/www/cgi-bin/>
         AllowOverride None
