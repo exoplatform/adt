@@ -84,10 +84,16 @@ $allow_show_source = 1; //whether to allow the ability to view the source code o
 
 				//figures out severity of error
 				$severity=1; 
+				// Tomcat/eXo warnings
 				if(strstr($line,"WARNING")!==FALSE) $severity=2;
 				if(strstr($line,"WARN")!==FALSE) $severity=2;
+				// Tomcat/eXo errors
 				if(strstr($line,"ERROR")!==FALSE) $severity=3;
 				if(strstr($line,"SEVERE")!==FALSE) $severity=3;
+				// Apache warnings 40x
+				if(preg_match("/^(\S+) (\S+) (\S+) \[([^:]+):(\d+:\d+:\d+) ([^\]]+)\] \"(\S+) (.*?) (\S+)\" 40[0-9] (\S+) (\".*?\") (\".*?\")$/", $line)>0) $severity=2;
+				// Apache errors 50x
+                if(preg_match("/^(\S+) (\S+) (\S+) \[([^:]+):(\d+:\d+:\d+) ([^\]]+)\] \"(\S+) (.*?) (\S+)\" 50[0-9] (\S+) (\".*?\") (\".*?\")$/", $line)>0) $severity=3;
 
 				$line = ereg_replace("[0-9]*-[a-zA-Z]*-[0-9]* [0-9]*:[0-9]*:[0-9]*","",$line); //gets rid of timestamp
 				$line = str_replace("INFO: ","",$line);
