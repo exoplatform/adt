@@ -817,7 +817,7 @@ ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatfor
     notifempty
     sharedscripts
     postrotate
-            sudo /usr/sbin/service apache2 reload > /dev/null
+    sudo /usr/sbin/service apache2 reload
     endscript
 }
 EOF
