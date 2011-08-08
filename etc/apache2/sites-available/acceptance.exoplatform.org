@@ -113,6 +113,13 @@
         Order allow,deny
         Allow from all
     </Directory>
+    
+    #Awstats
+    Alias /awstatsclasses "/usr/share/awstats/lib/"
+    Alias /awstats-icon/ "/usr/share/awstats/icon/"
+    Alias /awstatscss "/usr/share/doc/awstats/examples/css"
+    ScriptAlias /stats/ /usr/lib/cgi-bin/
+    Options ExecCGI -MultiViews +SymLinksIfOwnerMatch    
 
     # fastcgi with suexec needs the cgi script in the webroot
     ScriptAlias /cgi-bin ${ADT_DATA}/var/www/cgi-bin/
