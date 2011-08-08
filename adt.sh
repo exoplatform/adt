@@ -708,8 +708,9 @@ EOF
 
 do_create_apache_vhost()
 {
-mkdir -p $APACHE_CONF_DIR
-cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  echo "[INFO] Creating Apache Virtual Host ..."  
+  mkdir -p $APACHE_CONF_DIR
+  cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 <VirtualHost *:80>
     ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 
@@ -799,12 +800,14 @@ cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatf
 </VirtualHost>
 EOF
 
-DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
-DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
+  DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
+  echo "[INFO] Done."
 }
 
 do_log_rotate()
 {
+  echo "[INFO] Rotate Apache logs ..."  
   cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
 ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-*.log {
     missingok
@@ -824,10 +827,12 @@ EOF
     logrotate -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
   fi
   rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
+  echo "[INFO] Done."
 }
 
 do_create_deployment_descriptor()
 {
+  echo "[INFO] Creating deployment descriptor ..."  
   mkdir -p $ADT_CONF_DIR
   cat << EOF > $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 PRODUCT_NAME=$PRODUCT_NAME
@@ -857,6 +862,7 @@ ARTIFACT_REPO_URL=$ARTIFACT_REPO_URL
 ARTIFACT_DL_URL=$ARTIFACT_DL_URL
 EOF
 
+  echo "[INFO] Done."
   #Display the deployment descriptor
   echo "[INFO] ========================= Deployment Descriptor ========================="
   cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
