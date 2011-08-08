@@ -764,9 +764,19 @@ do_create_apache_vhost()
 
     ProxyRequests           Off
     ProxyPreserveHost       On
-    ProxyPass               /exo-static/   !
-    ProxyPass               /logs/         !
-    ProxyPass               /icons/        !
+    ProxyPass               /404.html            !
+    ProxyPass               /500.html            !
+    ProxyPass               /502.html            !
+    ProxyPass               /503.html            !
+    ProxyPass               /style.css           !
+    ProxyPass               /logs/               !
+    ProxyPass               /icons/              !
+    ProxyPass               /images/favicon.ico  !
+    ProxyPass               /images/Arrow.gif    !    
+    ProxyPass               /images/BgBlock.jpg  !    
+    ProxyPass               /images/Header.png   !    
+    ProxyPass               /images/Footer.png   !      
+    ProxyPass               /images/Logo.png     !        
     ProxyPass               /       ajp://localhost:$DEPLOYMENT_AJP_PORT/ acquire=1000 retry=30
     ProxyPassReverse        /       ajp://localhost:$DEPLOYMENT_AJP_PORT/
     
