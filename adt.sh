@@ -479,7 +479,7 @@ do_download_server() {
   else
     echo "[INFO] Downloading server ..."
     echo "[INFO] Archive          : $name "
-    echo "[INFO] Repository       : $repository "
+    echo "[INFO] Repository       : $ARTIFACT_REPO_GROUP "
     echo "[INFO] Url              : $ARTIFACT_REPO_URL "
     set +e
     curl $curl_options "$ARTIFACT_REPO_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
