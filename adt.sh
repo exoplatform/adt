@@ -807,26 +807,23 @@ EOF
 
 do_log_rotate()
 {
-  echo "[INFO] Rotate Apache logs ..."  
-  cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
+  if $LINUX; then
+    echo "[INFO] Rotate Apache logs ..."  
+    cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
 ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-*.log {
-    missingok
-    rotate 52
-    compress
-    delaycompress
-    notifempty
-    sharedscripts
-    postrotate
-    sudo /usr/sbin/service apache2 reload
-    endscript
+  missingok
+  rotate 52
+  compress
+  delaycompress
+  notifempty
+  sharedscripts
 }
 EOF
-
-  if $LINUX; then
     logrotate -s $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION.status -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
+    sudo /usr/sbin/service apache2 reload
+    rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
+    echo "[INFO] Done."
   fi
-  rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
-  echo "[INFO] Done."
 }
 
 do_create_deployment_descriptor()
