@@ -118,7 +118,7 @@
               </a></td>
               <td><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=/home/swfhudson/data/adt/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']?>-<?=$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a></td>
               <td><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a></td>
-              <td><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org" class="TxtOrange" title="Statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="center" /></a></td>
+              <td><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a></td>
               <?php
             if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
               $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
@@ -134,7 +134,7 @@
         </table>
         <p>&nbsp;</p>
         <p>Each instance can be accessed using JMX with the  URL linked to the monitoring icon and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
-        <p><a href="/stats/awstats.pl?config=acceptance.exoplatform.org" class="TxtBlue" title="Statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left" />Service Statistics</a></p>
+        <p><a href="/stats/awstats.pl?config=acceptance.exoplatform.org" class="TxtBlue" title="http://acceptance.exoplatform.org usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left" />http://acceptance.exoplatform.org usage statistics</a></p>
       </div>
     </div>
   </div>
