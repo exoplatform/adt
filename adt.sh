@@ -128,7 +128,7 @@ cat << EOF
 
 usage: $0 action [product] [version] [options]
 
-This script manages automated deployment of eXo products
+This script manages automated deployment of eXo products for testing purpose.
 
 ACTION :
   deploy       Deploys (Download+Configure) the server

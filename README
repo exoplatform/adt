@@ -1,7 +1,13 @@
-This project is a set of tools used to automate the deployment of eXo products.
+This project is a set of tools used to automate the deployment of eXo products for testing purpose.
 
 How to use ?
 ============
+
+Prerequisites
+------------------------
+
+A local Mysql server
+A Java 6 JVM available in the PATH
 
 Prepare your environment
 ------------------------
@@ -12,8 +18,14 @@ Fork this project :
 Define the environment variable ADT_DATA, which will be the path to a working directory used by ADT.
 
     export ADT_DATA=$HOME/adt_data
+
+You'll need also to define 
+
+   MYSQL_CREDENTIALS or use the option -m to set credentials used to create/delete databases
+
+   REPO_CREDENTIALS or use the option -r to download artifacts from our private repositories
     
-You can also define your settings in $HOME/.adtrc
+You can also define your settings in $HOME/.adtrc or in /etc/default/adt
     
 You're ready to go
 ------------------
@@ -47,7 +59,7 @@ Usage
 
     usage: ./adt.sh action [product] [version] [options]
     
-    This script manages automated deployment of eXo products
+    This script manages automated deployment of eXo products for testing purpose.
     
     ACTION :
       deploy       Deploys (Download+Configure) the server

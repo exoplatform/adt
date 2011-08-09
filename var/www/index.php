@@ -30,7 +30,7 @@
         <p>&nbsp;</p>
         <p>Welcome on Acceptance Live Instances !</p>
         <p>These instances are deployed to be used for acceptance tests.</p>
-        <p> Terms of usage and others documentations about this service are detailled in our <a href="https://wiki-int.exoplatform.org/x/84FrAg">internal wiki</a>.</p>
+        <p> Terms of usage and others documentations about this service are detailled in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
         <p><br/>
         </p>
         <table class="center">
