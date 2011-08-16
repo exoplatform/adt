@@ -143,7 +143,8 @@ ACTION :
   list         Lists all deployed servers
   
 PRODUCT (for deploy, start, stop, restart, undeploy actions) :
-  gatein       eXo GateIn
+  gatein       GateIn Community edition
+  exogtn       GateIn eXo edition
   webos        eXo WebOS
   social       eXo Social
   ecms         eXo Content
@@ -213,6 +214,13 @@ do_process_cl_params()
         # Validate product and load artifact details
         case "$PRODUCT_NAME" in
           gatein)
+            ARTIFACT_GROUPID="org.exoplatform.portal"
+            ARTIFACT_ARTIFACTID="exo.portal.packaging.tomcat.pkg.tc6"
+            ARTIFACT_CLASSIFIER="bundle"              
+            ARTIFACT_PACKAGING="zip"
+            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
+            ;;
+          exogtn)
             ARTIFACT_GROUPID="org.exoplatform.portal"
             ARTIFACT_ARTIFACTID="exo.portal.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
@@ -702,12 +710,16 @@ EOF
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}    
   fi  
   echo "[INFO] Done."
-  DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
+  if $LINUX; then # Prod vs Dev (To be improved)
+    DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
+  else
+    DEPLOYMENT_JMX_URL="service:jmx:rmi://localhost:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://localhost:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
+  fi
 }
 
 do_configure_apache()
 {
-  if $LINUX; then
+  if $LINUX; then  # Prod vs Dev (To be improved)
     echo "[INFO] Creating Apache Virtual Host ..."  
     mkdir -p $APACHE_CONF_DIR
     cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
@@ -854,6 +866,8 @@ EOF
     sudo /usr/sbin/service apache2 reload
     rm $TMP_DIR/logrotate-acceptance
     echo "[INFO] Done."
+  else
+    DEPLOYMENT_URL=http://localhost:${DEPLOYMENT_HTTP_PORT}
   fi
 }
 
@@ -988,7 +1002,7 @@ do_undeploy()
   # Delete the vhost
   rm $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
   # Reload Apache to deactivate the config  
-  if $LINUX; then
+  if $LINUX; then  # Prod vs Dev (To be improved)
     sudo /usr/sbin/service apache2 reload
   fi
   # Delete the deployment descriptor
@@ -996,7 +1010,7 @@ do_undeploy()
   # Delete the server
   rm -rf $DEPLOYMENT_DIR
   # Close firewall ports
-  if $LINUX; then
+  if $LINUX; then  # Prod vs Dev (To be improved)
     sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
     sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
   fi  
