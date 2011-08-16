@@ -74,7 +74,8 @@ Usage
       list         Lists all deployed servers
       
     PRODUCT (for deploy, start, stop, restart, undeploy actions) :
-      gatein       eXo GateIn
+      gatein       GateIn Community edition
+      exogtn       GateIn eXo edition
       webos        eXo WebOS
       social       eXo Social
       ecms         eXo Content
