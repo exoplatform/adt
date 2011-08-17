@@ -108,24 +108,20 @@
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
-              <td><a href="<?=$descriptor_array['ARTIFACT_DL_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;
-                <?=$descriptor_array['ARTIFACT_TIMESTAMP']?>
-              </a></td>
+              <td><a href="<?=$descriptor_array['ARTIFACT_DL_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;<?=$descriptor_array['ARTIFACT_TIMESTAMP']?></a></td>
               <td><?=$artifact_age_string?></td>
               <td><?=$deployment_age_string?></td>
-              <td><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window">
-                <?=$descriptor_array['DEPLOYMENT_URL']?>
-              </a></td>
-              <td><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=/home/swfhudson/data/adt/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']?>-<?=$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a></td>
-              <td><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a></td>
-              <td><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=/home/swfhudson/data/adt/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']?>-<?=$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
               <?php
             if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
               $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
             else
               $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
             ?>
-              <td><?=$status?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo $status } ?></td>
             </tr>
             <?php 
           } 

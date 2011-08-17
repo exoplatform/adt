@@ -1,10 +1,10 @@
 #!/bin/bash -eu                                                                                                                                                                                                                         -e
 
 # Load server config from /etc/default/adt
-[ -e /etc/default/adt ] && source /etc/default/adt
+[ -e "/etc/default/adt" ] && source /etc/default/adt
 
 # Load local config from $HOME/.adtrc
-[ -e $HOME/.adtrc ] && source $HOME/.adtrc
+[ -e "$HOME/.adtrc" ] && source $HOME/.adtrc
 
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="${0%/*}"
@@ -67,6 +67,7 @@ initialize()
   PRODUCT_NAME=""
   PRODUCT_VERSION=""
 
+  DEPLOYMENT_ENABLED=true
   DEPLOYMENT_DATE=""
   DEPLOYMENT_DIR=""
   DEPLOYMENT_URL=""
@@ -76,11 +77,11 @@ initialize()
   DEPLOYMENT_PID_FILE=""
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
-  [ -z $DEPLOYMENT_SHUTDOWN_PORT ] && DEPLOYMENT_SHUTDOWN_PORT=8005
-  [ -z $DEPLOYMENT_HTTP_PORT ] && DEPLOYMENT_HTTP_PORT=8080
-  [ -z $DEPLOYMENT_AJP_PORT ] && DEPLOYMENT_AJP_PORT=8009
-  [ -z $DEPLOYMENT_RMI_REG_PORT ] && DEPLOYMENT_RMI_REG_PORT=10001
-  [ -z $DEPLOYMENT_RMI_SRV_PORT ] && DEPLOYMENT_RMI_SRV_PORT=10002
+  [ -z "$DEPLOYMENT_SHUTDOWN_PORT" ] && DEPLOYMENT_SHUTDOWN_PORT=8005
+  [ -z "$DEPLOYMENT_HTTP_PORT" ] && DEPLOYMENT_HTTP_PORT=8080
+  [ -z "$DEPLOYMENT_AJP_PORT" ] && DEPLOYMENT_AJP_PORT=8009
+  [ -z "$DEPLOYMENT_RMI_REG_PORT" ] && DEPLOYMENT_RMI_REG_PORT=10001
+  [ -z "$DEPLOYMENT_RMI_SRV_PORT" ] && DEPLOYMENT_RMI_SRV_PORT=10002
   set -u
   
   ARTIFACT_GROUPID=""
@@ -93,13 +94,13 @@ initialize()
   ARTIFACT_DL_URL=""
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
-  [ -z $ARTIFACT_REPO_GROUP ] && ARTIFACT_REPO_GROUP="public"
+  [ -z "$ARTIFACT_REPO_GROUP" ] && ARTIFACT_REPO_GROUP="public"
   set -u
   
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
-  [ -z $REPO_CREDENTIALS ] && REPO_CREDENTIALS=""
-  [ -z $MYSQL_CREDENTIALS ] && MYSQL_CREDENTIALS=""  
+  [ -z "$REPO_CREDENTIALS" ] && REPO_CREDENTIALS=""
+  [ -z "$MYSQL_CREDENTIALS" ] && MYSQL_CREDENTIALS=""  
   set -u
   
   CURR_DATE=`date "+%Y%m%d.%H%M%S"`
@@ -151,6 +152,7 @@ PRODUCT (for deploy, start, stop, restart, undeploy actions) :
   ks           eXo Knowledge
   cs           eXo Collaboration
   platform     eXo Platform
+  android      eXo Mobile Android
 
 VERSION (for deploy, start, stop, restart, undeploy actions) :
   version of the product
@@ -269,6 +271,13 @@ do_process_cl_params()
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
             GATEIN_CONF_PATH="gatein/conf/configuration.properties"
+            ;;
+          android)
+            DEPLOYMENT_ENABLED=false
+            ARTIFACT_GROUPID="org.exoplatform.mobile.platform"
+            ARTIFACT_ARTIFACTID="exo-mobile-android"
+            ARTIFACT_CLASSIFIER=""
+            ARTIFACT_PACKAGING="apk"
             ;;
           ?)
             echo "[ERROR] Invalid product \"$PRODUCT_NAME\"" 
@@ -398,7 +407,7 @@ do_process_cl_params()
          esac
     done
 
-    if [[ (("$ACTION" == "deploy") || ("$ACTION" == "undeploy")) && -z $MYSQL_CREDENTIALS ]]; then
+    if [[ (("$ACTION" == "deploy") || ("$ACTION" == "undeploy")) && -z "$MYSQL_CREDENTIALS" ]]; then
       echo "[ERROR] DB Credentials aren't set !"
       echo "[ERROR] Use the -m command line option or set the environment variable MYSQL_CREDENTIALS"
       print_usage
@@ -422,10 +431,10 @@ do_download_server() {
   # Where we will download it
   mkdir -p $DL_DIR
   # REPO_CREDENTIALS and repository options
-  if [ -n $REPO_CREDENTIALS ]; then
+  if [ -n "$REPO_CREDENTIALS" ]; then
     local curl_options="--location-trusted -u $REPO_CREDENTIALS"
   fi;
-  if [ -z $REPO_CREDENTIALS ]; then
+  if [ -z "$REPO_CREDENTIALS" ]; then
     local curl_options="--location-trusted"
   fi;
   # By default the timestamp is the version (for a release)
@@ -437,7 +446,7 @@ do_download_server() {
   if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]; then
     local METADATA=$DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
     # Backup lastest metadata to be able to use them if newest are wrong (don't have delivery)
-    if [ -e $METADATA ]; then
+    if [ -e "$METADATA" ]; then
       mv $METADATA $METADATA.bck
     fi
     echo "[INFO] Downloading metadata $url/maven-metadata.xml ..."
@@ -449,7 +458,11 @@ do_download_server() {
     fi
     set -e
     echo "[INFO] Metadata downloaded"
-    local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$ARTIFACT_CLASSIFIER\")and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
+    if [ -z "$ARTIFACT_CLASSIFIER" ]; then
+      local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
+    else
+      local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$ARTIFACT_CLASSIFIER\")and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
+    fi
     set +e
     if $DARWIN; then
       ARTIFACT_TIMESTAMP=`xpath $METADATA $XPATH_QUERY`
@@ -458,7 +471,7 @@ do_download_server() {
       ARTIFACT_TIMESTAMP=`xpath -q -e $XPATH_QUERY $METADATA`
     fi
     set -e
-    if [ -z $ARTIFACT_TIMESTAMP ] && [ -e $METADATA.bck ]; then
+    if [ -z "$ARTIFACT_TIMESTAMP" ] && [ -e "$METADATA.bck" ]; then
       # We will restore the previous one to get its timestamp and redeploy it
       echo "[WARNING] Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv $METADATA.bck $METADATA
@@ -469,7 +482,7 @@ do_download_server() {
         ARTIFACT_TIMESTAMP=`xpath -q -e $XPATH_QUERY $METADATA`
       fi
     fi
-    if [ -z $ARTIFACT_TIMESTAMP ]; then
+    if [ -z "$ARTIFACT_TIMESTAMP" ]; then
       echo "[ERROR] No package available in the remote repository and no previous version available locally."
       exit 1;
     fi
@@ -479,14 +492,14 @@ do_download_server() {
   fi
   local filename=$ARTIFACT_ARTIFACTID-$ARTIFACT_TIMESTAMP  
   local name=$ARTIFACT_GROUPID:$ARTIFACT_ARTIFACTID:$PRODUCT_VERSION
-  if [ -n $ARTIFACT_CLASSIFIER ]; then
+  if [ -n "$ARTIFACT_CLASSIFIER" ]; then
     filename="$filename-$ARTIFACT_CLASSIFIER"
     name="$name:$ARTIFACT_CLASSIFIER"
   fi;
   filename="$filename.$ARTIFACT_PACKAGING"
   name="$name:$ARTIFACT_PACKAGING"  
   ARTIFACT_REPO_URL=$url/$filename
-  if [ -e $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING ]; then
+  if [ -e "$DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING" ]; then
     echo "[WARNING] $name was already downloaded. Skip server download !"
   else
     echo "[INFO] Downloading server ..."
@@ -607,7 +620,7 @@ do_patch_server()
   JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
   echo "[INFO] Downloading and installing JMX remote lib ..."
   curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
-  if [ ! -e ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL` ]; then
+  if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $JMX_JAR_URL` ]; then
     echo "[ERROR] !!! Sorry, cannot download ${JMX_JAR_URL}"
     exit 1
   fi
@@ -616,7 +629,7 @@ do_patch_server()
   MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar"
   echo "[INFO] Download and install MySQL JDBC driver ..."
   curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
-  if [ ! -e ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL` ]; then
+  if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
     echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"
     exit 1
   fi
@@ -637,9 +650,9 @@ do_patch_server()
   # server.xml.patch
   #
   local server_patch="$ETC_DIR/tomcat6/server.xml.patch"
-  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch"  
-  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch"
-  [ -e $ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
+  [ -e "$ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch" ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch"  
+  [ -e "$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch" ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch"
+  [ -e "$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch" ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
   # Prepare the patch
   cp $server_patch $DEPLOYMENT_DIR/conf/server.xml.patch
   echo "[INFO] Applying on server.xml the patch $server_patch ..."  
@@ -675,9 +688,9 @@ do_patch_server()
   # configuration.properties.patch
   #
   local gatein_patch="$ETC_DIR/gatein/configuration.properties.patch"
-  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch"
-  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch"
-  [ -e $ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch"
+  [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch"
+  [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch"
+  [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch"
   # Prepare the patch
   cp $gatein_patch $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patch
   echo "[INFO] Applying on $GATEIN_CONF_PATH the patch $gatein_patch ..."  
@@ -879,6 +892,7 @@ do_create_deployment_descriptor()
 PRODUCT_NAME=$PRODUCT_NAME
 PRODUCT_VERSION=$PRODUCT_VERSION
 PRODUCT_BRANCH=$PRODUCT_BRANCH
+DEPLOYMENT_ENABLED=$DEPLOYMENT_ENABLED
 DEPLOYMENT_DATE=$CURR_DATE
 DEPLOYMENT_DIR=$DEPLOYMENT_DIR
 DEPLOYMENT_URL=$DEPLOYMENT_URL
@@ -912,7 +926,7 @@ EOF
 
 do_load_deployment_descriptor()
 {
-  if [ ! -e $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org ]; then
+  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org" ]; then
     echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
     echo "[WARNING] You need to deploy it first."
   else
@@ -927,10 +941,14 @@ do_deploy()
 {
   echo "[INFO] Deploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
   do_download_server
-  do_create_database
-  do_unpack_server
-  do_patch_server
-  do_configure_apache
+  if $DEPLOYMENT_ENABLED ; then  
+    do_create_database
+    do_unpack_server
+    do_patch_server
+    do_configure_apache
+  else
+    echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be undeployed"
+  fi 
   do_create_deployment_descriptor
   echo "[INFO] Server deployed"
 }
@@ -940,38 +958,42 @@ do_deploy()
 #
 do_start()
 {
-  echo "[INFO] Starting server $PRODUCT_NAME $PRODUCT_VERSION ..."
-  chmod 755 $DEPLOYMENT_DIR/bin/*.sh
-  export CATALINA_HOME=$DEPLOYMENT_DIR
-  export CATALINA_PID=$DEPLOYMENT_PID_FILE
-  export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
-  export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS"
-  ${CATALINA_HOME}${SERVER_SCRIPT} start
-  # Wait for logs availability
-  while [ true ];
-  do    
-    if [ -e $DEPLOYMENT_DIR/logs/catalina.out ]; then
-      break
-    fi    
-  done
-  # Display logs
-  tail -f $DEPLOYMENT_DIR/logs/catalina.out &
-  local tailPID=$!
-  # Check for the end of startup
-  set +e
-  while [ true ];
-  do    
-    if grep -q "Server startup in" $DEPLOYMENT_DIR/logs/catalina.out; then
-      kill $tailPID
-      wait $tailPID 2>/dev/null
-      break
-    fi    
-  done
-  set -e
-  echo "[INFO] Server started"
-  echo "[INFO] URL  : $DEPLOYMENT_URL"
-  echo "[INFO] Logs : $DEPLOYMENT_LOG_URL"
-  echo "[INFO] JMX  : $DEPLOYMENT_JMX_URL"
+  if $DEPLOYMENT_ENABLED ; then
+    echo "[INFO] Starting server $PRODUCT_NAME $PRODUCT_VERSION ..."
+    chmod 755 $DEPLOYMENT_DIR/bin/*.sh
+    export CATALINA_HOME=$DEPLOYMENT_DIR
+    export CATALINA_PID=$DEPLOYMENT_PID_FILE
+    export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
+    export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS"
+    ${CATALINA_HOME}${SERVER_SCRIPT} start
+    # Wait for logs availability
+    while [ true ];
+    do    
+      if [ -e "$DEPLOYMENT_DIR/logs/catalina.out" ]; then
+        break
+      fi    
+    done
+    # Display logs
+    tail -f $DEPLOYMENT_DIR/logs/catalina.out &
+    local tailPID=$!
+    # Check for the end of startup
+    set +e
+    while [ true ];
+    do    
+      if grep -q "Server startup in" $DEPLOYMENT_DIR/logs/catalina.out; then
+        kill $tailPID
+        wait $tailPID 2>/dev/null
+        break
+      fi    
+    done
+    set -e
+    echo "[INFO] Server started"
+    echo "[INFO] URL  : $DEPLOYMENT_URL"
+    echo "[INFO] Logs : $DEPLOYMENT_LOG_URL"
+    echo "[INFO] JMX  : $DEPLOYMENT_JMX_URL"
+  else
+    echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be started"
+  fi
 }
 
 #
@@ -979,14 +1001,18 @@ do_start()
 #
 do_stop()
 {
-  if [ ! -z $DEPLOYMENT_DIR ] && [ -e $DEPLOYMENT_DIR ]; then
-    echo "[INFO] Stopping server $PRODUCT_NAME $PRODUCT_VERSION ..."
-    export CATALINA_HOME=$DEPLOYMENT_DIR
-    export CATALINA_PID=$DEPLOYMENT_PID_FILE
-    ${CATALINA_HOME}${SERVER_SCRIPT} stop 60 -force || true
-    echo "[INFO] Server stopped"
+  if $DEPLOYMENT_ENABLED ; then
+    if [ -n "$DEPLOYMENT_DIR" ] && [ -e "$DEPLOYMENT_DIR" ]; then
+      echo "[INFO] Stopping server $PRODUCT_NAME $PRODUCT_VERSION ..."
+      export CATALINA_HOME=$DEPLOYMENT_DIR
+      export CATALINA_PID=$DEPLOYMENT_PID_FILE
+      ${CATALINA_HOME}${SERVER_SCRIPT} stop 60 -force || true
+      echo "[INFO] Server stopped"
+    else
+      echo "[WARNING] No server directory to stop it"
+    fi
   else
-    echo "[WARNING] No server directory to stop it"
+    echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be stopped"
   fi
 }
 
@@ -995,26 +1021,30 @@ do_stop()
 #
 do_undeploy()
 {
-  # Stop the server
-  do_stop
-  do_drop_database
-  echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
-  # Delete the vhost
-  rm $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
-  # Reload Apache to deactivate the config  
-  if $LINUX; then  # Prod vs Dev (To be improved)
-    sudo /usr/sbin/service apache2 reload
+  if $DEPLOYMENT_ENABLED ; then
+    # Stop the server
+    do_stop
+    do_drop_database
+    echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
+    # Delete the vhost
+    rm $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    # Reload Apache to deactivate the config  
+    if $LINUX; then  # Prod vs Dev (To be improved)
+      sudo /usr/sbin/service apache2 reload
+    fi
+    # Delete the deployment descriptor
+    rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    # Delete the server
+    rm -rf $DEPLOYMENT_DIR
+    # Close firewall ports
+    if $LINUX; then  # Prod vs Dev (To be improved)
+      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
+      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
+    fi  
+    echo "[INFO] Server undeployed"
+  else
+    echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be undeployed"
   fi
-  # Delete the deployment descriptor
-  rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
-  # Delete the server
-  rm -rf $DEPLOYMENT_DIR
-  # Close firewall ports
-  if $LINUX; then  # Prod vs Dev (To be improved)
-    sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
-    sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
-  fi  
-  echo "[INFO] Server undeployed"
 }
 
 #
