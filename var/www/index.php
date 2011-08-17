@@ -121,7 +121,7 @@
             else
               $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
             ?>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo $status } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo "$status"; } ?></td>
             </tr>
             <?php 
           } 
