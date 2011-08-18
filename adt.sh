@@ -946,8 +946,6 @@ do_deploy()
     do_unpack_server
     do_patch_server
     do_configure_apache
-  else
-    echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be undeployed"
   fi 
   do_create_deployment_descriptor
   echo "[INFO] Server deployed"
@@ -1032,8 +1030,6 @@ do_undeploy()
     if $LINUX; then  # Prod vs Dev (To be improved)
       sudo /usr/sbin/service apache2 reload
     fi
-    # Delete the deployment descriptor
-    rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
     # Delete the server
     rm -rf $DEPLOYMENT_DIR
     # Close firewall ports
@@ -1042,9 +1038,9 @@ do_undeploy()
       sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
     fi  
     echo "[INFO] Server undeployed"
-  else
-    echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be undeployed"
   fi
+  # Delete the deployment descriptor
+  rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 }
 
 #
