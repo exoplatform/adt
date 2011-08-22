@@ -76,6 +76,7 @@ initialize()
   DEPLOYMENT_JMX_URL=""
   DEPLOYMENT_PID_FILE=""
   DEPLOYMENT_EXTRA_JAVA_OPTS=""
+  DEPLOYMENT_GATEIN_CONF_PATH="gatein/conf/configuration.properties"
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
   [ -z "$DEPLOYMENT_SHUTDOWN_PORT" ] && DEPLOYMENT_SHUTDOWN_PORT=8005
@@ -106,7 +107,7 @@ initialize()
   
   CURR_DATE=`date "+%Y%m%d.%H%M%S"`
   KEEP_DB=false  
-  SERVER_SCRIPT="/bin/gatein.sh"
+  DEPLOYMENT_SERVER_SCRIPT="bin/gatein.sh"
 
   # OS specific support. $var _must_ be set to either true or false.
   CYGWIN=false
@@ -221,65 +222,59 @@ do_process_cl_params()
             ARTIFACT_ARTIFACTID="exo.portal.packaging.tomcat.pkg.tc6"
             ARTIFACT_CLASSIFIER="bundle"              
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           exogtn)
             ARTIFACT_GROUPID="org.exoplatform.portal"
             ARTIFACT_ARTIFACTID="exo.portal.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           webos)
             ARTIFACT_GROUPID="org.exoplatform.webos"
             ARTIFACT_ARTIFACTID="exo.webos.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            SERVER_SCRIPT="/bin/eXo.sh"
-            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
+            DEPLOYMENT_SERVER_SCRIPT="bin/eXo.sh"
             ;;
           ecms)
             ARTIFACT_GROUPID="org.exoplatform.ecms"
             ARTIFACT_ARTIFACTID="exo-ecms-delivery-wcm-assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           social)
             ARTIFACT_GROUPID="org.exoplatform.social"
             ARTIFACT_ARTIFACTID="exo.social.packaging.pkg"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/portal/socialdemo/socialdemo.properties"
+            DEPLOYMENT_GATEIN_CONF_PATH="gatein/conf/portal/socialdemo/socialdemo.properties"
             ;;
           ks)
             ARTIFACT_GROUPID="org.exoplatform.ks"
             ARTIFACT_ARTIFACTID="exo.ks.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/portal/ksdemo/ksdemo.properties"
+            DEPLOYMENT_GATEIN_CONF_PATH="gatein/conf/portal/ksdemo/ksdemo.properties"
             ;;
           cs)
             ARTIFACT_GROUPID="org.exoplatform.cs"
             ARTIFACT_ARTIFACTID="exo.cs.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             ;;
           plf)
             ARTIFACT_GROUPID="org.exoplatform.platform"
             ARTIFACT_ARTIFACTID="exo.platform.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            GATEIN_CONF_PATH="gatein/conf/configuration.properties"
             DEPLOYMENT_EXTRA_JAVA_OPTS="-Dexo.profiles=all"
             ;;
           android)
-            DEPLOYMENT_ENABLED=false
             ARTIFACT_GROUPID="org.exoplatform.mobile.platform"
             ARTIFACT_ARTIFACTID="exo-mobile-android"
             ARTIFACT_CLASSIFIER=""
             ARTIFACT_PACKAGING="apk"
+            DEPLOYMENT_ENABLED=false
             ;;
           ?)
             echo "[ERROR] Invalid product \"$PRODUCT_NAME\"" 
@@ -675,12 +670,12 @@ do_patch_server()
   replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
   echo "[INFO] Done."
 
-  # Reconfigure $GATEIN_CONF_PATH
+  # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
   
   # Ensure the configuration.properties doesn't have some windows end line characters
   # '\015' is Ctrl+V Ctrl+M = ^M
-  cp $DEPLOYMENT_DIR/$GATEIN_CONF_PATH $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.orig
-  tr -d '\015' < $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.orig > $DEPLOYMENT_DIR/$GATEIN_CONF_PATH  
+  cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.orig
+  tr -d '\015' < $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.orig > $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH  
 
   # First we need to find which patch to apply
   # We'll try to find it in the directory $ETC_DIR/gatein/ and we'll select it in this order :
@@ -694,18 +689,18 @@ do_patch_server()
   [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch"
   [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch"
   # Prepare the patch
-  cp $gatein_patch $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patch
-  echo "[INFO] Applying on $GATEIN_CONF_PATH the patch $gatein_patch ..."  
-  cp $DEPLOYMENT_DIR/$GATEIN_CONF_PATH $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.ori
-  patch -l -p0 $DEPLOYMENT_DIR/$GATEIN_CONF_PATH < $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patch  
-  cp $DEPLOYMENT_DIR/$GATEIN_CONF_PATH $DEPLOYMENT_DIR/$GATEIN_CONF_PATH.patched
+  cp $gatein_patch $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+  echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $gatein_patch ..."  
+  cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.ori
+  patch -l -p0 $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH < $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patch  
+  cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patched
   
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/$GATEIN_CONF_PATH "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+  replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+  replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
   echo "[INFO] Done."
 
   # JMX settings
@@ -966,7 +961,7 @@ do_start()
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
     export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
-    ${CATALINA_HOME}${SERVER_SCRIPT} start
+    ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
     # Wait for logs availability
     while [ true ];
     do    
@@ -1007,7 +1002,7 @@ do_stop()
       echo "[INFO] Stopping server $PRODUCT_NAME $PRODUCT_VERSION ..."
       export CATALINA_HOME=$DEPLOYMENT_DIR
       export CATALINA_PID=$DEPLOYMENT_PID_FILE
-      ${CATALINA_HOME}${SERVER_SCRIPT} stop 60 -force || true
+      ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force || true
       echo "[INFO] Server stopped"
     else
       echo "[WARNING] No server directory to stop it"
