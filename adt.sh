@@ -75,6 +75,7 @@ initialize()
   DEPLOYMENT_LOG_PATH=""
   DEPLOYMENT_JMX_URL=""
   DEPLOYMENT_PID_FILE=""
+  DEPLOYMENT_EXTRA_JAVA_OPTS=""
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
   [ -z "$DEPLOYMENT_SHUTDOWN_PORT" ] && DEPLOYMENT_SHUTDOWN_PORT=8005
@@ -271,6 +272,7 @@ do_process_cl_params()
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
             GATEIN_CONF_PATH="gatein/conf/configuration.properties"
+            DEPLOYMENT_EXTRA_JAVA_OPTS="-Dexo.profiles=all"
             ;;
           android)
             DEPLOYMENT_ENABLED=false
@@ -906,6 +908,7 @@ DEPLOYMENT_PID_FILE=$DEPLOYMENT_PID_FILE
 DEPLOYMENT_RMI_REG_PORT=$DEPLOYMENT_RMI_REG_PORT
 DEPLOYMENT_RMI_SRV_PORT=$DEPLOYMENT_RMI_SRV_PORT
 DEPLOYMENT_DATABASE_NAME=$DEPLOYMENT_DATABASE_NAME
+DEPLOYMENT_EXTRA_JAVA_OPTS=$DEPLOYMENT_EXTRA_JAVA_OPTS
 ARTIFACT_GROUPID=$ARTIFACT_GROUPID
 ARTIFACT_ARTIFACTID=$ARTIFACT_ARTIFACTID
 ARTIFACT_TIMESTAMP=$ARTIFACT_TIMESTAMP
@@ -962,7 +965,7 @@ do_start()
     export CATALINA_HOME=$DEPLOYMENT_DIR
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
-    export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS"
+    export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
     ${CATALINA_HOME}${SERVER_SCRIPT} start
     # Wait for logs availability
     while [ true ];
