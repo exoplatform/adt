@@ -52,9 +52,11 @@ initialize()
   mkdir -p $ADT_DATA
   
   # Copy everything in it
-  cp -rf $SCRIPT_DIR/etc $ADT_DATA
-  cp -rf $SCRIPT_DIR/var $ADT_DATA
-  #cp -rf $SCRIPT_DIR/bin $ADT_DATA
+  if [[ "$SCRIPT_DIR" != "$ADT_DATA" ]]; then
+    cp -rf $SCRIPT_DIR/etc $ADT_DATA
+    cp -rf $SCRIPT_DIR/var $ADT_DATA
+    #cp -rf $SCRIPT_DIR/bin $ADT_DATA
+  fi
 
   TMP_DIR=$ADT_DATA/tmp
   DL_DIR=$ADT_DATA/downloads
