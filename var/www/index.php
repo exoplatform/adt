@@ -98,11 +98,11 @@
 			else
 			  $artifact_age_string = $artifact_age->format('%i minute(s) ago');
 			if($artifact_age->days > 5 )
-			  $artifact_age_class = "red"
+			  $artifact_age_class = "red";
 			else if($artifact_age->days > 2 )
-			  $artifact_age_class = "orange"
+			  $artifact_age_class = "orange";
 	        else
-			  $artifact_age_class = "green"			
+			  $artifact_age_class = "green";			
 			$deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
 			if($deployment_age->days)
 			  $deployment_age_string = $deployment_age->format('%a day(s) ago');
