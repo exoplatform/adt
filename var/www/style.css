@@ -39,16 +39,19 @@ h6 {
 }
 th {
 	padding: 5px 5px 5px 5px;
-	background: #e1e1e1;	
+	background: #e1e1e1;
 }
 td {
 	padding: 5px 5px 5px 5px;
-    text-align: left;
+	text-align: left;
 	white-space: nowrap;
 }
-.normal { background-color: #f6f6f6 }
-.normalActive { background-color: #FFFFFF }
-
+.normal {
+	background-color: #f6f6f6
+}
+.normalActive {
+	background-color: #FFFFFF
+}
 .ClearFix:after {
 	content: ".";
 	display: block;
@@ -105,9 +108,9 @@ td {
 .UIForgePages .ContentPages {
 	padding: 18px 7px 7px 7px;
 	width: 570px;
-    margin: auto;
+	margin: auto;
 }
-.UIForgePages .ContentPages ul{
+.UIForgePages .ContentPages ul {
 	list-style: none;
 	padding: 0px;
 }
@@ -134,7 +137,7 @@ td {
 	color: white;
 }
 .UIForgePages .TitleForgePages {
-font-size: 24px;
+	font-size: 24px;
 	color: #fbad18;
 	padding-left: 20px;
 	text-align: left;
@@ -200,7 +203,7 @@ font-size: 24px;
 	height: 127px;
 	padding: 0px 17px 0px 20px;
 	text-align: justify;
- }
+}
 .UIForgePages .ContentCenter h2 {
 	font-size: 23px;
 	font-weight: bold;
@@ -219,65 +222,60 @@ font-size: 24px;
 	padding-left: 11px;
 	line-height: 20px;
 }
-
-.MainContent{
+.MainContent {
 	padding: 18px 7px 7px 7px;
-    margin: auto;	
+	margin: auto;
 	width:80%;
 	background-color: #ffffff;
 }
-.Ribbon{
-        position: relative;
-        width: 20%;
-        font-size: 1.5em;
-        font-weight: bold;
-        padding: 6px 20px 6px 27px;
-        margin: 30px 10px 10px -27px;
-        color: #EBB;
-        background-color: #900;
-        text-shadow: 0px 1px 2px #b00;
-        -webkit-box-shadow: 0px 2px 4px #800;
-        -moz-box-shadow: 0px 2px 4px #800;
-        box-shadow: 0px 2px 4px #800;
+.Ribbon {
+	position: relative;
+	width: 20%;
+	font-size: 1.5em;
+	font-weight: bold;
+	padding: 6px 20px 6px 27px;
+	margin: 30px 10px 10px -27px;
+	color: #EBB;
+	background-color: #900;
+	text-shadow: 0px 1px 2px #b00;
+	-webkit-box-shadow: 0px 2px 4px #800;
+	-moz-box-shadow: 0px 2px 4px #800;
+	box-shadow: 0px 2px 4px #800;
 }
-
-.Ribbon:before, .Ribbon:after{
-        content: ' ';
-        position: absolute;
-        width: 0;
-        height: 0;
+.Ribbon:before, .Ribbon:after {
+	content: ' ';
+	position: absolute;
+	width: 0;
+	height: 0;
 }
-
-.Ribbon:before{
-        border-width: 20px 10px;
-        border-style: solid;
-        width: 0px;
-        left: auto;
-        right: -2px;
-        top: 0px;
-        border-color: transparent #fff transparent transparent;
+.Ribbon:before {
+	border-width: 20px 10px;
+	border-style: solid;
+	width: 0px;
+	left: auto;
+	right: -2px;
+	top: 0px;
+	border-color: transparent #fff transparent transparent;
 }
-.Ribbon:after{
-        left: 0px;
-        top: 100%;
-        border-width: 5px 10px;
-        border-style: solid;
-        border-color: #600 #600 transparent transparent;
+.Ribbon:after {
+	left: 0px;
+	top: 100%;
+	border-width: 5px 10px;
+	border-style: solid;
+	border-color: #600 #600 transparent transparent;
 }
-
 table.center {
-    margin-left: auto;
-    margin-right: auto;
+	margin-left: auto;
+	margin-right: auto;
 }
 img.center {
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-	padding:1px; 
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	padding:1px;
 	border:0px;
-    vertical-align:middle;	
+	vertical-align:middle;
 }
-
 img.left {
 	float:left;
 	margin:2px 2px 2px 2px;
@@ -285,23 +283,76 @@ img.left {
 	border:0px;
 	vertical-align:middle;
 }
-
 img.right {
-	float:right; 
-	margin:2px 2px 2px 2px ;  
-	padding:1px; 
+	float:right;
+	margin:2px 2px 2px 2px;
+	padding:1px;
 	border:0px;
 	vertical-align:middle;
 }
-
-p { white-space: nowrap; }
-.instructions { padding: 5px; margin-bottom: 10px; }
-.latest { border-top: 1px solid #666; border-bottom: 1px solid #666; background-color: #eee; padding: 5px; font-family: Courier,monospace;}
-.errors { border-top: 1px solid #600; border-bottom: 1px solid #600; background-color: #fee; padding: 5px; font-family: Courier,monospace;}
-.errors b { color: #600; } 
-.warnings { border-top: 1px solid #660; border-bottom: 1px solid #660; background-color: #ffe; padding: 5px; font-family: Courier,monospace;}
-.warnings b { color: #660; } 
-.notices { border-top: 1px solid #666; border-bottom: 1px solid #666; background-color: #eee; padding: 5px; font-family: Courier,monospace;}
-.code { background-color: #eee; border-top: 1px solid #666; border-bottom: 1px solid #666; padding: 5px; font-family: Courier,monospace; }
-code {font-family: Courier,monospace; }
-input,select { margin-left: 5px; }
+p {
+	white-space: nowrap;
+}
+.instructions {
+	padding: 5px;
+	margin-bottom: 10px;
+}
+.latest {
+	border-top: 1px solid #666;
+	border-bottom: 1px solid #666;
+	background-color: #eee;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.errors {
+	border-top: 1px solid #600;
+	border-bottom: 1px solid #600;
+	background-color: #fee;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.errors b {
+	color: #600;
+}
+.warnings {
+	border-top: 1px solid #660;
+	border-bottom: 1px solid #660;
+	background-color: #ffe;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.warnings b {
+	color: #660;
+}
+.notices {
+	border-top: 1px solid #666;
+	border-bottom: 1px solid #666;
+	background-color: #eee;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.code {
+	background-color: #eee;
+	border-top: 1px solid #666;
+	border-bottom: 1px solid #666;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+code {
+	font-family: Courier, monospace;
+}
+input, select {
+	margin-left: 5px;
+}
+.red {
+	font-weight:bolder;
+	color: #D00
+}
+.orange {
+	font-weight:bold;
+	color: #F60
+}
+.green {
+	font-weight:normal;
+	color: #060
+}

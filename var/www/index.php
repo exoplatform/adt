@@ -97,6 +97,12 @@
 			  $artifact_age_string = $artifact_age->format('%h hour(s) ago');
 			else
 			  $artifact_age_string = $artifact_age->format('%i minute(s) ago');
+			if($artifact_age->days > 5 )
+			  $artifact_age_class = "red"
+			else if($artifact_age->days > 2 )
+			  $artifact_age_class = "orange"
+	        else
+			  $artifact_age_class = "green"			
 			$deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
 			if($deployment_age->days)
 			  $deployment_age_string = $deployment_age->format('%a day(s) ago');
@@ -109,7 +115,7 @@
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
               <td><a href="<?=$descriptor_array['ARTIFACT_DL_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;<?=$descriptor_array['ARTIFACT_TIMESTAMP']?></a></td>
-              <td><?=$artifact_age_string?></td>
+              <td class="<?=$artifact_age_class?>"><?=$artifact_age_string?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo "$deployment_age_string"; } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a><?php } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=/home/swfhudson/data/adt/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']?>-<?=$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
