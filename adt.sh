@@ -1,4 +1,4 @@
-#!/bin/bash -eu                                                                                                                                                                                                                         
+#!/bin/bash -eu                                                                                                                                                                                                             
 
 # Load server config from /etc/default/adt
 [ -e "/etc/default/adt" ] && source /etc/default/adt
@@ -571,16 +571,14 @@ do_unpack_server()
       ;;
   esac
   set -e
-  DEPLOYMENT_DIR=$SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
   DEPLOYMENT_PID_FILE=$SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.pid
-  rm -rf $DEPLOYMENT_DIR
   mkdir -p $SRV_DIR
-  if [ -d "$TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION/gatein/" ]; then
-    cp -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION $DEPLOYMENT_DIR
-  else
-    find $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION -maxdepth 1 -mindepth 1 -type d -exec cp -rf {} $DEPLOYMENT_DIR \;
-  fi
-  rm -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+  rm -rf $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+  cp -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION    
+  # We search the tomcat directory as the parent of a gatein directory
+  pushd `find $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION -name gatein -maxdepth 4 -mindepth 1 -type d`/.. > /dev/null
+  DEPLOYMENT_DIR=`pwd -P`
+  popd > /dev/null  
   DEPLOYMENT_LOG_PATH=$DEPLOYMENT_DIR/logs/catalina.out
   echo "[INFO] Server unpacked"
 }
@@ -1040,7 +1038,7 @@ do_undeploy()
       sudo /usr/sbin/service apache2 reload
     fi
     # Delete the server
-    rm -rf $DEPLOYMENT_DIR
+    rm -rf $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
     # Close firewall ports
     if $LINUX; then  # Prod vs Dev (To be improved)
       sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
