@@ -465,7 +465,7 @@ do_download_server() {
     set -e
     echo "[INFO] Metadata downloaded"
     if [ -z "$ARTIFACT_CLASSIFIER" ]; then
-      local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
+      local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(not(classifier))and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
     else
       local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$ARTIFACT_CLASSIFIER\")and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
     fi
