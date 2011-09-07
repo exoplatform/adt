@@ -1,4 +1,4 @@
-#!/bin/bash -eu                                                                                                                                                                                                                         -e
+#!/bin/bash -eu                                                                                                                                                                                                                         
 
 # Load server config from /etc/default/adt
 [ -e "/etc/default/adt" ] && source /etc/default/adt
@@ -213,11 +213,17 @@ do_process_cl_params()
           echo ""
           echo "[ERROR] product and version parameters are mandatory for action \"$ACTION\" !"
           print_usage
-        exit 1;
+          exit 1;
         fi
         # Product
         PRODUCT_NAME=$1
         shift
+        # Version
+        PRODUCT_VERSION=$1
+        shift        
+        # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
+        # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
+        PRODUCT_BRANCH=`expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"        
         # Validate product and load artifact details
         case "$PRODUCT_NAME" in
           gatein)
@@ -267,8 +273,13 @@ do_process_cl_params()
             ;;
           plf)
             ARTIFACT_GROUPID="org.exoplatform.platform"
-            ARTIFACT_ARTIFACTID="exo.platform.packaging.assembly"
-            ARTIFACT_CLASSIFIER="tomcat"
+            if [[ "$PRODUCT_BRANCH" == "3.0.x" ]]; then
+              ARTIFACT_ARTIFACTID="exo.platform.packaging.assembly"
+              ARTIFACT_CLASSIFIER="tomcat"
+            else
+              ARTIFACT_ARTIFACTID="exo.platform.packaging.tomcat"
+              ARTIFACT_CLASSIFIER=""
+            fi
             ARTIFACT_PACKAGING="zip"
             DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
             ;;
@@ -285,12 +296,6 @@ do_process_cl_params()
             exit 1
             ;;
         esac        
-        # Version
-        PRODUCT_VERSION=$1
-        shift        
-        # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
-        # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
-        PRODUCT_BRANCH=`expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"
         # Build a database name without dot, minus ... 
         DEPLOYMENT_DATABASE_NAME="${PRODUCT_NAME}_${PRODUCT_VERSION}"
         DEPLOYMENT_DATABASE_NAME="${DEPLOYMENT_DATABASE_NAME//./_}"
@@ -300,6 +305,7 @@ do_process_cl_params()
         DEPLOYMENT_DATABASE_USER="${DEPLOYMENT_DATABASE_USER//./_}"
         DEPLOYMENT_DATABASE_USER="${DEPLOYMENT_DATABASE_USER//-/_}"        
         ;;
+        
       list)
         # Nothing to do
         ;;
