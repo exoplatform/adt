@@ -810,7 +810,7 @@ do_configure_apache()
     ProxyPassReverse        /       ajp://localhost:$DEPLOYMENT_AJP_PORT/
     
     # No security for gadgets
-    <ProxyMatch "^.*/(eXoGadgetServer|rest|.*Resources)/.*\$">
+    <ProxyMatch "^.*/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)/.*\$">
         Order allow,deny
         Allow from all
         Satisfy any
