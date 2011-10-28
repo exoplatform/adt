@@ -84,12 +84,12 @@
             return $date->format('D d M Y - H:i:s T');
           }
           //print each file name
-          $vhosts = getDirectoryList("/home/swfhudson/data/adt/conf/adt/");
+          $vhosts = getDirectoryList("/home/prjacc/data/adt/conf/adt/");
           sort($vhosts);
 		  $now = new DateTime();
           foreach( $vhosts as $vhost) {
             // Parse deployment descriptor
-            $descriptor_array = parse_ini_file("/home/swfhudson/data/adt/conf/adt/".$vhost);
+            $descriptor_array = parse_ini_file("/home/prjacc/data/adt/conf/adt/".$vhost);
 			$artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
 			if($artifact_age->days)
 			  $artifact_age_string = $artifact_age->format('%a day(s) ago');
@@ -118,7 +118,7 @@
               <td class="<?=$artifact_age_class?>"><?=$artifact_age_string?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo "$deployment_age_string"; } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a><?php } ?></td>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=/home/swfhudson/data/adt/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']?>-<?=$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=/home/prjacc/data/adt/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']?>-<?=$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a><?php } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
               <?php
