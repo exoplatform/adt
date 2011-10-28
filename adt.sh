@@ -243,7 +243,6 @@ do_process_cl_params()
             ARTIFACT_ARTIFACTID="exo.webos.packaging.assembly"
             ARTIFACT_CLASSIFIER="tomcat"
             ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_SERVER_SCRIPT="bin/eXo.sh"
             ;;
           ecms)
             ARTIFACT_GROUPID="org.exoplatform.ecms"
