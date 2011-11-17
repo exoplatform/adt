@@ -126,24 +126,12 @@
     Options ExecCGI -MultiViews +SymLinksIfOwnerMatch
 
     # Php
-    ScriptAlias /cgi-bin ${ADT_DATA}/var/www/cgi-bin/
-    <Directory ${ADT_DATA}/var/www/cgi-bin/>
-        AllowOverride None
-        Options +ExecCGI -MultiViews +SymLinksIfOwnerMatch
-        Order allow,deny
-        Allow from all
-    </Directory>
-    # Link our wrapperscript to fastcgi
-    <Location /cgi-bin/php5-fcgi>
-        SetHandler fastcgi-script
-    </Location>
-    # Define an action to run on files with handler php5-fastcgi
-    Action php5-fastcgi /cgi-bin/php5-fcgi
+    FastCgiExternalServer ${ADT_DATA}/var/www/php5.external -host 127.0.0.1:9000
+    AddHandler php5-fcgi .php
+    Action php5-fcgi /usr/lib/cgi-bin/php5.external
+    Alias /usr/lib/cgi-bin/ ${ADT_DATA}/var/www/
     # We put this here for the correct mimetype headers
     AddType application/x-httpd-php .php
-    # for serverwide php access set this here
-    # otherwise put this line in every VirtualHost that needs php access
-    AddHandler php5-fastcgi .php
 
     # Security
     <Location />
