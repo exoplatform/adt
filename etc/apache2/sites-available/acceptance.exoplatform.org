@@ -125,27 +125,6 @@
     RedirectMatch "^stats/?$" "/stats/awstats.pl"    
     Options ExecCGI -MultiViews +SymLinksIfOwnerMatch
 
-    # Php
-    # Path to php.ini – defaults to /etc/phpX/cgi
-    DefaultInitEnv PHPRC=/etc/php5/cgi
-    # Number of PHP childs that will be launched. Leave undefined to let PHP decide.
-    # DefaultInitEnv PHP_FCGI_CHILDREN 3
-    # Maximum requests before a process is stopped and a new one is launched
-    DefaultInitEnv PHP_FCGI_MAX_REQUESTS 5000
-    # Define a new handler "php-fcgi" for ".php" files, plus the action that must follow
-    AddHandler php-fcgi .php
-    Action php-fcgi /cgi-bin/php5-fcgi
-    # Define the MIME-Type for ".php" files
-    AddType application/x-httpd-php .php
-    # Define alias "/cgi-bin/". The action above is using this value, which means that
-    # you could run another "php5-fcgi" command by just changing this alias
-    Alias /cgi-bin/ ${ADT_DATA}/var/www/cgi-bin/
-    # Turn on the fcgid-script handler for all files within the alias "/cgi-bin/"
-    <Location /cgi-bin/>
-        SetHandler fcgid-script
-        Options +ExecCGI
-    </Location>
-
     # Security
     <Location />
         Order deny,allow
