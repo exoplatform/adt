@@ -142,7 +142,7 @@
     Alias /cgi-bin/ ${ADT_DATA}/var/www/cgi-bin/
     # Turn on the fcgid-script handler for all files within the alias "/cgi-bin/"
     <Location /cgi-bin/>
-        SetHandler php-fcgi
+        SetHandler fcgid-script
         Options +ExecCGI
     </Location>
     # We put this here for the correct mimetype headers
