@@ -145,8 +145,6 @@
         SetHandler fcgid-script
         Options +ExecCGI
     </Location>
-    # We put this here for the correct mimetype headers
-    AddType application/x-httpd-php .php
 
     # Security
     <Location />
