@@ -1031,7 +1031,9 @@ do_undeploy()
     do_drop_database
     echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
     # Delete the vhost
-    rm $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    # Delete Awstat config
+    rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf 
     # Reload Apache to deactivate the config  
     if $LINUX; then  # Prod vs Dev (To be improved)
       sudo /usr/sbin/service apache2 reload
