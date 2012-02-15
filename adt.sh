@@ -278,6 +278,7 @@ do_process_cl_params()
             else
               ARTIFACT_ARTIFACTID="exo.platform.packaging.tomcat"
               ARTIFACT_CLASSIFIER=""
+              DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
             fi
             ARTIFACT_PACKAGING="zip"
             DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
