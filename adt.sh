@@ -972,7 +972,7 @@ do_start()
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
     export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
     export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
-    cd ${CATALINA_HOME}
+    cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
     ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
     # Wait for logs availability
     while [ true ];
