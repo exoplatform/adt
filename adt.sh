@@ -1,5 +1,7 @@
 #!/bin/bash -eu                                                                                                                                                                                                             
 
+# test
+
 # Load server config from /etc/default/adt
 [ -e "/etc/default/adt" ] && source /etc/default/adt
 
