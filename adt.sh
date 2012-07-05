@@ -277,8 +277,12 @@ do_process_cl_params()
             if [[ "$PRODUCT_BRANCH" == "3.0.x" ]]; then
               ARTIFACT_ARTIFACTID="exo.platform.packaging.assembly"
               ARTIFACT_CLASSIFIER="tomcat"
-            else
+            elif [[ "$PRODUCT_BRANCH" == "3.5.x" ]]; then
               ARTIFACT_ARTIFACTID="exo.platform.packaging.tomcat"
+              ARTIFACT_CLASSIFIER=""
+              DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+            else
+              ARTIFACT_ARTIFACTID="platform-packaging-tomcat"
               ARTIFACT_CLASSIFIER=""
               DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
             fi
