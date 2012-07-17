@@ -1,47 +1,28 @@
-#!/bin/bash -eu                                                                                                                                                                                                             
-
-# test
-
-# Load server config from /etc/default/adt
-[ -e "/etc/default/adt" ] && source /etc/default/adt
-
-# Load local config from $HOME/.adtrc
-[ -e "$HOME/.adtrc" ] && source $HOME/.adtrc
-
+#!/bin/bash -eu       
+# #############################################################################
+# Initialize
+# #############################################################################                                              
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="${0%/*}"
+# Load shared functions
+source "$SCRIPT_DIR/_init.sh"
+# Initialize env
+do_init
 
-#
-# Replace in file $1 the value $2 by $3
-#
-replace_in_file()
-{
-  mv $1 $1.orig
-  sed "s|$2|$3|g" $1.orig > $1
-  rm $1.orig
-}
+# #############################################################################
+# Mandatory env var to define to use the script
+# #############################################################################
+validate_env_var "PRODUCT_NAME"
+validate_env_var "PRODUCT_VERSION"
 
 #
 # Initializes the script and various variables
 #
 initialize()
 {
-  # if the script was started from the base directory, then the
-  # expansion returns a period
-  if test "$SCRIPT_DIR" == "." ; then
-    SCRIPT_DIR="$PWD"
-  # if the script was not called with an absolute path, then we need to add the
-  # current working directory to the relative path of the script
-  elif test "${SCRIPT_DIR:0:1}" != "/" ; then
-    SCRIPT_DIR="$PWD/$SCRIPT_DIR"
-  fi
 
-  # ADT_DATA is the working area for ADT script
-  if [ ! $ADT_DATA ]; then 
-    echo "[ERROR] ADT_DATA environment variable not set !"
-    echo "[ERROR] You can define it in \$HOME/.adtrc"
-    exit 1;
-  fi
+  # Create ADT_DATA if required
+  mkdir -p $ADT_DATA
 
   # Convert to an absolute path
   pushd $ADT_DATA > /dev/null
@@ -49,9 +30,6 @@ initialize()
   popd > /dev/null
 
   echo "[INFO] ADT_DATA = $ADT_DATA"
-
-  # Create ADT_DATA if required
-  mkdir -p $ADT_DATA
   
   # Copy everything in it
   if [[ "$SCRIPT_DIR" != "$ADT_DATA" ]]; then
@@ -59,17 +37,6 @@ initialize()
     cp -rf $SCRIPT_DIR/var $ADT_DATA
     #cp -rf $SCRIPT_DIR/bin $ADT_DATA
   fi
-
-  TMP_DIR=$ADT_DATA/tmp
-  DL_DIR=$ADT_DATA/downloads
-  SRV_DIR=$ADT_DATA/servers
-  CONF_DIR=$ADT_DATA/conf
-  APACHE_CONF_DIR=$ADT_DATA/conf/apache
-  ADT_CONF_DIR=$ADT_DATA/conf/adt
-  ETC_DIR=$ADT_DATA/etc
-
-  PRODUCT_NAME=""
-  PRODUCT_VERSION=""
 
   DEPLOYMENT_ENABLED=true
   DEPLOYMENT_DATE=""
@@ -107,24 +74,11 @@ initialize()
   # These variables can be loaded from the env or $HOME/.adtrc
   set +u
   [ -z "$REPO_CREDENTIALS" ] && REPO_CREDENTIALS=""
-  [ -z "$MYSQL_CREDENTIALS" ] && MYSQL_CREDENTIALS=""  
   set -u
   
   CURR_DATE=`date "+%Y%m%d.%H%M%S"`
   KEEP_DB=false  
   DEPLOYMENT_SERVER_SCRIPT="bin/gatein.sh"
-
-  # OS specific support. $var _must_ be set to either true or false.
-  CYGWIN=false
-  LINUX=false;
-  OS400=false
-  DARWIN=false
-  case "`uname`" in
-    CYGWIN*) CYGWIN=true;;
-    Linux*) LINUX=true;;
-    OS400*) OS400=true;;
-    Darwin*) DARWIN=true;;
-  esac  
 }
 
 #
@@ -141,14 +95,9 @@ This script manages automated deployment of eXo products for testing purpose.
 ACTION :
   deploy       Deploys (Download+Configure) the server
   start        Starts the server
-  start-all    Starts all deployed servers
   stop         Stops the server
-  stop-all     Stops all deployed servers
   restart      Restarts the server
-  restart-all  Restarts all deployed servers
   undeploy     Undeploys (deletes) the server
-  undeploy-all Undeploys (deletes) all deployed servers
-  list         Lists all deployed servers
   
 PRODUCT (for deploy, start, stop, restart, undeploy actions) :
   gatein       GateIn Community edition
@@ -176,9 +125,6 @@ DEPLOY OPTIONS [ environment variable to use to set a default value ] :
   -g <value>   Repository group where to download the artifact from. Values : public | staging | private (default: public) [ \$ARTIFACT_REPO_GROUP ]
   -r <value>   user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
   -k           Keep the current database content. By default the deployment process drops the database if it already exists.
-
-DEPLOY/UNDEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -m <value>   user credentials in "username:password" format to manage the database server (default: none) [ \$MYSQL_CREDENTIALS ]  
 
 EOF
 
@@ -210,19 +156,7 @@ do_process_cl_params()
     #
     # validate additional parameters
     case "$ACTION" in
-      deploy|start|stop|restart|undeploy)
-        if [ $# -lt 2 ]; then
-          echo ""
-          echo "[ERROR] product and version parameters are mandatory for action \"$ACTION\" !"
-          print_usage
-          exit 1;
-        fi
-        # Product
-        PRODUCT_NAME=$1
-        shift
-        # Version
-        PRODUCT_VERSION=$1
-        shift        
+      deploy|start|stop|restart|undeploy)    
         # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
         # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
         PRODUCT_BRANCH=`expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"        
@@ -402,15 +336,6 @@ do_process_cl_params()
                    exit 1                 
                  fi
                  ;;
-             m)
-                 if [[ ("$ACTION" == "deploy") ||  ("$ACTION" == "undeploy") ]]; then
-                   MYSQL_CREDENTIALS=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
              ?)
                  print_usage
                  echo "[ERROR] Invalid option \"$OPTARG\"" 
@@ -418,13 +343,6 @@ do_process_cl_params()
                  ;;
          esac
     done
-
-    if [[ (("$ACTION" == "deploy") || ("$ACTION" == "undeploy")) && -z "$MYSQL_CREDENTIALS" ]]; then
-      echo "[ERROR] DB Credentials aren't set !"
-      echo "[ERROR] Use the -m command line option or set the environment variable MYSQL_CREDENTIALS"
-      print_usage
-      exit 1;
-    fi
 
     # skip getopt parms
     shift $((OPTIND-1))
@@ -604,7 +522,7 @@ do_create_database()
   SQL=$SQL"GRANT ALL ON $DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
   SQL=$SQL"FLUSH PRIVILEGES;"
   SQL=$SQL"SHOW DATABASES;"
-  mysql -u ${MYSQL_CREDENTIALS%%:*} -p${MYSQL_CREDENTIALS##*:} -e "$SQL"
+  mysql -e "$SQL"
   echo "[INFO] Done."
 }
 
@@ -617,7 +535,7 @@ do_drop_database()
   SQL=""
   SQL=$SQL"DROP DATABASE IF EXISTS $DEPLOYMENT_DATABASE_NAME;"  
   SQL=$SQL"SHOW DATABASES;"
-  mysql -u ${MYSQL_CREDENTIALS%%:*} -p${MYSQL_CREDENTIALS##*:} -e "$SQL"
+  mysql -e "$SQL"
   echo "[INFO] Done."
 }
 
@@ -974,7 +892,7 @@ do_start()
     export CATALINA_HOME=$DEPLOYMENT_DIR
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
-    export JAVA_OPTS="$JAVA_OPTS $JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
+    export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
     export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
     cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
     ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
@@ -1060,98 +978,6 @@ do_undeploy()
   rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 }
 
-#
-# Function that lists all deployed servers
-#
-do_list()
-{
-  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
-    echo "[INFO] Deployed servers : "
-    printf "%-10s %-20s\n" "Product" "Version"
-    printf "%-10s %-20s\n" "=======" "======="  
-    for f in $ADT_CONF_DIR/*
-    do
-      source $f
-      printf "%-10s %-20s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION
-    done  
-  else
-    echo "[INFO] No server deployed."
-  fi  
-}
-
-#
-# Function that starts all deployed servers
-#
-do_start_all()
-{
-  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
-    echo "[INFO] Starting all servers ..."
-    for f in $ADT_CONF_DIR/*
-    do
-      source $f
-      do_start
-    done
-    echo "[INFO] All servers started"  
-  else
-    echo "[INFO] No server deployed."
-  fi  
-}
-
-#
-# Function that restarts all deployed servers
-#
-do_restart_all()
-{
-  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
-    echo "[INFO] Restarting all servers ..."
-    for f in $ADT_CONF_DIR/*
-    do
-      source $f
-      do_stop
-      do_start
-    done
-    echo "[INFO] All servers restarted"  
-  else
-    echo "[INFO] No server deployed."
-  fi  
-}
-
-#
-# Function that stops all deployed servers
-#
-do_stops_all()
-{
-  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
-    echo "[INFO] Stopping all servers ..."
-    for f in $ADT_CONF_DIR/*
-    do
-      source $f
-      do_stop
-    done
-    echo "[INFO] All servers stopped"  
-  else
-    echo "[INFO] No server deployed."
-  fi  
-}
-
-#
-# Function that undeploys all deployed servers
-#
-do_undeploy_all()
-{
-  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
-    echo "[INFO] Undeploying all servers ..."
-    for f in $ADT_CONF_DIR/*
-    do
-      source $f
-      do_undeploy
-    done
-    echo "[INFO] All servers undeployed"  
-  else
-    echo "[INFO] No server deployed."
-  fi  
-}
-
 initialize
 
 do_process_cl_params "$@"
@@ -1176,21 +1002,6 @@ case "$ACTION" in
   undeploy) 
     do_load_deployment_descriptor
     do_undeploy
-    ;;
-  list) 
-    do_list
-    ;;
-  start-all) 
-    do_start_all
-    ;;
-  stop-all) 
-    do_stop_all
-    ;;
-  restart-all) 
-    do_restart_all
-    ;;
-  undeploy-all) 
-    do_undeploy_all
     ;;
   *)
     echo "[ERROR] Invalid action \"$ACTION\"" 
