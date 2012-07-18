@@ -14,41 +14,7 @@ case "`uname`" in
   Linux*) LINUX=true;;
   OS400*) OS400=true;;
   Darwin*) DARWIN=true;;
-esac  
-
-# Initialize the file where we will store environment settings
-init_env_file() {
-  validate_env_var "ADT_DATA"	
-  validate_env_var "PRODUCT_NAME"
-  validate_env_var "PRODUCT_VERSION"
-  ENV_FILE=${ADT_DATA}/${PRODUCT_NAME}-${PRODUCT_VERSION}.env
-  rm -f ${ENV_FILE}
-  trap "save_env_file; exit" INT TERM EXIT
-}
-
-# Initialize the file where we will store environment settings
-save_env_file() {
-  validate_env_var "ENV_FILE"
-  if [ -f ${ENV_FILE} ]
-  then
-    echo "[INFO] =========================================================="
-    echo "[INFO] Environment details are saved in ${ENV_FILE}"
-    echo "[INFO] =========================================================="
-    cat ${ENV_FILE}
-    echo "[INFO] =========================================================="
-  fi
-}
-
-# Print in file $1 the content of $2 
-print_file() {
-  echo "$2" >> $1
-}
-
-# Print in file ${ENV_FILE} the content of $1
-print_env_file() {
-  validate_env_var "ENV_FILE"
-  print_file "${ENV_FILE}" "$1"
-}
+esac
 
 # Checks that the env var with the name provided in param is defined
 validate_env_var() {
@@ -66,7 +32,7 @@ validate_env_var() {
   set -u
 }
 
-# Setup an env var and record it in the environment file
+# Setup an env var
 # The user can override the value in its environment. 
 # In that case the default value won't be used.
 configurable_env_var() {
@@ -79,8 +45,6 @@ configurable_env_var() {
     eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
     export eval ${PARAM_NAME}
   fi	
-  # Update the value
-  print_env_file "${PARAM_NAME}=${PARAM_VALUE}"
   set -u
 }
 
@@ -93,7 +57,6 @@ env_var() {
   PARAM_VALUE="$@"
   eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
   export eval ${PARAM_NAME}
-  print_env_file "${PARAM_NAME}=${PARAM_VALUE}"
   set -u
 }
 

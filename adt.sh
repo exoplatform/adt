@@ -9,46 +9,17 @@ source "$SCRIPT_DIR/_init.sh"
 # Initialize env
 do_init
 
-# #############################################################################
-# Mandatory env var to define to use the script
-# #############################################################################
-validate_env_var "PRODUCT_NAME"
-validate_env_var "PRODUCT_VERSION"
-
-# #############################################################################
-# If you define a value for these environment variables they'll be used
-# otherwise they'll use the default value.
-# #############################################################################
-configurable_env_var "CROWD_ACCEPTANCE_APP_NAME"      ""
-configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"  ""
-
 #
 # Initializes the script and various variables
 #
 initialize()
 {
 
-  # Create ADT_DATA if required
-  mkdir -p $ADT_DATA
-
-  # Convert to an absolute path
-  pushd $ADT_DATA > /dev/null
-  ADT_DATA=`pwd -P`
-  popd > /dev/null
-
-  echo "[INFO] ADT_DATA = $ADT_DATA"
-  
-  # Copy everything in it
-  if [[ "$SCRIPT_DIR" != "$ADT_DATA" ]]; then
-    cp -rf $SCRIPT_DIR/etc $ADT_DATA
-    cp -rf $SCRIPT_DIR/var $ADT_DATA
-  fi
-
-  # Create the main vhost from the template
-  cp $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org.template $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org
-  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ADT_DATA@" "$ADT_DATA"    
-  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_NAME@" "$CROWD_ACCEPTANCE_APP_NAME"    
-  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_PASSWORD@" "$CROWD_ACCEPTANCE_APP_PASSWORD"    
+  # #############################################################################
+  # Mandatory env var to define to use the script
+  # #############################################################################
+  validate_env_var "PRODUCT_NAME"
+  validate_env_var "PRODUCT_VERSION"  
 
   DEPLOYMENT_ENABLED=true
   DEPLOYMENT_DATE=""
@@ -100,7 +71,7 @@ print_usage()
 { 
 cat << EOF
 
-usage: $0 action [product] [version] [options]
+usage: $0 action [options]
 
 This script manages automated deployment of eXo products for testing purpose.
 
@@ -110,8 +81,21 @@ ACTION :
   stop         Stops the server
   restart      Restarts the server
   undeploy     Undeploys (deletes) the server
+
+OPTIONS :
+  -h           Show this message  
+  -A <value>   AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
+  -H <value>   HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
+  -S <value>   SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
+  -R <value>   RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
+  -V <value>   RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
+  -g <value>   Repository group where to download the artifact from. Values : public | staging | private (default: public) [ \$ARTIFACT_REPO_GROUP ]
+  -r <value>   user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
+  -k           Keep the current database content. By default the deployment process drops the database if it already exists.
+
+ENVIRONMENT VARIABLES :
   
-PRODUCT (for deploy, start, stop, restart, undeploy actions) :
+PRODUCT_NAME (for deploy, start, stop, restart, undeploy actions) :
   gatein       GateIn Community edition
   exogtn       GateIn eXo edition
   webos        eXo WebOS
@@ -122,21 +106,8 @@ PRODUCT (for deploy, start, stop, restart, undeploy actions) :
   platform     eXo Platform
   android      eXo Mobile Android
 
-VERSION (for deploy, start, stop, restart, undeploy actions) :
+PRODUCT_VERSION (for deploy, start, stop, restart, undeploy actions) :
   version of the product
-
-GLOBAL OPTIONS :
-  -h           Show this message  
-
-DEPLOY OPTIONS [ environment variable to use to set a default value ] :
-  -A <value>   AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
-  -H <value>   HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
-  -S <value>   SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
-  -R <value>   RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
-  -V <value>   RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
-  -g <value>   Repository group where to download the artifact from. Values : public | staging | private (default: public) [ \$ARTIFACT_REPO_GROUP ]
-  -r <value>   user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
-  -k           Keep the current database content. By default the deployment process drops the database if it already exists.
 
 EOF
 
@@ -995,6 +966,9 @@ initialize
 do_process_cl_params "$@"
 
 case "$ACTION" in
+  init)
+    # Nothing specific to do
+    ;;
   deploy)
     do_deploy
     ;;
