@@ -109,7 +109,8 @@ PRODUCT_NAME (for deploy, start, stop, restart, undeploy actions) :
   ecms         eXo Content
   ks           eXo Knowledge
   cs           eXo Collaboration
-  platform     eXo Platform
+  plf          eXo Platform
+  plftrial     eXo Platform Trial
   android      eXo Mobile Android
 
 PRODUCT_VERSION (for deploy, start, stop, restart, undeploy actions) :
@@ -191,6 +192,12 @@ do_process_cl_params()
               ARTIFACT_CLASSIFIER=""
               DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
             fi
+            ARTIFACT_PACKAGING="zip"
+            DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
+            ;;
+          plftrial)
+            ARTIFACT_GROUPID="org.exoplatform.platform"
+            ARTIFACT_ARTIFACTID="exo.platform.packaging.trial"
             ARTIFACT_PACKAGING="zip"
             DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
             ;;
