@@ -201,12 +201,14 @@ do_process_cl_params()
             ARTIFACT_ARTIFACTID="exo.platform.packaging.trial"
             ARTIFACT_PACKAGING="zip"
             DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
+            DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
             ;;
           plfcom)
             ARTIFACT_GROUPID="org.exoplatform.platform"
             ARTIFACT_ARTIFACTID="exo.platform.packaging.community"
             ARTIFACT_PACKAGING="zip"
             DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
+            DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
             ;;
           android)
             ARTIFACT_GROUPID="org.exoplatform.mobile.platform"
