@@ -117,25 +117,7 @@ EOF
 # Decode command line parameters
 #
 do_process_cl_params()
-{   
-    # no action ? provide help
-    if [ $# -lt 1 ]; then
-      echo ""
-      echo "[ERROR] No action defined !"
-      print_usage
-      exit 1;
-    fi
-    
-    # If help is asked
-    if [ $1 == "-h" ]; then
-      print_usage
-      exit    
-    fi
-
-    # Action to do
-    ACTION=$1
-    shift    
-    
+{       
     #
     # validate additional parameters
     case "$ACTION" in
@@ -961,31 +943,55 @@ do_undeploy()
   rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 }
 
-initialize
+# no action ? provide help
+if [ $# -lt 1 ]; then
+  echo ""
+  echo "[ERROR] No action defined !"
+  print_usage
+  exit 1;
+fi
 
-do_process_cl_params "$@"
+# If help is asked
+if [ $1 == "-h" ]; then
+  print_usage
+  exit    
+fi
+
+# Action to do
+ACTION=$1
+shift
 
 case "$ACTION" in
   init)
     # Nothing specific to do
     ;;
   deploy)
+    initialize
+    do_process_cl_params "$@"
     do_deploy
     ;;
   start)
+    initialize
+    do_process_cl_params "$@"
     do_load_deployment_descriptor
     do_start
     ;;
   stop) 
+    initialize
+    do_process_cl_params "$@"
     do_load_deployment_descriptor
     do_stop
     ;;
   restart)
+    initialize
+    do_process_cl_params "$@"
     do_load_deployment_descriptor
     do_stop
     do_start
     ;;
   undeploy) 
+    initialize
+    do_process_cl_params "$@"
     do_load_deployment_descriptor
     do_undeploy
     ;;
