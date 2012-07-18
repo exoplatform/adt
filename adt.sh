@@ -110,6 +110,7 @@ PRODUCT_NAME (for deploy, start, stop, restart, undeploy actions) :
   ks           eXo Knowledge
   cs           eXo Collaboration
   plf          eXo Platform
+  plfcom       eXo Platform Community
   plftrial     eXo Platform Trial
   android      eXo Mobile Android
 
@@ -198,6 +199,12 @@ do_process_cl_params()
           plftrial)
             ARTIFACT_GROUPID="org.exoplatform.platform"
             ARTIFACT_ARTIFACTID="exo.platform.packaging.trial"
+            ARTIFACT_PACKAGING="zip"
+            DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
+            ;;
+          plfcom)
+            ARTIFACT_GROUPID="org.exoplatform.platform"
+            ARTIFACT_ARTIFACTID="exo.platform.packaging.community"
             ARTIFACT_PACKAGING="zip"
             DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
             ;;
