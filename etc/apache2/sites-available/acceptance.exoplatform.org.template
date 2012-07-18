@@ -1,7 +1,5 @@
 <VirtualHost *:80>
 
-    SetEnv CROWD_ACCEPTANCE_APP_NAME "@CROWD_ACCEPTANCE_APP_NAME@"
-    SetEnv CROWD_ACCEPTANCE_APP_PASSWORD "@CROWD_ACCEPTANCE_APP_PASSWORD@"
     SetEnv ADT_DATA "@ADT_DATA@"
 
     ServerName  acceptance.exoplatform.org
@@ -17,9 +15,9 @@
     ErrorDocument 502 /502.html
     ErrorDocument 503 /503.html
 
-    ErrorLog        ${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-error.log
+    ErrorLog        @ADT_DATA@/var/log/apache2/acceptance.exoplatform.org-error.log
     LogLevel        warn
-    CustomLog       ${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-access.log combined  
+    CustomLog       @ADT_DATA@/var/log/apache2/acceptance.exoplatform.org-access.log combined  
 
     #
     # Compression using GZIP
@@ -88,8 +86,8 @@
         AllowOverride None
     </Directory>
 
-    DocumentRoot ${ADT_DATA}/var/www/
-    <Directory ${ADT_DATA}/var/www/>
+    DocumentRoot @ADT_DATA@/var/www/
+    <Directory @ADT_DATA@/var/www/>
         Options Indexes MultiViews ExecCGI
         AllowOverride None
         Order allow,deny
@@ -104,16 +102,16 @@
         Allow from all
     </Directory>
 
-    Alias /downloads/ "${ADT_DATA}/downloads/"
-    <Directory "${ADT_DATA}/downloads/">
+    Alias /downloads/ "@ADT_DATA@/downloads/"
+    <Directory "@ADT_DATA@/downloads/">
         Options Indexes MultiViews
         AllowOverride None
         Order allow,deny
         Allow from all
     </Directory>
 
-    Alias /logs/ "${ADT_DATA}/var/log/apache2/"
-    <Directory "${ADT_DATA}/var/log/apache2/">
+    Alias /logs/ "@ADT_DATA@/var/log/apache2/"
+    <Directory "@ADT_DATA@/var/log/apache2/">
         Options Indexes MultiViews
         AllowOverride None
         Order allow,deny
@@ -138,8 +136,8 @@
         AuthType Basic
         AuthBasicProvider crowd
 
-        CrowdAppName ${CROWD_ACCEPTANCE_APP_NAME}
-        CrowdAppPassword ${CROWD_ACCEPTANCE_APP_PASSWORD}
+        CrowdAppName @CROWD_ACCEPTANCE_APP_NAME@
+        CrowdAppPassword @CROWD_ACCEPTANCE_APP_PASSWORD@
         CrowdURL https://identity.exoplatform.org/
 
         # Activate SSO
@@ -151,4 +149,4 @@
     </Location>   
 </VirtualHost>
 
-Include ${ADT_DATA}/conf/apache/
+Include @ADT_DATA@/conf/apache/
