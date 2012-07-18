@@ -1,5 +1,9 @@
 <VirtualHost *:80>
 
+    SetEnv CROWD_ACCEPTANCE_APP_NAME "@CROWD_ACCEPTANCE_APP_NAME@"
+    SetEnv CROWD_ACCEPTANCE_APP_PASSWORD "@CROWD_ACCEPTANCE_APP_PASSWORD@"
+    SetEnv ADT_DATA "@ADT_DATA@"
+
     ServerName  acceptance.exoplatform.org
     ServerAdmin exo-swf@exoplatform.com
 

@@ -15,6 +15,13 @@ do_init
 validate_env_var "PRODUCT_NAME"
 validate_env_var "PRODUCT_VERSION"
 
+# #############################################################################
+# If you define a value for these environment variables they'll be used
+# otherwise they'll use the default value.
+# #############################################################################
+configurable_env_var "CROWD_ACCEPTANCE_APP_NAME"      ""
+configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"  ""
+
 #
 # Initializes the script and various variables
 #
@@ -35,8 +42,13 @@ initialize()
   if [[ "$SCRIPT_DIR" != "$ADT_DATA" ]]; then
     cp -rf $SCRIPT_DIR/etc $ADT_DATA
     cp -rf $SCRIPT_DIR/var $ADT_DATA
-    #cp -rf $SCRIPT_DIR/bin $ADT_DATA
   fi
+
+  # Create the main vhost from the template
+  cp $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org.template $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org
+  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ADT_DATA@" "$ADT_DATA"    
+  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_NAME@" "$CROWD_ACCEPTANCE_APP_NAME"    
+  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_PASSWORD@" "$CROWD_ACCEPTANCE_APP_PASSWORD"    
 
   DEPLOYMENT_ENABLED=true
   DEPLOYMENT_DATE=""
