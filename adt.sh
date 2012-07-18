@@ -82,6 +82,12 @@ ACTION :
   restart      Restarts the server
   undeploy     Undeploys (deletes) the server
 
+  start-all    Starts all deployed servers
+  stop-all     Stops all deployed servers
+  restart-all  Restarts all deployed servers
+  undeploy-all Undeploys (deletes) all deployed servers
+  list         Lists all deployed servers
+
 OPTIONS :
   -h           Show this message  
   -A <value>   AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
@@ -943,6 +949,98 @@ do_undeploy()
   rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 }
 
+#
+# Function that lists all deployed servers
+#
+do_list()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Deployed servers : "
+    printf "%-10s %-20s\n" "Product" "Version"
+    printf "%-10s %-20s\n" "=======" "======="  
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      printf "%-10s %-20s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION
+    done  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that starts all deployed servers
+#
+do_start_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Starting all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_start
+    done
+    echo "[INFO] All servers started"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that restarts all deployed servers
+#
+do_restart_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Restarting all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_stop
+      do_start
+    done
+    echo "[INFO] All servers restarted"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that stops all deployed servers
+#
+do_stops_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Stopping all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_stop
+    done
+    echo "[INFO] All servers stopped"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
+#
+# Function that undeploys all deployed servers
+#
+do_undeploy_all()
+{
+  if [ "$(ls -A $ADT_CONF_DIR)" ]; then
+    echo "[INFO] Undeploying all servers ..."
+    for f in $ADT_CONF_DIR/*
+    do
+      source $f
+      do_undeploy
+    done
+    echo "[INFO] All servers undeployed"  
+  else
+    echo "[INFO] No server deployed."
+  fi  
+}
+
 # no action ? provide help
 if [ $# -lt 1 ]; then
   echo ""
@@ -994,6 +1092,21 @@ case "$ACTION" in
     do_process_cl_params "$@"
     do_load_deployment_descriptor
     do_undeploy
+    ;;
+  list) 
+    do_list
+    ;;
+  start-all) 
+    do_start_all
+    ;;
+  stop-all) 
+    do_stop_all
+    ;;
+  restart-all) 
+    do_restart_all
+    ;;
+  undeploy-all) 
+    do_undeploy_all
     ;;
   *)
     echo "[ERROR] Invalid action \"$ACTION\"" 
