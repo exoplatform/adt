@@ -638,9 +638,9 @@ do_configure_apache()
 <VirtualHost *:80>
     ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
 
-    ErrorLog        \${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-error.log
+    ErrorLog        ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-error.log
     LogLevel        warn
-    CustomLog       \${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-access.log combined  
+    CustomLog       ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-access.log combined  
 
     # Error pages    
     ErrorDocument 404 /404.html
@@ -720,8 +720,8 @@ do_configure_apache()
         AuthType Basic
         AuthBasicProvider crowd
 
-        CrowdAppName \${CROWD_ACCEPTANCE_APP_NAME}
-        CrowdAppPassword \${CROWD_ACCEPTANCE_APP_PASSWORD}
+        CrowdAppName ${CROWD_ACCEPTANCE_APP_NAME}
+        CrowdAppPassword ${CROWD_ACCEPTANCE_APP_PASSWORD}
         CrowdURL https://identity.exoplatform.org/
 
         # Activate SSO 
