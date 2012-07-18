@@ -135,7 +135,7 @@
         </table>
         <p>&nbsp;</p>
         <p>Each instance can be accessed using JMX with the  URL linked to the monitoring icon and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
-        <p><a href="/stats/awstats.pl?config=acceptance.exoplatform.org" class="TxtBlue" title="http://acceptance.exoplatform.org usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left" />http://acceptance.exoplatform.org usage statistics</a></p>
+        <p><a href="/stats/awstats.pl?config=<?=$_SERVER['SERVER_NAME'] ?>" class="TxtBlue" title="http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left" />http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>
       </div>
     </div>
   </div>
