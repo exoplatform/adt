@@ -79,10 +79,17 @@ do_init(){
   env_var "SHELL"          "$SHELL"
   env_var "PATH"           "$PATH"
   configurable_env_var "TMP_DIR"         "$ADT_DATA/tmp"
+  mkdir -p $TMP_DIR
   configurable_env_var "DL_DIR"          "$ADT_DATA/downloads"
+  mkdir -p $DL_DIR
   configurable_env_var "SRV_DIR"         "$ADT_DATA/servers"
+  mkdir -p $SRV_DIR
   configurable_env_var "CONF_DIR"        "$ADT_DATA/conf"
+  mkdir -p $CONF_DIR
   configurable_env_var "APACHE_CONF_DIR" "$ADT_DATA/conf/apache"
+  mkdir -p $APACHE_CONF_DIR
   configurable_env_var "ADT_CONF_DIR"    "$ADT_DATA/conf/adt"
+  mkdir -p $ADT_CONF_DIR
   configurable_env_var "ETC_DIR"         "$ADT_DATA/etc"
+  mkdir -p $ETC_DIR
 }
