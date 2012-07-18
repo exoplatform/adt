@@ -40,6 +40,7 @@ do_init(){
   # If you define a value for these environment variables they'll be used
   # otherwise they'll use the default value.
   # #############################################################################
+  configurable_env_var "ACCEPTANCE_HOST"                "acceptance.exoplatform.org"
   configurable_env_var "CROWD_ACCEPTANCE_APP_NAME"      ""
   configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"  ""
   # Create ADT_DATA if required
@@ -60,7 +61,8 @@ do_init(){
 
   # Create the main vhost from the template
   cp $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org.template $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org
-  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ADT_DATA@" "$ADT_DATA"    
+  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ADT_DATA@" "$ADT_DATA"
+  replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ACCEPTANCE_HOST@" "$ACCEPTANCE_HOST"    
   replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_NAME@" "$CROWD_ACCEPTANCE_APP_NAME"    
   replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_PASSWORD@" "$CROWD_ACCEPTANCE_APP_PASSWORD"	
 	

@@ -21,7 +21,7 @@
 </head>
 <body>
 <div class="UIForgePages">
-  <div class="Header ClearFix"> <a href="/" class="Logo"></a><span class="AddressWeb">acceptance.exoplatform.org</span> </div>
+  <div class="Header ClearFix"> <a href="/" class="Logo"></a><span class="AddressWeb"><?=$_SERVER['SERVER_NAME'] ?></span> </div>
   <div class="MainContent">
     <div class="TitleForgePages">Acceptance Live Instances</div>
     <div>
@@ -29,7 +29,7 @@
         <p>&nbsp;</p>
         <p>Welcome on Acceptance Live Instances !</p>
         <p>These instances are deployed to be used for acceptance tests.</p>
-        <p> Terms of usage and others documentations about this service are detailled in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
+        <p> Terms of usage and others documentations about this service are detailed in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
         <p><br/>
         </p>
         <table class="center">
@@ -83,12 +83,12 @@
             return $date->format('D d M Y - H:i:s T');
           }
           //print each file name
-          $vhosts = getDirectoryList("/home/prjacc/data/adt/conf/adt/");
+          $vhosts = getDirectoryList($_SERVER['ADT_DATA']."/conf/adt/");
           sort($vhosts);
 		  $now = new DateTime();
           foreach( $vhosts as $vhost) {
             // Parse deployment descriptor
-            $descriptor_array = parse_ini_file("/home/prjacc/data/adt/conf/adt/".$vhost);
+            $descriptor_array = parse_ini_file($_SERVER['ADT_DATA']."/conf/adt/".$vhost);
 			$artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
 			if($artifact_age->days)
 			  $artifact_age_string = $artifact_age->format('%a day(s) ago');
@@ -117,9 +117,9 @@
               <td class="<?=$artifact_age_class?>"><?=$artifact_age_string?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo "$deployment_age_string"; } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a><?php } ?></td>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=/home/prjacc/data/adt/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']?>-<?=$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=<?=$_SERVER['ADT_DATA']?>/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME']?>-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a><?php } ?></td>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']?>.acceptance.exoplatform.org" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME']?>" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
               <?php
             if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
               $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";

@@ -2,7 +2,7 @@
 
     SetEnv ADT_DATA "@ADT_DATA@"
 
-    ServerName  acceptance.exoplatform.org
+    ServerName  @ACCEPTANCE_HOST@
     ServerAdmin exo-swf@exoplatform.com
 
     RewriteEngine           On
@@ -15,9 +15,9 @@
     ErrorDocument 502 /502.html
     ErrorDocument 503 /503.html
 
-    ErrorLog        @ADT_DATA@/var/log/apache2/acceptance.exoplatform.org-error.log
+    ErrorLog        @ADT_DATA@/var/log/apache2/@ACCEPTANCE_HOST@-error.log
     LogLevel        warn
-    CustomLog       @ADT_DATA@/var/log/apache2/acceptance.exoplatform.org-access.log combined  
+    CustomLog       @ADT_DATA@/var/log/apache2/@ACCEPTANCE_HOST@-access.log combined  
 
     #
     # Compression using GZIP

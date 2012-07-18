@@ -416,7 +416,7 @@ do_download_server() {
     set -e
     echo "[INFO] Server downloaded"
   fi
-  ARTIFACT_DL_URL="http://acceptance.exoplatform.org/downloads/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING"
+  ARTIFACT_DL_URL="http://$ACCEPTANCE_HOST/downloads/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING"
 }
 
 #
@@ -623,7 +623,7 @@ EOF
   fi  
   echo "[INFO] Done."
   if $LINUX; then # Prod vs Dev (To be improved)
-    DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
+    DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
   else
     DEPLOYMENT_JMX_URL="service:jmx:rmi://localhost:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://localhost:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
   fi
@@ -634,13 +634,13 @@ do_configure_apache()
   if $LINUX; then  # Prod vs Dev (To be improved)
     echo "[INFO] Creating Apache Virtual Host ..."  
     mkdir -p $APACHE_CONF_DIR
-    cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
 <VirtualHost *:80>
-    ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
 
-    ErrorLog        ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-error.log
+    ErrorLog        ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST-error.log
     LogLevel        warn
-    CustomLog       ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-access.log combined  
+    CustomLog       ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST-access.log combined  
 
     # Error pages    
     ErrorDocument 404 /404.html
@@ -734,24 +734,24 @@ do_configure_apache()
 </VirtualHost>
 EOF
 
-    DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
-    DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org/logs/catalina.out
+    DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+    DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST/logs/catalina.out
     echo "[INFO] Done."
     echo "[INFO] Configure and update AWStats ..."
     # Regenerates stats for this Vhosts
-    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org"
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf "@ADT_DATA@" "$ADT_DATA"    
-    sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org -update || true
+    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST"
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
+    sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST -update || true
     # Regenerates stats for root vhosts
-    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf
-    replace_in_file $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf "@DOMAIN@" "acceptance.exoplatform.org"
-    replace_in_file $ADT_DATA/etc/awstats/awstats.acceptance.exoplatform.org.conf "@ADT_DATA@" "$ADT_DATA"    
-    sudo /usr/lib/cgi-bin/awstats.pl -config=acceptance.exoplatform.org -update
+    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$ACCEPTANCE_HOST"
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
+    sudo /usr/lib/cgi-bin/awstats.pl -config=$ACCEPTANCE_HOST -update
     echo "[INFO] Done."    
     echo "[INFO] Rotate Apache logs ..."  
     cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
-${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org-*.log {
+${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST-*.log {
   missingok
   rotate 52
   compress
@@ -764,7 +764,7 @@ EOF
     sudo logrotate -s $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION.status -f $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
     rm $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION  
     cat << EOF > $TMP_DIR/logrotate-acceptance
-${ADT_DATA}/var/log/apache2/acceptance.exoplatform.org-*.log {
+${ADT_DATA}/var/log/apache2/$ACCEPTANCE_HOST-*.log {
   missingok
   rotate 52
   compress
@@ -787,7 +787,7 @@ do_create_deployment_descriptor()
 {
   echo "[INFO] Creating deployment descriptor ..."  
   mkdir -p $ADT_CONF_DIR
-  cat << EOF > $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  cat << EOF > $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
 PRODUCT_NAME="$PRODUCT_NAME"
 PRODUCT_VERSION="$PRODUCT_VERSION"
 PRODUCT_BRANCH="$PRODUCT_BRANCH"
@@ -821,17 +821,17 @@ EOF
   echo "[INFO] Done."
   #Display the deployment descriptor
   echo "[INFO] ========================= Deployment Descriptor ========================="
-  cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
   echo "[INFO] ========================================================================="
 }
 
 do_load_deployment_descriptor()
 {
-  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org" ]; then
+  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST" ]; then
     echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
     echo "[WARNING] You need to deploy it first."
   else
-    source $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    source $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
   fi
 }
 
@@ -929,9 +929,9 @@ do_undeploy()
     do_drop_database
     echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
     # Delete the vhost
-    rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+    rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
     # Delete Awstat config
-    rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org.conf 
+    rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf 
     # Reload Apache to deactivate the config  
     if $LINUX; then  # Prod vs Dev (To be improved)
       sudo /usr/sbin/service apache2 reload
@@ -946,7 +946,7 @@ do_undeploy()
     echo "[INFO] Server undeployed"
   fi
   # Delete the deployment descriptor
-  rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.acceptance.exoplatform.org
+  rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
 }
 
 #

@@ -22,7 +22,7 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
 </head>
 <body>
 <div class="UIForgePages">
-  <div class="Header ClearFix"> <a href="/" class="Logo"></a><span class="AddressWeb">acceptance.exoplatform.org</span> </div>
+  <div class="Header ClearFix"> <a href="/" class="Logo"></a><span class="AddressWeb"><?=$_SERVER['SERVER_NAME'] ?></span> </div>
   <div class="MainContent">
     <div class="TitleForgePages">Acceptance Live Instances</div>
     <div>
