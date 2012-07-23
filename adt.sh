@@ -21,47 +21,41 @@ initialize()
   validate_env_var "PRODUCT_NAME"
   validate_env_var "PRODUCT_VERSION"  
 
-  DEPLOYMENT_ENABLED=true
-  DEPLOYMENT_DATE=""
-  DEPLOYMENT_DIR=""
-  DEPLOYMENT_URL=""
-  DEPLOYMENT_LOG_URL=""
-  DEPLOYMENT_LOG_PATH=""
-  DEPLOYMENT_JMX_URL=""
-  DEPLOYMENT_PID_FILE=""
-  DEPLOYMENT_EXTRA_JAVA_OPTS=""
-  DEPLOYMENT_EXO_PROFILES=""
-  DEPLOYMENT_GATEIN_CONF_PATH="gatein/conf/configuration.properties"
+  env_var "DEPLOYMENT_ENABLED"  "true"
+  env_var "DEPLOYMENT_DATE"  ""
+  env_var "DEPLOYMENT_DIR"  ""
+  env_var "DEPLOYMENT_URL"  ""
+  env_var "DEPLOYMENT_LOG_URL"  ""
+  env_var "DEPLOYMENT_LOG_PATH"  ""
+  env_var "DEPLOYMENT_JMX_URL"  ""
+  env_var "DEPLOYMENT_PID_FILE"  ""
+  env_var "DEPLOYMENT_EXTRA_JAVA_OPTS"  ""
+  env_var "DEPLOYMENT_EXO_PROFILES"  ""
+  env_var "DEPLOYMENT_GATEIN_CONF_PATH"  "gatein/conf/configuration.properties"
   # These variables can be loaded from the env or $HOME/.adtrc
-  set +u
-  [ -z "$DEPLOYMENT_SHUTDOWN_PORT" ] && DEPLOYMENT_SHUTDOWN_PORT=8005
-  [ -z "$DEPLOYMENT_HTTP_PORT" ] && DEPLOYMENT_HTTP_PORT=8080
-  [ -z "$DEPLOYMENT_AJP_PORT" ] && DEPLOYMENT_AJP_PORT=8009
-  [ -z "$DEPLOYMENT_RMI_REG_PORT" ] && DEPLOYMENT_RMI_REG_PORT=10001
-  [ -z "$DEPLOYMENT_RMI_SRV_PORT" ] && DEPLOYMENT_RMI_SRV_PORT=10002
-  set -u
+  configurable_env_var "DEPLOYMENT_SHUTDOWN_PORT" "8005"
+  configurable_env_var "DEPLOYMENT_HTTP_PORT"     "8080"
+  configurable_env_var "DEPLOYMENT_AJP_PORT"      "8009"
+  configurable_env_var "DEPLOYMENT_RMI_REG_PORT"  "10001"
+  configurable_env_var "DEPLOYMENT_RMI_SRV_PORT"  "10002"
   
-  ARTIFACT_GROUPID=""
-  ARTIFACT_ARTIFACTID=""
-  ARTIFACT_TIMESTAMP=""
-  ARTIFACT_DATE=""
-  ARTIFACT_CLASSIFIER=""
-  ARTIFACT_PACKAGING=""
-  ARTIFACT_REPO_URL=""
-  ARTIFACT_DL_URL=""
+  env_var "ARTIFACT_GROUPID"  ""
+  env_var "ARTIFACT_ARTIFACTID"  ""
+  env_var "ARTIFACT_TIMESTAMP"  ""
+  env_var "ARTIFACT_DATE"  ""
+  env_var "ARTIFACT_CLASSIFIER"  ""
+  env_var "ARTIFACT_PACKAGING"  ""
+  env_var "ARTIFACT_REPO_URL"  ""
+  env_var "ARTIFACT_DL_URL"  ""
   # These variables can be loaded from the env or $HOME/.adtrc
-  set +u
-  [ -z "$ARTIFACT_REPO_GROUP" ] && ARTIFACT_REPO_GROUP="public"
-  set -u
+  env_var "ARTIFACT_REPO_GROUP"  "public"
   
   # These variables can be loaded from the env or $HOME/.adtrc
-  set +u
-  [ -z "$REPO_CREDENTIALS" ] && REPO_CREDENTIALS=""
-  set -u
+  configurable_env_var "REPO_CREDENTIALS"  ""
   
-  CURR_DATE=`date "+%Y%m%d.%H%M%S"`
-  KEEP_DB=false  
-  DEPLOYMENT_SERVER_SCRIPT="bin/gatein.sh"
+  env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
+  env_var "KEEP_DB"  "false"
+  env_var "DEPLOYMENT_SERVER_SCRIPT"  "bin/gatein.sh"
 }
 
 #
