@@ -991,12 +991,12 @@ do_list()
 {
   if [ "$(ls -A $ADT_CONF_DIR)" ]; then
     echo "[INFO] Deployed servers : "
-    printf "%-10s %-20s\n" "Product" "Version"
-    printf "%-10s %-20s\n" "=======" "======="  
+    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "SHUTDOWN_P" "HTTP_P" "AJP_P" "JMX_REG_P" "JMX_SRV_P"
+    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s\n" "==========" "====================" "==========" "==========" "==========" "==========" "==========="  
     for f in $ADT_CONF_DIR/*
     do
       source $f
-      printf "%-10s %-20s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION
+      printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION $DEPLOYMENT_SHUTDOWN_PORT $DEPLOYMENT_HTTP_PORT $DEPLOYMENT_AJP_PORT $DEPLOYMENT_RMI_REG_PORT $DEPLOYMENT_RMI_SRV_PORT
     done  
   else
     echo "[INFO] No server deployed."
