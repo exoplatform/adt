@@ -991,12 +991,24 @@ do_list()
 {
   if [ "$(ls -A $ADT_CONF_DIR)" ]; then
     echo "[INFO] Deployed servers : "
-    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "HTTP_P" "AJP_P" "SHUTDOWN_P" "JMX_REG_P" "JMX_SRV_P"
-    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s\n" "==========" "====================" "==========" "==========" "==========" "==========" "==========="  
+    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "HTTP_P" "AJP_P" "SHUTDOWN_P" "JMX_REG_P" "JMX_SRV_P" "RUNNING"
+    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" "==========" "====================" "==========" "==========" "==========" "==========" "==========" "=========="
     for f in $ADT_CONF_DIR/*
     do
-      source $f
-      printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-5s\n" $PRODUCT_NAME $PRODUCT_VERSION $DEPLOYMENT_HTTP_PORT $DEPLOYMENT_AJP_PORT $DEPLOYMENT_SHUTDOWN_PORT $DEPLOYMENT_RMI_REG_PORT $DEPLOYMENT_RMI_SRV_PORT
+      source $f      
+      if [ -f $DEPLOYMENT_PID_FILE ]; then
+	    set +e 
+	    kill -0 `cat $DEPLOYMENT_PID_FILE`
+		if [ $? -eq  0 ] ; then
+		  STATUS="true" 
+		else
+		  STATUS="false" 
+		fi			    
+		set -e
+	  else 
+	    STATUS="false" 
+	  fi
+      printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" $PRODUCT_NAME $PRODUCT_VERSION $DEPLOYMENT_HTTP_PORT $DEPLOYMENT_AJP_PORT $DEPLOYMENT_SHUTDOWN_PORT $DEPLOYMENT_RMI_REG_PORT $DEPLOYMENT_RMI_SRV_PORT $STATUS 
     done  
   else
     echo "[INFO] No server deployed."
