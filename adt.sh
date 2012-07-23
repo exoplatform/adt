@@ -112,6 +112,7 @@ PRODUCT_NAME (for deploy, start, stop, restart, undeploy actions) :
   plf          eXo Platform
   plfcom       eXo Platform Community
   plftrial     eXo Platform Trial
+  compint      eXo Company Intranet
   docs         eXo Platform Documentations Website
   android      eXo Mobile Android
 
@@ -207,6 +208,14 @@ do_process_cl_params()
           plfcom)
             ARTIFACT_GROUPID="org.exoplatform.platform"
             ARTIFACT_ARTIFACTID="exo.platform.packaging.community"
+            ARTIFACT_PACKAGING="zip"
+            DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
+            DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+            ;;
+          compint)
+            ARTIFACT_REPO_GROUP="cp"
+            ARTIFACT_GROUPID="com.exoplatform.intranet"
+            ARTIFACT_ARTIFACTID="exo-intranet-package"
             ARTIFACT_PACKAGING="zip"
             DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
             DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
