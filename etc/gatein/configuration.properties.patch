@@ -1,5 +1,5 @@
---- configuration.properties.ori	2011-08-01 09:47:21.000000000 +0200
-+++ configuration.properties.patched	2011-08-01 09:53:23.000000000 +0200
+--- configuration.properties	2011-08-01 09:47:21.000000000 +0200
++++ configuration.properties	2011-08-01 09:53:23.000000000 +0200
 @@ -29,11 +29,11 @@
  # JCR
  gatein.jcr.config.type=local

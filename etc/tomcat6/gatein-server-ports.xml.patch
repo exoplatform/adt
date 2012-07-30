@@ -9,16 +9,6 @@
  
    <!--APR library loader. Documentation at /docs/apr.html -->
    <Listener className="org.apache.catalina.core.AprLifecycleListener" SSLEngine="on" />
-@@ -30,6 +30,9 @@
-   <!-- JMX Support for the Tomcat server. Documentation at /docs/non-existent.html -->
-   <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
-   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
-+  <!-- JMX fixed ports -->
-+  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" 
-+          rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" />
- 
-   <!-- Global JNDI resources
-        Documentation at /docs/jndi-resources-howto.html
 @@ -66,7 +69,7 @@
           APR (HTTP/AJP) Connector: /docs/apr.html
           Define a non-SSL HTTP/1.1 Connector on port 8080

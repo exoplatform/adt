@@ -1,0 +1,22 @@
+--- server.xml.ori	2011-07-31 00:09:06.000000000 +0200
++++ server.xml	2011-07-31 00:17:16.000000000 +0200
+@@ -50,15 +53,15 @@
+    <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
+                maxActive="128" maxIdle="32" maxWait="10000"
+                removeAbandoned="true" removeAbandonedTimeout="10" logAbandoned="true" minEvictableIdleTimeMillis="60000"
+-               username="sa" password="" driverClassName="org.hsqldb.jdbcDriver"
+-               url="jdbc:hsqldb:file:../gatein/data/hsql/exo-jcr_portal"/>
++               username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" validationQuery="Select 1"
++               url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@"/>
+ 
+     <!-- eXo IDM Datasource for portal -->                
+     <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
+                maxActive="128" maxIdle="32" maxWait="10000"
+                removeAbandoned="true" removeAbandonedTimeout="10" logAbandoned="true" minEvictableIdleTimeMillis="60000"
+-               username="sa" password="" driverClassName="org.hsqldb.jdbcDriver"
+-               url="jdbc:hsqldb:file:../gatein/data/hsql/exo-idm_portal"/>     
++               username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" validationQuery="Select 1"
++               url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@"/>     
+               
+   </GlobalNamingResources>
+ 

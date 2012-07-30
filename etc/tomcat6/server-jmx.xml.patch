@@ -1,0 +1,12 @@
+--- server.xml  2011-07-27 16:01:19.000000000 +0200
++++ server.xml  2011-07-27 16:03:36.000000000 +0200
+@@ -11,6 +11,9 @@
+   <!-- JMX Support for the Tomcat server. Documentation at /docs/non-existent.html -->
+   <Listener className="org.apache.catalina.mbeans.ServerLifecycleListener" />
+   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
++  <!-- JMX fixed ports -->
++  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" 
++          rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" />
+ 
+   <!-- Global JNDI resources
+        Documentation at /docs/jndi-resources-howto.html

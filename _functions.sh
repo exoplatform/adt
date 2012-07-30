@@ -20,8 +20,8 @@ esac
 validate_env_var() {
   set +u
   PARAM_NAME=$1
-  PARAM_VALUE=$(eval echo \$$1)
-  if [ "${PARAM_VALUE}xxx" = "xxx" ]; then 
+  PARAM_VALUE=$(eval echo \${$1-UNSET})
+  if [ "${PARAM_VALUE}" = "UNSET" ]; then 
 	echo "[ERROR] Environment variable $PARAM_NAME is not set"; 
 	echo "Please set it either : "
 	echo "* in your shell environment (export $PARAM_NAME=xxx)"
@@ -38,25 +38,29 @@ validate_env_var() {
 configurable_env_var() {
   set +u
   PARAM_NAME=$1
-  PARAM_VALUE=$(eval echo \$$1)
-  if [ "${PARAM_VALUE}xxx" = "xxx" ]; then 
-    shift
-    PARAM_VALUE="$@"
+  PARAM_VALUE=$(eval echo \${$1-UNSET})
+  if [ "${PARAM_VALUE}" = "UNSET" ]; then 
+    PARAM_VALUE=$2
     eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
     export eval ${PARAM_NAME}
   fi	
+  if ( ${ADT_DEBUG} ); then
+    echo "[DEBUG] $PARAM_NAME=$PARAM_VALUE"
+  fi
   set -u
 }
 
-# Setup an env var and record it in the environment file
+# Setup an env var
 # The user cannot override the value
 env_var() {
   set +u
   PARAM_NAME=$1
-  shift
-  PARAM_VALUE="$@"
+  PARAM_VALUE=$2
   eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
   export eval ${PARAM_NAME}
+  if ( ${ADT_DEBUG} ); then
+    echo "[DEBUG] $PARAM_NAME=$PARAM_VALUE"
+  fi
   set -u
 }
 
@@ -68,6 +72,24 @@ replace_in_file()
   mv $1 $1.orig
   sed "s|$2|$3|g" $1.orig > $1
   rm $1.orig
+}
+
+#
+# find_file <VAR> <PATH1> ..  <PATHx>
+# test all paths and the path of the latest one existing in parameters is set as VAR
+#
+find_file()
+{
+  set +u
+  local _varName=$1
+  shift;
+  # default value set to UNSET
+  env_var $_varName "UNSET"
+  for i in $*
+  do 
+    [ -e "$i" ] && env_var $_varName "$i"
+  done
+  set -u
 }
 
 do_curl() {
@@ -115,93 +137,93 @@ do_download_from_nexus() {
   #
   # Function parameters
   #
-  local repositoryURL="$1"; shift;
-  local repositoryUsername="$1"; shift;
-  local repositoryPassword="$1"; shift;
-  local artifactGroupId="$1"; shift;
-  local artifactArtifactId="$1"; shift;
-  local artifactVersion="$1"; shift;
-  local artifactPackaging="$1"; shift;
-  local artifactClassifier="$1"; shift;
-  local downloadDirectory="$1"; shift;
-  local fileBaseName="$1"; shift;
-  local prefix="$1"; shift; # Used to prefix variables that store artifact details
+  local _repositoryURL="$1"; shift;
+  local _repositoryUsername="$1"; shift;
+  local _repositoryPassword="$1"; shift;
+  local _artifactGroupId="$1"; shift;
+  local _artifactArtifactId="$1"; shift;
+  local _artifactVersion="$1"; shift;
+  local _artifactPackaging="$1"; shift;
+  local _artifactClassifier="$1"; shift;
+  local _downloadDirectory="$1"; shift;
+  local _fileBaseName="$1"; shift;
+  local _prefix="$1"; shift; # Used to _prefix variables that store artifact details
     
   #
   # Local variables
   #
-  local artifactDate="" # We can compute the artifact date only for SNAPSHOTs
-  local artifactTimestamp="$artifactVersion" # By default we set the timestamp to the given version (for a release)
-  local baseUrl="${repositoryURL}/${artifactGroupId//.//}/$artifactArtifactId/$artifactVersion" # base url where to download from
+  local _artifactDate="" # We can compute the artifact date only for SNAPSHOTs
+  local _artifactTimestamp="$_artifactVersion" # By default we set the timestamp to the given version (for a release)
+  local _baseUrl="${_repositoryURL}/${_artifactGroupId//.//}/$_artifactArtifactId/$_artifactVersion" # base url where to download from
 
   # Credentials and options
-  if [ -n "$repositoryUsername" ]; then
-    local curlOptions="--fail --show-error --location-trusted -u $repositoryUsername:$repositoryPassword" # Repository credentials and options  
+  if [ -n "$_repositoryUsername" ]; then
+    local curlOptions="--fail --show-error --location-trusted -u $_repositoryUsername:$_repositoryPassword" # Repository credentials and options  
   else
     local curlOptions="--fail --show-error --location-trusted"
   fi;
   
   # Create the directory where we will download it
-  mkdir -p $downloadDirectory
+  mkdir -p $_downloadDirectory
 
   #
   # For a SNAPSHOT we will need to manually compute its TIMESTAMP from maven metadata
   #
-  if [[ "$artifactVersion" =~ .*-SNAPSHOT ]]; then
-    local metadataFile="$downloadDirectory/$fileBaseName-$artifactVersion-maven-metadata.xml"
-    local metadataUrl="$baseUrl/maven-metadata.xml"
+  if [[ "$_artifactVersion" =~ .*-SNAPSHOT ]]; then
+    local metadataFile="$_downloadDirectory/$_fileBaseName-$_artifactVersion-maven-metadata.xml"
+    local metadataUrl="$_baseUrl/maven-metadata.xml"
     # Backup lastest metadata to be able to use them if newest are wrong
     # (were removed from nexus for example thus we can use what we have in our local cache)
     if [ -e "$metadataFile" ]; then
       mv $metadataFile $metadataFile.bck
     fi
     do_curl "$curlOptions" "$metadataUrl" "$metadataFile" "Artifact Metadata"
-    if [ -z "$artifactClassifier" ]; then
-      local xpathQuery="/metadata/versioning/snapshotVersions/snapshotVersion[(not(classifier))and(extension=\"$artifactPackaging\")]/value/text()"
+    if [ -z "$_artifactClassifier" ]; then
+      local xpathQuery="/metadata/versioning/snapshotVersions/snapshotVersion[(not(classifier))and(extension=\"$_artifactPackaging\")]/value/text()"
     else
-      local xpathQuery="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$artifactClassifier\")and(extension=\"$artifactPackaging\")]/value/text()"
+      local xpathQuery="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$_artifactClassifier\")and(extension=\"$_artifactPackaging\")]/value/text()"
     fi
     set +e
     if $DARWIN; then
-      artifactTimestamp=`xpath $metadataFile $xpathQuery`
+      _artifactTimestamp=`xpath $metadataFile $xpathQuery`
     fi 
     if $LINUX; then
-      artifactTimestamp=`xpath -q -e $xpathQuery $metadataFile`
+      _artifactTimestamp=`xpath -q -e $xpathQuery $metadataFile`
     fi
     set -e
-    if [ -z "$artifactTimestamp" ] && [ -e "$metadataFile.bck" ]; then
+    if [ -z "$_artifactTimestamp" ] && [ -e "$metadataFile.bck" ]; then
       # We will restore the previous one to get its timestamp and redeploy it
       echo "[WARNING] Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv $metadataFile.bck $metadataFile
       if $DARWIN; then
-        artifactTimestamp=`xpath $METADATA $XPATH_QUERY`
+        _artifactTimestamp=`xpath $METADATA $XPATH_QUERY`
       fi 
       if $LINUX; then
-        artifactTimestamp=`xpath -q -e $XPATH_QUERY $METADATA`
+        _artifactTimestamp=`xpath -q -e $XPATH_QUERY $METADATA`
       fi
     fi
-    if [ -z "$artifactTimestamp" ]; then
+    if [ -z "$_artifactTimestamp" ]; then
       echo "[ERROR] No package available in the remote repository and no previous version available locally."
       exit 1;
     fi
     rm -f $metadataFile.bck
-    echo "[INFO] Latest timestamp : $artifactTimestamp"
-    artifactDate=`expr "$artifactTimestamp" : '.*-\(.*\)-.*'`
+    echo "[INFO] Latest timestamp : $_artifactTimestamp"
+    _artifactDate=`expr "$_artifactTimestamp" : '.*-\(.*\)-.*'`
   fi
   
   #
   # Compute the Download URL for the artifact
   #
-  local filename=$artifactArtifactId-$artifactTimestamp  
-  local name=$artifactGroupId:$artifactArtifactId:$artifactVersion
-  if [ -n "$artifactClassifier" ]; then
-    filename="$filename-$artifactClassifier"
-    name="$name:$artifactClassifier"
+  local filename=$_artifactArtifactId-$_artifactTimestamp  
+  local name=$_artifactGroupId:$_artifactArtifactId:$_artifactVersion
+  if [ -n "$_artifactClassifier" ]; then
+    filename="$filename-$_artifactClassifier"
+    name="$name:$_artifactClassifier"
   fi;
-  filename="$filename.$artifactPackaging"
-  name="$name:$artifactPackaging"  
-  local artifactUrl="$baseUrl/$filename"
-  local artifactFile="$downloadDirectory/$fileBaseName-$artifactTimestamp.$artifactPackaging"
+  filename="$filename.$_artifactPackaging"
+  name="$name:$_artifactPackaging"  
+  local artifactUrl="$_baseUrl/$filename"
+  local artifactFile="$_downloadDirectory/$_fileBaseName-$_artifactTimestamp.$_artifactPackaging"
   
   #
   # Download the artifact SHA1
@@ -246,7 +268,7 @@ do_download_from_nexus() {
   #
   echo "[INFO] Validating archive integrity ..."
   set +e
-  case "$artifactPackaging" in
+  case "$_artifactPackaging" in
     zip)
       zip -T $artifactFile
       ;;
@@ -257,7 +279,7 @@ do_download_from_nexus() {
       gzip -t $artifactFile
       ;;
     *)
-      echo "[WARNING] No method to validate \"$artifactPackaging\" file type." 
+      echo "[WARNING] No method to validate \"$_artifactPackaging\" file type." 
       ;;
   esac
   if [ "$?" -ne "0" ]; then
@@ -272,17 +294,18 @@ do_download_from_nexus() {
   #
   # Create an info file with all details about the artifact
   #
-  local artifactInfo="$downloadDirectory/$fileBaseName-$artifactTimestamp.info"
+  local artifactInfo="$_downloadDirectory/$_fileBaseName-$_artifactTimestamp.info"
   echo "[INFO] Creating archive descriptor ..."
   cat << EOF > $artifactInfo
-${prefix}_VERSION="$artifactVersion"
-${prefix}_ARTIFACT_GROUPID="$artifactGroupId"
-${prefix}_ARTIFACT_ARTIFACTID="$artifactArtifactId"
-${prefix}_ARTIFACT_TIMESTAMP="$artifactTimestamp"
-${prefix}_ARTIFACT_CLASSIFIER="$artifactClassifier"
-${prefix}_ARTIFACT_PACKAGING="$artifactPackaging"
-${prefix}_ARTIFACT_URL="$artifactUrl"
-${prefix}_ARTIFACT_LOCAL_PATH="$artifactFile"
+${_prefix}_VERSION="$_artifactVersion"
+${_prefix}_ARTIFACT_GROUPID="$_artifactGroupId"
+${_prefix}_ARTIFACT_ARTIFACTID="$_artifactArtifactId"
+${_prefix}_ARTIFACT_TIMESTAMP="$_artifactTimestamp"
+${_prefix}_ARTIFACT_DATE="$_artifactDate"
+${_prefix}_ARTIFACT_CLASSIFIER="$_artifactClassifier"
+${_prefix}_ARTIFACT_PACKAGING="$_artifactPackaging"
+${_prefix}_ARTIFACT_URL="$artifactUrl"
+${_prefix}_ARTIFACT_LOCAL_PATH="$artifactFile"
 EOF
   echo "[INFO] Done."
   #Display the deployment descriptor
@@ -293,14 +316,26 @@ EOF
   #
   # Create a symlink if it is a SNAPSHOT to the TIMESTAMPED version
   #
-  if [[ "$artifactVersion" =~ .*-SNAPSHOT ]]; then
-    ln -fs "$fileBaseName-$artifactTimestamp.$artifactPackaging" "$downloadDirectory/$fileBaseName-$artifactVersion.$artifactPackaging"
-    ln -fs "$fileBaseName-$artifactTimestamp.info" "$downloadDirectory/$fileBaseName-$artifactVersion.info"
+  if [[ "$_artifactVersion" =~ .*-SNAPSHOT ]]; then
+    ln -fs "$_fileBaseName-$_artifactTimestamp.$_artifactPackaging" "$_downloadDirectory/$_fileBaseName-$_artifactVersion.$_artifactPackaging"
+    ln -fs "$_fileBaseName-$_artifactTimestamp.info" "$_downloadDirectory/$_fileBaseName-$_artifactVersion.info"
   fi 
 }
 
+do_load_artifact_descriptor() {
+  if [ $# -lt 3 ]; then
+    echo ""
+    echo "[ERROR] No enough parameters for function do_load_artifact_descriptor !"
+    exit 1;
+  fi  
+  local _downloadDirectory="$1"; shift;
+  local _fileBaseName="$1"; shift;
+  local _artifactVersion="$1"; shift;  
+  source $_downloadDirectory/$_fileBaseName-$_artifactVersion.info
+}
+
 #
-# Function that downloads a dataset from storage.exoplatform.org
+# Function that downloads a dataset from a web server
 #
 do_download() {
   if [ $# -lt 5 ]; then
@@ -313,21 +348,21 @@ do_download() {
   # Function parameters
   #
   local fileURL="$1"; shift;
-  local storageUsername="$1"; shift;
-  local storagePassword="$1"; shift;
+  local httpUsername="$1"; shift;
+  local httpPassword="$1"; shift;
   local localPath="$1"; shift;
   local description="$1"; shift;
   
   # Credentials and options
-  if [ -n "$storageUsername" ]; then
-    local curlOptions="--fail --show-error --location-trusted -u $storageUsername:$storagePassword" # Repository credentials and options  
+  if [ -n "$httpUsername" ]; then
+    local curlOptions="--fail --show-error --location-trusted -u $httpUsername:$httpPassword" # Repository credentials and options  
   else
     local curlOptions="--fail --show-error --location-trusted"
   fi;
   
   # Create the directory where we will download it
-  local downloadDirectory=`dirname "$localPath"`
-  mkdir -p $downloadDirectory
+  local _downloadDirectory=`dirname "$localPath"`
+  mkdir -p $_downloadDirectory
 
   #
   # Download the SHA1

@@ -4,59 +4,75 @@
 # #############################################################################                                              
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="${0%/*}"
+
+#
+# LOAD PARAMETERS FROM SERVER AND USER SETTINGS
+#
+
+# Load server config from /etc/default/adt
+[ -e "/etc/default/adt" ] && source /etc/default/adt
+
+# Load local config from $HOME/.adtrc
+[ -e "$HOME/.adtrc" ] && source $HOME/.adtrc
+
+# if the script was started from the base directory, then the
+# expansion returns a period
+if test "$SCRIPT_DIR" == "." ; then
+  SCRIPT_DIR="$PWD"
+# if the script was not called with an absolute path, then we need to add the
+# current working directory to the relative path of the script
+elif test "${SCRIPT_DIR:0:1}" != "/" ; then
+  SCRIPT_DIR="$PWD/$SCRIPT_DIR"
+fi
+
 # Load shared functions
-source "$SCRIPT_DIR/_init.sh"
-# Initialize env
-do_init
+source "$SCRIPT_DIR/_functions.sh"
 
-#
-# Initializes the script and various variables
-#
-initialize()
-{
+echo "[INFO] # #######################################################################"
+echo "[INFO] # $SCRIPT_NAME"
+echo "[INFO] # #######################################################################"
 
-  # #############################################################################
-  # Mandatory env var to define to use the script
-  # #############################################################################
-  validate_env_var "PRODUCT_NAME"
-  validate_env_var "PRODUCT_VERSION"  
+# Root dir for config files used by these scripts
+export SCRIPT_CONF_DIR=${SCRIPT_DIR}/conf
 
-  env_var "DEPLOYMENT_ENABLED"  "true"
-  env_var "DEPLOYMENT_DATE"  ""
-  env_var "DEPLOYMENT_DIR"  ""
-  env_var "DEPLOYMENT_URL"  ""
-  env_var "DEPLOYMENT_LOG_URL"  ""
-  env_var "DEPLOYMENT_LOG_PATH"  ""
-  env_var "DEPLOYMENT_JMX_URL"  ""
-  env_var "DEPLOYMENT_PID_FILE"  ""
-  env_var "DEPLOYMENT_EXTRA_JAVA_OPTS"  ""
-  env_var "DEPLOYMENT_EXO_PROFILES"  ""
-  env_var "DEPLOYMENT_GATEIN_CONF_PATH"  "gatein/conf/configuration.properties"
-  # These variables can be loaded from the env or $HOME/.adtrc
-  configurable_env_var "DEPLOYMENT_SHUTDOWN_PORT" "8005"
-  configurable_env_var "DEPLOYMENT_HTTP_PORT"     "8080"
-  configurable_env_var "DEPLOYMENT_AJP_PORT"      "8009"
-  configurable_env_var "DEPLOYMENT_RMI_REG_PORT"  "10001"
-  configurable_env_var "DEPLOYMENT_RMI_SRV_PORT"  "10002"
-  
-  env_var "ARTIFACT_GROUPID"  ""
-  env_var "ARTIFACT_ARTIFACTID"  ""
-  env_var "ARTIFACT_TIMESTAMP"  ""
-  env_var "ARTIFACT_DATE"  ""
-  env_var "ARTIFACT_CLASSIFIER"  ""
-  env_var "ARTIFACT_PACKAGING"  ""
-  env_var "ARTIFACT_REPO_URL"  ""
-  env_var "ARTIFACT_DL_URL"  ""
-  # These variables can be loaded from the env or $HOME/.adtrc
-  env_var "ARTIFACT_REPO_GROUP"  "public"
-  
-  # These variables can be loaded from the env or $HOME/.adtrc
-  configurable_env_var "REPO_CREDENTIALS"  ""
-  
-  env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
-  env_var "KEEP_DB"  "false"
-  env_var "DEPLOYMENT_SERVER_SCRIPT"  "bin/gatein.sh"
-}
+# Configurable env vars. These variables can be loaded 
+# from the env, /etc/default/adt or $HOME/.adtrc
+configurable_env_var "ADT_DEBUG"                      false
+configurable_env_var "ADT_DATA"                       "${SCRIPT_DIR}"
+configurable_env_var "ACCEPTANCE_HOST"                "acceptance.exoplatform.org"
+configurable_env_var "CROWD_ACCEPTANCE_APP_NAME"      ""
+configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"  ""
+configurable_env_var "DEPLOYMENT_SETUP_APACHE"        false
+configurable_env_var "DEPLOYMENT_SETUP_AWSTATS"       false
+configurable_env_var "DEPLOYMENT_SETUP_UFW"           false
+configurable_env_var "DEPLOYMENT_DATABASE_TYPE"       "HSQLDB"
+configurable_env_var "DEPLOYMENT_SHUTDOWN_PORT"       "8005"
+configurable_env_var "DEPLOYMENT_HTTP_PORT"           "8080"
+configurable_env_var "DEPLOYMENT_AJP_PORT"            "8009"
+configurable_env_var "DEPLOYMENT_RMI_REG_PORT"        "10001"
+configurable_env_var "DEPLOYMENT_RMI_SRV_PORT"        "10002"
+configurable_env_var "KEEP_DB"                        false
+configurable_env_var "REPOSITORY_SERVER_BASE_URL"     "https://repository.exoplatform.org"
+configurable_env_var "REPOSITORY_USERNAME"            ""
+configurable_env_var "REPOSITORY_PASSWORD"            ""
+
+# Create ADT_DATA if required
+mkdir -p $ADT_DATA
+# Convert to an absolute path
+pushd $ADT_DATA > /dev/null
+ADT_DATA=`pwd -P`
+popd > /dev/null
+echo "[INFO] ADT_DATA = $ADT_DATA"
+
+env_var "TMP_DIR"         "$ADT_DATA/tmp"
+env_var "DL_DIR"          "$ADT_DATA/downloads"
+env_var "SRV_DIR"         "$ADT_DATA/servers"
+env_var "CONF_DIR"        "$ADT_DATA/conf"
+env_var "APACHE_CONF_DIR" "$ADT_DATA/conf/apache"
+env_var "ADT_CONF_DIR"    "$ADT_DATA/conf/adt"
+env_var "ETC_DIR"         "$ADT_DATA/etc"
+
+env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
 
 #
 # Usage message
@@ -65,11 +81,11 @@ print_usage()
 { 
 cat << EOF
 
-usage: $0 action [options]
+usage: $0 <action>
 
 This script manages automated deployment of eXo products for testing purpose.
 
-ACTION :
+Action :
   deploy       Deploys (Download+Configure) the server
   start        Starts the server
   stop         Stops the server
@@ -82,367 +98,328 @@ ACTION :
   undeploy-all Undeploys (deletes) all deployed servers
   list         Lists all deployed servers
 
-OPTIONS :
-  -h           Show this message  
-  -A <value>   AJP Port (default: 8009) [ \$DEPLOYMENT_AJP_PORT ]
-  -H <value>   HTTP Port (default: 8080) [ \$DEPLOYMENT_HTTP_PORT ]
-  -S <value>   SHUTDOWN Port (default: 8005) [ \$DEPLOYMENT_SHUTDOWN_PORT ]
-  -R <value>   RMI Registry Port for JMX (default: 10001) [ \$DEPLOYMENT_RMI_REG_PORT ]
-  -V <value>   RMI Server Port for JMX (default: 10002) [ \$DEPLOYMENT_RMI_SRV_PORT ]
-  -g <value>   Repository group where to download the artifact from. Values : public | staging | private (default: public) [ \$ARTIFACT_REPO_GROUP ]
-  -r <value>   user credentials in "username:password" format to download the server package (default: none) [ \$REPO_CREDENTIALS ]
-  -k           Keep the current database content. By default the deployment process drops the database if it already exists.
+Environment Variables :
 
-ENVIRONMENT VARIABLES :
+  They may be configured in the current shell environment or /etc/default/adt or \$HOME/.adtrc
   
-PRODUCT_NAME (for deploy, start, stop, restart, undeploy actions) :
-  gatein       GateIn Community edition
-  exogtn       GateIn eXo edition
-  webos        eXo WebOS
-  social       eXo Social
-  ecms         eXo Content
-  ks           eXo Knowledge
-  cs           eXo Collaboration
-  plf          eXo Platform
-  plfcom       eXo Platform Community
-  plftrial     eXo Platform Trial
-  compint      eXo Company Intranet
-  docs         eXo Platform Documentations Website
-  android      eXo Mobile Android
+  PRODUCT_NAME                  : The product you want to manage. Possible values are :
+    gatein       GateIn Community edition
+    exogtn       GateIn eXo edition
+    webos        eXo WebOS
+    social       eXo Social
+    ecms         eXo Content
+    ks           eXo Knowledge
+    cs           eXo Collaboration
+    plf          eXo Platform
+    plfcom       eXo Platform Community
+    plftrial     eXo Platform Trial
+    compint      eXo Company Intranet
+    docs         eXo Platform Documentations Website
+    android      eXo Mobile Android
+  PRODUCT_VERSION               : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
-PRODUCT_VERSION (for deploy, start, stop, restart, undeploy actions) :
-  version of the product
+  ADT_DATA                      : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
+  DEPLOYMENT_SETUP_APACHE       : Do you want to setup the apache configuration (default: false)
+  DEPLOYMENT_SETUP_AWSTATS      : Do you want to setup the awstats configuration (default: false)
+  DEPLOYMENT_SETUP_UFW          : Do you want to setup the ufw firewall configuration (default: false)
+  DEPLOYMENT_AJP_PORT           : AJP Port (default: 8009)
+  DEPLOYMENT_HTTP_PORT          : HTTP Port (default: 8080)
+  DEPLOYMENT_SHUTDOWN_PORT      : SHUTDOWN Port (default: 8005)
+  DEPLOYMENT_RMI_REG_PORT       : RMI Registry Port for JMX (default: 10001) 
+  DEPLOYMENT_RMI_SRV_PORT       : RMI Server Port for JMX (default: 10002)
+  DEPLOYMENT_DATABASE_TYPE      : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
+  ACCEPTANCE_HOST               : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
+  CROWD_ACCEPTANCE_APP_NAME     : The crowd application used to authenticate the front-end (default: none)
+  CROWD_ACCEPTANCE_APP_PASSWORD : The crowd application''s password used to authenticate the front-end (default: none)
+  KEEP_DB                       : Keep the current database content for MYSQL. By default the deployment process drops the database if it already exists. (default: false)
+
+  REPOSITORY_SERVER_BASE_URL    : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
+  REPOSITORY_USERNAME           : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+  REPOSITORY_PASSWORD           : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+
+  ADT_DEBUG                     : Display debug details (default: false)
 
 EOF
 
 }
 
+# Create the main vhost from the template
+createMainVHost()
+{
+  if $DEPLOYMENT_SETUP_APACHE; then  
+    validate_env_var "ADT_DATA"
+    validate_env_var "ACCEPTANCE_HOST"
+    validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
+    validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
+    cp ${ADT_DATA}/etc/apache2/sites-available/acceptance.exoplatform.org.template ${ADT_DATA}/etc/apache2/sites-available/acceptance.exoplatform.org
+    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ADT_DATA@" "$ADT_DATA"
+    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ACCEPTANCE_HOST@" "$ACCEPTANCE_HOST"    
+    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_NAME@" "$CROWD_ACCEPTANCE_APP_NAME"    
+    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_PASSWORD@" "$CROWD_ACCEPTANCE_APP_PASSWORD" 
+  fi
+}
+
+createDefaultDirectories()
+{
+  validate_env_var "TMP_DIR"
+  validate_env_var "DL_DIR"
+  validate_env_var "SRV_DIR"
+  validate_env_var "CONF_DIR"
+  validate_env_var "APACHE_CONF_DIR"
+  validate_env_var "ADT_CONF_DIR"
+  validate_env_var "ETC_DIR"
+  mkdir -p $TMP_DIR
+  mkdir -p $DL_DIR
+  mkdir -p $SRV_DIR
+  mkdir -p $CONF_DIR
+  mkdir -p $APACHE_CONF_DIR
+  mkdir -p $ADT_CONF_DIR
+  mkdir -p $ETC_DIR
+  rm -rf $ETC_DIR/*
+}
+
+copyDefaultData()
+{
+  validate_env_var "SCRIPT_DIR"
+  validate_env_var "ADT_DATA"
+  # Copy everything in it
+  if [[ "$SCRIPT_DIR" != "$ADT_DATA" ]]; then
+    cp -rf $SCRIPT_DIR/* $ADT_DATA
+  fi  
+}
+
+# find_patch <VAR> <PATCH_DIR> <BASENAME> <PRODUCT_NAME>
+# Finds which patch to apply and store its path in <VAR>
+# We'll try to find it in the directory <PATCH_DIR> and we'll select it in this order :
+# <PRODUCT_NAME>-$PRODUCT_VERSION-<BASENAME>.patch
+# <PRODUCT_NAME>-$PRODUCT_BRANCH-<BASENAME>.patch
+# <PRODUCT_NAME>-<BASENAME>.patch  
+# <BASENAME>.patch
+find_patch()
+{
+  local _variable=$1
+  local _patchDir=$2
+  local _basename=$3
+  local _product=$4
+  find_file $_variable \
+  "$_patchDir/$_basename.patch" \
+  "$_patchDir/$_product-$_basename.patch" \
+  "$_patchDir/$_product-$PRODUCT_BRANCH-$_basename.patch" \
+  "$_patchDir/$_product-$PRODUCT_VERSION-$_basename.patch"  
+}
+
 #
 # Decode command line parameters
 #
-do_process_cl_params()
-{       
-    #
+initialize_product_settings()
+{   
+    validate_env_var "ACTION"    
+
     # validate additional parameters
     case "$ACTION" in
-      deploy|start|stop|restart|undeploy)    
+      deploy)
+        # Mandatory env vars. They need to be defined before launching the script
+        validate_env_var "PRODUCT_NAME"
+        validate_env_var "PRODUCT_VERSION"
+
+        # Defaults values we can override by product/branch/version    
+        env_var "DEPLOYMENT_ENABLED"          true
+        env_var "DEPLOYMENT_DATABASE_ENABLED" true
+        env_var "DEPLOYMENT_EXTRA_JAVA_OPTS"  ""
+        env_var "DEPLOYMENT_EXO_PROFILES"     ""
+        env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
+        env_var "DEPLOYMENT_SERVER_SCRIPT"    "bin/gatein.sh"
+        
+        env_var "ARTIFACT_GROUPID"            ""
+        env_var "ARTIFACT_ARTIFACTID"         ""
+        env_var "ARTIFACT_TIMESTAMP"          ""
+        env_var "ARTIFACT_CLASSIFIER"         ""
+        env_var "ARTIFACT_PACKAGING"          "zip"
+
+        env_var "ARTIFACT_REPO_GROUP"         "public"
+
+        # They are set by the script
+        env_var "ARTIFACT_DATE"               ""
+        env_var "ARTIFACT_REPO_URL"           ""
+        env_var "ARTIFACT_DL_URL"             ""
+        env_var "DEPLOYMENT_DATE"             ""
+        env_var "DEPLOYMENT_DIR"              ""
+        env_var "DEPLOYMENT_URL"              ""
+        env_var "DEPLOYMENT_LOG_URL"          ""
+        env_var "DEPLOYMENT_LOG_PATH"         ""
+        env_var "DEPLOYMENT_JMX_URL"          ""
+        env_var "DEPLOYMENT_PID_FILE"         ""        
+
+        # To reuse patches between products
+        env_var "PORTS_SERVER_PATCH_PRODUCT_NAME" "$PRODUCT_NAME"
+        env_var "JMX_SERVER_PATCH_PRODUCT_NAME"   "$PRODUCT_NAME"
+        env_var "MYSQL_SERVER_PATCH_PRODUCT_NAME" "$PRODUCT_NAME"
+        env_var "MYSQL_GATEIN_PATCH_PRODUCT_NAME" "$PRODUCT_NAME"
+
         # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
         # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
-        PRODUCT_BRANCH=`expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"        
+        env_var PRODUCT_BRANCH `expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"       
+
+
         # Validate product and load artifact details
         case "$PRODUCT_NAME" in
           gatein)
-            ARTIFACT_GROUPID="org.exoplatform.portal"
-            ARTIFACT_ARTIFACTID="exo.portal.packaging.tomcat.pkg.tc6"
-            ARTIFACT_CLASSIFIER="bundle"              
-            ARTIFACT_PACKAGING="zip"
+            env_var ARTIFACT_GROUPID    "org.exoplatform.portal"
+            env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.pkg.tc6"
+            env_var ARTIFACT_CLASSIFIER "bundle"              
             ;;
           exogtn)
-            ARTIFACT_GROUPID="org.exoplatform.portal"
-            ARTIFACT_ARTIFACTID="exo.portal.packaging.assembly"
-            ARTIFACT_CLASSIFIER="tomcat"
-            ARTIFACT_PACKAGING="zip"
+            env_var ARTIFACT_GROUPID    "org.exoplatform.portal"
+            env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.assembly"
+            env_var ARTIFACT_CLASSIFIER "tomcat"
             ;;
           webos)
-            ARTIFACT_GROUPID="org.exoplatform.webos"
-            ARTIFACT_ARTIFACTID="exo.webos.packaging.assembly"
-            ARTIFACT_CLASSIFIER="tomcat"
-            ARTIFACT_PACKAGING="zip"
+            env_var ARTIFACT_GROUPID    "org.exoplatform.webos"
+            env_var ARTIFACT_ARTIFACTID "exo.webos.packaging.assembly"
+            env_var ARTIFACT_CLASSIFIER "tomcat"
             ;;
           ecms)
-            ARTIFACT_GROUPID="org.exoplatform.ecms"
-            ARTIFACT_ARTIFACTID="exo-ecms-delivery-wcm-assembly"
-            ARTIFACT_CLASSIFIER="tomcat"
-            ARTIFACT_PACKAGING="zip"
+            env_var ARTIFACT_GROUPID    "org.exoplatform.ecms"
+            env_var ARTIFACT_ARTIFACTID "exo-ecms-delivery-wcm-assembly"
+            env_var ARTIFACT_CLASSIFIER "tomcat"
             ;;
           social)
-            ARTIFACT_GROUPID="org.exoplatform.social"
-            ARTIFACT_ARTIFACTID="exo.social.packaging.pkg"
-            ARTIFACT_CLASSIFIER="tomcat"
-            ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_GATEIN_CONF_PATH="gatein/conf/portal/socialdemo/socialdemo.properties"
+            env_var ARTIFACT_GROUPID            "org.exoplatform.social"
+            env_var ARTIFACT_ARTIFACTID         "exo.social.packaging.pkg"
+            env_var ARTIFACT_CLASSIFIER         "tomcat"
+            env_var DEPLOYMENT_GATEIN_CONF_PATH "gatein/conf/portal/socialdemo/socialdemo.properties"
             ;;
           ks)
-            ARTIFACT_GROUPID="org.exoplatform.ks"
-            ARTIFACT_ARTIFACTID="exo.ks.packaging.assembly"
-            ARTIFACT_CLASSIFIER="tomcat"
-            ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_GATEIN_CONF_PATH="gatein/conf/portal/ksdemo/ksdemo.properties"
+            env_var ARTIFACT_GROUPID            "org.exoplatform.ks"
+            env_var ARTIFACT_ARTIFACTID         "exo.ks.packaging.assembly"
+            env_var ARTIFACT_CLASSIFIER         "tomcat"
+            env_var DEPLOYMENT_GATEIN_CONF_PATH "gatein/conf/portal/ksdemo/ksdemo.properties"
             ;;
           cs)
-            ARTIFACT_GROUPID="org.exoplatform.cs"
-            ARTIFACT_ARTIFACTID="exo.cs.packaging.assembly"
-            ARTIFACT_CLASSIFIER="tomcat"
-            ARTIFACT_PACKAGING="zip"
+            env_var ARTIFACT_GROUPID    "org.exoplatform.cs"
+            env_var ARTIFACT_ARTIFACTID "exo.cs.packaging.assembly"
+            env_var ARTIFACT_CLASSIFIER "tomcat"
             ;;
           plf)
-            ARTIFACT_GROUPID="org.exoplatform.platform"
+            env_var ARTIFACT_GROUPID           "org.exoplatform.platform"
             if [[ "$PRODUCT_BRANCH" == "3.0.x" ]]; then
-              ARTIFACT_ARTIFACTID="exo.platform.packaging.assembly"
-              ARTIFACT_CLASSIFIER="tomcat"
+              env_var ARTIFACT_ARTIFACTID      "exo.platform.packaging.assembly"
+              env_var ARTIFACT_CLASSIFIER      "tomcat"
             elif [[ "$PRODUCT_BRANCH" == "3.5.x" ]]; then
-              ARTIFACT_ARTIFACTID="exo.platform.packaging.tomcat"
-              ARTIFACT_CLASSIFIER=""
-              DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+              env_var ARTIFACT_ARTIFACTID      "exo.platform.packaging.tomcat"
+              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
             else
-              ARTIFACT_ARTIFACTID="platform-packaging-tomcat"
-              ARTIFACT_CLASSIFIER=""
-              DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+              env_var ARTIFACT_ARTIFACTID      "platform-packaging-tomcat"
+              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
             fi
-            ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
+            env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
             ;;
           plftrial)
-            ARTIFACT_GROUPID="org.exoplatform.platform"
-            ARTIFACT_ARTIFACTID="exo.platform.packaging.trial"
-            ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
-            DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+            env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
+            env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.trial"
+            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
+            env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
+            env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
+            env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
+            env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
+            env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
             ;;
           plfcom)
-            ARTIFACT_GROUPID="org.exoplatform.platform"
-            ARTIFACT_ARTIFACTID="exo.platform.packaging.community"
-            ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
-            DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+            env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
+            env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.community"
+            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
+            env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
+            env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
+            env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
+            env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
+            env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
             ;;
           compint)
-            ARTIFACT_REPO_GROUP="cp"
-            ARTIFACT_GROUPID="com.exoplatform.intranet"
-            ARTIFACT_ARTIFACTID="exo-intranet-package"
-            ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_EXO_PROFILES="-Dexo.profiles=all"
-            DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+            env_var ARTIFACT_REPO_GROUP             "cp"
+            env_var ARTIFACT_GROUPID                "com.exoplatform.intranet"
+            env_var ARTIFACT_ARTIFACTID             "exo-intranet-package"
+            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
+            env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
+            env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
+            env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
             ;;
           docs)
-            ARTIFACT_GROUPID="org.exoplatform.doc"
-            ARTIFACT_ARTIFACTID="website-packaging"
-            ARTIFACT_PACKAGING="zip"
-            DEPLOYMENT_SERVER_SCRIPT="bin/catalina.sh"
+            env_var ARTIFACT_GROUPID            "org.exoplatform.doc"
+            env_var ARTIFACT_ARTIFACTID         "website-packaging"
+            env_var DEPLOYMENT_SERVER_SCRIPT    "bin/catalina.sh"
+            env_var DEPLOYMENT_DATABASE_ENABLED false
             ;;
           android)
-            ARTIFACT_GROUPID="org.exoplatform.mobile.platform"
-            ARTIFACT_ARTIFACTID="exo-mobile-android"
-            ARTIFACT_CLASSIFIER=""
-            ARTIFACT_PACKAGING="apk"
-            DEPLOYMENT_ENABLED=false
+            env_var ARTIFACT_GROUPID    "org.exoplatform.mobile.platform"
+            env_var ARTIFACT_ARTIFACTID "exo-mobile-android"
+            env_var ARTIFACT_CLASSIFIER ""
+            env_var ARTIFACT_PACKAGING  "apk"
+            env_var DEPLOYMENT_ENABLED  false
             ;;
-          ?)
+          *)
             echo "[ERROR] Invalid product \"$PRODUCT_NAME\"" 
             print_usage
             exit 1
             ;;
         esac        
-        # Build a database name without dot, minus ... 
-        DEPLOYMENT_DATABASE_NAME="${PRODUCT_NAME}_${PRODUCT_VERSION}"
-        DEPLOYMENT_DATABASE_NAME="${DEPLOYMENT_DATABASE_NAME//./_}"
-        DEPLOYMENT_DATABASE_NAME="${DEPLOYMENT_DATABASE_NAME//-/_}"
-        # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
-        DEPLOYMENT_DATABASE_USER="${PRODUCT_NAME}_${PRODUCT_BRANCH}"
-        DEPLOYMENT_DATABASE_USER="${DEPLOYMENT_DATABASE_USER//./_}"
-        DEPLOYMENT_DATABASE_USER="${DEPLOYMENT_DATABASE_USER//-/_}"        
+        if $DEPLOYMENT_DATABASE_ENABLED; then
+          # Build a database name without dot, minus ... 
+          env_var DEPLOYMENT_DATABASE_NAME "${PRODUCT_NAME}_${PRODUCT_VERSION}"
+          env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//./_}"
+          env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
+          # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
+          env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
+          env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
+          env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}" 
+        fi
+        # Patch to reconfigure server.xml to change ports
+        find_patch PORTS_SERVER_PATCH "$ETC_DIR/tomcat6" "server-ports.xml" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+        # Patch to reconfigure server.xml for JMX
+        find_patch JMX_SERVER_PATCH   "$ETC_DIR/tomcat6" "server-jmx.xml" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
+        # Patch to reconfigure server.xml for MySQL
+        find_patch MYSQL_SERVER_PATCH "$ETC_DIR/tomcat6" "server-mysql.xml" "${MYSQL_SERVER_PATCH_PRODUCT_NAME}"
+        # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
+        find_patch MYSQL_GATEIN_PATCH "$ETC_DIR/gatein"  "configuration.properties" "${MYSQL_GATEIN_PATCH_PRODUCT_NAME}"
         ;;
-        
-      list)
+      start|stop|restart|undeploy)
+        # The server is supposed to be already deployed. 
+        # We load its settings from the configuration
+        do_load_deployment_descriptor
+        ;;
+      list|start-all|stop-all|restart-all|undeploy-all)
         # Nothing to do
         ;;
-      ?)
+      *)
         echo "[ERROR] Invalid action \"$ACTION\"" 
         print_usage
         exit 1
         ;;
-    esac    
-
-    # Additional options
-    while getopts "hkA:H:S:R:V:g:r:m:" OPTION
-    do
-         case $OPTION in
-             h)
-                 print_usage
-                 exit
-                 ;;
-             k)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   KEEP_DB=true
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             H)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   DEPLOYMENT_HTTP_PORT=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             A)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   DEPLOYMENT_AJP_PORT=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             S)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   DEPLOYMENT_SHUTDOWN_PORT=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             R)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   DEPLOYMENT_RMI_REG_PORT=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             V)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   DEPLOYMENT_RMI_SRV_PORT=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             g)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   ARTIFACT_REPO_GROUP=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             r)
-                 if [[ "$ACTION" == "deploy" ]]; then
-                   REPO_CREDENTIALS=$OPTARG
-                 else
-                   echo "[WARNING] Useless option \"$OPTION\" for action \"$ACTION\"" 
-                   print_usage
-                   exit 1                 
-                 fi
-                 ;;
-             ?)
-                 print_usage
-                 echo "[ERROR] Invalid option \"$OPTARG\"" 
-                 exit 1
-                 ;;
-         esac
-    done
-
-    # skip getopt parms
-    shift $((OPTIND-1))
-
+    esac        
 }
 
 #
 # Function that downloads the app server from nexus
-# Because Nexus REST APIs don't use Maven 3 metadata to download the latest SNAPSHOT
-# of a given GAVCE we need to manually get the timestamp using xpath
-# see https://issues.sonatype.org/browse/NEXUS-4423
 #
 do_download_server() {
-  # We can compute the artifact date only for SNAPSHOTs
-  ARTIFACT_DATE=""
-  # Where we will download it
-  mkdir -p $DL_DIR
-  # REPO_CREDENTIALS and repository options
-  if [ -n "$REPO_CREDENTIALS" ]; then
-    local curl_options="--location-trusted -u $REPO_CREDENTIALS"
-  fi;
-  if [ -z "$REPO_CREDENTIALS" ]; then
-    local curl_options="--location-trusted"
-  fi;
-  # By default the timestamp is the version (for a release)
-  ARTIFACT_TIMESTAMP=$PRODUCT_VERSION
-  # base url where to download from
-  local url="http://repository.exoplatform.org/${ARTIFACT_REPO_GROUP}/${ARTIFACT_GROUPID//.//}/$ARTIFACT_ARTIFACTID/$PRODUCT_VERSION"
+  validate_env_var "DL_DIR"
+  validate_env_var "PRODUCT_NAME"
+  validate_env_var "PRODUCT_VERSION"
+  validate_env_var "ARTIFACT_REPO_GROUP"
+  validate_env_var "ARTIFACT_GROUPID"
+  validate_env_var "ARTIFACT_ARTIFACTID"
+  validate_env_var "ARTIFACT_PACKAGING"
+  validate_env_var "ARTIFACT_CLASSIFIER"
 
-  # For a SNAPSHOT we will need to manually compute the TIMESTAMP of the SNAPSHOT
-  if [[ "$PRODUCT_VERSION" =~ .*-SNAPSHOT ]]; then
-    local METADATA=$DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
-    # Backup lastest metadata to be able to use them if newest are wrong (don't have delivery)
-    if [ -e "$METADATA" ]; then
-      mv $METADATA $METADATA.bck
-    fi
-    echo "[INFO] Downloading metadata $url/maven-metadata.xml ..."
-    set +e
-    curl $curl_options "$url/maven-metadata.xml" > $DL_DIR/$PRODUCT_NAME-$PRODUCT_VERSION-maven-metadata.xml
-    if [ "$?" -ne "0" ]; then
-      echo "[ERROR] Sorry, cannot download artifact metadata"
-      exit 1
-    fi
-    set -e
-    echo "[INFO] Metadata downloaded"
-    if [ -z "$ARTIFACT_CLASSIFIER" ]; then
-      local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(not(classifier))and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
-    else
-      local XPATH_QUERY="/metadata/versioning/snapshotVersions/snapshotVersion[(classifier=\"$ARTIFACT_CLASSIFIER\")and(extension=\"$ARTIFACT_PACKAGING\")]/value/text()"
-    fi
-    set +e
-    if $DARWIN; then
-      ARTIFACT_TIMESTAMP=`xpath $METADATA $XPATH_QUERY`
-    fi 
-    if $LINUX; then
-      ARTIFACT_TIMESTAMP=`xpath -q -e $XPATH_QUERY $METADATA`
-    fi
-    set -e
-    if [ -z "$ARTIFACT_TIMESTAMP" ] && [ -e "$METADATA.bck" ]; then
-      # We will restore the previous one to get its timestamp and redeploy it
-      echo "[WARNING] Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
-      mv $METADATA.bck $METADATA
-      if $DARWIN; then
-        ARTIFACT_TIMESTAMP=`xpath $METADATA $XPATH_QUERY`
-      fi 
-      if $LINUX; then
-        ARTIFACT_TIMESTAMP=`xpath -q -e $XPATH_QUERY $METADATA`
-      fi
-    fi
-    if [ -z "$ARTIFACT_TIMESTAMP" ]; then
-      echo "[ERROR] No package available in the remote repository and no previous version available locally."
-      exit 1;
-    fi
-    rm -f $METADATA.bck
-    echo "[INFO] Latest timestamp : $ARTIFACT_TIMESTAMP"
-    ARTIFACT_DATE=`expr "$ARTIFACT_TIMESTAMP" : '.*-\(.*\)-.*'`
-  fi
-  local filename=$ARTIFACT_ARTIFACTID-$ARTIFACT_TIMESTAMP  
-  local name=$ARTIFACT_GROUPID:$ARTIFACT_ARTIFACTID:$PRODUCT_VERSION
-  if [ -n "$ARTIFACT_CLASSIFIER" ]; then
-    filename="$filename-$ARTIFACT_CLASSIFIER"
-    name="$name:$ARTIFACT_CLASSIFIER"
-  fi;
-  filename="$filename.$ARTIFACT_PACKAGING"
-  name="$name:$ARTIFACT_PACKAGING"  
-  ARTIFACT_REPO_URL=$url/$filename
-  if [ -e "$DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING" ]; then
-    echo "[WARNING] $name was already downloaded. Skip server download !"
-  else
-    echo "[INFO] Downloading server ..."
-    echo "[INFO] Archive          : $name "
-    echo "[INFO] Repository       : $ARTIFACT_REPO_GROUP "
-    echo "[INFO] Url              : $ARTIFACT_REPO_URL "
-    set +e
-    curl $curl_options "$ARTIFACT_REPO_URL" > $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
-    if [ "$?" -ne "0" ]; then
-      echo "[ERROR] Sorry, cannot download $name"
-      exit 1
-    fi
-    set -e
-    echo "[INFO] Server downloaded"
-  fi
-  ARTIFACT_DL_URL="http://$ACCEPTANCE_HOST/downloads/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING"
+  # Downloads the product from Nexus
+  do_download_from_nexus \
+    "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}" \
+    "${ARTIFACT_GROUPID}" "${ARTIFACT_ARTIFACTID}" "${PRODUCT_VERSION}" "${ARTIFACT_PACKAGING}" "${ARTIFACT_CLASSIFIER}" \
+    "${DL_DIR}" "${PRODUCT_NAME}" "PRODUCT"
+  do_load_artifact_descriptor "${DL_DIR}" "${PRODUCT_NAME}" "${PRODUCT_VERSION}"
+  env_var ARTIFACT_TIMESTAMP  $PRODUCT_ARTIFACT_TIMESTAMP
+  env_var ARTIFACT_REPO_URL   $PRODUCT_ARTIFACT_URL
+  env_var ARTIFACT_LOCAL_PATH $PRODUCT_ARTIFACT_LOCAL_PATH
+  env_var ARTIFACT_DL_URL     "http://$ACCEPTANCE_HOST/downloads/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING"
 }
 
 #
@@ -456,13 +433,13 @@ do_unpack_server()
   set +e
   case $ARTIFACT_PACKAGING in
     zip)
-      unzip $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING -d $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+      unzip -q $ARTIFACT_LOCAL_PATH -d $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
       if [ "$?" -ne "0" ]; then
         # If unpack fails we try to redownload the archive
         echo "[WARNING] unpack of the server failed. We will try to download it a second time."
-        rm $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+        rm $ARTIFACT_LOCAL_PATH
         do_download_server
-        unzip $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING -d $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+        unzip -q $ARTIFACT_LOCAL_PATH -d $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
         if [ "$?" -ne "0" ]; then
           echo "[ERROR] Unable to unpack the server."
           exit 1
@@ -471,13 +448,13 @@ do_unpack_server()
       ;;
     tar.gz)
       cd $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
-      tar -xzvf $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+      tar -xzf $ARTIFACT_LOCAL_PATH
       if [ "$?" -ne "0" ]; then
         # If unpack fails we try to redownload the archive
         echo "[WARNING] unpack of the server failed. We will try to download it a second time."
-        rm $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+        rm $ARTIFACT_LOCAL_PATH
         do_download_server
-        tar -xzvf $DL_DIR/$PRODUCT_NAME-$ARTIFACT_TIMESTAMP.$ARTIFACT_PACKAGING
+        tar -xzf $ARTIFACT_LOCAL_PATH
         if [ "$?" -ne "0" ]; then
           echo "[ERROR] Unable to unpack the server."
           exit 1
@@ -509,18 +486,30 @@ do_unpack_server()
 #
 do_create_database()
 {
-  echo "[INFO] Creating MySQL database $DEPLOYMENT_DATABASE_NAME ..."
-  SQL=""
-  if( ! $KEEP_DB ); then
-    SQL=$SQL"DROP DATABASE IF EXISTS $DEPLOYMENT_DATABASE_NAME;"
-    echo "[INFO] Existing databases will be dropped !"
-  fi;
-  SQL=$SQL"CREATE DATABASE IF NOT EXISTS $DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
-  SQL=$SQL"GRANT ALL ON $DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
-  SQL=$SQL"FLUSH PRIVILEGES;"
-  SQL=$SQL"SHOW DATABASES;"
-  mysql -e "$SQL"
-  echo "[INFO] Done."
+  case $DEPLOYMENT_DATABASE_TYPE in
+    MYSQL)
+      echo "[INFO] Creating MySQL database $DEPLOYMENT_DATABASE_NAME ..."
+      SQL=""
+      if( ! $KEEP_DB ); then
+        SQL=$SQL"DROP DATABASE IF EXISTS $DEPLOYMENT_DATABASE_NAME;"
+        echo "[INFO] Existing databases will be dropped !"
+      fi;
+      SQL=$SQL"CREATE DATABASE IF NOT EXISTS $DEPLOYMENT_DATABASE_NAME CHARACTER SET latin1 COLLATE latin1_bin;"
+      SQL=$SQL"GRANT ALL ON $DEPLOYMENT_DATABASE_NAME.* TO '$DEPLOYMENT_DATABASE_USER'@'localhost' IDENTIFIED BY '$DEPLOYMENT_DATABASE_USER';"
+      SQL=$SQL"FLUSH PRIVILEGES;"
+      SQL=$SQL"SHOW DATABASES;"
+      mysql -e "$SQL"
+      echo "[INFO] Done."
+      ;;
+    HSQLDB)
+      echo "[INFO] Using default HSQLDB database. Nothing to do."
+      ;;
+    *)
+      echo "[ERROR] Invalid database type \"$DEPLOYMENT_DATABASE_TYPE\""
+      print_usage
+      exit 1
+      ;;
+  esac
 }
 
 #
@@ -528,18 +517,27 @@ do_create_database()
 #
 do_drop_database()
 {
-  echo "[INFO] Drops MySQL database $DEPLOYMENT_DATABASE_NAME ..."
-  SQL=""
-  SQL=$SQL"DROP DATABASE IF EXISTS $DEPLOYMENT_DATABASE_NAME;"  
-  SQL=$SQL"SHOW DATABASES;"
-  mysql -e "$SQL"
-  echo "[INFO] Done."
+  case $DEPLOYMENT_DATABASE_TYPE in
+    MYSQL)
+      echo "[INFO] Drops MySQL database $DEPLOYMENT_DATABASE_NAME ..."
+      SQL=""
+      SQL=$SQL"DROP DATABASE IF EXISTS $DEPLOYMENT_DATABASE_NAME;"  
+      SQL=$SQL"SHOW DATABASES;"
+      mysql -e "$SQL"
+      echo "[INFO] Done."
+      ;;
+    HSQLDB)
+      echo "[INFO] Using default HSQLDB database. Nothing to do."
+      ;;      
+    *)
+      echo "[ERROR] Invalid database type \"$DEPLOYMENT_DATABASE_TYPE\""
+      print_usage
+      exit 1
+      ;;
+  esac
 }
 
-#
-# Function that configure the server for ours needs
-#
-do_patch_server()
+do_configure_server_for_jmx()
 {
   # Install jmx jar
   JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
@@ -550,89 +548,6 @@ do_patch_server()
     exit 1
   fi
   echo "[INFO] Done."
-
-  MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar"
-  echo "[INFO] Download and install MySQL JDBC driver ..."
-  curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
-  if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
-    echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"
-    exit 1
-  fi
-  echo "[INFO] Done."
-
-  # Reconfigure server.xml
-  
-  # Ensure the server.xml doesn't have some windows end line characters
-  # '\015' is Ctrl+V Ctrl+M = ^M
-  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.orig
-  tr -d '\015' < $DEPLOYMENT_DIR/conf/server.xml.orig > $DEPLOYMENT_DIR/conf/server.xml  
-
-  # First we need to find which patch to apply
-  # We'll try to find it in the directory $ETC_DIR/tomcat6/ and we'll select it in this order :
-  # $PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch
-  # $PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch
-  # $PRODUCT_NAME-server.xml.patch  
-  # server.xml.patch
-  #
-  local server_patch="$ETC_DIR/tomcat6/server.xml.patch"
-  [ -e "$ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch" ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-server.xml.patch"  
-  [ -e "$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch" ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_BRANCH-server.xml.patch"
-  [ -e "$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch" ] && server_patch="$ETC_DIR/tomcat6/$PRODUCT_NAME-$PRODUCT_VERSION-server.xml.patch"
-  # Prepare the patch
-  cp $server_patch $DEPLOYMENT_DIR/conf/server.xml.patch
-  echo "[INFO] Applying on server.xml the patch $server_patch ..."  
-  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.ori
-  patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server.xml.patch  
-  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.patched
-  
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@SHUTDOWN_PORT@" "${DEPLOYMENT_SHUTDOWN_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@JMX_RMI_REGISTRY_PORT@" "${DEPLOYMENT_RMI_REG_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-  replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-  echo "[INFO] Done."
-
-  if [ -e $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
-    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
-  
-    # Ensure the configuration.properties doesn't have some windows end line characters
-    # '\015' is Ctrl+V Ctrl+M = ^M
-    cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.orig
-    tr -d '\015' < $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.orig > $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH  
-
-    # First we need to find which patch to apply
-    # We'll try to find it in the directory $ETC_DIR/gatein/ and we'll select it in this order :
-    # $PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch
-    # $PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch
-    # $PRODUCT_NAME-configuration.properties.patch
-    # configuration.properties.patch
-    #
-    local gatein_patch="$ETC_DIR/gatein/configuration.properties.patch"
-    [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-configuration.properties.patch"
-    [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_BRANCH-configuration.properties.patch"
-    [ -e "$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch" ] && gatein_patch="$ETC_DIR/gatein/$PRODUCT_NAME-$PRODUCT_VERSION-configuration.properties.patch"
-    # Prepare the patch
-    cp $gatein_patch $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-    echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $gatein_patch ..."  
-    cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.ori
-    patch -l -p0 $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH < $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patch  
-    cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patched
-  
-    replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-    replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-    replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-    replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-    replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-    replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-    echo "[INFO] Done."
-  fi
-
   # JMX settings
   echo "[INFO] Creating JMX configuration files ..."  
   cat << EOF > $DEPLOYMENT_DIR/conf/jmxremote.access
@@ -645,7 +560,7 @@ EOF
   echo "[INFO] Done."
   echo "[INFO] Opening firewall ports ..."
   # Open firewall ports
-  if $LINUX; then
+  if $DEPLOYMENT_SETUP_UFW; then
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}    
   fi  
@@ -655,11 +570,145 @@ EOF
   else
     DEPLOYMENT_JMX_URL="service:jmx:rmi://localhost:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://localhost:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
   fi
+
+  # Reconfigure server.xml for JMX
+  # Reconfigure server.xml for MySQL
+  if [ "${JMX_SERVER_PATCH}" != "UNSET" ]; then 
+    # Prepare the patch
+    cp $JMX_SERVER_PATCH $DEPLOYMENT_DIR/conf/server-jmx.xml.patch
+    echo "[INFO] Applying on server.xml the patch $JMX_SERVER_PATCH ..."  
+    cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.ori-jmx
+    patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server-jmx.xml.patch  
+    cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.patched-jmx
+    
+    replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@JMX_RMI_REGISTRY_PORT@" "${DEPLOYMENT_RMI_REG_PORT}"
+    replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
+    echo "[INFO] Done."    
+  fi  
+}
+
+do_configure_server_for_database()
+{
+  case $DEPLOYMENT_DATABASE_TYPE in
+    MYSQL)
+      MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar"
+      echo "[INFO] Download and install MySQL JDBC driver ..."
+      curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
+      if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
+        echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"
+        exit 1
+      fi
+      echo "[INFO] Done."
+      if [ -e $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+        # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
+      
+        # Ensure the configuration.properties doesn't have some windows end line characters
+        # '\015' is Ctrl+V Ctrl+M = ^M
+        cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.orig
+        tr -d '\015' < $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.orig > $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH  
+
+        # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
+        if [ "${MYSQL_GATEIN_PATCH}" != "UNSET" ]; then 
+          # Prepare the patch
+          cp $MYSQL_GATEIN_PATCH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+          echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $MYSQL_GATEIN_PATCH ..."  
+          cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.ori
+          patch -l -p0 $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH < $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patch  
+          cp $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH.patched
+        
+          replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file $DEPLOYMENT_DIR/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          echo "[INFO] Done."
+        fi  
+
+      fi  
+
+      # Reconfigure server.xml for MySQL
+      if [ "${MYSQL_SERVER_PATCH}" != "UNSET" ]; then 
+        # Prepare the patch
+        cp $MYSQL_SERVER_PATCH $DEPLOYMENT_DIR/conf/server-mysql.xml.patch
+        echo $MYSQL_SERVER_PATCH
+        echo "[INFO] Applying on server.xml the patch $MYSQL_SERVER_PATCH ..."  
+        echo $MYSQL_SERVER_PATCH
+        cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.ori-mysql
+        patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server-mysql.xml.patch  
+        cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.patched-mysql
+        
+        replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        echo "[INFO] Done."    
+      fi  
+      ;;
+    HSQLDB)
+      echo "[INFO] Using default HSQLDB database. Nothing to do."
+      ;;      
+    *)
+      echo "[ERROR] Invalid database type \"$DEPLOYMENT_DATABASE_TYPE\""
+      print_usage
+      exit 1
+      ;;
+  esac
+}
+
+#
+# Function that configure the server for ours needs
+#
+do_patch_server()
+{
+  # Ensure the server.xml doesn't have some windows end line characters
+  # '\015' is Ctrl+V Ctrl+M = ^M
+  cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.orig
+  tr -d '\015' < $DEPLOYMENT_DIR/conf/server.xml.orig > $DEPLOYMENT_DIR/conf/server.xml  
+
+  # Reconfigure the server to use JMX
+  do_configure_server_for_jmx
+
+  if $DEPLOYMENT_DATABASE_ENABLED ; then  
+    # Reconfigure the server to use a database
+    do_configure_server_for_database
+  fi
+
+  # Reconfigure server.xml to change ports
+  if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then 
+    # Prepare the patch
+    cp $PORTS_SERVER_PATCH $DEPLOYMENT_DIR/conf/server-ports.xml.patch
+    echo "[INFO] Applying on server.xml the patch $PORTS_SERVER_PATCH ..."  
+    cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.ori-ports
+    patch -l -p0 $DEPLOYMENT_DIR/conf/server.xml < $DEPLOYMENT_DIR/conf/server-ports.xml.patch  
+    cp $DEPLOYMENT_DIR/conf/server.xml $DEPLOYMENT_DIR/conf/server.xml.patched-ports
+    
+    replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@SHUTDOWN_PORT@" "${DEPLOYMENT_SHUTDOWN_PORT}"
+    replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
+    replace_in_file $DEPLOYMENT_DIR/conf/server.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
+    echo "[INFO] Done."    
+  fi  
 }
 
 do_configure_apache()
 {
-  if $LINUX; then  # Prod vs Dev (To be improved)
+  if $DEPLOYMENT_SETUP_AWSTATS; then
+    echo "[INFO] Configure and update AWStats ..."
+    # Regenerates stats for this Vhosts
+    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST"
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
+    sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST -update || true
+    # Regenerates stats for root vhosts
+    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$ACCEPTANCE_HOST"
+    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
+    sudo /usr/lib/cgi-bin/awstats.pl -config=$ACCEPTANCE_HOST -update
+    echo "[INFO] Done."    
+  fi  
+  if $DEPLOYMENT_SETUP_APACHE; then
     echo "[INFO] Creating Apache Virtual Host ..."  
     mkdir -p $APACHE_CONF_DIR
     cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
@@ -765,18 +814,6 @@ EOF
     DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
     DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST/logs/catalina.out
     echo "[INFO] Done."
-    echo "[INFO] Configure and update AWStats ..."
-    # Regenerates stats for this Vhosts
-    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST"
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
-    sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST -update || true
-    # Regenerates stats for root vhosts
-    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$ACCEPTANCE_HOST"
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
-    sudo /usr/lib/cgi-bin/awstats.pl -config=$ACCEPTANCE_HOST -update
-    echo "[INFO] Done."    
     echo "[INFO] Rotate Apache logs ..."  
     cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
 ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST-*.log {
@@ -819,6 +856,15 @@ do_create_deployment_descriptor()
 PRODUCT_NAME="$PRODUCT_NAME"
 PRODUCT_VERSION="$PRODUCT_VERSION"
 PRODUCT_BRANCH="$PRODUCT_BRANCH"
+ARTIFACT_GROUPID="$ARTIFACT_GROUPID"
+ARTIFACT_ARTIFACTID="$ARTIFACT_ARTIFACTID"
+ARTIFACT_TIMESTAMP="$ARTIFACT_TIMESTAMP"
+ARTIFACT_DATE="$ARTIFACT_DATE"
+ARTIFACT_CLASSIFIER="$ARTIFACT_CLASSIFIER"
+ARTIFACT_PACKAGING="$ARTIFACT_PACKAGING"
+ARTIFACT_REPO_GROUP="$ARTIFACT_REPO_GROUP"
+ARTIFACT_REPO_URL="$ARTIFACT_REPO_URL"
+ARTIFACT_DL_URL="$ARTIFACT_DL_URL"
 DEPLOYMENT_ENABLED=$DEPLOYMENT_ENABLED
 DEPLOYMENT_DATE="$CURR_DATE"
 DEPLOYMENT_DIR="$DEPLOYMENT_DIR"
@@ -832,18 +878,16 @@ DEPLOYMENT_AJP_PORT="$DEPLOYMENT_AJP_PORT"
 DEPLOYMENT_PID_FILE="$DEPLOYMENT_PID_FILE"
 DEPLOYMENT_RMI_REG_PORT="$DEPLOYMENT_RMI_REG_PORT"
 DEPLOYMENT_RMI_SRV_PORT="$DEPLOYMENT_RMI_SRV_PORT"
-DEPLOYMENT_DATABASE_NAME="$DEPLOYMENT_DATABASE_NAME"
 DEPLOYMENT_EXTRA_JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
 DEPLOYMENT_EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
-ARTIFACT_GROUPID="$ARTIFACT_GROUPID"
-ARTIFACT_ARTIFACTID="$ARTIFACT_ARTIFACTID"
-ARTIFACT_TIMESTAMP="$ARTIFACT_TIMESTAMP"
-ARTIFACT_DATE="$ARTIFACT_DATE"
-ARTIFACT_CLASSIFIER="$ARTIFACT_CLASSIFIER"
-ARTIFACT_PACKAGING="$ARTIFACT_PACKAGING"
-ARTIFACT_REPO_GROUP="$ARTIFACT_REPO_GROUP"
-ARTIFACT_REPO_URL="$ARTIFACT_REPO_URL"
-ARTIFACT_DL_URL="$ARTIFACT_DL_URL"
+DEPLOYMENT_SERVER_SCRIPT="$DEPLOYMENT_SERVER_SCRIPT"
+DEPLOYMENT_DATABASE_ENABLED="$DEPLOYMENT_DATABASE_ENABLED"
+DEPLOYMENT_DATABASE_TYPE="$DEPLOYMENT_DATABASE_TYPE"
+DEPLOYMENT_DATABASE_NAME="$DEPLOYMENT_DATABASE_NAME"
+DEPLOYMENT_DATABASE_USER="$DEPLOYMENT_DATABASE_USER"
+DEPLOYMENT_SETUP_APACHE=$DEPLOYMENT_SETUP_APACHE
+DEPLOYMENT_SETUP_AWSTATS=$DEPLOYMENT_SETUP_AWSTATS
+DEPLOYMENT_SETUP_UFW=$DEPLOYMENT_SETUP_UFW
 EOF
 
   echo "[INFO] Done."
@@ -858,6 +902,7 @@ do_load_deployment_descriptor()
   if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST" ]; then
     echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
     echo "[WARNING] You need to deploy it first."
+    exit 1
   else
     source $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
   fi
@@ -871,10 +916,14 @@ do_deploy()
   echo "[INFO] Deploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
   do_download_server
   if $DEPLOYMENT_ENABLED ; then  
-    do_create_database
+    if $DEPLOYMENT_DATABASE_ENABLED ; then  
+      do_create_database
+    fi
     do_unpack_server
     do_patch_server
-    do_configure_apache
+    if $DEPLOYMENT_SETUP_APACHE; then
+      do_configure_apache
+    fi
   fi 
   do_create_deployment_descriptor
   echo "[INFO] Server deployed"
@@ -895,6 +944,11 @@ do_start()
     export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
     export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
     cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
+    # We need to backup existing logs if they already exist
+    if [ -f $DEPLOYMENT_DIR/logs/catalina.out ]; then
+    cat $DEPLOYMENT_DIR/logs/catalina.out.bck $DEPLOYMENT_DIR/logs/catalina.out > $DEPLOYMENT_DIR/logs/catalina.out.bck
+    rm $DEPLOYMENT_DIR/logs/catalina.out
+  fi
     ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
     # Wait for logs availability
     while [ true ];
@@ -955,20 +1009,24 @@ do_undeploy()
   if $DEPLOYMENT_ENABLED ; then
     # Stop the server
     do_stop
-    do_drop_database
+    if $DEPLOYMENT_DATABASE_ENABLED ; then      
+      do_drop_database
+    fi
     echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
-    # Delete the vhost
-    rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
-    # Delete Awstat config
-    rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf 
-    # Reload Apache to deactivate the config  
-    if $LINUX; then  # Prod vs Dev (To be improved)
+    if $DEPLOYMENT_SETUP_APACHE; then    
+      # Delete Awstat config
+      rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf 
+    fi
+    if $DEPLOYMENT_SETUP_APACHE; then
+      # Delete the vhost
+      rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+      # Reload Apache to deactivate the config  
       sudo /usr/sbin/service apache2 reload
     fi
     # Delete the server
     rm -rf $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
     # Close firewall ports
-    if $LINUX; then  # Prod vs Dev (To be improved)
+    if $DEPLOYMENT_SETUP_UFW; then  # Prod vs Dev (To be improved)
       sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
       sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
     fi  
@@ -991,17 +1049,17 @@ do_list()
     do
       source $f      
       if [ -f $DEPLOYMENT_PID_FILE ]; then
-	    set +e 
-	    kill -0 `cat $DEPLOYMENT_PID_FILE`
-		if [ $? -eq  0 ] ; then
-		  STATUS="true" 
-		else
-		  STATUS="false" 
-		fi			    
-		set -e
-	  else 
-	    STATUS="false" 
-	  fi
+      set +e 
+      kill -0 `cat $DEPLOYMENT_PID_FILE`
+        if [ $? -eq  0 ] ; then
+          STATUS="true" 
+        else
+          STATUS="false" 
+        fi              
+        set -e
+    else 
+      STATUS="false" 
+    fi
       printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" $PRODUCT_NAME $PRODUCT_VERSION $DEPLOYMENT_HTTP_PORT $DEPLOYMENT_AJP_PORT $DEPLOYMENT_SHUTDOWN_PORT $DEPLOYMENT_RMI_REG_PORT $DEPLOYMENT_RMI_SRV_PORT $STATUS 
     done  
   else
@@ -1049,7 +1107,7 @@ do_restart_all()
 #
 # Function that stops all deployed servers
 #
-do_stops_all()
+do_stop_all()
 {
   if [ "$(ls -A $ADT_CONF_DIR)" ]; then
     echo "[INFO] Stopping all servers ..."
@@ -1100,38 +1158,33 @@ fi
 ACTION=$1
 shift
 
+createDefaultDirectories
+copyDefaultData
+createMainVHost
+
 case "$ACTION" in
   init)
     # Nothing specific to do
     ;;
   deploy)
-    initialize
-    do_process_cl_params "$@"
+    initialize_product_settings
     do_deploy
     ;;
   start)
-    initialize
-    do_process_cl_params "$@"
-    do_load_deployment_descriptor
+    initialize_product_settings
     do_start
     ;;
   stop) 
-    initialize
-    do_process_cl_params "$@"
-    do_load_deployment_descriptor
+    initialize_product_settings
     do_stop
     ;;
   restart)
-    initialize
-    do_process_cl_params "$@"
-    do_load_deployment_descriptor
+    initialize_product_settings
     do_stop
     do_start
     ;;
   undeploy) 
-    initialize
-    do_process_cl_params "$@"
-    do_load_deployment_descriptor
+    initialize_product_settings
     do_undeploy
     ;;
   list) 
