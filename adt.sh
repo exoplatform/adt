@@ -225,6 +225,8 @@ initialize_product_settings()
         # Defaults values we can override by product/branch/version    
         env_var "DEPLOYMENT_ENABLED"          true
         env_var "DEPLOYMENT_DATABASE_ENABLED" true
+        env_var "DEPLOYMENT_DATABASE_NAME"    ""
+        env_var "DEPLOYMENT_DATABASE_USER"    ""
         env_var "DEPLOYMENT_EXTRA_JAVA_OPTS"  ""
         env_var "DEPLOYMENT_EXO_PROFILES"     ""
         env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
