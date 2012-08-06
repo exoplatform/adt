@@ -85,31 +85,35 @@
           //print each file name
           $vhosts = getDirectoryList($_SERVER['ADT_DATA']."/conf/adt/");
           sort($vhosts);
-		  $now = new DateTime();
+          $now = new DateTime();
           foreach( $vhosts as $vhost) {
             // Parse deployment descriptor
             $descriptor_array = parse_ini_file($_SERVER['ADT_DATA']."/conf/adt/".$vhost);
-			$artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
-			if($artifact_age->days)
-			  $artifact_age_string = $artifact_age->format('%a day(s) ago');
-			else if($artifact_age->h > 0)
-			  $artifact_age_string = $artifact_age->format('%h hour(s) ago');
-			else
-			  $artifact_age_string = $artifact_age->format('%i minute(s) ago');
-			if($artifact_age->days > 5 )
-			  $artifact_age_class = "red";
-			else if($artifact_age->days > 2 )
-			  $artifact_age_class = "orange";
-	        else
-			  $artifact_age_class = "green";			
-			$deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
-			if($deployment_age->days)
-			  $deployment_age_string = $deployment_age->format('%a day(s) ago');
-			else if($deployment_age->h > 0)
-			  $deployment_age_string = $deployment_age->format('%h hour(s) ago');
-			else
-			  $deployment_age_string = $deployment_age->format('%i minute(s) ago');
-          ?>
+            if($descriptor_array['ARTIFACT_DATE']){
+              $artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
+              if($artifact_age->days)
+                $artifact_age_string = $artifact_age->format('%a day(s) ago');
+              else if($artifact_age->h > 0)
+                $artifact_age_string = $artifact_age->format('%h hour(s) ago');
+              else
+                $artifact_age_string = $artifact_age->format('%i minute(s) ago');
+              if($artifact_age->days > 5 )
+                $artifact_age_class = "red";
+              else if($artifact_age->days > 2 )
+                $artifact_age_class = "orange";
+              else
+                $artifact_age_class = "green";      
+            } else {
+              $artifact_age_string = "Unknown";
+            }
+            $deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
+            if($deployment_age->days)
+              $deployment_age_string = $deployment_age->format('%a day(s) ago');
+            else if($deployment_age->h > 0)
+              $deployment_age_string = $deployment_age->format('%h hour(s) ago');
+            else
+              $deployment_age_string = $deployment_age->format('%i minute(s) ago');
+            ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
