@@ -383,12 +383,7 @@ initialize_product_settings()
         # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
         find_patch MYSQL_GATEIN_PATCH "$ETC_DIR/gatein"  "configuration.properties" "${MYSQL_GATEIN_PATCH_PRODUCT_NAME}"
         ;;
-      start|stop|restart|undeploy)
-        # The server is supposed to be already deployed. 
-        # We load its settings from the configuration
-        do_load_deployment_descriptor
-        ;;
-      list|start-all|stop-all|restart-all|undeploy-all)
+      start|stop|restart|undeploy|list|start-all|stop-all|restart-all|undeploy-all)
         # Nothing to do
         ;;
       *)
@@ -936,6 +931,9 @@ do_deploy()
 #
 do_start()
 {
+  # The server is supposed to be already deployed. 
+  # We load its settings from the configuration
+  do_load_deployment_descriptor  
   if $DEPLOYMENT_ENABLED ; then
     echo "[INFO] Starting server $PRODUCT_NAME $PRODUCT_VERSION ..."
     chmod 755 $DEPLOYMENT_DIR/bin/*.sh
@@ -988,18 +986,27 @@ do_start()
 #
 do_stop()
 {
-  if $DEPLOYMENT_ENABLED ; then
-    if [ -n "$DEPLOYMENT_DIR" ] && [ -e "$DEPLOYMENT_DIR" ]; then
-      echo "[INFO] Stopping server $PRODUCT_NAME $PRODUCT_VERSION ..."
-      export CATALINA_HOME=$DEPLOYMENT_DIR
-      export CATALINA_PID=$DEPLOYMENT_PID_FILE
-      ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force || true
-      echo "[INFO] Server stopped"
-    else
-      echo "[WARNING] No server directory to stop it"
-    fi
+  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST" ]; then
+    echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
+    echo "[WARNING] The product cannot be stopped"  
+    exit 0
   else
-    echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be stopped"
+    # The server is supposed to be already deployed. 
+    # We load its settings from the configuration
+    do_load_deployment_descriptor  
+    if $DEPLOYMENT_ENABLED ; then
+      if [ -n "$DEPLOYMENT_DIR" ] && [ -e "$DEPLOYMENT_DIR" ]; then
+        echo "[INFO] Stopping server $PRODUCT_NAME $PRODUCT_VERSION ..."
+        export CATALINA_HOME=$DEPLOYMENT_DIR
+        export CATALINA_PID=$DEPLOYMENT_PID_FILE
+        ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force || true
+        echo "[INFO] Server stopped"
+      else
+        echo "[WARNING] No server directory to stop it"
+      fi
+    else
+      echo "[WARNING] This product ($PRODUCT_NAME:$PRODUCT_VERSION) cannot be stopped"
+    fi
   fi
 }
 
@@ -1008,34 +1015,43 @@ do_stop()
 #
 do_undeploy()
 {
-  if $DEPLOYMENT_ENABLED ; then
-    # Stop the server
-    do_stop
-    if $DEPLOYMENT_DATABASE_ENABLED ; then      
-      do_drop_database
+  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST" ]; then
+    echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !" 
+    echo "[WARNING] The product cannot be undeployed"  
+    exit 0
+  else
+    # The server is supposed to be already deployed. 
+    # We load its settings from the configuration
+    do_load_deployment_descriptor  
+    if $DEPLOYMENT_ENABLED ; then
+      # Stop the server
+      do_stop
+      if $DEPLOYMENT_DATABASE_ENABLED ; then      
+        do_drop_database
+      fi
+      echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
+      if $DEPLOYMENT_SETUP_APACHE; then    
+        # Delete Awstat config
+        rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf 
+      fi
+      if $DEPLOYMENT_SETUP_APACHE; then
+        # Delete the vhost
+        rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+        # Reload Apache to deactivate the config  
+        sudo /usr/sbin/service apache2 reload
+      fi
+      # Delete the server
+      rm -rf $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
+      # Close firewall ports
+      if $DEPLOYMENT_SETUP_UFW; then  # Prod vs Dev (To be improved)
+        sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
+        sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
+      fi  
+      echo "[INFO] Server undeployed"
     fi
-    echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
-    if $DEPLOYMENT_SETUP_APACHE; then    
-      # Delete Awstat config
-      rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf 
-    fi
-    if $DEPLOYMENT_SETUP_APACHE; then
-      # Delete the vhost
-      rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
-      # Reload Apache to deactivate the config  
-      sudo /usr/sbin/service apache2 reload
-    fi
-    # Delete the server
-    rm -rf $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
-    # Close firewall ports
-    if $DEPLOYMENT_SETUP_UFW; then  # Prod vs Dev (To be improved)
-      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
-      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}    
-    fi  
-    echo "[INFO] Server undeployed"
+    # Delete the deployment descriptor
+    rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
   fi
-  # Delete the deployment descriptor
-  rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
 }
 
 #
