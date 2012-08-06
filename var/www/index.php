@@ -105,6 +105,7 @@
                 $artifact_age_class = "green";      
             } else {
               $artifact_age_string = "Unknown";
+              $artifact_age_class = "black";
             }
             $deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
             if($deployment_age->days)
