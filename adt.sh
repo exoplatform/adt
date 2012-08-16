@@ -974,6 +974,11 @@ do_start()
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
     export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
     export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
+    # Additional settings
+	  for _var in $DEPLOYMENT_EXTRA_ENV_VARS
+    do
+      export ${_var}=$(eval echo \${$_var})
+    done
     cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
     # We need to backup existing logs if they already exist
     if [ -f $DEPLOYMENT_DIR/logs/catalina.out ]; then
@@ -1030,6 +1035,11 @@ do_stop()
         echo "[INFO] Stopping server $PRODUCT_NAME $PRODUCT_VERSION ..."
         export CATALINA_HOME=$DEPLOYMENT_DIR
         export CATALINA_PID=$DEPLOYMENT_PID_FILE
+        # Additional settings
+			  for _var in $DEPLOYMENT_EXTRA_ENV_VARS
+        do
+          export ${_var}=$(eval echo \${$_var})
+        done
         ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force || true
         echo "[INFO] Server stopped"
       else
