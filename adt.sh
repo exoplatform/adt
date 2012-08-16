@@ -223,11 +223,22 @@ initialize_product_settings()
         validate_env_var "PRODUCT_NAME"
         validate_env_var "PRODUCT_VERSION"
 
-        # Defaults values we can override by product/branch/version    
+        if $DEPLOYMENT_SETUP_APACHE; then
+          env_var "DEPLOYMENT_EXT_HOST"       "$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST"
+					env_var "DEPLOYMENT_EXT_PORT"       "80"
+        else
+					env_var "DEPLOYMENT_EXT_HOST"       "localhost"
+					env_var "DEPLOYMENT_EXT_PORT"       "$DEPLOYMENT_HTTP_PORT"
+				fi
+        env_var "DEPLOYMENT_URL"              "http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_EXT_PORT}"
+				
+
+        # Defaults values we can override by product/branch/version   
         env_var "DEPLOYMENT_ENABLED"          true
         env_var "DEPLOYMENT_DATABASE_ENABLED" true
         env_var "DEPLOYMENT_DATABASE_NAME"    ""
         env_var "DEPLOYMENT_DATABASE_USER"    ""
+        env_var "DEPLOYMENT_EXTRA_ENV_VARS"   ""
         env_var "DEPLOYMENT_EXTRA_JAVA_OPTS"  ""
         env_var "DEPLOYMENT_EXO_PROFILES"     ""
         env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
@@ -247,7 +258,6 @@ initialize_product_settings()
         env_var "ARTIFACT_DL_URL"             ""
         env_var "DEPLOYMENT_DATE"             ""
         env_var "DEPLOYMENT_DIR"              ""
-        env_var "DEPLOYMENT_URL"              ""
         env_var "DEPLOYMENT_LOG_URL"          ""
         env_var "DEPLOYMENT_LOG_PATH"         ""
         env_var "DEPLOYMENT_JMX_URL"          ""
@@ -346,6 +356,10 @@ initialize_product_settings()
             env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
             env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
+            # Additional env vars used to access to bonita with the reverse proxy
+            env_var BPM_HOSTNAME                    "${DEPLOYMENT_EXT_HOST}"
+            env_var BPM_PORT			                  "${DEPLOYMENT_EXT_PORT}"
+            env_var DEPLOYMENT_EXTRA_ENV_VARS       "BPM_HOSTNAME BPM_PORT"
             ;;
           compint)
             env_var ARTIFACT_REPO_GROUP             "cp"
@@ -393,8 +407,12 @@ initialize_product_settings()
         find_patch MYSQL_SERVER_PATCH "$ETC_DIR/tomcat6" "server-mysql.xml" "${MYSQL_SERVER_PATCH_PRODUCT_NAME}"
         # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
         find_patch MYSQL_GATEIN_PATCH "$ETC_DIR/gatein"  "configuration.properties" "${MYSQL_GATEIN_PATCH_PRODUCT_NAME}"
-        ;;
-      start|stop|restart|undeploy|list|start-all|stop-all|restart-all|undeploy-all)
+        ;;	
+      start|stop|restart|undeploy)
+        # Mandatory env vars. They need to be defined before launching the script
+        validate_env_var "PRODUCT_NAME"
+        validate_env_var "PRODUCT_VERSION"        ;;
+      list|start-all|stop-all|restart-all|undeploy-all)
         # Nothing to do
         ;;
       *)
@@ -574,11 +592,7 @@ EOF
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}    
   fi  
   echo "[INFO] Done."
-  if $LINUX; then # Prod vs Dev (To be improved)
-    DEPLOYMENT_JMX_URL="service:jmx:rmi://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
-  else
-    DEPLOYMENT_JMX_URL="service:jmx:rmi://localhost:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://localhost:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
-  fi
+  DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 
   # Reconfigure server.xml for JMX
   # Reconfigure server.xml for MySQL
@@ -706,10 +720,10 @@ do_configure_apache()
   if $DEPLOYMENT_SETUP_AWSTATS; then
     echo "[INFO] Configure and update AWStats ..."
     # Regenerates stats for this Vhosts
-    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST"
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
-    sudo /usr/lib/cgi-bin/awstats.pl -config=$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST -update || true
+    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf
+    replace_in_file $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf "@DOMAIN@" "${DEPLOYMENT_EXT_HOST}"
+    replace_in_file $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf "@ADT_DATA@" "$ADT_DATA"    
+    sudo /usr/lib/cgi-bin/awstats.pl -config=${DEPLOYMENT_EXT_HOST} -update || true
     # Regenerates stats for root vhosts
     cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf
     replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$ACCEPTANCE_HOST"
@@ -720,13 +734,13 @@ do_configure_apache()
   if $DEPLOYMENT_SETUP_APACHE; then
     echo "[INFO] Creating Apache Virtual Host ..."  
     mkdir -p $APACHE_CONF_DIR
-    cat << EOF > $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+    cat << EOF > $APACHE_CONF_DIR/${DEPLOYMENT_EXT_HOST}
 <VirtualHost *:80>
-    ServerName  $PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+    ServerName  ${DEPLOYMENT_EXT_HOST}
 
-    ErrorLog        ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST-error.log
+    ErrorLog        ${ADT_DATA}/var/log/apache2/${DEPLOYMENT_EXT_HOST}-error.log
     LogLevel        warn
-    CustomLog       ${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST-access.log combined  
+    CustomLog       ${ADT_DATA}/var/log/apache2/${DEPLOYMENT_EXT_HOST}-access.log combined  
 
     # Error pages    
     ErrorDocument 404 /404.html
@@ -820,12 +834,11 @@ do_configure_apache()
 </VirtualHost>
 EOF
 
-    DEPLOYMENT_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
-    DEPLOYMENT_LOG_URL=http://$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST/logs/catalina.out
+    DEPLOYMENT_LOG_URL=http://${DEPLOYMENT_URL}/logs/catalina.out
     echo "[INFO] Done."
     echo "[INFO] Rotate Apache logs ..."  
     cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
-${ADT_DATA}/var/log/apache2/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST-*.log {
+${ADT_DATA}/var/log/apache2/${DEPLOYMENT_EXT_HOST}-*.log {
   missingok
   rotate 52
   compress
@@ -852,8 +865,6 @@ EOF
     sudo /usr/sbin/service apache2 reload
     rm $TMP_DIR/logrotate-acceptance
     echo "[INFO] Done."
-  else
-    DEPLOYMENT_URL=http://localhost:${DEPLOYMENT_HTTP_PORT}
   fi
 }
 
@@ -861,7 +872,7 @@ do_create_deployment_descriptor()
 {
   echo "[INFO] Creating deployment descriptor ..."  
   mkdir -p $ADT_CONF_DIR
-  cat << EOF > $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+  cat << EOF > $ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
 PRODUCT_NAME="$PRODUCT_NAME"
 PRODUCT_VERSION="$PRODUCT_VERSION"
 PRODUCT_BRANCH="$PRODUCT_BRANCH"
@@ -877,6 +888,8 @@ ARTIFACT_DL_URL="$ARTIFACT_DL_URL"
 DEPLOYMENT_ENABLED=$DEPLOYMENT_ENABLED
 DEPLOYMENT_DATE="$CURR_DATE"
 DEPLOYMENT_DIR="$DEPLOYMENT_DIR"
+DEPLOYMENT_EXT_HOST="$DEPLOYMENT_EXT_HOST"
+DEPLOYMENT_EXT_PORT="$DEPLOYMENT_EXT_PORT"
 DEPLOYMENT_URL="$DEPLOYMENT_URL"
 DEPLOYMENT_LOG_URL="$DEPLOYMENT_LOG_URL"
 DEPLOYMENT_LOG_PATH="$DEPLOYMENT_LOG_PATH"
@@ -888,6 +901,7 @@ DEPLOYMENT_PID_FILE="$DEPLOYMENT_PID_FILE"
 DEPLOYMENT_RMI_REG_PORT="$DEPLOYMENT_RMI_REG_PORT"
 DEPLOYMENT_RMI_SRV_PORT="$DEPLOYMENT_RMI_SRV_PORT"
 DEPLOYMENT_EXTRA_JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
+DEPLOYMENT_EXTRA_ENV_VARS="$DEPLOYMENT_EXTRA_ENV_VARS"
 DEPLOYMENT_EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
 DEPLOYMENT_SERVER_SCRIPT="$DEPLOYMENT_SERVER_SCRIPT"
 DEPLOYMENT_DATABASE_ENABLED="$DEPLOYMENT_DATABASE_ENABLED"
@@ -899,21 +913,26 @@ DEPLOYMENT_SETUP_AWSTATS=$DEPLOYMENT_SETUP_AWSTATS
 DEPLOYMENT_SETUP_UFW=$DEPLOYMENT_SETUP_UFW
 EOF
 
+  # Additional settings
+  for _var in $DEPLOYMENT_EXTRA_ENV_VARS
+  do
+    echo "${_var}=$(eval echo \${$_var})" >> $ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+  done
   echo "[INFO] Done."
   #Display the deployment descriptor
   echo "[INFO] ========================= Deployment Descriptor ========================="
-  cat $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+  cat $ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   echo "[INFO] ========================================================================="
 }
 
 do_load_deployment_descriptor()
 {
-  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST" ]; then
+  if [ ! -e "$ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
     echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
     echo "[WARNING] You need to deploy it first."
     exit 1
   else
-    source $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+    source $ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   fi
 }
 
@@ -998,7 +1017,7 @@ do_start()
 #
 do_stop()
 {
-  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST" ]; then
+  if [ ! -e "$ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
     echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !"
     echo "[WARNING] The product cannot be stopped"  
     exit 0
@@ -1027,7 +1046,7 @@ do_stop()
 #
 do_undeploy()
 {
-  if [ ! -e "$ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST" ]; then
+  if [ ! -e "$ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
     echo "[WARNING] $PRODUCT_NAME $PRODUCT_VERSION isn't deployed !" 
     echo "[WARNING] The product cannot be undeployed"  
     exit 0
@@ -1044,11 +1063,11 @@ do_undeploy()
       echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
       if $DEPLOYMENT_SETUP_APACHE; then    
         # Delete Awstat config
-        rm -f $ADT_DATA/etc/awstats/awstats.$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST.conf 
+        rm -f $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf 
       fi
       if $DEPLOYMENT_SETUP_APACHE; then
         # Delete the vhost
-        rm -f $APACHE_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+        rm -f $APACHE_CONF_DIR/${DEPLOYMENT_EXT_HOST}
         # Reload Apache to deactivate the config  
         sudo /usr/sbin/service apache2 reload
       fi
@@ -1062,7 +1081,7 @@ do_undeploy()
       echo "[INFO] Server undeployed"
     fi
     # Delete the deployment descriptor
-    rm $ADT_CONF_DIR/$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST
+    rm $ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   fi
 }
 
