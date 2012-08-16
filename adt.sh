@@ -110,9 +110,10 @@ Environment Variables :
     ecms         eXo Content
     ks           eXo Knowledge
     cs           eXo Collaboration
-    plf          eXo Platform
-    plfcom       eXo Platform Community
-    plftrial     eXo Platform Trial
+    plf          eXo Platform Standard Edition
+    plfcom       eXo Platform Community Edition
+    plftrial     eXo Platform Trial Edition
+	plfbon       eXo Platform Bonita Edition
     compint      eXo Company Intranet
     docs         eXo Platform Documentations Website
     android      eXo Mobile Android
@@ -330,6 +331,16 @@ initialize_product_settings()
             env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
             env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.community"
             env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
+            env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
+            env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
+            env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
+            env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
+            env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
+            ;;
+          plfbon)
+            env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
+            env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.bonita"
+            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=default"
             env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
             env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
