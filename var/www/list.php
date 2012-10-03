@@ -27,9 +27,47 @@ function processIsRunning ($pid) {
 //print each file name
 $vhosts = getDirectoryList($_SERVER['ADT_DATA']."/conf/adt/");
 $list = array();
+$now = new DateTime();
 foreach( $vhosts as $vhost) {
   // Parse deployment descriptor
-  $list[] = parse_ini_file($_SERVER['ADT_DATA']."/conf/adt/".$vhost);
+  $descriptor_array = parse_ini_file($_SERVER['ADT_DATA']."/conf/adt/".$vhost);
+  if($descriptor_array['ARTIFACT_DATE']){
+    $artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
+    if($artifact_age->days)
+      $descriptor_array['ARTIFACT_AGE_STRING'] = $artifact_age->format('%a day(s) ago');
+    else if($artifact_age->h > 0)
+      $descriptor_array['ARTIFACT_AGE_STRING'] = $artifact_age->format('%h hour(s) ago');
+    else
+      $descriptor_array['ARTIFACT_AGE_STRING'] = $artifact_age->format('%i minute(s) ago');
+    if($artifact_age->days > 5 )
+      $descriptor_array['ARTIFACT_AGE_CLASS'] = "red";
+    else if($artifact_age->days > 2 )
+      $descriptor_array['ARTIFACT_AGE_CLASS'] = "orange";
+    else
+      $descriptor_array['ARTIFACT_AGE_CLASS'] = "green";      
+  } else {
+    $descriptor_array['ARTIFACT_AGE_STRING'] = "Unknown";
+    $descriptor_array['ARTIFACT_AGE_CLASS'] = "black";
+  }
+  $deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
+  if($deployment_age->days)
+    $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%a day(s) ago');
+  else if($deployment_age->h > 0)
+    $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%h hour(s) ago');
+  else
+    $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%i minute(s) ago');	
+	// Logs URLs
+	$descriptor_array['DEPLOYMENT_LOG_APPSRV_URL'] = $_SERVER['SERVER_NAME']."/logs.php?file=".$descriptor_array['DEPLOYMENT_LOG_PATH'] ;
+	$descriptor_array['DEPLOYMENT_LOG_APACHE_URL'] = $_SERVER['SERVER_NAME']."/logs.php?file=".$_SERVER['ADT_DATA']."/var/log/apache2/".$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME']."-access.log";
+	$descriptor_array['DEPLOYMENT_AWSTATS_URL'] = $_SERVER['SERVER_NAME']."/stats/awstats.pl?config=".$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME'];
+	// status
+  if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
+    $descriptor_array['DEPLOYMENT_STATUS']="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
+  else
+    $descriptor_array['DEPLOYMENT_STATUS']="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";	
+	// Add it in the list
+	$list[] = $descriptor_array;
 } 
+// Display the list in JSON
 echo json_encode($list);
 ?>

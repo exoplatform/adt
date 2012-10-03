@@ -78,10 +78,6 @@
             // The process is running if there is a row N#1 (N#0 is the header)
             return isset($output[1]);
           }
-          function displayDate ($date_as_string) {
-            $date = DateTime::createFromFormat('Ymd.His', $date_as_string);
-            return $date->format('D d M Y - H:i:s T');
-          }
           //print each file name
           $vhosts = getDirectoryList($_SERVER['ADT_DATA']."/conf/adt/");
           sort($vhosts);
