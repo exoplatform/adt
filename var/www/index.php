@@ -114,7 +114,6 @@
 							echo "Platform ".key($merged_list)." based build (Maintenance)";
 					  }
 							?>
-							<?=key($merged_list)?>
 						</td></tr>
             <?php
           foreach( $descriptor_arrays as $descriptor_array) {
