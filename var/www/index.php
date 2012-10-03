@@ -53,11 +53,8 @@ header("Pragma: no-cache"); // HTTP/1.0
       <div class="container-fluid">
         <div class="row-fluid">
           <div class="span12">
-		        <p>&nbsp;</p>
-		        <p>Welcome on Acceptance Live Instances !</p>
-		        <p>These instances are deployed to be used for acceptance tests.</p>
-		        <p>Terms of usage and others documentations about this service are detailed in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
-		        <p><br/></p>								
+		        <legend>Welcome on Acceptance Live Instances !</legend>
+		        <p>These instances are deployed to be used for acceptance tests.Terms of usage and others documentations about this service are detailed in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
             <table class="table table-striped table-bordered table-hover">
 		          <thead>
 		            <tr>
@@ -169,7 +166,6 @@ header("Pragma: no-cache"); // HTTP/1.0
 		          ?>
               </tbody>
             </table>
-		        <p>&nbsp;</p>
 		        <p>Each instance can be accessed using JMX with the  URL linked to the monitoring icon and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
 		        <p><a href="/stats/awstats.pl?config=<?=$_SERVER['SERVER_NAME'] ?>" class="TxtBlue" title="http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left" />http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>								
           </div>
