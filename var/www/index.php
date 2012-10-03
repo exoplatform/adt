@@ -53,76 +53,24 @@
           </thead>
           <tbody>
             <?php
-          function getDirectoryList ($directory) {
-            // create an array to hold directory list
-            $results = array();
-            // create a handler for the directory
-            $handler = opendir($directory);
-            // open directory and walk through the filenames
-            while ($file = readdir($handler)) {
-              // if file isn't this directory or its parent, add it to the results
-              if ($file != "." && $file != "..") {
-                $results[] = $file;
-              }
-            }
-            // tidy up: close the handler
-            closedir($handler);
-            // done!
-            return $results;
-          }
-          function processIsRunning ($pid) {
-            // create an array to hold the result
-            $output = array();
-            // execute a ps for the given pid
-            exec("ps -p ".$pid, $output);
-            // The process is running if there is a row N#1 (N#0 is the header)
-            return isset($output[1]);
-          }
-          //print each file name
-          $vhosts = getDirectoryList($_SERVER['ADT_DATA']."/conf/adt/");
-          sort($vhosts);
-          $now = new DateTime();
-          foreach( $vhosts as $vhost) {
-            // Parse deployment descriptor
-            $descriptor_array = parse_ini_file($_SERVER['ADT_DATA']."/conf/adt/".$vhost);
-            if($descriptor_array['ARTIFACT_DATE']){
-              $artifact_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['ARTIFACT_DATE'])->diff($now,true);
-              if($artifact_age->days)
-                $artifact_age_string = $artifact_age->format('%a day(s) ago');
-              else if($artifact_age->h > 0)
-                $artifact_age_string = $artifact_age->format('%h hour(s) ago');
-              else
-                $artifact_age_string = $artifact_age->format('%i minute(s) ago');
-              if($artifact_age->days > 5 )
-                $artifact_age_class = "red";
-              else if($artifact_age->days > 2 )
-                $artifact_age_class = "orange";
-              else
-                $artifact_age_class = "green";      
-            } else {
-              $artifact_age_string = "Unknown";
-              $artifact_age_class = "black";
-            }
-            $deployment_age = DateTime::createFromFormat('Ymd.His',$descriptor_array['DEPLOYMENT_DATE'])->diff($now,true);
-            if($deployment_age->days)
-              $deployment_age_string = $deployment_age->format('%a day(s) ago');
-            else if($deployment_age->h > 0)
-              $deployment_age_string = $deployment_age->format('%h hour(s) ago');
-            else
-              $deployment_age_string = $deployment_age->format('%i minute(s) ago');
+					$list = array();
+					$list[] = json_decode(file_get_contents('http://acceptance.exoplatform.org/list.php'));
+					$list[] = json_decode(file_get_contents('http://acceptance2.exoplatform.org/list.php'));
+          sort($list);
+          foreach( $list as $descriptor_array) {
             ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array['PRODUCT_NAME'])?></td>
               <td><?=$descriptor_array['PRODUCT_VERSION']?></td>
               <td><a href="<?=$descriptor_array['ARTIFACT_DL_URL']?>" class="TxtBlue" title="Download <?=$descriptor_array['ARTIFACT_GROUPID']?>:<?=$descriptor_array['ARTIFACT_ARTIFACTID']?>:<?=$descriptor_array['ARTIFACT_TIMESTAMP']?> from Nexus"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;<?=$descriptor_array['ARTIFACT_TIMESTAMP']?></a></td>
-              <td class="<?=$artifact_age_class?>"><?=$artifact_age_string?></td>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo "$deployment_age_string"; } ?></td>
+              <td class="<?=$descriptor_array['ARTIFACT_AGE_CLASS']?>"><?=$descriptor_array['ARTIFACT_AGE_STRING']?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo "$descriptor_array['DEPLOYMENT_AGE_STRING']"; } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_URL']?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array['DEPLOYMENT_URL']?></a><?php } ?></td>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/logs.php?file=<?=$descriptor_array['DEPLOYMENT_LOG_PATH']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="/logs.php?file=<?=$_SERVER['ADT_DATA']?>/var/log/apache2/<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME']?>-access.log" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_LOG_APPSRV_URL']?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="<?=$descriptor_array['DEPLOYMENT_LOG_APACHE_URL']?>" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
               <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_JMX_URL']?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a><?php } ?></td>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="/stats/awstats.pl?config=<?=$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME']?>" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { ?><a href="<?=$descriptor_array['DEPLOYMENT_AWSTATS_URL']?>" class="TxtOrange" title="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array['DEPLOYMENT_URL']?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
               <?php
-            if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
+            if ($descriptor_array['DEPLOYMENT_STATUS']=="Up")
               $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
             else
               $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
