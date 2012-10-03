@@ -638,7 +638,7 @@ do_configure_server_for_jmx()
 {
   # Install jmx jar
   JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
-  echo "[INFO] Downloading and installing JMX remote lib ..."
+  echo "[INFO] Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
   curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
   if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $JMX_JAR_URL` ]; then
     echo "[ERROR] !!! Sorry, cannot download ${JMX_JAR_URL}"
@@ -665,7 +665,6 @@ EOF
   DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 
   # Reconfigure server.xml for JMX
-  # Reconfigure server.xml for MySQL
   if [ "${JMX_SERVER_PATCH}" != "UNSET" ]; then 
     # Prepare the patch
     cp $JMX_SERVER_PATCH $DEPLOYMENT_DIR/conf/server-jmx.xml.patch
@@ -685,7 +684,7 @@ do_configure_server_for_database()
   case $DEPLOYMENT_DATABASE_TYPE in
     MYSQL)
       MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar"
-      echo "[INFO] Download and install MySQL JDBC driver ..."
+      echo "[INFO] Download and install MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
       curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
       if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
         echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"

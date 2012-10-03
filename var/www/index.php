@@ -86,7 +86,7 @@
           }
           function append_data($url,$data)
           {
-            $result=array();
+            $result=$data;
             $values=(array)json_decode(remote_get_contents($url));
             while ($entry = current($values)) {
 							$key=key($values);
