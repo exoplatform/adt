@@ -53,9 +53,7 @@
           </thead>
           <tbody>
             <?php
-					$list = array();
-					$list[] = json_decode(file_get_contents('http://acceptance.exoplatform.org/list.php'));
-					$list[] = json_decode(file_get_contents('http://acceptance2.exoplatform.org/list.php'));
+					$list = array_merge(json_decode(file_get_contents('http://acceptance.exoplatform.org/list.php')),json_decode(file_get_contents('http://acceptance2.exoplatform.org/list.php')));
           sort($list);
           foreach( $list as $descriptor_array) {
             ?>
@@ -75,7 +73,7 @@
             else
               $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
             ?>
-              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo "status; } ?></td>
+              <td><?php if( $descriptor_array['DEPLOYMENT_ENABLED'] ) { echo $status; } ?></td>
             </tr>
             <?php 
           } 
