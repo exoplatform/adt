@@ -56,39 +56,55 @@
 					// Get remote file contents, preferring faster cURL if available
 					function remote_get_contents($url)
 					{
-					        if (function_exists('curl_get_contents') AND function_exists('curl_init'))
-					        {
-					                return curl_get_contents($url);
-					        }
-					        else
-					        {
-					                // A litte slower, but (usually) gets the job done
-					                return file_get_contents($url);
-					        }
+		        if (function_exists('curl_get_contents') AND function_exists('curl_init'))
+		        {
+              return curl_get_contents($url);
+		        }
+		        else
+		        {
+              // A litte slower, but (usually) gets the job done
+              return file_get_contents($url);
+		        }
 					}
 
 					function curl_get_contents($url)
 					{
-					        // Initiate the curl session
-					        $ch = curl_init();
-					        // Set the URL
-					        curl_setopt($ch, CURLOPT_URL, $url);
-					        // Removes the headers from the output
-					        curl_setopt($ch, CURLOPT_HEADER, 0);
-					        // Return the output instead of displaying it directly
-					        curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-					        // Execute the curl session
-					        $output = curl_exec($ch);
-					        // Close the curl session
-					        curl_close($ch);
-					        // Return the output as a variable
-					        return $output;
+            // Initiate the curl session
+            $ch = curl_init();
+            // Set the URL
+            curl_setopt($ch, CURLOPT_URL, $url);
+            // Removes the headers from the output
+            curl_setopt($ch, CURLOPT_HEADER, 0);
+            // Return the output instead of displaying it directly
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            // Execute the curl session
+            $output = curl_exec($ch);
+            // Close the curl session
+            curl_close($ch);
+            // Return the output as a variable
+            return $output;
 					}
-          $list = array_merge(get_object_vars(json_decode(remote_get_contents('http://acceptance.exoplatform.org/list.php'))),get_object_vars(json_decode(remote_get_contents('http://acceptance2.exoplatform.org/list.php'))));
-          sort($list);
-					while ($descriptor_arrays = current($list)) {
+          function append_data($url,$data)
+          {
+            $result=array();
+            $values=(array)json_decode(remote_get_contents($url));
+            while ($entry = current($values)) {
+              if(!array_key_exists(key($values),$data)){
+                $result[key($values)][]=$entry;
+              } else {
+                $result[key($values)][]=array_merge($entry,$data[key($values)]);
+              };
+              next($values);
+            }
+            return (array)$result;
+          }
+          $merged_list = array();
+          $merged_list = append_data('http://acceptance.exoplatform.org/list.php',$merged_list);
+          $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
+          sort($merged_list);
+          while ($descriptor_arrays = current($merged_list)) {
             ?>
-						<tr><td colspan="10"><?=key($list)?></td></tr>
+            <tr><td colspan="10"><?=key($merged_list)?></td></tr>
             <?php
           foreach( $descriptor_arrays as $descriptor_array) {
             ?>
@@ -112,7 +128,7 @@
             </tr>
             <?php 
           } 
-			    next($list);
+			    next($merged_list);
           }
           ?>
           </tbody>

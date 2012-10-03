@@ -26,7 +26,7 @@ function processIsRunning ($pid) {
 }
 //print each file name
 $vhosts = getDirectoryList($_SERVER['ADT_DATA']."/conf/adt/");
-$list = array(array());
+$list = array();
 $now = new DateTime();
 foreach( $vhosts as $vhost) {
   // Parse deployment descriptor
