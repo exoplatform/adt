@@ -68,7 +68,10 @@ foreach( $vhosts as $vhost) {
   else
     $descriptor_array['DEPLOYMENT_STATUS']="Down";	
 	// Add it in the list
-	$list[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
+	if(empty($descriptor_array['PLF_BRANCH']))
+		$list['UNKNOWN'][] = $descriptor_array;
+	else
+    $list[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
 } 
 // Display the list in JSON
 echo json_encode($list);
