@@ -128,10 +128,6 @@
     Options ExecCGI -MultiViews +SymLinksIfOwnerMatch
 
     # Security
-    <Location /list.php>
-        Order deny,allow
-        Allow from all		
-    </Location>		
     <Location />
         Order deny,allow
         Allow from all
@@ -151,6 +147,11 @@
         # Only exo-employees can access
         Require group exo-employees 
     </Location>   
+    <Location /list.php>
+        Order deny,allow
+        Allow from all		
+        Satisfy any
+    </Location>		
 </VirtualHost>
 
 Include @ADT_DATA@/conf/apache/
