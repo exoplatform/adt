@@ -271,8 +271,7 @@ initialize_product_settings()
 
         # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
         # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
-        env_var PRODUCT_BRANCH `expr "$PRODUCT_VERSION" : '\(.*\)\..*'`".x"       
-
+        env_var PRODUCT_BRANCH `expr "$PRODUCT_VERSION" : '\([0-9]*\.[0-9]*\).*'`".x"
 
         # Validate product and load artifact details
         case "$PRODUCT_NAME" in
