@@ -113,7 +113,7 @@ Environment Variables :
     plf          eXo Platform Standard Edition
     plfcom       eXo Platform Community Edition
     plftrial     eXo Platform Trial Edition
-	plfbon       eXo Platform Bonita Edition
+    plfbon       eXo Platform Bonita Edition
     compint      eXo Company Intranet
     docs         eXo Platform Documentations Website
     android      eXo Mobile Android
@@ -225,13 +225,13 @@ initialize_product_settings()
 
         if $DEPLOYMENT_SETUP_APACHE; then
           env_var "DEPLOYMENT_EXT_HOST"       "$PRODUCT_NAME-$PRODUCT_VERSION.$ACCEPTANCE_HOST"
-					env_var "DEPLOYMENT_EXT_PORT"       "80"
+          env_var "DEPLOYMENT_EXT_PORT"       "80"
         else
-					env_var "DEPLOYMENT_EXT_HOST"       "localhost"
-					env_var "DEPLOYMENT_EXT_PORT"       "$DEPLOYMENT_HTTP_PORT"
-				fi
+          env_var "DEPLOYMENT_EXT_HOST"       "localhost"
+          env_var "DEPLOYMENT_EXT_PORT"       "$DEPLOYMENT_HTTP_PORT"
+        fi
         env_var "DEPLOYMENT_URL"              "http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_EXT_PORT}"
-				
+        
 
         # Defaults values we can override by product/branch/version   
         env_var "DEPLOYMENT_ENABLED"          true
@@ -243,7 +243,9 @@ initialize_product_settings()
         env_var "DEPLOYMENT_EXO_PROFILES"     ""
         env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
         env_var "DEPLOYMENT_SERVER_SCRIPT"    "bin/gatein.sh"
-        
+        env_var "DEPLOYMENT_APPSRV_TYPE"      "tomcat" #Server type
+        env_var "DEPLOYMENT_APPSRV_VERSION"   "6.0.35" #Default version used to download additional resources like JMX lib
+								        
         env_var "ARTIFACT_GROUPID"            ""
         env_var "ARTIFACT_ARTIFACTID"         ""
         env_var "ARTIFACT_TIMESTAMP"          ""
@@ -276,8 +278,18 @@ initialize_product_settings()
         # Validate product and load artifact details
         case "$PRODUCT_NAME" in
           gatein)
-            env_var ARTIFACT_GROUPID    "org.exoplatform.portal"
-            env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.pkg.tc6"
+            case "$PRODUCT_BRANCH" in
+              "3.0.x"|"3.1.x"|"3.2.x"|"3.3.x"|"3.4.x")
+                env_var ARTIFACT_GROUPID    "org.exoplatform.portal"
+                env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.pkg.tc6"
+              ;;
+              *)
+                # 3.5.x and +
+                env_var ARTIFACT_GROUPID          "org.gatein.portal"
+                env_var ARTIFACT_ARTIFACTID       "exo.portal.packaging.tomcat.pkg.tc7"
+                env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
+                ;;
+            esac               
             env_var ARTIFACT_CLASSIFIER "bundle"              
             ;;
           exogtn)
@@ -314,16 +326,21 @@ initialize_product_settings()
             ;;
           plf)
             env_var ARTIFACT_GROUPID           "org.exoplatform.platform"
-            if [[ "$PRODUCT_BRANCH" == "3.0.x" ]]; then
-              env_var ARTIFACT_ARTIFACTID      "exo.platform.packaging.assembly"
-              env_var ARTIFACT_CLASSIFIER      "tomcat"
-            elif [[ "$PRODUCT_BRANCH" == "3.5.x" ]]; then
-              env_var ARTIFACT_ARTIFACTID      "exo.platform.packaging.tomcat"
-              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-            else
-              env_var ARTIFACT_ARTIFACTID      "platform-packaging-tomcat"
-              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-            fi
+            case "$PRODUCT_BRANCH" in
+              "3.0.x")
+                env_var ARTIFACT_ARTIFACTID      "exo.platform.packaging.assembly"
+                env_var ARTIFACT_CLASSIFIER      "tomcat"
+              ;;
+              "3.5.x")
+                env_var ARTIFACT_ARTIFACTID      "exo.platform.packaging.tomcat"
+                env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+              ;;
+              *)
+                # 4.0.x and +
+	              env_var ARTIFACT_ARTIFACTID      "platform-packaging-tomcat"
+	              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+                ;;
+            esac               						
             env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
             ;;
           plftrial)
@@ -357,7 +374,7 @@ initialize_product_settings()
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
             # Additional env vars used to access to bonita with the reverse proxy
             env_var BPM_HOSTNAME                    "${DEPLOYMENT_EXT_HOST}"
-            env_var BPM_PORT			                  "${DEPLOYMENT_EXT_PORT}"
+            env_var BPM_PORT                        "${DEPLOYMENT_EXT_PORT}"
             env_var DEPLOYMENT_EXTRA_ENV_VARS       "BPM_HOSTNAME BPM_PORT"
             ;;
           compint)
@@ -399,14 +416,14 @@ initialize_product_settings()
           env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}" 
         fi
         # Patch to reconfigure server.xml to change ports
-        find_patch PORTS_SERVER_PATCH "$ETC_DIR/tomcat6" "server-ports.xml" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+        find_patch PORTS_SERVER_PATCH "$ETC_DIR/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-ports.xml" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
         # Patch to reconfigure server.xml for JMX
-        find_patch JMX_SERVER_PATCH   "$ETC_DIR/tomcat6" "server-jmx.xml" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
+        find_patch JMX_SERVER_PATCH   "$ETC_DIR/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
         # Patch to reconfigure server.xml for MySQL
-        find_patch MYSQL_SERVER_PATCH "$ETC_DIR/tomcat6" "server-mysql.xml" "${MYSQL_SERVER_PATCH_PRODUCT_NAME}"
+        find_patch MYSQL_SERVER_PATCH "$ETC_DIR/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml" "${MYSQL_SERVER_PATCH_PRODUCT_NAME}"
         # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
         find_patch MYSQL_GATEIN_PATCH "$ETC_DIR/gatein"  "configuration.properties" "${MYSQL_GATEIN_PATCH_PRODUCT_NAME}"
-        ;;	
+        ;;  
       start|stop|restart|undeploy)
         # Mandatory env vars. They need to be defined before launching the script
         validate_env_var "PRODUCT_NAME"
@@ -566,7 +583,7 @@ do_drop_database()
 do_configure_server_for_jmx()
 {
   # Install jmx jar
-  JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-6/v6.0.32/bin/extras/catalina-jmx-remote.jar"
+  JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
   echo "[INFO] Downloading and installing JMX remote lib ..."
   curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
   if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $JMX_JAR_URL` ]; then
@@ -974,7 +991,7 @@ do_start()
     export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
     export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
     # Additional settings
-	  for _var in $DEPLOYMENT_EXTRA_ENV_VARS
+    for _var in $DEPLOYMENT_EXTRA_ENV_VARS
     do
       export ${_var}=$(eval echo \${$_var})
     done
@@ -1036,7 +1053,7 @@ do_stop()
         export CATALINA_HOME=$DEPLOYMENT_DIR
         export CATALINA_PID=$DEPLOYMENT_PID_FILE
         # Additional settings
-			  for _var in $DEPLOYMENT_EXTRA_ENV_VARS
+        for _var in $DEPLOYMENT_EXTRA_ENV_VARS
         do
           export ${_var}=$(eval echo \${$_var})
         done

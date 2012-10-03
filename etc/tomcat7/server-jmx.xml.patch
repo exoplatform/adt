@@ -1,0 +1,12 @@
+--- server.xml	2012-10-03 12:25:52.000000000 +0200
++++ server.xml	2012-10-03 12:28:38.000000000 +0200
+@@ -31,6 +31,9 @@
+   <Listener className="org.apache.catalina.core.JreMemoryLeakPreventionListener" />
+   <Listener className="org.apache.catalina.mbeans.GlobalResourcesLifecycleListener" />
+   <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
++  <!-- JMX fixed ports -->
++  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" 
++          rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" />
+ 
+   <!-- Global JNDI resources
+        Documentation at /docs/jndi-resources-howto.html
