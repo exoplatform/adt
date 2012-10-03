@@ -84,7 +84,7 @@
 					        // Return the output as a variable
 					        return $output;
 					}
-          $list = array_merge(json_decode(remote_get_contents('http://acceptance.exoplatform.org/list.php')),json_decode(remote_get_contents('http://acceptance2.exoplatform.org/list.php')));
+          $list = array_merge(get_object_vars(json_decode(remote_get_contents('http://acceptance.exoplatform.org/list.php'))),get_object_vars(json_decode(remote_get_contents('http://acceptance2.exoplatform.org/list.php'))));
           sort($list);
 					while ($descriptor_arrays = current($list)) {
             ?>
