@@ -1,322 +1,205 @@
-body {
-	font-family:Arial, Helvetica, sans-serif;
-	font-size:12px;
-	height:100%;
-	margin:0px;
-	padding:0px;
-	background: #f2f2f2;
-}
-img {
-	border: none;
-}
-a {
-	text-decoration: none;
-}
-h1, h2, h3, h4, h5, h6, p {
-	margin: 0;
-}
-ul, li {
-	padding: 0px;
+/** Main layout **/
+html,body {
+	height: 100%;
 	margin: 0px;
 }
-h1 {
-	font-size: 22px;
-}
-h2 {
-	font-size: 20px;
-}
-h3 {
-	font-size: 16px;
-}
-h4 {
-	font-size: 14px;
-}
-h5 {
-	font-size: 12px;
-}
-h6 {
-	font-size: 11px;
-}
-th {
-	padding: 5px 5px 5px 5px;
-	background: #e1e1e1;
-}
-td {
-	padding: 5px 5px 5px 5px;
-	text-align: left;
-	white-space: nowrap;
-}
-.normal {
-	background-color: #f6f6f6
-}
-.normalActive {
-	background-color: #FFFFFF
-}
-.ClearFix:after {
-	content: ".";
-	display: block;
-	height: 0;
-	clear: both;
-	visibility: hidden;
-}
-.ClearFix {
- !display: inline-block;
- !zoom: 1;
- !display: block;
-}
-.FL {
-	float: left;
-}
-.FR {
-	float: right;
-}
-.UIHeader .Logo {
-	background: url('/images/Logo.png') no-repeat;
-	height: 65px;
-	width: 92px;
-	margin-left: 30px;
-	display: block;
-}
-.UIForgePages {
-	color: #686868;
-	background: url('/images/Header.png') repeat-x top;
-}
-.UIForgePages h3 {
-	font-size: 18px;
-	font-weight: normal;
-	margin:0px;
-}
-.UIForgePages .Header {
-	width: 570px;
-	margin: auto;
-	height: 115px;
-}
-.UIForgePages .Header .Logo {
-	background: url("/images/Logo.png") no-repeat scroll left center transparent;
-	width: 158px;
-	height: 110px;
-	float: left;
-	display: block;
-}
-.UIForgePages .Header .AddressWeb {
-	color: #E3EBF0;
-	font-size: 24px;
-	line-height: 96px;
-	padding: 7px 0 0;
-	float: right;
-}
-.UIForgePages .ContentPages {
-	padding: 18px 7px 7px 7px;
-	width: 570px;
+
+body {
+	width: 100%;
 	margin: auto;
 }
-.UIForgePages .ContentPages ul {
-	list-style: none;
-	padding: 0px;
-}
-.UIForgePages .ContentPages .MenuPage {
-	width: 48%;
-}
-.UIForgePages .ContentPages .MenuPage .Button {
-	border-radius: 15px 15px 15px 15px;
-	-moz-border-radius: 15px 15px 15px 15px;
-	-webkit-border-radius: 15px 15px 15px 15px;
-	background: url("/exo-static/images/Button.gif") repeat-x scroll 0 0 transparent;
-	border: 1px solid #CFCFCF;
-	color: #686868;
-	display: block;
-	font-size: 16px;
-	line-height: 31px;
-	margin: 0 0 8px 0;
-	text-align: center;
+
+a:link,a:visited,a:hover,a:active {
 	text-decoration: none;
 }
-.UIForgePages .ContentPages .MenuPage .Button:hover {
-	background: url("/exo-static/images/ButtonHV.gif") repeat-x scroll 0 0 transparent;
-	border: 1px solid #186abd;
-	color: white;
+
+#wrap {
+	min-height: 100%;
 }
-.UIForgePages .TitleForgePages {
-	font-size: 24px;
-	color: #fbad18;
-	padding-left: 20px;
-	text-align: left;
-	line-height: 85px;
-	margin: auto;
+
+#main {
+	overflow: auto;
+	padding-top: 60px;
+	padding-bottom: 84px;
 }
-.UIForgePages .TxtBlue {
-	color: #005abf;
-}
-.UIForgePages .TxtOrange {
-	color: #f47920;
-}
-.UIForgePages .TxtBoldContact {
-	font-weight: bold;
-	margin-top: 10px;
-}
-.UIForgePages .Footer {
-	background: url("/images/Footer.png") no-repeat center;
-	color: #7e7e7e;
-	padding: 21px 0px 0px 0px;
-	text-align: center;
-	height: 44px;
-}
-.UIForgePages .UIFooter {
-	background: #dfdfdf;
-	height: 40px;
-	color: #7b7b7b;
-	text-align: center;
-	line-height: 40px;
-	font-size: 11px;
-	margin-top: 40px;
-}
-.UIForgePages .ContentCenter {
-	padding: 18px 7px 7px 7px;
-	width: 1064px;
-	margin: auto;
-}
-.UIForgePages .ContentCenter .ContentLeft {
-	width: 525px;
-	margin-right: 13px;
-	font-size: 14px;
-}
-.UIForgePages .ContentCenter .ContentRight {
-	width: 525px;
-	height: 264px;
-	font-size: 14px;
-}
-.UIForgePages .ContentCenter .ContentRight .BlockAccount {
-	background: url('/images/BgBlock.jpg') no-repeat;
-	height: 264px;
-	padding: 0px 17px 0px 20px;
-	text-align: justify;
-}
-.UIForgePages .ContentCenter .ContentLeft .BlockPlatform3 {
-	background: url('/images/BgBlock.jpg') no-repeat left -266px;
-	height: 127px;
-	padding: 0px 17px 0px 20px;
-	text-align: justify;
-	margin-bottom: 10px;
-}
-.UIForgePages .ContentCenter .ContentLeft .BlockPlatform2 {
-	background: url('/images/BgBlock.jpg') no-repeat left -397px;
-	height: 127px;
-	padding: 0px 17px 0px 20px;
-	text-align: justify;
-}
-.UIForgePages .ContentCenter h2 {
-	font-size: 23px;
-	font-weight: bold;
+
+/* must be same height as the footer */
+#footer {
+	background: url("./images/footer.png") no-repeat center;
+	position: relative;
+	margin-top: -64px; /* negative value of footer height */
 	padding-top: 20px;
-	color: #20263f;
-	margin-bottom: 8px;
-	text-align: left;
+	height: 44px;
+	text-align: center;
+	clear: both;
 }
-.UIForgePages .ContentCenter ul {
-	list-style-type: none;
-	font-size: 13px;
+
+/*Opera Fix*/
+body:before {
+	content: "";
+	height: 100%;
+	float: left;
+	width: 0;
+	margin-top: -32767px;
+}
+
+.navbar img {
 	margin-top: 10px;
-}
-.UIForgePages .ContentCenter ul li {
-	background: url('/images/Arrow.gif') no-repeat left center;
-	padding-left: 11px;
-	line-height: 20px;
-}
-.MainContent {
-	padding: 18px 7px 7px 7px;
-	margin: auto;
-	width:80%;
-	background-color: #ffffff;
-}
-table.center {
-	margin-left: auto;
-	margin-right: auto;
-}
-img.center {
-	display: block;
-	margin-left: auto;
-	margin-right: auto;
-	padding:1px;
-	border:0px;
-	vertical-align:middle;
-}
-img.left {
-	float:left;
-	margin:2px 2px 2px 2px;
-	padding:1px;
-	border:0px;
-	vertical-align:middle;
-}
-img.right {
-	float:right;
-	margin:2px 2px 2px 2px;
-	padding:1px;
-	border:0px;
-	vertical-align:middle;
-}
-p {
-	white-space: nowrap;
-}
-.instructions {
-	padding: 5px;
+	margin-right: 10px;
+	/* Ensure to keep the same size on the navbar even when it has no menu */
 	margin-bottom: 10px;
 }
-.latest {
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-	background-color: #eee;
-	padding: 5px;
-	font-family: Courier, monospace;
+
+/*
+ * Icon
+ */
+img.icon {
+	width: 16px;
+	height: 16px;
+	border: 0px, 5px, 0px, 5px;
+	vertical-align: text-bottom;
 }
-.errors {
-	border-top: 1px solid #600;
-	border-bottom: 1px solid #600;
-	background-color: #fee;
-	padding: 5px;
-	font-family: Courier, monospace;
+
+/* Sections
+-------------------------------------------------- */
+
+/* padding for in-page bookmarks and fixed navbar */
+section {
+	padding-top: 30px;
 }
-.errors b {
-	color: #600;
+
+section>ul li {
+	margin-bottom: 5px;
 }
-.warnings {
-	border-top: 1px solid #660;
-	border-bottom: 1px solid #660;
-	background-color: #ffe;
-	padding: 5px;
-	font-family: Courier, monospace;
+
+/* Sidenav for Docs
+-------------------------------------------------- */
+.left-sidenav {
+	margin: 30px 0 0;
+	padding: 0;
+	background-color: #fff;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
+	-moz-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
+	box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
 }
-.warnings b {
-	color: #660;
+
+.left-sidenav>li>a {
+	display: block;
+	margin: 0 0 -1px;
+	padding: 8px 14px;
+	border: 1px solid #e5e5e5;
 }
-.notices {
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-	background-color: #eee;
-	padding: 5px;
-	font-family: Courier, monospace;
+
+.left-sidenav>li:first-child>a {
+	-webkit-border-radius: 6px 6px 0 0;
+	-moz-border-radius: 6px 6px 0 0;
+	border-radius: 6px 6px 0 0;
 }
-.code {
-	background-color: #eee;
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-	padding: 5px;
-	font-family: Courier, monospace;
+
+.left-sidenav>li:last-child>a {
+	-webkit-border-radius: 0 0 6px 6px;
+	-moz-border-radius: 0 0 6px 6px;
+	border-radius: 0 0 6px 6px;
 }
-code {
-	font-family: Courier, monospace;
+
+.left-sidenav>.active>a {
+	position: relative;
+	z-index: 2;
+	padding: 9px 15px;
+	border: 0;
+	text-shadow: 0 1px 0 rgba(0, 0, 0, .15);
+	-webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
+		rgba(0, 0, 0, .1);
+	-moz-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
+		rgba(0, 0, 0, .1);
+	box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
+		rgba(0, 0, 0, .1);
 }
-input, select {
-	margin-left: 5px;
+/* Chevrons */
+.left-sidenav .icon-chevron-right {
+	float: right;
+	margin-top: 2px;
+	margin-right: -6px;
+	opacity: .25;
 }
-.red {
-	font-weight:bolder;
-	color: #D00
+
+.left-sidenav>li>a:hover {
+	background-color: #f5f5f5;
 }
-.orange {
-	font-weight:bold;
-	color: #F60
+
+.left-sidenav a:hover .icon-chevron-right {
+	opacity: .5;
 }
-.green {
-	font-weight:normal;
-	color: #060
+
+.left-sidenav .active .icon-chevron-right,.left-sidenav .active a:hover .icon-chevron-right
+	{
+	background-image: url(../img/glyphicons-halflings-white.png);
+	opacity: 1;
+}
+
+/*
+ * DataTables style compat with bootstrap
+ */
+div.dataTables_length label {
+	float: left;
+	text-align: left;
+}
+
+div.dataTables_length select {
+	width: 75px;
+}
+
+div.dataTables_filter label {
+	float: right;
+}
+
+div.dataTables_info {
+	padding-top: 8px;
+}
+
+div.dataTables_paginate {
+	float: right;
+	margin: 0;
+}
+
+table.table {
+	clear: both;
+	margin-bottom: 6px !important;
+}
+
+table.table thead .sorting,table.table thead .sorting_asc,table.table thead .sorting_desc,table.table thead .sorting_asc_disabled,table.table thead .sorting_desc_disabled
+	{
+	cursor: pointer;
+	*cursor: hand;
+}
+
+table.table thead .sorting {
+	background: url('images/sort_both.png') no-repeat center right;
+}
+
+table.table thead .sorting_asc {
+	background: url('images/sort_asc.png') no-repeat center right;
+}
+
+table.table thead .sorting_desc {
+	background: url('images/sort_desc.png') no-repeat center right;
+}
+
+table.table thead .sorting_asc_disabled {
+	background: url('images/sort_asc_disabled.png') no-repeat center right;
+}
+
+table.table thead .sorting_desc_disabled {
+	background: url('images/sort_desc_disabled.png') no-repeat center right;
+}
+
+table.dataTable th:active {
+	outline: none;
+}
+
+table.dataTable thead th {
+	border-bottom: none;
 }
