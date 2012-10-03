@@ -104,7 +104,18 @@
           $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
           while ($descriptor_arrays = current($merged_list)) {
             ?>
-            <tr><td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;"><?=key($merged_list)?></td></tr>
+            <tr><td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
+							<?php
+						if(key($merged_list)=="4.0.x"){
+							echo "Platform ".key($merged_list)." based build (R&D)"
+						} else if(key($merged_list)=="UNKOWN"){
+							echo "Unclassified projects"
+						} else
+							echo "Platform ".key($merged_list)." based build (Maintenance)"
+					  }
+							?>
+							<?=key($merged_list)?>
+						</td></tr>
             <?php
           foreach( $descriptor_arrays as $descriptor_array) {
             ?>
