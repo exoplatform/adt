@@ -850,7 +850,7 @@ do_configure_apache()
 </VirtualHost>
 EOF
 
-    DEPLOYMENT_LOG_URL=http://${DEPLOYMENT_URL}/logs/catalina.out
+    DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/catalina.out
     echo "[INFO] Done."
     echo "[INFO] Rotate Apache logs ..."  
     cat << EOF > $TMP_DIR/logrotate-$PRODUCT_NAME-$PRODUCT_VERSION
