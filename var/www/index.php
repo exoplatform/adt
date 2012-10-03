@@ -54,7 +54,7 @@ header("Pragma: no-cache"); // HTTP/1.0
         <div class="row-fluid">
           <div class="span12">
 		        <legend>Welcome on Acceptance Live Instances !</legend>
-		        <p>These instances are deployed to be used for acceptance tests.Terms of usage and others documentations about this service are detailed in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
+		        <p>These instances are deployed to be used for acceptance tests. Terms of usage and others documentations about this service are detailed in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
             <table class="table table-striped table-bordered table-hover">
 		          <thead>
 		            <tr>

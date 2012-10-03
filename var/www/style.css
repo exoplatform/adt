@@ -144,3 +144,16 @@ section>ul li {
 td {
   white-space: nowrap;
 }
+/* Alerts */
+.red {
+  font-weight:bolder;
+  color: #D00
+}
+.orange {
+  font-weight:bold;
+  color: #F60
+}
+.green {
+  font-weight:normal;
+  color: #060
+}
