@@ -157,3 +157,58 @@ td {
   font-weight:normal;
   color: #060
 }
+/* logs */
+.code p {
+	white-space: nowrap;
+}
+.latest p {
+	white-space: nowrap;
+}
+.instructions {
+	padding: 5px;
+	margin-bottom: 10px;
+}
+.latest {
+	border-top: 1px solid #666;
+	border-bottom: 1px solid #666;
+	background-color: #eee;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.errors {
+	border-top: 1px solid #600;
+	border-bottom: 1px solid #600;
+	background-color: #fee;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.errors b {
+	color: #600;
+}
+.warnings {
+	border-top: 1px solid #660;
+	border-bottom: 1px solid #660;
+	background-color: #ffe;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.warnings b {
+	color: #660;
+}
+.notices {
+	border-top: 1px solid #666;
+	border-bottom: 1px solid #666;
+	background-color: #eee;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+.code {
+	background-color: #eee;
+	border-top: 1px solid #666;
+	border-bottom: 1px solid #666;
+	padding: 5px;
+	font-family: Courier, monospace;
+}
+code {
+	font-family: Courier, monospace;
+}
