@@ -86,7 +86,11 @@
 					}
           $list = array_merge(json_decode(remote_get_contents('http://acceptance.exoplatform.org/list.php')),json_decode(remote_get_contents('http://acceptance2.exoplatform.org/list.php')));
           sort($list);
-          foreach( $list as $descriptor_array) {
+					while ($descriptor_arrays = current($list)) {
+            ?>
+						<tr><td colspan="10"><?=key($list)?></td></tr>
+            <?php
+          foreach( $descriptor_arrays as $descriptor_array) {
             ?>
             <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
               <td><?=strtoupper($descriptor_array->PRODUCT_NAME)?></td>
@@ -108,6 +112,8 @@
             </tr>
             <?php 
           } 
+			    next($list);
+          }
           ?>
           </tbody>
         </table>
