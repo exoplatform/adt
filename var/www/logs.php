@@ -13,6 +13,7 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
 <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js" type="text/javascript"></script>
 <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js" type="text/javascript"></script>
 <script type="text/javascript">
 
   var _gaq = _gaq || [];
@@ -25,6 +26,13 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 
+</script>
+<script>
+  !function ($) {
+    $(function(){
+      window.prettyPrint && prettyPrint()   
+    })
+  }(window.jQuery)
 </script>
 </head>
 <body>
@@ -152,27 +160,11 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
 			    ?>
 			      <br />
 			      <br />
-			      <div class="code">
+			      <pre class="prettyprint linenums">
 			        <?php
-			        $output = highlight_file($_GET['file'], true);
-    
-			        //Line breaks are a little strange
-			        // dos = \r\n
-			        // unix = \n
-			        // mac = \r
-			        $output = str_replace("\r<br />","<br />", $output); //dos line breaks
-			        $output = str_replace("\r","<br />", $output); //mac line breaks
-			        $lines = explode("<br />",$output);
-        
-			        for($i=0;$i<count($lines);$i++) {
-			            ?>
-			        <p><a name="<?=($i+1)?>"></a>&nbsp;
-			          <?=$i+1?>
-			          &nbsp;&nbsp;&nbsp;
-			          <?=$lines[$i]?>
-			        </p>
-			        <?php } ?>
-			      </div>
+							readfile($_GET['file']);
+              ?>
+			      </pre>
           </div>
         </div>
       </div>
