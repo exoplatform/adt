@@ -26,7 +26,7 @@ function processIsRunning ($pid) {
 }
 //print each file name
 $vhosts = getDirectoryList($_SERVER['ADT_DATA']."/conf/adt/");
-$list = array();
+$list = array(array());
 $now = new DateTime();
 foreach( $vhosts as $vhost) {
   // Parse deployment descriptor
@@ -68,7 +68,7 @@ foreach( $vhosts as $vhost) {
   else
     $descriptor_array['DEPLOYMENT_STATUS']="Down";	
 	// Add it in the list
-	$list[] = $descriptor_array;
+	$list[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
 } 
 // Display the list in JSON
 echo json_encode($list);
