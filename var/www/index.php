@@ -53,22 +53,22 @@
           </thead>
           <tbody>
             <?php
-					// Get remote file contents, preferring faster cURL if available
-					function remote_get_contents($url)
-					{
-		        if (function_exists('curl_get_contents') AND function_exists('curl_init'))
-		        {
+          // Get remote file contents, preferring faster cURL if available
+          function remote_get_contents($url)
+          {
+            if (function_exists('curl_get_contents') AND function_exists('curl_init'))
+            {
               return curl_get_contents($url);
-		        }
-		        else
-		        {
+            }
+            else
+            {
               // A litte slower, but (usually) gets the job done
               return file_get_contents($url);
-		        }
-					}
+            }
+          }
 
-					function curl_get_contents($url)
-					{
+          function curl_get_contents($url)
+          {
             // Initiate the curl session
             $ch = curl_init();
             // Set the URL
@@ -83,28 +83,28 @@
             curl_close($ch);
             // Return the output as a variable
             return $output;
-					}
+          }
           function append_data($url,$data)
           {
             $result=array();
             $values=(array)json_decode(remote_get_contents($url));
             while ($entry = current($values)) {
-              if(!array_key_exists(key($values),$data)){
-                $result[key($values)][]=$entry;
+							$key=key($values);
+              if(!array_key_exists($key,$data)){
+                $result[$key]=$entry;
               } else {
-                $result[key($values)][]=array_merge($entry,$data[key($values)]);
+                $result[$key]=array_merge($entry,$data[$key]);
               };
               next($values);
             }
-            return (array)$result;
+            return $result;
           }
           $merged_list = array();
           $merged_list = append_data('http://acceptance.exoplatform.org/list.php',$merged_list);
           $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
-          sort($merged_list);
           while ($descriptor_arrays = current($merged_list)) {
             ?>
-            <tr><td colspan="10"><?=key($merged_list)?></td></tr>
+            <tr><td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;"><?=key($merged_list)?></td></tr>
             <?php
           foreach( $descriptor_arrays as $descriptor_array) {
             ?>
@@ -128,7 +128,7 @@
             </tr>
             <?php 
           } 
-			    next($merged_list);
+          next($merged_list);
           }
           ?>
           </tbody>
