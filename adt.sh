@@ -64,13 +64,14 @@ ADT_DATA=`pwd -P`
 popd > /dev/null
 echo "[INFO] ADT_DATA = $ADT_DATA"
 
-env_var "TMP_DIR"         "$ADT_DATA/tmp"
-env_var "DL_DIR"          "$ADT_DATA/downloads"
-env_var "SRV_DIR"         "$ADT_DATA/servers"
-env_var "CONF_DIR"        "$ADT_DATA/conf"
-env_var "APACHE_CONF_DIR" "$ADT_DATA/conf/apache"
-env_var "ADT_CONF_DIR"    "$ADT_DATA/conf/adt"
-env_var "ETC_DIR"         "$ADT_DATA/etc"
+env_var "TMP_DIR"          "$ADT_DATA/tmp"
+env_var "DL_DIR"           "$ADT_DATA/downloads"
+env_var "SRV_DIR"          "$ADT_DATA/servers"
+env_var "CONF_DIR"         "$ADT_DATA/conf"
+env_var "APACHE_CONF_DIR"  "$ADT_DATA/conf/apache"
+env_var "AWSTATS_CONF_DIR" "$ADT_DATA/conf/awstats"
+env_var "ADT_CONF_DIR"     "$ADT_DATA/conf/adt"
+env_var "ETC_DIR"          "$ADT_DATA/etc"
 
 env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
 
@@ -153,10 +154,10 @@ createMainVHost()
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     cp ${ADT_DATA}/etc/apache2/sites-available/acceptance.exoplatform.org.template ${ADT_DATA}/etc/apache2/sites-available/acceptance.exoplatform.org
-    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ADT_DATA@" "$ADT_DATA"
-    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@ACCEPTANCE_HOST@" "$ACCEPTANCE_HOST"    
-    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_NAME@" "$CROWD_ACCEPTANCE_APP_NAME"    
-    replace_in_file $ADT_DATA/etc/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_PASSWORD@" "$CROWD_ACCEPTANCE_APP_PASSWORD" 
+    replace_in_file $ETC_DIR/apache2/sites-available/acceptance.exoplatform.org "@ADT_DATA@" "$ADT_DATA"
+    replace_in_file $ETC_DIR/apache2/sites-available/acceptance.exoplatform.org "@ACCEPTANCE_HOST@" "$ACCEPTANCE_HOST"    
+    replace_in_file $ETC_DIR/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_NAME@" "$CROWD_ACCEPTANCE_APP_NAME"    
+    replace_in_file $ETC_DIR/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_PASSWORD@" "$CROWD_ACCEPTANCE_APP_PASSWORD" 
   fi
 }
 
@@ -805,15 +806,16 @@ do_configure_apache()
 {
   if $DEPLOYMENT_SETUP_AWSTATS; then
     echo "[INFO] Configure and update AWStats ..."
+	mkdir -p $AWSTATS_CONF_DIR
     # Regenerates stats for this Vhosts
-    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf
-    replace_in_file $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf "@DOMAIN@" "${DEPLOYMENT_EXT_HOST}"
-    replace_in_file $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf "@ADT_DATA@" "$ADT_DATA"    
+    cp $ETC_DIR/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
+    replace_in_file $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf "@DOMAIN@" "${DEPLOYMENT_EXT_HOST}"
+    replace_in_file $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf "@ADT_DATA@" "$ADT_DATA"    
     sudo /usr/lib/cgi-bin/awstats.pl -config=${DEPLOYMENT_EXT_HOST} -update || true
     # Regenerates stats for root vhosts
-    cp $ADT_DATA/etc/awstats/awstats.conf.template $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$ACCEPTANCE_HOST"
-    replace_in_file $ADT_DATA/etc/awstats/awstats.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
+    cp $ETC_DIR/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.$ACCEPTANCE_HOST.conf
+    replace_in_file $AWSTATS_CONF_DIR/awstats.$ACCEPTANCE_HOST.conf "@DOMAIN@" "$ACCEPTANCE_HOST"
+    replace_in_file $AWSTATS_CONF_DIR/awstats.$ACCEPTANCE_HOST.conf "@ADT_DATA@" "$ADT_DATA"    
     sudo /usr/lib/cgi-bin/awstats.pl -config=$ACCEPTANCE_HOST -update
     echo "[INFO] Done."    
   fi  
@@ -1162,7 +1164,7 @@ do_undeploy()
       echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
       if $DEPLOYMENT_SETUP_AWSTATS; then    
         # Delete Awstat config
-        rm -f $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf 
+        rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf 
       fi
       if $DEPLOYMENT_SETUP_APACHE; then
         # Delete the vhost
