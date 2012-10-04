@@ -45,7 +45,7 @@ header("Pragma: no-cache"); // HTTP/1.0
   <!-- navbar ================================================== -->
   <div id="navbar" class="navbar navbar-fixed-top" data-dropdown="dropdown">
     <div class="navbar-inner">
-      <div class="container-fluid">
+      <div class="container">
         <a class="brand" href="#"><?=$_SERVER['SERVER_NAME'] ?></a>
       </div>
     </div>
