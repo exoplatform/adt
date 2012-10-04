@@ -36,6 +36,12 @@ header("Pragma: no-cache"); // HTTP/1.0
   })();
 
 </script>
+<script type="text/javascript">
+  $(document).ready(function () {
+    $('body').popover({ selector:'[rel=popover]'});
+    $('body').tooltip({ selector:'[rel=tooltip]'});	
+  });
+</script>
 </head>
 <body>
   <!-- navbar ================================================== -->
@@ -58,20 +64,15 @@ header("Pragma: no-cache"); // HTTP/1.0
             <table class="table table-striped table-bordered table-hover">
 		          <thead>
 		            <tr>
-		              <th colspan="2">Product</th>
-		              <th colspan="8">Current deployment</th>
-		            </tr>
-		            <tr>
+  		              <th>Status</th>
 		              <th>Name</th>
 		              <th>Version</th>
-		              <th>Artifact</th>
 		              <th>Built</th>
 		              <th>Deployed</th>
-		              <th>URL</th>
 		              <th>Logs</th>
 		              <th>JMX</th>
 		              <th>Stats</th>
-		              <th>Status</th>
+		              <th>Download</th>
 		            </tr>
 		          </thead>
               <tbody>
@@ -96,7 +97,7 @@ header("Pragma: no-cache"); // HTTP/1.0
 		          $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
 		          while ($descriptor_arrays = current($merged_list)) {
 		            ?>
-		            <tr><td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
+		            <tr><td colspan="9" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
 									<?php
 								if(key($merged_list) === "4.0.x"){
 									echo "Platform ".key($merged_list)." based build (R&D)";
@@ -109,24 +110,21 @@ header("Pragma: no-cache"); // HTTP/1.0
 								</td></tr>
 		            <?php
 		          foreach( $descriptor_arrays as $descriptor_array) {
-		            ?>
-		            <tr onmouseover="this.className='normalActive'" onmouseout="this.className='normal'" class="normal">
-		              <td><?=strtoupper($descriptor_array->PRODUCT_NAME)?></td>
-		              <td><?=$descriptor_array->PRODUCT_VERSION?></td>
-		              <td><a href="<?=$descriptor_array->ARTIFACT_DL_URL?>" class="TxtBlue" title="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance"><img class="left" src="/images/ButDownload.gif" alt="Download" width="19" height="19" />&nbsp;<?=$descriptor_array->ARTIFACT_TIMESTAMP?></a></td>
-		              <td class="<?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" class="TxtBlue" target="_blank" title="Open the instance in a new window"><?=$descriptor_array->DEPLOYMENT_URL?></a><?php } ?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" class="TxtOrange" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" class="TxtOrange" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" class="TxtOrange" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a><?php } ?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" class="TxtOrange" title="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
-		              <?php
 		            if ($descriptor_array->DEPLOYMENT_STATUS=="Up")
 		              $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
 		            else
 		              $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
 		            ?>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
+		            <tr>
+  		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
+		              <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
+		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$descriptor_array->PRODUCT_VERSION?></a><?php } else { ?><?=$descriptor_array->PRODUCT_VERSION?><?php } ?></td>
+		              <td class="<?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
+		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
+		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
+		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a><?php } ?></td>
+		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" rel="tooltip" title="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
+		              <td><a href="<?=$descriptor_array->ARTIFACT_DL_URL?>" rel="popover" title="Download" data-content="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance"><i class="icon-download"></i></a></td>
 		            </tr>
 		            <?php 
 		          } 
@@ -135,8 +133,8 @@ header("Pragma: no-cache"); // HTTP/1.0
 		          ?>
               </tbody>
             </table>
-		        <p>Each instance can be accessed using JMX with the  URL linked to the monitoring icon and these credentials : <span class="TxtBoldContact">acceptanceMonitor</span> / <span class="TxtBoldContact">monitorAcceptance!</span></p>
-		        <p><a href="/stats/awstats.pl?config=<?=$_SERVER['SERVER_NAME'] ?>" class="TxtBlue" title="http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left" />http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>								
+		        <p>Each instance can be accessed using JMX with the  URL linked to the monitoring icon and these credentials : <strong><code>acceptanceMonitor</code></strong> / <strong><code>monitorAcceptance!</code></strong></p>
+		        <p><a href="/stats/awstats.pl?config=<?=$_SERVER['SERVER_NAME'] ?>" title="http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left" />http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>								
           </div>
         </div>
       </div>
