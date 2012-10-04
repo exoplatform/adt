@@ -21,12 +21,9 @@ header("Pragma: no-cache"); // HTTP/1.0
 <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
 <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/css/bootstrap-combined.min.css" type="text/css" rel="stylesheet" media="all">
 <link href="//netdna.bootstrapcdn.com/bootswatch/2.1.0/spacelab/bootstrap.min.css" type="text/css" rel="stylesheet" media="all">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js" type="text/javascript"></script>
+<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js" type="text/javascript"></script>
 <script type="text/javascript">
-  $(document).ready(function () {
-    $('body').tooltip({ selector:'[rel=tooltip]'});	
-    $('body').popover({ selector:'[rel=popover]'});
-  });
-
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-1292368-28']);
   _gaq.push(['_trackPageview']);
@@ -38,8 +35,6 @@ header("Pragma: no-cache"); // HTTP/1.0
   })();
 
 </script>
-<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js" type="text/javascript"></script>
-<script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js" type="text/javascript"></script>
 </head>
 <body>
   <!-- navbar ================================================== -->
@@ -148,5 +143,12 @@ header("Pragma: no-cache"); // HTTP/1.0
   </div>
   <!-- Footer ================================================== -->
   <div id="footer">Copyright © 2000-2012. All rights Reserved, eXo Platform SAS.</div>
+  <script type="text/javascript">
+    $(document).ready(function () {
+      $('body').tooltip({ selector:'[rel=tooltip]'});	
+      $('body').popover({ selector:'[rel=popover]'});
+    });
+  </script>
+  
 </body>
 </html>
