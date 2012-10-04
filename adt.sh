@@ -245,7 +245,7 @@ initialize_product_settings()
         env_var "DEPLOYMENT_SERVER_SCRIPT"    "bin/gatein.sh"
         env_var "DEPLOYMENT_APPSRV_TYPE"      "tomcat" #Server type
         env_var "DEPLOYMENT_APPSRV_VERSION"   "6.0.35" #Default version used to download additional resources like JMX lib
-								        
+                        
         env_var "ARTIFACT_GROUPID"            ""
         env_var "ARTIFACT_ARTIFACTID"         ""
         env_var "ARTIFACT_TIMESTAMP"          ""
@@ -267,7 +267,10 @@ initialize_product_settings()
 
         # Classifier to group together projects in the UI
         env_var PLF_BRANCH                    "UNKNOWN" # 3.0.x, 3.5.x, 4.0.x
-				
+    
+    # More user friendly description
+        env_var "PRODUCT_DESCRIPTION"         "$PRODUCT_NAME"
+    
         # To reuse patches between products
         env_var "PORTS_SERVER_PATCH_PRODUCT_NAME" "$PRODUCT_NAME"
         env_var "JMX_SERVER_PATCH_PRODUCT_NAME"   "$PRODUCT_NAME"
@@ -281,6 +284,7 @@ initialize_product_settings()
         # Validate product and load artifact details
         case "$PRODUCT_NAME" in
           gatein)
+            env_var PRODUCT_DESCRIPTION     "GateIn Community edition"      
             case "$PRODUCT_BRANCH" in
               "3.0.x"|"3.1.x"|"3.2.x"|"3.3.x"|"3.4.x")
                 env_var ARTIFACT_GROUPID    "org.exoplatform.portal"
@@ -294,87 +298,94 @@ initialize_product_settings()
                 ;;
             esac               
             env_var ARTIFACT_CLASSIFIER "bundle"              
-	          case "$PRODUCT_BRANCH" in
-	            "3.5.x")
-								env_var PLF_BRANCH     "4.0.x"
-	              ;;
-	          esac               
+            case "$PRODUCT_BRANCH" in
+              "3.5.x")
+                env_var PLF_BRANCH     "4.0.x"
+                ;;
+            esac               
             ;;
           exogtn)
+            env_var PRODUCT_DESCRIPTION "GateIn eXo edition"      
             env_var ARTIFACT_GROUPID    "org.exoplatform.portal"
             env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.assembly"
             env_var ARTIFACT_CLASSIFIER "tomcat"
-	          case "$PRODUCT_BRANCH" in
-	            "3.2.x")
-								env_var PLF_BRANCH     "3.5.x"
-	              ;;
-	          esac               
+            case "$PRODUCT_BRANCH" in
+              "3.2.x")
+                env_var PLF_BRANCH     "3.5.x"
+                ;;
+            esac               
             ;;
           webos)
+            env_var PRODUCT_DESCRIPTION "eXo WebOS"      
             env_var ARTIFACT_GROUPID    "org.exoplatform.webos"
             env_var ARTIFACT_ARTIFACTID "exo.webos.packaging.assembly"
             env_var ARTIFACT_CLASSIFIER "tomcat"
-	          case "$PRODUCT_BRANCH" in
-	            *)
-								env_var PLF_BRANCH     "3.5.x"
-	              ;;
-	          esac               
+            case "$PRODUCT_BRANCH" in
+              *)
+                env_var PLF_BRANCH     "3.5.x"
+                ;;
+            esac               
             ;;
           ecms)
+            env_var PRODUCT_DESCRIPTION "eXo Content"      
             env_var ARTIFACT_GROUPID    "org.exoplatform.ecms"
             env_var ARTIFACT_ARTIFACTID "exo-ecms-delivery-wcm-assembly"
             env_var ARTIFACT_CLASSIFIER "tomcat"
-	          case "$PRODUCT_BRANCH" in
-	            "4.0.x")
-								env_var PLF_BRANCH     "4.0.x"
-	              ;;
-	            *)
-								env_var PLF_BRANCH     "3.5.x"								
-	              ;;
-	          esac               
+            case "$PRODUCT_BRANCH" in
+              "4.0.x")
+                env_var PLF_BRANCH     "4.0.x"
+                ;;
+              *)
+                env_var PLF_BRANCH     "3.5.x"                
+                ;;
+            esac               
             ;;
           social)
+            env_var PRODUCT_DESCRIPTION         "eXo Social"      
             env_var ARTIFACT_GROUPID            "org.exoplatform.social"
             env_var ARTIFACT_ARTIFACTID         "exo.social.packaging.pkg"
             env_var ARTIFACT_CLASSIFIER         "tomcat"
             env_var DEPLOYMENT_GATEIN_CONF_PATH "gatein/conf/portal/socialdemo/socialdemo.properties"
-	          case "$PRODUCT_BRANCH" in
-	            "4.0.x")
-								env_var PLF_BRANCH     "4.0.x"
-	              ;;
-	            *)
-								env_var PLF_BRANCH     "3.5.x"								
-	              ;;
-	          esac               
+            case "$PRODUCT_BRANCH" in
+              "4.0.x")
+                env_var PLF_BRANCH     "4.0.x"
+                ;;
+              *)
+                env_var PLF_BRANCH     "3.5.x"                
+                ;;
+            esac               
             ;;
           ks)
+            env_var PRODUCT_DESCRIPTION         "eXo Knowledge"      
             env_var ARTIFACT_GROUPID            "org.exoplatform.ks"
             env_var ARTIFACT_ARTIFACTID         "exo.ks.packaging.assembly"
             env_var ARTIFACT_CLASSIFIER         "tomcat"
             env_var DEPLOYMENT_GATEIN_CONF_PATH "gatein/conf/portal/ksdemo/ksdemo.properties"
-	          case "$PRODUCT_BRANCH" in
-	            "4.0.x")
-								env_var PLF_BRANCH     "4.0.x"
-	              ;;
-	            *)
-								env_var PLF_BRANCH     "3.5.x"								
-	              ;;
-	          esac               
+            case "$PRODUCT_BRANCH" in
+              "4.0.x")
+                env_var PLF_BRANCH     "4.0.x"
+                ;;
+              *)
+                env_var PLF_BRANCH     "3.5.x"                
+                ;;
+            esac               
             ;;
           cs)
+            env_var PRODUCT_DESCRIPTION "eXo Collaboration"      
             env_var ARTIFACT_GROUPID    "org.exoplatform.cs"
             env_var ARTIFACT_ARTIFACTID "exo.cs.packaging.assembly"
             env_var ARTIFACT_CLASSIFIER "tomcat"
-	          case "$PRODUCT_BRANCH" in
-	            "4.0.x")
-								env_var PLF_BRANCH     "4.0.x"
-	              ;;
-	            *)
-								env_var PLF_BRANCH     "3.5.x"								
-	              ;;
-	          esac               
+            case "$PRODUCT_BRANCH" in
+              "4.0.x")
+                env_var PLF_BRANCH     "4.0.x"
+                ;;
+              *)
+                env_var PLF_BRANCH     "3.5.x"                
+                ;;
+            esac               
             ;;
           plf)
+            env_var PRODUCT_DESCRIPTION        "eXo Platform Standard Edition"      
             env_var ARTIFACT_GROUPID           "org.exoplatform.platform"
             case "$PRODUCT_BRANCH" in
               "3.0.x")
@@ -387,14 +398,15 @@ initialize_product_settings()
               ;;
               *)
                 # 4.0.x and +
-	              env_var ARTIFACT_ARTIFACTID      "platform-packaging-tomcat"
-	              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+                env_var ARTIFACT_ARTIFACTID      "platform-packaging-tomcat"
+                env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
                 ;;
-            esac               						
+            esac                           
             env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
-						env_var PLF_BRANCH                 "$PRODUCT_BRANCH"								
+            env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
             ;;
           plftrial)
+            env_var PRODUCT_DESCRIPTION             "eXo Platform Trial Edition"      
             env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
             env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.trial"
             env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
@@ -403,9 +415,10 @@ initialize_product_settings()
             env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
             env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
-						env_var PLF_BRANCH                      "$PRODUCT_BRANCH"								
+            env_var PLF_BRANCH                      "$PRODUCT_BRANCH"                
             ;;
           plfcom)
+            env_var PRODUCT_DESCRIPTION             "eXo Platform Community Edition"      
             env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
             env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.community"
             env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
@@ -414,9 +427,10 @@ initialize_product_settings()
             env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
             env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
-						env_var PLF_BRANCH                      "$PRODUCT_BRANCH"								
+            env_var PLF_BRANCH                      "$PRODUCT_BRANCH"                
             ;;
           plfbon)
+            env_var PRODUCT_DESCRIPTION             "eXo Platform Bonita Edition"      
             env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
             env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.bonita"
             env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=default"
@@ -429,9 +443,10 @@ initialize_product_settings()
             env_var BPM_HOSTNAME                    "${DEPLOYMENT_EXT_HOST}"
             env_var BPM_PORT                        "${DEPLOYMENT_EXT_PORT}"
             env_var DEPLOYMENT_EXTRA_ENV_VARS       "BPM_HOSTNAME BPM_PORT"
-						env_var PLF_BRANCH                      "$PRODUCT_BRANCH"								
+            env_var PLF_BRANCH                      "$PRODUCT_BRANCH"                
             ;;
           compint)
+            env_var PRODUCT_DESCRIPTION             "eXo Company Intranet"      
             env_var ARTIFACT_REPO_GROUP             "cp"
             env_var ARTIFACT_GROUPID                "com.exoplatform.intranet"
             env_var ARTIFACT_ARTIFACTID             "exo-intranet-package"
@@ -441,12 +456,14 @@ initialize_product_settings()
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
             ;;
           docs)
+            env_var PRODUCT_DESCRIPTION         "eXo Platform Documentations Website"      
             env_var ARTIFACT_GROUPID            "org.exoplatform.doc"
             env_var ARTIFACT_ARTIFACTID         "website-packaging"
             env_var DEPLOYMENT_SERVER_SCRIPT    "bin/catalina.sh"
             env_var DEPLOYMENT_DATABASE_ENABLED false
             ;;
           android)
+            env_var PRODUCT_DESCRIPTION "eXo Mobile Android"      
             env_var ARTIFACT_GROUPID    "org.exoplatform.mobile.platform"
             env_var ARTIFACT_ARTIFACTID "exo-mobile-android"
             env_var ARTIFACT_CLASSIFIER ""
@@ -943,6 +960,7 @@ do_create_deployment_descriptor()
   mkdir -p $ADT_CONF_DIR
   cat << EOF > $ADT_CONF_DIR/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
 PRODUCT_NAME="$PRODUCT_NAME"
+PRODUCT_DESCRIPTION="$PRODUCT_DESCRIPTION"
 PRODUCT_VERSION="$PRODUCT_VERSION"
 PRODUCT_BRANCH="$PRODUCT_BRANCH"
 ARTIFACT_GROUPID="$ARTIFACT_GROUPID"
