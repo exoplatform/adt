@@ -111,9 +111,16 @@ header("Pragma: no-cache"); // HTTP/1.0
 		            else
 		              $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
                     $matches = array();
-		            preg_match("(.*)\-([^\-]*\-.*)\-SNAPSHOT", $descriptor_array->PRODUCT_VERSION, $matches);
-					$base_version=$matches[1];
-                    $feature_branch=$matches[2];
+		            if(preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)){
+						$base_version=$matches[1];
+	                    $feature_branch=$matches[2];
+					} elseif (preg_match("/(.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)){
+						$base_version=$matches[1];
+	                    $feature_branch="";						
+					} else {
+						$base_version=$descriptor_array->PRODUCT_VERSION;
+	                    $feature_branch="";
+					}
 		            ?>
 		            <tr>
   		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
