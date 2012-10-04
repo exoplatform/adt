@@ -1,63 +1,63 @@
 /** Main layout **/
 html,body {
-	height: 100%;
-	margin: 0px;
+  height: 100%;
+  margin: 0px;
 }
 
 body {
-	width: 100%;
-	margin: auto;
+  width: 100%;
+  margin: auto;
 }
 
 a:link,a:visited,a:hover,a:active {
-	text-decoration: none;
+  text-decoration: none;
 }
 
 #wrap {
-	min-height: 100%;
+  min-height: 100%;
 }
 
 #main {
-	overflow: auto;
-	padding-top: 60px;
-	padding-bottom: 84px;
+  overflow: auto;
+  padding-top: 60px;
+  padding-bottom: 84px;
 }
 
 /* must be same height as the footer */
 #footer {
-	background: url("./images/footer.png") no-repeat center;
-	position: relative;
-	margin-top: -64px; /* negative value of footer height */
-	padding-top: 20px;
-	height: 44px;
-	text-align: center;
-	clear: both;
+  background: url("./images/footer.png") no-repeat center;
+  position: relative;
+  margin-top: -64px; /* negative value of footer height */
+  padding-top: 20px;
+  height: 44px;
+  text-align: center;
+  clear: both;
 }
 
 /*Opera Fix*/
 body:before {
-	content: "";
-	height: 100%;
-	float: left;
-	width: 0;
-	margin-top: -32767px;
+  content: "";
+  height: 100%;
+  float: left;
+  width: 0;
+  margin-top: -32767px;
 }
 
 .navbar img {
-	margin-top: 10px;
-	margin-right: 10px;
-	/* Ensure to keep the same size on the navbar even when it has no menu */
-	margin-bottom: 10px;
+  margin-top: 10px;
+  margin-right: 10px;
+  /* Ensure to keep the same size on the navbar even when it has no menu */
+  margin-bottom: 10px;
 }
 
 /*
  * Icon
  */
 img.icon {
-	width: 16px;
-	height: 16px;
-	border: 0px, 5px, 0px, 5px;
-	vertical-align: text-bottom;
+  width: 16px;
+  height: 16px;
+  border: 0px, 5px, 0px, 5px;
+  vertical-align: text-bottom;
 }
 
 /* Sections
@@ -65,79 +65,79 @@ img.icon {
 
 /* padding for in-page bookmarks and fixed navbar */
 section {
-	padding-top: 30px;
+  padding-top: 30px;
 }
 
 section>ul li {
-	margin-bottom: 5px;
+  margin-bottom: 5px;
 }
 
 /* Sidenav for Docs
 -------------------------------------------------- */
 .left-sidenav {
-	margin: 30px 0 0;
-	padding: 0;
-	background-color: #fff;
-	-webkit-border-radius: 6px;
-	-moz-border-radius: 6px;
-	border-radius: 6px;
-	-webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
-	-moz-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
-	box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
+  margin: 30px 0 0;
+  padding: 0;
+  background-color: #fff;
+  -webkit-border-radius: 6px;
+  -moz-border-radius: 6px;
+  border-radius: 6px;
+  -webkit-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
+  -moz-box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, .065);
 }
 
 .left-sidenav>li>a {
-	display: block;
-	margin: 0 0 -1px;
-	padding: 8px 14px;
-	border: 1px solid #e5e5e5;
+  display: block;
+  margin: 0 0 -1px;
+  padding: 8px 14px;
+  border: 1px solid #e5e5e5;
 }
 
 .left-sidenav>li:first-child>a {
-	-webkit-border-radius: 6px 6px 0 0;
-	-moz-border-radius: 6px 6px 0 0;
-	border-radius: 6px 6px 0 0;
+  -webkit-border-radius: 6px 6px 0 0;
+  -moz-border-radius: 6px 6px 0 0;
+  border-radius: 6px 6px 0 0;
 }
 
 .left-sidenav>li:last-child>a {
-	-webkit-border-radius: 0 0 6px 6px;
-	-moz-border-radius: 0 0 6px 6px;
-	border-radius: 0 0 6px 6px;
+  -webkit-border-radius: 0 0 6px 6px;
+  -moz-border-radius: 0 0 6px 6px;
+  border-radius: 0 0 6px 6px;
 }
 
 .left-sidenav>.active>a {
-	position: relative;
-	z-index: 2;
-	padding: 9px 15px;
-	border: 0;
-	text-shadow: 0 1px 0 rgba(0, 0, 0, .15);
-	-webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
-		rgba(0, 0, 0, .1);
-	-moz-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
-		rgba(0, 0, 0, .1);
-	box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
-		rgba(0, 0, 0, .1);
+  position: relative;
+  z-index: 2;
+  padding: 9px 15px;
+  border: 0;
+  text-shadow: 0 1px 0 rgba(0, 0, 0, .15);
+  -webkit-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
+    rgba(0, 0, 0, .1);
+  -moz-box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
+    rgba(0, 0, 0, .1);
+  box-shadow: inset 1px 0 0 rgba(0, 0, 0, .1), inset -1px 0 0
+    rgba(0, 0, 0, .1);
 }
 /* Chevrons */
 .left-sidenav .icon-chevron-right {
-	float: right;
-	margin-top: 2px;
-	margin-right: -6px;
-	opacity: .25;
+  float: right;
+  margin-top: 2px;
+  margin-right: -6px;
+  opacity: .25;
 }
 
 .left-sidenav>li>a:hover {
-	background-color: #f5f5f5;
+  background-color: #f5f5f5;
 }
 
 .left-sidenav a:hover .icon-chevron-right {
-	opacity: .5;
+  opacity: .5;
 }
 
 .left-sidenav .active .icon-chevron-right,.left-sidenav .active a:hover .icon-chevron-right
-	{
-	background-image: url(./images/glyphicons-halflings-white.png);
-	opacity: 1;
+  {
+  background-image: url(./images/glyphicons-halflings-white.png);
+  opacity: 1;
 }
 
 /* Tables */
@@ -159,58 +159,58 @@ tbody td {
 }
 /* logs */
 .code p {
-	white-space: nowrap;
+  white-space: nowrap;
 }
 .latest p {
-	white-space: nowrap;
+  white-space: nowrap;
 }
 .instructions {
-	padding: 5px;
-	margin-bottom: 10px;
+  padding: 5px;
+  margin-bottom: 10px;
 }
 .latest {
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-	background-color: #eee;
-	padding: 5px;
-	font-family: Courier, monospace;
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #666;
+  background-color: #eee;
+  padding: 5px;
+  font-family: Courier, monospace;
 }
 .errors {
-	border-top: 1px solid #600;
-	border-bottom: 1px solid #600;
-	background-color: #fee;
-	padding: 5px;
-	font-family: Courier, monospace;
+  border-top: 1px solid #600;
+  border-bottom: 1px solid #600;
+  background-color: #fee;
+  padding: 5px;
+  font-family: Courier, monospace;
 }
 .errors b {
-	color: #600;
+  color: #600;
 }
 .warnings {
-	border-top: 1px solid #660;
-	border-bottom: 1px solid #660;
-	background-color: #ffe;
-	padding: 5px;
-	font-family: Courier, monospace;
+  border-top: 1px solid #660;
+  border-bottom: 1px solid #660;
+  background-color: #ffe;
+  padding: 5px;
+  font-family: Courier, monospace;
 }
 .warnings b {
-	color: #660;
+  color: #660;
 }
 .notices {
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-	background-color: #eee;
-	padding: 5px;
-	font-family: Courier, monospace;
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #666;
+  background-color: #eee;
+  padding: 5px;
+  font-family: Courier, monospace;
 }
 .code {
-	background-color: #eee;
-	border-top: 1px solid #666;
-	border-bottom: 1px solid #666;
-	padding: 5px;
-	font-family: Courier, monospace;
+  background-color: #eee;
+  border-top: 1px solid #666;
+  border-bottom: 1px solid #666;
+  padding: 5px;
+  font-family: Courier, monospace;
 }
 code {
-	font-family: Courier, monospace;
+  font-family: Courier, monospace;
 }
 /* google prettify */
 .com { color: #93a1a1; }

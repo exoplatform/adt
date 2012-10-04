@@ -806,7 +806,7 @@ do_configure_apache()
 {
   if $DEPLOYMENT_SETUP_AWSTATS; then
     echo "[INFO] Configure and update AWStats ..."
-	mkdir -p $AWSTATS_CONF_DIR
+  mkdir -p $AWSTATS_CONF_DIR
     # Regenerates stats for this Vhosts
     cp $ETC_DIR/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
     replace_in_file $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf "@DOMAIN@" "${DEPLOYMENT_EXT_HOST}"
