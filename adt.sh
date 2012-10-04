@@ -1160,7 +1160,7 @@ do_undeploy()
         do_drop_database
       fi
       echo "[INFO] Undeploying server $PRODUCT_NAME $PRODUCT_VERSION ..."
-      if $DEPLOYMENT_SETUP_APACHE; then    
+      if $DEPLOYMENT_SETUP_AWSTATS; then    
         # Delete Awstat config
         rm -f $ADT_DATA/etc/awstats/awstats.${DEPLOYMENT_EXT_HOST}.conf 
       fi
