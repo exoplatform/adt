@@ -141,7 +141,7 @@ section>ul li {
 }
 
 /* Tables */
-td {
+tbody td {
   white-space: nowrap;
 }
 /* Alerts */

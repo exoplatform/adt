@@ -24,6 +24,10 @@ header("Pragma: no-cache"); // HTTP/1.0
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js" type="text/javascript"></script>
 <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js" type="text/javascript"></script>
 <script type="text/javascript">
+  $(document).ready(function () {
+    $('body').tooltip({ selector:'[rel=tooltip]'});	
+    $('body').popover({ selector:'[rel=popover]'});
+  });
 
   var _gaq = _gaq || [];
   _gaq.push(['_setAccount', 'UA-1292368-28']);
@@ -35,12 +39,6 @@ header("Pragma: no-cache"); // HTTP/1.0
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 
-</script>
-<script type="text/javascript">
-  $(document).ready(function () {
-    $('body').popover({ selector:'[rel=popover]'});
-    $('body').tooltip({ selector:'[rel=tooltip]'});	
-  });
 </script>
 </head>
 <body>
@@ -56,8 +54,8 @@ header("Pragma: no-cache"); // HTTP/1.0
   <!-- Main ================================================== -->
   <div id="wrap">
     <div id="main">
-      <div class="container-fluid">
-        <div class="row-fluid">
+      <div class="container">
+        <div class="row">
           <div class="span12">
 		        <legend>Welcome on Acceptance Live Instances !</legend>
 		        <p>These instances are deployed to be used for acceptance tests. Terms of usage and others documentations about this service are detailed in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
@@ -66,13 +64,11 @@ header("Pragma: no-cache"); // HTTP/1.0
 		            <tr>
   		              <th>Status</th>
 		              <th>Name</th>
-		              <th>Version</th>
+		              <th>Snapshot Version</th>
+		              <th>Feature Branch</th>
 		              <th>Built</th>
 		              <th>Deployed</th>
-		              <th>Logs</th>
-		              <th>JMX</th>
-		              <th>Stats</th>
-		              <th>Download</th>
+		              <th>&nbsp;</th>
 		            </tr>
 		          </thead>
               <tbody>
@@ -97,7 +93,7 @@ header("Pragma: no-cache"); // HTTP/1.0
 		          $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
 		          while ($descriptor_arrays = current($merged_list)) {
 		            ?>
-		            <tr><td colspan="9" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
+		            <tr><td colspan="7" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
 									<?php
 								if(key($merged_list) === "4.0.x"){
 									echo "Platform ".key($merged_list)." based build (R&D)";
@@ -114,17 +110,19 @@ header("Pragma: no-cache"); // HTTP/1.0
 		              $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
 		            else
 		              $status="<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
+                    $matches = array();
+		            preg_match("(.*)\-([^\-]*\-.*)\-SNAPSHOT", $descriptor_array->PRODUCT_VERSION, $matches);
+					$base_version=$matches[1];
+                    $feature_branch=$matches[2];
 		            ?>
 		            <tr>
   		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
 		              <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$descriptor_array->PRODUCT_VERSION?></a><?php } else { ?><?=$descriptor_array->PRODUCT_VERSION?><?php } ?></td>
+		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
+		              <td><?=$feature_branch?></td>
 		              <td class="<?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
 		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a><?php } ?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a><?php } ?></td>
-		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" rel="tooltip" title="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" width="16" height="16" class="center" /></a><?php } ?></td>
-		              <td><a href="<?=$descriptor_array->ARTIFACT_DL_URL?>" rel="popover" title="Download" data-content="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance"><i class="icon-download"></i></a></td>
+		              <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" rel="tooltip" title="<?=$descriptor_array->PRODUCT_DESCRIPTION+" "+$descriptor_array->PRODUCT_VERSION?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" width="16" height="16" class="center" /></a><?php } ?>&nbsp;<a href="<?=$descriptor_array->ARTIFACT_DL_URL?>" rel="popover" title="Download" data-content="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance"><i class="icon-download-alt"></i></a></td>
 		            </tr>
 		            <?php 
 		          } 
