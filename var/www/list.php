@@ -66,12 +66,12 @@ foreach( $vhosts as $vhost) {
   if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
     $descriptor_array['DEPLOYMENT_STATUS']="Up";
   else
-    $descriptor_array['DEPLOYMENT_STATUS']="Down";  
-  // Add it in the list
-  if(empty($descriptor_array['PLF_BRANCH']))
-    $list['UNKNOWN'][] = $descriptor_array;
-  else
-    $list[$descriptor_array['PLF_BRANCH']][$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']] = $descriptor_array;
+    $descriptor_array['DEPLOYMENT_STATUS']="Down";	
+	// Add it in the list
+	if(empty($descriptor_array['PLF_BRANCH']))
+		$list['UNKNOWN'][] = $descriptor_array;
+	else
+    $list[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
 } 
 // Display the list in JSON
 echo json_encode($list);
