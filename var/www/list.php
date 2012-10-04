@@ -71,7 +71,7 @@ foreach( $vhosts as $vhost) {
 	if(empty($descriptor_array['PLF_BRANCH']))
 		$list['UNKNOWN'][] = $descriptor_array;
 	else
-    $list[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
+		$list[$descriptor_array['PLF_BRANCH']][$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION']] = $descriptor_array;
 } 
 // Display the list in JSON
 echo json_encode($list);
