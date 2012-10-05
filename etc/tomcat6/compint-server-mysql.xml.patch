@@ -1,8 +1,8 @@
---- /Users/arnaud/Temp/adt_data/servers/compint-3.5.0-SNAPSHOT/tomcat-bundle/conf/server.xml.ori	2012-07-23 14:47:03.000000000 +0200
-+++ /Users/arnaud/Temp/adt_data/servers/compint-3.5.0-SNAPSHOT/tomcat-bundle/conf/server.xml	2012-07-23 14:57:07.000000000 +0200
+--- server.xml.ori-mysql	2012-10-05 01:01:54.000000000 +0200
++++ server.xml	2012-10-05 15:18:41.000000000 +0200
 @@ -56,15 +56,15 @@
       <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
-    	 	maxActive="128" maxIdle="32" maxWait="10000"
+    	 	maxActive="128" maxIdle="10" maxWait="50000"
     	    testWhileIdle="true" timeBetweenEvictionRunsMillis="30000" validationQuery="SELECT 1"
 - 	    username="root" password="root"  driverClassName="com.mysql.jdbc.Driver"
 -        url="jdbc:mysql://localhost/intranetdb_portal"/>
@@ -11,7 +11,7 @@
  
  	 <!-- eXo IDM Datasource for portal -->
  	 <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
-    		maxActive="128" maxIdle="32" maxWait="10000"
+    		maxActive="300" maxIdle="10" maxWait="60000"
     		testWhileIdle="true" timeBetweenEvictionRunsMillis="30000" validationQuery="SELECT 1"
 -   		username="root" password="root" driverClassName="com.mysql.jdbc.Driver"
 -   		url="jdbc:mysql://localhost/intranetdb_users_portal"/>
@@ -19,4 +19,3 @@
 +   		url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@"/>
    
    </GlobalNamingResources>
- 
