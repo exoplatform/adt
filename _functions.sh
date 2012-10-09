@@ -196,10 +196,10 @@ do_download_from_nexus() {
       echo "[WARNING] Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv $metadataFile.bck $metadataFile
       if $DARWIN; then
-        _artifactTimestamp=`xpath $METADATA $XPATH_QUERY`
+        _artifactTimestamp=`xpath $metadataFile $xpathQuery`
       fi 
       if $LINUX; then
-        _artifactTimestamp=`xpath -q -e $XPATH_QUERY $METADATA`
+        _artifactTimestamp=`xpath -q -e $xpathQuery $metadataFile`
       fi
     fi
     if [ -z "$_artifactTimestamp" ]; then
