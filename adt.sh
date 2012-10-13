@@ -294,7 +294,7 @@ initialize_product_settings()
               *)
                 # 3.5.x and +
                 env_var ARTIFACT_GROUPID          "org.gatein.portal"
-                env_var ARTIFACT_ARTIFACTID       "exo.portal.packaging.tomcat.pkg.tc7"
+                env_var ARTIFACT_ARTIFACTID       "exo.portal.packaging.tomcat.tc7"
                 env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
                 ;;
             esac               
