@@ -246,4 +246,6 @@ ol.linenums li {
 
 
 /* Customize modal size */
-.modal {width:1024px;}
+.modal {
+    width: 700px;
+}
