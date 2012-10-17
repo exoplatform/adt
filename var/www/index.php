@@ -107,7 +107,20 @@
                     <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
-                  <td><?php if( ! empty($feature_branch) ) {  if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank"><i class="icon-book"></i></a>&nbsp;<?php } ?><?=$feature_branch?> <span class="label label-info"><?=$descriptor_array->ACCEPTANCE_STATE?></span>&nbsp;<a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a>
+									<?php if( ! empty($feature_branch) ) { ?>
+									<td></td>
+									<td></td>									
+									<td></td>									
+									<?php } else { ?>
+									<?php } ?>	
+									
+																											
+                  <td><?php if( ! empty($feature_branch) ) { ?>
+										<div class="row-fluid">
+											<div class="span1"><?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank"><i class="icon-book"></i></a>&nbsp;<?php } ?><div>
+										  <div class="span5"><?=$feature_branch?></div>
+										  <div class="span5"><?=$descriptor_array->ACCEPTANCE_STATE?></div>
+										  <div class="span1"><a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a></div>
 										<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
 											<form class="form-horizontal" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
 										  <div class="modal-header">
