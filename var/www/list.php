@@ -66,7 +66,11 @@ foreach( $vhosts as $vhost) {
   if (file_exists ($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents ($descriptor_array['DEPLOYMENT_PID_FILE'])))
     $descriptor_array['DEPLOYMENT_STATUS']="Up";
   else
-    $descriptor_array['DEPLOYMENT_STATUS']="Down";	
+    $descriptor_array['DEPLOYMENT_STATUS']="Down";
+	// Acceptance process state 	
+	$descriptor_array['ACCEPTANCE_STATE']="Implementing";
+	// Specification Link
+	$descriptor_array['SPECIFICATION_LINK']="http://int.exoplatform.org/portal/intranet/wiki/group/spaces/engineering/Home";
 	// Add it in the list
 	if(empty($descriptor_array['PLF_BRANCH']))
 		$list['UNKNOWN'][] = $descriptor_array;
