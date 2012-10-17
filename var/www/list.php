@@ -70,7 +70,9 @@ foreach( $vhosts as $vhost) {
 	// Acceptance process state 	
 	$descriptor_array['ACCEPTANCE_STATE']="Implementing";
 	// Specification Link
-	$descriptor_array['SPECIFICATION_LINK']="http://int.exoplatform.org/portal/intranet/wiki/group/spaces/engineering/Home";
+	$descriptor_array['SPECIFICATIONS_LINK']="http://int.exoplatform.org/portal/intranet/wiki/group/spaces/engineering/Home";
+	// Server hostname where is deployed the instance
+  $descriptor_array['ACCEPTANCE_SERVER']=$_SERVER['SERVER_NAME'];
 	// Add it in the list
 	if(empty($descriptor_array['PLF_BRANCH']))
 		$list['UNKNOWN'][] = $descriptor_array;
