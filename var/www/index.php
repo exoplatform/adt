@@ -176,6 +176,7 @@
 								</div>									
                 <?php 
 							  }
+							}
               next($merged_list);
               }
               ?>
