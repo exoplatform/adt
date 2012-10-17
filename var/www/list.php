@@ -68,13 +68,13 @@ foreach( $vhosts as $vhost) {
   else
     $descriptor_array['DEPLOYMENT_STATUS']="Down";
 	// Acceptance process state 	
-	if(file_exists($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".status"))
-  	$descriptor_array['ACCEPTANCE_STATE']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".status");
+	if(file_exists($_SERVER['ADT_DATA']."/conf/features/".$descriptor_array['PRODUCT_NAME'])."-".$descriptor_array['PRODUCT_VERSION']).".".$_SERVER['SERVER_NAME'].".status"))
+		$descriptor_array['ACCEPTANCE_STATE']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$descriptor_array['PRODUCT_NAME'])."-".$descriptor_array['PRODUCT_VERSION']).".".$_SERVER['SERVER_NAME'].".status");
 	else
 		$descriptor_array['ACCEPTANCE_STATE']="Implementing";
 	// Specification Link
-	if(file_exists($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".spec"))
-  	$descriptor_array['SPECIFICATIONS_LINK']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".spec");
+	if(file_exists($_SERVER['ADT_DATA']."/conf/features/".$descriptor_array['PRODUCT_NAME'])."-".$descriptor_array['PRODUCT_VERSION']).".".$_SERVER['SERVER_NAME'].".spec"))
+	  $descriptor_array['SPECIFICATIONS_LINK']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$descriptor_array['PRODUCT_NAME'])."-".$descriptor_array['PRODUCT_VERSION']).".".$_SERVER['SERVER_NAME'].".spec");
 	else
 		$descriptor_array['SPECIFICATIONS_LINK']="";
 	// Server hostname where is deployed the instance
