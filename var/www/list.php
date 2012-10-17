@@ -68,9 +68,15 @@ foreach( $vhosts as $vhost) {
   else
     $descriptor_array['DEPLOYMENT_STATUS']="Down";
 	// Acceptance process state 	
-	$descriptor_array['ACCEPTANCE_STATE']="Implementing";
+	if(file_exists($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".status"))
+  	$descriptor_array['ACCEPTANCE_STATE']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".status");
+	else
+		$descriptor_array['ACCEPTANCE_STATE']="Implementing";
 	// Specification Link
-	$descriptor_array['SPECIFICATIONS_LINK']="http://int.exoplatform.org/portal/intranet/wiki/group/spaces/engineering/Home";
+	if(file_exists($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".spec"))
+  	$descriptor_array['SPECIFICATIONS_LINK']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$_POST['product']."-".$_POST['version'].".".$_POST['server'].".spec");
+	else
+		$descriptor_array['SPECIFICATIONS_LINK']="";
 	// Server hostname where is deployed the instance
   $descriptor_array['ACCEPTANCE_SERVER']=$_SERVER['SERVER_NAME'];
 	// Add it in the list
