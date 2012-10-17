@@ -108,7 +108,7 @@
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
                   <td><?php if( ! empty($feature_branch) ) {  if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank"><i class="icon-book"></i></a>&nbsp;<?php } ?><?=$feature_branch?> (<?=$descriptor_array->ACCEPTANCE_STATE?>)&nbsp;<a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" data-toggle="modal"><i class="icon-pencil"></i></a>
-										<div class="modal hide fade" id="edit<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
+										<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
 											<form class="form-horizontal" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php">
 										  <div class="modal-header">
 										    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
