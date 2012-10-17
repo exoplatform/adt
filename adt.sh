@@ -64,14 +64,15 @@ ADT_DATA=`pwd -P`
 popd > /dev/null
 echo "[INFO] ADT_DATA = $ADT_DATA"
 
-env_var "TMP_DIR"          "$ADT_DATA/tmp"
-env_var "DL_DIR"           "$ADT_DATA/downloads"
-env_var "SRV_DIR"          "$ADT_DATA/servers"
-env_var "CONF_DIR"         "$ADT_DATA/conf"
-env_var "APACHE_CONF_DIR"  "$ADT_DATA/conf/apache"
-env_var "AWSTATS_CONF_DIR" "$ADT_DATA/conf/awstats"
-env_var "ADT_CONF_DIR"     "$ADT_DATA/conf/adt"
-env_var "ETC_DIR"          "$ADT_DATA/etc"
+env_var "TMP_DIR"             "$ADT_DATA/tmp"
+env_var "DL_DIR"              "$ADT_DATA/downloads"
+env_var "SRV_DIR"             "$ADT_DATA/servers"
+env_var "CONF_DIR"            "$ADT_DATA/conf"
+env_var "APACHE_CONF_DIR"     "$ADT_DATA/conf/apache"
+env_var "AWSTATS_CONF_DIR"    "$ADT_DATA/conf/awstats"
+env_var "ADT_CONF_DIR"        "$ADT_DATA/conf/adt"
+env_var "FEATURES_CONF_DIR"   "$ADT_DATA/conf/features"
+env_var "ETC_DIR"             "$ADT_DATA/etc"
 
 env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
 
@@ -169,6 +170,7 @@ createDefaultDirectories()
   validate_env_var "CONF_DIR"
   validate_env_var "APACHE_CONF_DIR"
   validate_env_var "ADT_CONF_DIR"
+  validate_env_var "FEATURES_CONF_DIR"	
   validate_env_var "ETC_DIR"
   mkdir -p $TMP_DIR
   mkdir -p $DL_DIR
@@ -176,6 +178,8 @@ createDefaultDirectories()
   mkdir -p $CONF_DIR
   mkdir -p $APACHE_CONF_DIR
   mkdir -p $ADT_CONF_DIR
+  mkdir -p $FEATURES_CONF_DIR	
+	chmod 777 $FEATURES_CONF_DIR # apache needs to write here
   mkdir -p $ETC_DIR
   rm -rf $ETC_DIR/*
 }

@@ -7,7 +7,7 @@ function getDirectoryList ($directory) {
   // open directory and walk through the filenames
   while ($file = readdir($handler)) {
     // if file isn't this directory or its parent, add it to the results
-    if ($file != "." && $file != ".." && ! preg_match("/(.*)\.spec/", $file) && ! preg_match("/(.*)\.status/", $file)) {
+    if ($file != "." && $file != "..") {
       $results[] = $file;
     }
   }
