@@ -130,26 +130,26 @@
                   <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
 								  <div class="modal-body">
 										<div class="row-fluid">
-											<div class="span6"><strong>Product</strong></div>
-											<div class="span6"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
+											<div class="span2"><strong>Product</strong></div>
+											<div class="span10"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
 										</div>
 										<div class="row-fluid">
-											<div class="span6"><strong>Version</strong></div>
-											<div class="span6"><?=$base_version?></div>
+											<div class="span2"><strong>Version</strong></div>
+											<div class="span10"><?=$base_version?></div>
 										</div>
 										<div class="row-fluid">
-											<div class="span6"><strong>Feature Branch</strong></div>
-											<div class="span6"><?=$feature_branch?></div>
+											<div class="span2"><strong>Feature Branch</strong></div>
+											<div class="span10"><?=$feature_branch?></div>
 										</div>
 									  <div class="control-group">
-									    <label class="control-label" for="specifications">Specifications link</label>
+									    <label class="control-label" for="specifications"><strong>Specifications link</strong></label>
 									    <div class="controls">
 									      <input class="input-xxlarge" type="text" id="specifications" name="specifications" placeholder="Url" value="<?=$descriptor_array->SPECIFICATIONS_LINK?>">
 												<span class="help-block">eXo intranet URL of specifications</span>
 									    </div>
 									  </div>
 									  <div class="control-group">
-									    <label class="control-label" for="status">Status</label>
+									    <label class="control-label" for="status"><strong>Status</strong></label>
 									    <div class="controls" id="status">
 												<select name="status">
 												  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Implementing"){echo "selected";}?>>Implementing</option>
