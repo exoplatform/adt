@@ -107,76 +107,69 @@
                     <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
-									<?php if( ! empty($feature_branch) ) { ?>
-									<td></td>
-									<td></td>									
-									<td></td>									
-									<?php } else { ?>
-									<?php } ?>	
-									
-																											
                   <td><?php if( ! empty($feature_branch) ) { ?>
 										<div class="row-fluid">
 											<div class="span1"><?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank"><i class="icon-book"></i></a>&nbsp;<?php } ?><div>
 										  <div class="span5"><?=$feature_branch?></div>
 										  <div class="span5"><?=$descriptor_array->ACCEPTANCE_STATE?></div>
-										  <div class="span1"><a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a></div>
-										<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
-											<form class="form-horizontal" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
-										  <div class="modal-header">
-										    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-										    <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
-										  </div>
-                      <input type="hidden" name="from" value="http://<?=$_SERVER['SERVER_NAME'] ?>">											
-                      <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
-                      <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
-                      <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
-										  <div class="modal-body">
-											  <div class="control-group">
-											    <label class="control-label">Product</label>
-											    <div class="controls">
-											      <span class="input-xxlarge uneditable-input"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></span>
-											    </div>
-											  </div>
-											  <div class="control-group">
-											    <label class="control-label">Version</label>
-											    <div class="controls">
-											      <span class="input-xxlarge uneditable-input"><?=$base_version?></span>
-											    </div>
-											  </div>
-											  <div class="control-group">
-											    <label class="control-label">Feature Branch</label>
-											    <div class="controls">
-											      <span class="input-xxlarge uneditable-input"><?=$feature_branch?></span>
-											    </div>
-											  </div>
-											  <div class="control-group">
-											    <label class="control-label" for="specifications">Specifications link</label>
-											    <div class="controls">
-											      <input class="input-xxlarge" type="text" id="specifications" name="specifications" placeholder="Url" value="<?=$descriptor_array->SPECIFICATIONS_LINK?>">
-														<span class="help-block">eXo intranet URL of specifications</span>
-											    </div>
-											  </div>
-											  <div class="control-group">
-											    <label class="control-label" for="status">Status</label>
-											    <div class="controls" id="status">
-														<select name="status">
-														  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Implementing"){echo "selected";}?>>Implementing</option>
-														  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Engineering Review"){echo "selected";}?>>Engineering Review</option>
-														  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "QA Review"){echo "selected";}?>>QA Review</option>
-														  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Validated"){echo "selected";}?>>Validated</option>
-														  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Merged"){echo "selected";}?>>Merged</option>
-														</select>
-														<span class="help-block">Current status of the feature branch</span>
-											    </div>
-											  </div>
-										  </div>
-										  <div class="modal-footer">
-										    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-										    <button class="btn btn-primary">Save changes</button>
-										  </div>
-										</form>
-										</div>										
+										  <div class="span1"><a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a>
+												<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
+													<form class="form-horizontal" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
+												  <div class="modal-header">
+												    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+												    <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
+												  </div>
+		                      <input type="hidden" name="from" value="http://<?=$_SERVER['SERVER_NAME'] ?>">											
+		                      <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
+		                      <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
+		                      <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
+												  <div class="modal-body">
+													  <div class="control-group">
+													    <label class="control-label">Product</label>
+													    <div class="controls">
+													      <span class="input-xxlarge uneditable-input"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></span>
+													    </div>
+													  </div>
+													  <div class="control-group">
+													    <label class="control-label">Version</label>
+													    <div class="controls">
+													      <span class="input-xxlarge uneditable-input"><?=$base_version?></span>
+													    </div>
+													  </div>
+													  <div class="control-group">
+													    <label class="control-label">Feature Branch</label>
+													    <div class="controls">
+													      <span class="input-xxlarge uneditable-input"><?=$feature_branch?></span>
+													    </div>
+													  </div>
+													  <div class="control-group">
+													    <label class="control-label" for="specifications">Specifications link</label>
+													    <div class="controls">
+													      <input class="input-xxlarge" type="text" id="specifications" name="specifications" placeholder="Url" value="<?=$descriptor_array->SPECIFICATIONS_LINK?>">
+																<span class="help-block">eXo intranet URL of specifications</span>
+													    </div>
+													  </div>
+													  <div class="control-group">
+													    <label class="control-label" for="status">Status</label>
+													    <div class="controls" id="status">
+																<select name="status">
+																  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Implementing"){echo "selected";}?>>Implementing</option>
+																  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Engineering Review"){echo "selected";}?>>Engineering Review</option>
+																  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "QA Review"){echo "selected";}?>>QA Review</option>
+																  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Validated"){echo "selected";}?>>Validated</option>
+																  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Merged"){echo "selected";}?>>Merged</option>
+																</select>
+																<span class="help-block">Current status of the feature branch</span>
+													    </div>
+													  </div>
+												  </div>
+												  <div class="modal-footer">
+												    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
+												    <button class="btn btn-primary">Save changes</button>
+												  </div>
+												</form>
+												</div>												
+											</div>									
 										<?php } ?></td>
                   <td class="<?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
