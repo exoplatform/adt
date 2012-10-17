@@ -119,7 +119,7 @@
 											  <div class="control-group">
 											    <label class="control-label" for="specifications">Specifications link</label>
 											    <div class="controls">
-											      <input class="input-xxlarge" type="text" id="specifications" name="specifications" placeholder="Url" value="$descriptor_array->SPECIFICATIONS_LINK">
+											      <input class="input-xxlarge" type="text" id="specifications" name="specifications" placeholder="Url" value="<?=$descriptor_array->SPECIFICATIONS_LINK?>">
 														<span class="help-block">eXo intranet URL of specifications</span>
 											    </div>
 											  </div>
