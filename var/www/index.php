@@ -119,7 +119,7 @@
                 </tr>
 								<?php if( ! empty($feature_branch) ) { ?>
 								<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
-									<form class="form-horizontal" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
+									<form class="form" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
 								  <div class="modal-header">
 								    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 								    <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
@@ -141,6 +141,7 @@
 											<div class="span2"><strong>Feature Branch</strong></div>
 											<div class="span10"><?=$feature_branch?></div>
 										</div>
+										<hr/>
 									  <div class="control-group">
 									    <label class="control-label" for="specifications"><strong>Specifications link</strong></label>
 									    <div class="controls">
