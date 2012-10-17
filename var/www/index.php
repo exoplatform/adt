@@ -129,24 +129,18 @@
                   <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
                   <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
 								  <div class="modal-body">
-									  <div class="control-group">
-									    <label class="control-label">Product</label>
-									    <div class="controls">
-									      <span class="input-xxlarge uneditable-input"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></span>
-									    </div>
-									  </div>
-									  <div class="control-group">
-									    <label class="control-label">Version</label>
-									    <div class="controls">
-									      <span class="input-xxlarge uneditable-input"><?=$base_version?></span>
-									    </div>
-									  </div>
-									  <div class="control-group">
-									    <label class="control-label">Feature Branch</label>
-									    <div class="controls">
-									      <span class="input-xxlarge uneditable-input"><?=$feature_branch?></span>
-									    </div>
-									  </div>
+										<div class="row-fluid">
+											<div class="span6"><strong>Product</strong></div>
+											<div class="span6"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
+										</div>
+										<div class="row-fluid">
+											<div class="span6"><strong>Version</strong></div>
+											<div class="span6"><?=$base_version?></div>
+										</div>
+										<div class="row-fluid">
+											<div class="span6"><strong>Feature Branch</strong></div>
+											<div class="span6"><?=$feature_branch?></div>
+										</div>
 									  <div class="control-group">
 									    <label class="control-label" for="specifications">Specifications link</label>
 									    <div class="controls">
