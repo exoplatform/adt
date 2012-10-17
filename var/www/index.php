@@ -107,7 +107,7 @@
                     <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
-                  <td><?php if( ! empty($feature_branch) ) {  if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank"><i class="icon-book"></i></a>&nbsp;<?php } ?><?=$feature_branch?> (<?=$descriptor_array->ACCEPTANCE_STATE?>)&nbsp;<a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a>
+                  <td><?php if( ! empty($feature_branch) ) {  if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank"><i class="icon-book"></i></a>&nbsp;<?php } ?><?=$feature_branch?> <span class="label label-info"><?=$descriptor_array->ACCEPTANCE_STATE?></span>&nbsp;<a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a>
 										<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
 											<form class="form-horizontal" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
 										  <div class="modal-header">
@@ -115,7 +115,24 @@
 										    <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
 										  </div>
 										  <div class="modal-body">
-												<legend><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?> <?=$base_version?> - <?=$feature_branch?></legend>
+											  <div class="control-group">
+											    <label class="control-label">Product</label>
+											    <div class="controls">
+											      <span class="input-xxlarge uneditable-input"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></span>
+											    </div>
+											  </div>
+											  <div class="control-group">
+											    <label class="control-label">Version</label>
+											    <div class="controls">
+											      <span class="input-xxlarge uneditable-input"><?=$base_version?></span>
+											    </div>
+											  </div>
+											  <div class="control-group">
+											    <label class="control-label">Feature Branch</label>
+											    <div class="controls">
+											      <span class="input-xxlarge uneditable-input"><?=$feature_branch?></span>
+											    </div>
+											  </div>
 											  <div class="control-group">
 											    <label class="control-label" for="specifications">Specifications link</label>
 											    <div class="controls">
