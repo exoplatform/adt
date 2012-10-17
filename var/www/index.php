@@ -110,8 +110,8 @@
                   <?php if( empty($feature_branch) ) { ?>
 										<td colspan="2"></td>
   								<?php } else { ?>
-	                  <td><?=$feature_branch?><?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank">&nbsp;<i class="icon-book"></i></a><?php } ?></td>
-										<td><?=$descriptor_array->ACCEPTANCE_STATE?>&nbsp;<a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>										
+	                  <td><?=$feature_branch?><?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a><?php } ?></td>
+										<td><?=$descriptor_array->ACCEPTANCE_STATE?>&nbsp;<a href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal" class="pull-right"><i class="icon-pencil"></i></a></td>										
 									<?php } ?>
                   <td class="<?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
