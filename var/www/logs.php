@@ -39,7 +39,7 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
   <!-- navbar ================================================== -->
   <div id="navbar" class="navbar navbar-fixed-top" data-dropdown="dropdown">
     <div class="navbar-inner">
-      <div class="container">
+      <div class="container-fluid">
         <a class="brand" href="#">404 - Page Not Found</a>
       </div>
     </div>

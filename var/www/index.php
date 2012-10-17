@@ -26,7 +26,7 @@
   <!-- navbar ================================================== -->
   <div id="navbar" class="navbar navbar-fixed-top" data-dropdown="dropdown">
     <div class="navbar-inner">
-      <div class="container">
+      <div class="container-fluid">
         <a class="brand" href="#"><?=$_SERVER['SERVER_NAME'] ?></a>
       </div>
     </div>
@@ -35,8 +35,8 @@
   <!-- Main ================================================== -->
   <div id="wrap">
     <div id="main">
-      <div class="container">
-        <div class="row">
+      <div class="container-fluid">
+        <div class="row-fluid">
           <div class="span12">
             <legend>Welcome on Acceptance Live Instances !</legend>
             <p>These instances are deployed to be used for acceptance tests. Terms of usage and others documentations about this service are detailed in our <a href="https://wiki-int.exoplatform.org/x/loONAg">internal wiki</a>.</p>
