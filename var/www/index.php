@@ -46,7 +46,7 @@
                   <th>Status</th>
                   <th>Name</th>
                   <th>Snapshot Version</th>
-                  <th>Feature Branch</th>
+                  <th colspan="2">Feature Branch</th>
                   <th>Built</th>
                   <th>Deployed</th>
                   <th>&nbsp;</th>
