@@ -114,6 +114,10 @@
 										    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 										    <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
 										  </div>
+                      <input type="hidden" name="from" value="http://<?=$_SERVER['SERVER_NAME'] ?>">											
+                      <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
+                      <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
+                      <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
 										  <div class="modal-body">
 											  <div class="control-group">
 											    <label class="control-label">Product</label>
