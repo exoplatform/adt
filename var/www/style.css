@@ -248,7 +248,7 @@ ol.linenums li {
 /* Customize modal size */
 .modal {
   //new custom width
-  width: 1024px;
+  width: 900px;
   //must be half of the width, minus scrollbar on the left (30px)
-  margin: -482px 0 0 -512px;
+  margin: -420px 0 0 -450px;
 }
