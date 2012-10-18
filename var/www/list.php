@@ -77,6 +77,11 @@ foreach( $vhosts as $vhost) {
 	  $descriptor_array['SPECIFICATIONS_LINK']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME'].".spec");
 	else
 		$descriptor_array['SPECIFICATIONS_LINK']="";
+	// Issue Link
+	if(file_exists($_SERVER['ADT_DATA']."/conf/features/".$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME'].".issue"))
+	  $descriptor_array['ISSUE_NUM']=file_get_contents($_SERVER['ADT_DATA']."/conf/features/".$descriptor_array['PRODUCT_NAME']."-".$descriptor_array['PRODUCT_VERSION'].".".$_SERVER['SERVER_NAME'].".issue");
+	else
+		$descriptor_array['ISSUE_NUM']="";
 	// Server hostname where is deployed the instance
   $descriptor_array['ACCEPTANCE_SERVER']=$_SERVER['SERVER_NAME'];
 	// Add it in the list

@@ -46,7 +46,7 @@
                   <th>Status</th>
                   <th>Name</th>
                   <th>Snapshot Version</th>
-                  <th colspan="2">Feature Branch</th>
+                  <th colspan="4">Feature Branch</th>
                   <th>Built</th>
                   <th>Deployed</th>
                   <th>&nbsp;</th>
@@ -74,7 +74,7 @@
               $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
               while ($descriptor_arrays = current($merged_list)) {
                 ?>
-                <tr><td colspan="8" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
+                <tr><td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
                   <?php
                 if(key($merged_list) === "4.0.x"){
                   echo "Platform ".key($merged_list)." based build (R&D)";
@@ -108,10 +108,12 @@
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
                   <?php if( empty($feature_branch) ) { ?>
-										<td colspan="2"></td>
+										<td colspan="4"></td>
   								<?php } else { ?>
 	                  <td><?=$feature_branch?><?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a><?php } ?></td>
-										<td><?=$descriptor_array->ACCEPTANCE_STATE?>&nbsp;<a rel="tooltip" title="Edit feature branch details" href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal" class="pull-right"><i class="icon-pencil"></i></a></td>										
+										<td><?=$descriptor_array->ACCEPTANCE_STATE?></td>	
+										<td><?php if( ! empty($descriptor_array->ISSUE_NUM) ) { ?><a href="https://jira.exoplatform.org/browse/<?=$descriptor_array->ISSUE_NUM?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature"><i class="icon-comment"></i>&nbsp;<?=$descriptor_array->ISSUE_NUM?></a><?php } ?></td>
+										<td><a rel="tooltip" title="Edit feature branch details" href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal" class="pull-right"><i class="icon-pencil"></i></a></td>									
 									<?php } ?>
                   <td class="<?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
@@ -119,16 +121,16 @@
                 </tr>
 								<?php if( ! empty($feature_branch) ) { ?>
 								<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
-									<form class="form" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
 								  <div class="modal-header">
 								    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 								    <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
 								  </div>
-                  <input type="hidden" name="from" value="http://<?=$_SERVER['SERVER_NAME'] ?>">											
-                  <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
-                  <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
-                  <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
 								  <div class="modal-body">
+										<form class="form" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST" id="form-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>">
+	                  <input type="hidden" name="from" value="http://<?=$_SERVER['SERVER_NAME'] ?>">											
+	                  <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
+	                  <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
+	                  <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
 										<div class="row-fluid">
 											<div class="span2"><strong>Product</strong></div>
 											<div class="span10"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
@@ -150,6 +152,13 @@
 									    </div>
 									  </div>
 									  <div class="control-group">
+									    <label class="control-label" for="issue"><strong>Issue key</strong></label>
+									    <div class="controls">
+									      <input class="input-xxlarge" type="text" id="issue" name="issue" placeholder="Text" value="<?=$descriptor_array->ISSUE_NUM?>">
+												<span class="help-block">Issue key where testers can give a feedback.</span>
+									    </div>
+									  </div>
+									  <div class="control-group">
 									    <label class="control-label" for="status"><strong>Status</strong></label>
 									    <div class="controls" id="status">
 												<select name="status">
@@ -162,12 +171,12 @@
 												<span class="help-block">Current status of the feature branch</span>
 									    </div>
 									  </div>
+									</form>
 								  </div>
 								  <div class="modal-footer">
 								    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-								    <button class="btn btn-primary">Save changes</button>
+								    <a class="btn btn-primary" href="javascript:document.forms['form-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>'].submit();" >Save changes</a>
 								  </div>
-								</form>
 								</div>									
                 <?php 
 							  }
