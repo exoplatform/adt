@@ -147,14 +147,14 @@
 									  <div class="control-group">
 									    <label class="control-label" for="specifications"><strong>Specifications link</strong></label>
 									    <div class="controls">
-									      <input class="input-xxlarge" type="text" id="specifications" name="specifications" placeholder="Url" value="<?=$descriptor_array->SPECIFICATIONS_LINK?>">
+									      <input class="input-xxlarge" type="url" id="specifications" name="specifications" placeholder="Url" value="<?=$descriptor_array->SPECIFICATIONS_LINK?>">
 												<span class="help-block">eXo intranet URL of specifications</span>
 									    </div>
 									  </div>
 									  <div class="control-group">
 									    <label class="control-label" for="issue"><strong>Issue key</strong></label>
 									    <div class="controls">
-									      <input class="input-xxlarge" type="text" id="issue" name="issue" placeholder="Text" value="<?=$descriptor_array->ISSUE_NUM?>">
+									      <input class="input-medium" type="text" id="issue" name="issue" placeholder="XXX-nnnn" value="<?=$descriptor_array->ISSUE_NUM?>">
 												<span class="help-block">Issue key where testers can give a feedback.</span>
 									    </div>
 									  </div>
