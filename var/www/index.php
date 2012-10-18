@@ -120,13 +120,13 @@
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" rel="tooltip" title="<?=$descriptor_array->PRODUCT_NAME." ".$descriptor_array->PRODUCT_VERSION?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" width="16" height="16" class="center" /></a><?php } ?>&nbsp;<a rel="tooltip" title="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance" href="<?=$descriptor_array->ARTIFACT_DL_URL?>"><i class="icon-download-alt"></i></a></td>
                 </tr>
 								<?php if( ! empty($feature_branch) ) { ?>
+									<form class="form" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
 								<div class="modal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
 								  <div class="modal-header">
 								    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
 								    <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
 								  </div>
 								  <div class="modal-body">
-										<form class="form" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST" id="form-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>">
 	                  <input type="hidden" name="from" value="http://<?=$_SERVER['SERVER_NAME'] ?>">											
 	                  <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
 	                  <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
@@ -171,13 +171,13 @@
 												<span class="help-block">Current status of the feature branch</span>
 									    </div>
 									  </div>
-									</form>
 								  </div>
 								  <div class="modal-footer">
 								    <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-								    <a class="btn btn-primary" href="javascript:document.forms['form-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>'].submit();" >Save changes</a>
+								    <button class="btn btn-primary">Save changes</button>
 								  </div>
 								</div>									
+							</form>
                 <?php 
 							  }
 							}
