@@ -132,16 +132,16 @@
 	                  <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
 	                  <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
 										<div class="row-fluid">
-											<div class="span2"><strong>Product</strong></div>
-											<div class="span10"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
+											<div class="span4"><strong>Product</strong></div>
+											<div class="span8"><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
 										</div>
 										<div class="row-fluid">
-											<div class="span2"><strong>Version</strong></div>
-											<div class="span10"><?=$base_version?></div>
+											<div class="span4"><strong>Version</strong></div>
+											<div class="span8"><?=$base_version?></div>
 										</div>
 										<div class="row-fluid">
-											<div class="span2"><strong>Feature Branch</strong></div>
-											<div class="span10"><?=$feature_branch?></div>
+											<div class="span4"><strong>Feature Branch</strong></div>
+											<div class="span8"><?=$feature_branch?></div>
 										</div>
 										<hr/>
 									  <div class="control-group">
