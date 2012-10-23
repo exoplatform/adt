@@ -165,6 +165,7 @@
 												  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Implementing"){echo "selected";}?>>Implementing</option>
 												  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Engineering Review"){echo "selected";}?>>Engineering Review</option>
 												  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "QA Review"){echo "selected";}?>>QA Review</option>
+                                                                                                  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "QA Rejected"){echo "selected";}?>>QA Rejected</option>
 												  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Validated"){echo "selected";}?>>Validated</option>
 												  <option <?php if($descriptor_array->ACCEPTANCE_STATE === "Merged"){echo "selected";}?>>Merged</option>
 												</select>
