@@ -109,7 +109,7 @@
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                   <td><?=$base_version?></td>
                   <td><?=$feature_branch?></td>
-                  <td class='<?php if ( $descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org" ) echo "blue"; else echo "green";?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
+                  <td style="font-weight:bold;" class='<?php if ( $descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org" ) echo "blue"; else echo "green";?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
                   <td><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>                  
                   <td><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>                  
