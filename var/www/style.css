@@ -157,6 +157,11 @@ tbody td {
   font-weight:normal;
   color: #060
 }
+.blue {
+  font-weight:normal;
+  color: #006
+}
+
 /* logs */
 .code p {
   white-space: nowrap;

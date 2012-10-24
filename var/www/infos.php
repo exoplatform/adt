@@ -41,21 +41,21 @@
             <table class="table table-striped table-bordered table-hover">
               <thead>
                 <tr>
-									<th colspan="3">Product</th>
-									<th colspan="2">Deployment</th>
+                  <th colspan="3">Product</th>
+                  <th colspan="2">Deployment</th>
                   <th colspan="5">Ports</th>
                 </tr>
                 <tr>
                   <th>Name</th>
                   <th>Snapshot Version</th>
                   <th>Feature Branch</th>
-									<th>Server</th>
+                  <th>Server</th>
                   <th>Status</th>
                   <th>HTTP</th>
                   <th>AJP</th>
-                  <th>Shutdown</th>																		
-									<th>JMX RMI Registration</th>
-									<th>JMX RMI Server</th>
+                  <th>Shutdown</th>                                    
+                  <th>JMX RMI Registration</th>
+                  <th>JMX RMI Server</th>
                 </tr>
               </thead>
               <tbody>
@@ -78,12 +78,16 @@
               $merged_list = array();
               $merged_list = append_data('http://acceptance.exoplatform.org/list.php',$merged_list);
               $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
-							$descriptor_arrays = array();
+              $descriptor_arrays = array();
               while ($tmp_array = current($merged_list)) {
-								$tmp_array = array_merge($descriptor_arrays,$tmp_array);
-	              next($merged_list);
-              }								
-							natcasesort($descriptor_arrays);
+                $descriptor_arrays = array_merge($descriptor_arrays,$tmp_array);
+                next($merged_list);
+              }
+              function cmp($a, $b)
+              {
+                return strcmp($a->DEPLOYMENT_HTTP_PORT, $b->DEPLOYMENT_HTTP_PORT);
+              }
+              usort($descriptor_arrays, "cmp");
               foreach( $descriptor_arrays as $descriptor_array) {
                 if ($descriptor_array->DEPLOYMENT_STATUS=="Up")
                   $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
@@ -105,16 +109,16 @@
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                   <td><?=$base_version?></td>
                   <td><?=$feature_branch?></td>
-                  <td><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
+                  <td class='<?php if ( $descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org" ) echo "blue"; else echo "green";?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
-                  <td><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>									
-                  <td><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>									
-                  <td><?=$descriptor_array->DEPLOYMENT_SHUTDOWN_PORT?></td>									
-                  <td><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>									
-                  <td><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>									
+                  <td><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>                  
+                  <td><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>                  
+                  <td><?=$descriptor_array->DEPLOYMENT_SHUTDOWN_PORT?></td>                  
+                  <td><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>                  
+                  <td><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>                  
                 </tr>
                 <?php 
-							}
+              }
               ?>
               </tbody>
             </table>
