@@ -78,7 +78,12 @@
               $merged_list = array();
               $merged_list = append_data('http://acceptance.exoplatform.org/list.php',$merged_list);
               $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
-              while ($descriptor_arrays = current($merged_list)) {
+							$descriptor_arrays = array();
+              while ($tmp_array = current($merged_list)) {
+								$tmp_array = array_merge($descriptor_arrays,$tmp_array);
+	              next($merged_list);
+              }								
+							natcasesort($descriptor_arrays);
               foreach( $descriptor_arrays as $descriptor_array) {
                 if ($descriptor_array->DEPLOYMENT_STATUS=="Up")
                   $status="<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
@@ -110,8 +115,6 @@
                 </tr>
                 <?php 
 							}
-              next($merged_list);
-              }
               ?>
               </tbody>
             </table>
