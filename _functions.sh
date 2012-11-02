@@ -413,3 +413,21 @@ do_download() {
   set -e  
   echo "[INFO] Archive integrity validated."
 }
+
+# Backup the file passed as parameter
+function backup_logs {
+  if [ -d $1 ]; then
+    # We need to backup existing logs if they already exist
+    cd $1
+    _start_date=`date -u "+%Y%m%d-%H%M%S-UTC"`
+    for file in $2
+    do
+      if [ -e $file ]; then
+        echo "Archiving existing log file $file as archived-on-${_start_date}-$file ..."
+        mv $file archived-on-${_start_date}-$file
+        echo "Done."
+      fi
+    done
+    cd -	
+  fi
+}

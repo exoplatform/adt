@@ -1074,13 +1074,13 @@ do_start()
       export ${_var}=$(eval echo \${$_var})
     done
     cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
+
     # We need to backup existing logs if they already exist
-    if [ -f $DEPLOYMENT_DIR/logs/catalina.out ]; then
-      cat $DEPLOYMENT_DIR/logs/catalina.out.bck $DEPLOYMENT_DIR/logs/catalina.out > $DEPLOYMENT_DIR/logs/catalina.out.tmp
-      mv $DEPLOYMENT_DIR/logs/catalina.out.tmp $DEPLOYMENT_DIR/logs/catalina.out.bck
-      rm $DEPLOYMENT_DIR/logs/catalina.out
-    fi
+    backup_logs "$CATALINA_HOME/logs/" "catalina.out"
+
+    # Startup the server
     ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
+ 
     # Wait for logs availability
     while [ true ];
     do    
