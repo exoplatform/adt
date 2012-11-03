@@ -115,7 +115,6 @@ Environment Variables :
     plf          eXo Platform Standard Edition
     plfcom       eXo Platform Community Edition
     plftrial     eXo Platform Trial Edition
-    plfbon       eXo Platform Bonita Edition
     compint      eXo Company Intranet
     docs         eXo Platform Documentations Website
     android      eXo Mobile Android
@@ -432,22 +431,6 @@ initialize_product_settings()
             env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
             env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
-            env_var PLF_BRANCH                      "$PRODUCT_BRANCH"                
-            ;;
-          plfbon)
-            env_var PRODUCT_DESCRIPTION             "eXo Platform Bonita Edition"      
-            env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
-            env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.bonita"
-            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=default"
-            env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
-            env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
-            env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
-            env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
-            env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
-            # Additional env vars used to access to bonita with the reverse proxy
-            env_var BPM_HOSTNAME                    "${DEPLOYMENT_EXT_HOST}"
-            env_var BPM_PORT                        "${DEPLOYMENT_EXT_PORT}"
-            env_var DEPLOYMENT_EXTRA_ENV_VARS       "BPM_HOSTNAME BPM_PORT"
             env_var PLF_BRANCH                      "$PRODUCT_BRANCH"                
             ;;
           compint)
