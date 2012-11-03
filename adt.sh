@@ -157,6 +157,7 @@ createMainVHost()
     replace_in_file $ETC_DIR/apache2/sites-available/acceptance.exoplatform.org "@ACCEPTANCE_HOST@" "$ACCEPTANCE_HOST"    
     replace_in_file $ETC_DIR/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_NAME@" "$CROWD_ACCEPTANCE_APP_NAME"    
     replace_in_file $ETC_DIR/apache2/sites-available/acceptance.exoplatform.org "@CROWD_ACCEPTANCE_APP_PASSWORD@" "$CROWD_ACCEPTANCE_APP_PASSWORD" 
+    sudo /usr/sbin/service apache2 reload
   fi
 }
 
