@@ -78,6 +78,7 @@
               $merged_list = array();
               $merged_list = append_data('http://acceptance.exoplatform.org/list.php',$merged_list);
               $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
+              $merged_list = append_data('http://acceptance3.exoplatform.org/list.php',$merged_list);
               $descriptor_arrays = array();
               while ($tmp_array = current($merged_list)) {
                 $descriptor_arrays = array_merge($descriptor_arrays,$tmp_array);

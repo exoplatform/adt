@@ -72,6 +72,7 @@
               $merged_list = array();
               $merged_list = append_data('http://acceptance.exoplatform.org/list.php',$merged_list);
               $merged_list = append_data('http://acceptance2.exoplatform.org/list.php',$merged_list);                                 
+              $merged_list = append_data('http://acceptance3.exoplatform.org/list.php',$merged_list);
               while ($descriptor_arrays = current($merged_list)) {
                 ?>
                 <tr><td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
