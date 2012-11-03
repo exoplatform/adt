@@ -117,7 +117,6 @@ Environment Variables :
     plftrial     eXo Platform Trial Edition
     compint      eXo Company Intranet
     docs         eXo Platform Documentations Website
-    android      eXo Mobile Android
   PRODUCT_VERSION               : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
   ADT_DATA                      : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
@@ -449,14 +448,6 @@ initialize_product_settings()
             env_var ARTIFACT_ARTIFACTID         "website-packaging"
             env_var DEPLOYMENT_SERVER_SCRIPT    "bin/catalina.sh"
             env_var DEPLOYMENT_DATABASE_ENABLED false
-            ;;
-          android)
-            env_var PRODUCT_DESCRIPTION "eXo Mobile Android"      
-            env_var ARTIFACT_GROUPID    "org.exoplatform.mobile.platform"
-            env_var ARTIFACT_ARTIFACTID "exo-mobile-android"
-            env_var ARTIFACT_CLASSIFIER ""
-            env_var ARTIFACT_PACKAGING  "apk"
-            env_var DEPLOYMENT_ENABLED  false
             ;;
           *)
             echo "[ERROR] Invalid product \"$PRODUCT_NAME\"" 
