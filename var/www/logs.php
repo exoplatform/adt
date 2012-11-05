@@ -13,7 +13,6 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
 <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
 <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js" type="text/javascript"></script>
 <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.1.1/js/bootstrap.min.js" type="text/javascript"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/prettify/188.0.0/prettify.js" type="text/javascript"></script>
 <script type="text/javascript">
 
   var _gaq = _gaq || [];
@@ -26,13 +25,6 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
     var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
   })();
 
-</script>
-<script>
-  !function ($) {
-    $(function(){
-      window.prettyPrint && prettyPrint()   
-    })
-  }(window.jQuery)
 </script>
 </head>
 <body>
@@ -160,7 +152,7 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
           ?>
             <br />
             <br />
-            <pre class="prettyprint linenums">
+            <pre class="linenums">
               <?php
               readfile($_GET['file']);
               ?>
