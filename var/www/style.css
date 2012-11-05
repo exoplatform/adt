@@ -140,10 +140,6 @@ section>ul li {
   opacity: 1;
 }
 
-/* Tables */
-tbody td {
-  white-space: nowrap;
-}
 /* Alerts */
 .red {
   font-weight:bolder;
