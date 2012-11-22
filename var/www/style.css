@@ -247,3 +247,8 @@ ol.linenums li {
 
 /* Customize modal */
 .modal-body{max-height:500px;}
+
+/* special class to horizontaly center a table cell content */
+table th.col-center, table td.col-center {
+	text-align: center;
+}

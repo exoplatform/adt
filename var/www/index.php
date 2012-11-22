@@ -43,13 +43,13 @@
             <table class="table table-striped table-bordered table-hover">
               <thead>
                 <tr>
-                  <th>Status</th>
-                  <th>Name</th>
-                  <th>Snapshot Version</th>
-                  <th colspan="4">Feature Branch</th>
-                  <th>Built</th>
-                  <th>Deployed</th>
-                  <th>&nbsp;</th>
+                  <th class="col-center">Status</th>
+                  <th class="col-center">Name</th>
+                  <th class="col-center">Snapshot Version</th>
+                  <th class="col-center" colspan="3">Feature Branch</th>
+                  <th class="col-center">Built</th>
+                  <th class="col-center">Deployed</th>
+                  <th class="col-center">&nbsp;</th>
                 </tr>
               </thead>
               <tbody>
@@ -105,13 +105,32 @@
           }
                 ?>
                 <tr>
-                    <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
-                  <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
-                  <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
+                  <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
+                  <td>
+                      <?php
+                            $product_html_label="-UNSET-";
+                            if(empty($descriptor_array->PRODUCT_DESCRIPTION)) {
+                                $product_html_label=$descriptor_array->PRODUCT_NAME;
+                            } else {
+                                $product_html_label=$descriptor_array->PRODUCT_DESCRIPTION;
+                            }
+                            if( ! empty($feature_branch) ) {
+                                $product_html_label="<span class=\"muted\">".$product_html_label."</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp".$feature_branch;
+                            }
+                      ?>
+                      <?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?>
+                          <a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$product_html_label?></a>
+                          <?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?>
+                              <a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
+                          <?php } ?>
+                      <?php } else { ?>
+                          <?=$product_html_label?>
+                      <?php } ?>
+                  </td>
+                  <td class="col-center"><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
                   <?php if( empty($feature_branch) ) { ?>
-										<td colspan="4"></td>
+										<td colspan="3"></td>
   								<?php } else { ?>
-	                  <td><?=$feature_branch?><?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a><?php } ?></td>
 										<td>
                                             <?php
                                                 $acceptance_state_class="";
@@ -130,12 +149,12 @@
                                                 }
                                             ?>
                                             <span class="label <?=$acceptance_state_class?>"><?=$descriptor_array->ACCEPTANCE_STATE?></span></td>	
-										<td><?php if( ! empty($descriptor_array->ISSUE_NUM) ) { ?><a href="https://jira.exoplatform.org/browse/<?=$descriptor_array->ISSUE_NUM?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature"><i class="icon-comment"></i>&nbsp;<?=$descriptor_array->ISSUE_NUM?></a><?php } ?></td>
-										<td><a rel="tooltip" title="Edit feature branch details" href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal" class="pull-right"><i class="icon-pencil"></i></a></td>									
+										<td class="col-center"><?php if( ! empty($descriptor_array->ISSUE_NUM) ) { ?><a href="https://jira.exoplatform.org/browse/<?=$descriptor_array->ISSUE_NUM?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature">&nbsp;<?=$descriptor_array->ISSUE_NUM?></a><?php } ?></td>
+										<td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>									
 									<?php } ?>
-                  <td class="<?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
-                  <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
-                  <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" rel="tooltip" title="<?=$descriptor_array->PRODUCT_NAME." ".$descriptor_array->PRODUCT_VERSION?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" width="16" height="16" class="center" /></a><?php } ?>&nbsp;<a rel="tooltip" title="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance" href="<?=$descriptor_array->ARTIFACT_DL_URL?>"><i class="icon-download-alt"></i></a></td>
+                  <td class="col-center <?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
+                  <td class="col-center"><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $descriptor_array->DEPLOYMENT_AGE_STRING; } ?></td>
+                  <td class="col-center"><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs"  class="left" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs"  class="right" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center" /></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" rel="tooltip" title="<?=$descriptor_array->PRODUCT_NAME." ".$descriptor_array->PRODUCT_VERSION?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics" width="16" height="16" class="center" /></a><?php } ?>&nbsp;<a rel="tooltip" title="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance" href="<?=$descriptor_array->ARTIFACT_DL_URL?>"><i class="icon-download-alt"></i></a></td>
                 </tr>
 								<?php if( ! empty($feature_branch) ) { ?>
 									<form class="form" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
