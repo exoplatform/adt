@@ -112,7 +112,24 @@
 										<td colspan="4"></td>
   								<?php } else { ?>
 	                  <td><?=$feature_branch?><?php if( ! empty($descriptor_array->SPECIFICATIONS_LINK) ) { ?><a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>"  target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a><?php } ?></td>
-										<td><?=$descriptor_array->ACCEPTANCE_STATE?></td>	
+										<td>
+                                            <?php
+                                                $acceptance_state_class="";
+                                                if($descriptor_array->ACCEPTANCE_STATE === "Implementing"){
+                                                    $acceptance_state_class="label-info";
+                                                } else if($descriptor_array->ACCEPTANCE_STATE === "Engineering Review"){
+                                                    $acceptance_state_class="label-warning";
+                                                } else if($descriptor_array->ACCEPTANCE_STATE === "QA Review"){
+                                                    $acceptance_state_class="label-inverse";
+                                                } else if($descriptor_array->ACCEPTANCE_STATE === "QA In Progress"){
+                                                    $acceptance_state_class="label-warning";
+                                                } else if($descriptor_array->ACCEPTANCE_STATE === "QA Rejected"){
+                                                    $acceptance_state_class="label-important";
+                                                } else if($descriptor_array->ACCEPTANCE_STATE === "Validated"){
+                                                    $acceptance_state_class="label-success";
+                                                }
+                                            ?>
+                                            <span class="label <?=$acceptance_state_class?>"><?=$descriptor_array->ACCEPTANCE_STATE?></span></td>	
 										<td><?php if( ! empty($descriptor_array->ISSUE_NUM) ) { ?><a href="https://jira.exoplatform.org/browse/<?=$descriptor_array->ISSUE_NUM?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature"><i class="icon-comment"></i>&nbsp;<?=$descriptor_array->ISSUE_NUM?></a><?php } ?></td>
 										<td><a rel="tooltip" title="Edit feature branch details" href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".","_",$descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal" class="pull-right"><i class="icon-pencil"></i></a></td>									
 									<?php } ?>
