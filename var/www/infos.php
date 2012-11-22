@@ -41,21 +41,21 @@
             <table class="table table-striped table-bordered table-hover">
               <thead>
                 <tr>
-                  <th colspan="3">Product</th>
-                  <th colspan="2">Deployment</th>
-                  <th colspan="5">Ports</th>
+                  <th class="col-center" colspan="3">Product</th>
+                  <th class="col-center" colspan="2">Deployment</th>
+                  <th class="col-center" colspan="5">Ports</th>
                 </tr>
                 <tr>
-                  <th>Name</th>
-                  <th>Snapshot Version</th>
-                  <th>Feature Branch</th>
-                  <th>Server</th>
-                  <th>Status</th>
-                  <th>HTTP</th>
-                  <th>AJP</th>
-                  <th>Shutdown</th>                                    
-                  <th>JMX RMI Registration</th>
-                  <th>JMX RMI Server</th>
+                  <th class="col-center">Name</th>
+                  <th class="col-center">Snapshot Version</th>
+                  <th class="col-center">Feature Branch</th>
+                  <th class="col-center">Server</th>
+                  <th class="col-center">Status</th>
+                  <th class="col-center">HTTP</th>
+                  <th class="col-center">AJP</th>
+                  <th class="col-center">Shutdown</th>                                    
+                  <th class="col-center">JMX RMI Registration</th>
+                  <th class="col-center">JMX RMI Server</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,15 +108,26 @@
                 ?>
                 <tr>
                   <td><?php if(empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
-                  <td><?=$base_version?></td>
-                  <td><?=$feature_branch?></td>
-                  <td style="font-weight:bold;" class='<?php if ( $descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org" ) echo "blue"; else echo "green";?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
+                  <td class="col-center"><?=$base_version?></td>
+                  <td class="col-center"><?=$feature_branch?></td>
+                  <?php 
+                      if ( $descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org" ) {
+                          $host_html_color="blue";
+                      } else if ( $descriptor_array->ACCEPTANCE_SERVER === "acceptance2.exoplatform.org" ) {
+                          $host_html_color="green";
+                      } else if ( $descriptor_array->ACCEPTANCE_SERVER === "acceptance3.exoplatform.org" ) {
+                          $host_html_color="orange";
+                      } else {
+                          $host_html_color="purple";
+                      }
+                  ?>
+                  <td style="font-weight:bold;" class='col-center <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
                   <td><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { echo $status; } ?></td>
-                  <td><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>                  
-                  <td><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>                  
-                  <td><?=$descriptor_array->DEPLOYMENT_SHUTDOWN_PORT?></td>                  
-                  <td><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>                  
-                  <td><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>                  
+                  <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>                  
+                  <td class="col-center"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>                  
+                  <td class="col-center"><?=$descriptor_array->DEPLOYMENT_SHUTDOWN_PORT?></td>                  
+                  <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>                  
+                  <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>                  
                 </tr>
                 <?php 
               }
