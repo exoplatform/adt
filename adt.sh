@@ -568,7 +568,7 @@ do_unpack_server()
   rm -rf $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION
   cp -rf $TMP_DIR/$PRODUCT_NAME-$PRODUCT_VERSION $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION    
   # We search the tomcat directory as the parent of a gatein directory
-  pushd `find $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION -name webapps -maxdepth 4 -mindepth 1 -type d`/.. > /dev/null
+  pushd `find $SRV_DIR/$PRODUCT_NAME-$PRODUCT_VERSION -maxdepth 4 -mindepth 1 -name webapps -type d`/.. > /dev/null
   DEPLOYMENT_DIR=`pwd -P`
   popd > /dev/null  
   DEPLOYMENT_LOG_PATH=$DEPLOYMENT_DIR/logs/catalina.out
