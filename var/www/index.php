@@ -129,9 +129,9 @@
                   </td>
                   <td class="col-center"><?php if( $descriptor_array->DEPLOYMENT_ENABLED ) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?=$base_version?></a><?php } else { ?><?=$base_version?><?php } ?></td>
                   <?php if( empty($feature_branch) ) { ?>
-										<td colspan="3"></td>
+										<td class="col-center" colspan="3"></td>
   								<?php } else { ?>
-										<td>
+										<td class="col-center">
                                             <?php
                                                 $acceptance_state_class="";
                                                 if($descriptor_array->ACCEPTANCE_STATE === "Implementing"){
