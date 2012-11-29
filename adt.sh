@@ -113,6 +113,7 @@ Environment Variables :
     ks           eXo Knowledge
     cs           eXo Collaboration
     plf          eXo Platform Standard Edition
+		plf4         eXo Platform Standard Edition 4.x
     plfcom       eXo Platform Community Edition
     plftrial     eXo Platform Trial Edition
     compint      eXo Company Intranet
@@ -409,6 +410,14 @@ initialize_product_settings()
             env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
             env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
             ;;
+          plf4)
+	          env_var PRODUCT_DESCRIPTION        "eXo Platform Tomcat Standalone"      
+	          env_var ARTIFACT_GROUPID           "org.exoplatform.platform.pkg"
+            env_var ARTIFACT_ARTIFACTID        "platform-tomcat-standalone"
+            env_var DEPLOYMENT_SERVER_SCRIPT   "bin/catalina.sh"
+	          env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
+	          env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
+	          ;;
           plftrial)
             env_var PRODUCT_DESCRIPTION             "eXo Platform Trial Edition"      
             env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
@@ -980,6 +989,23 @@ DEPLOYMENT_SETUP_APACHE=$DEPLOYMENT_SETUP_APACHE
 DEPLOYMENT_SETUP_AWSTATS=$DEPLOYMENT_SETUP_AWSTATS
 DEPLOYMENT_SETUP_UFW=$DEPLOYMENT_SETUP_UFW
 PLF_BRANCH="$PLF_BRANCH"
+########################################
+# Externalized configuration for PLF 4
+########################################
+EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
+EXO_TOMCAT_SHUTDOWN_PORT="$DEPLOYMENT_SHUTDOWN_PORT"
+EXO_TOMCAT_RMI_REGISTRY_PORT="$DEPLOYMENT_RMI_REG_PORT"
+EXO_TOMCAT_RMI_SERVER_PORT="$DEPLOYMENT_RMI_SRV_PORT"
+EXO_HTTP_PORT="$DEPLOYMENT_HTTP_PORT"
+EXO_AJP_PORT="$DEPLOYMENT_AJP_PORT"
+EXO_DS_IDM_DRIVER="com.mysql.jdbc.Driver"
+EXO_DS_IDM_USERNAME="$DEPLOYMENT_DATABASE_USER"
+EXO_DS_IDM_PASSWORD="$DEPLOYMENT_DATABASE_USER"
+EXO_DS_IDM_URL="jdbc:mysql://localhost:3306/$DEPLOYMENT_DATABASE_NAME"
+EXO_DS_PORTAL_DRIVER="com.mysql.jdbc.Driver"
+EXO_DS_PORTAL_USERNAME="$DEPLOYMENT_DATABASE_USER"
+EXO_DS_PORTAL_PASSWORD="$DEPLOYMENT_DATABASE_USER"
+EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/$DEPLOYMENT_DATABASE_NAME"
 EOF
 
   # Additional settings
