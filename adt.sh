@@ -415,7 +415,7 @@ initialize_product_settings()
             env_var ARTIFACT_GROUPID           "org.exoplatform.platform.pkg"
             env_var ARTIFACT_ARTIFACTID        "platform-tomcat-standalone"
             env_var DEPLOYMENT_SERVER_SCRIPT   "bin/catalina.sh"
-            env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
+            env_var DEPLOYMENT_EXO_PROFILES    "all"
             env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
             ;;
           plftrial)
