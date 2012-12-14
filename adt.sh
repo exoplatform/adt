@@ -240,13 +240,14 @@ initialize_product_settings()
         
 
         # Defaults values we can override by product/branch/version   
+        env_var "EXO_PROFILES"                "all"				
         env_var "DEPLOYMENT_ENABLED"          true
         env_var "DEPLOYMENT_DATABASE_ENABLED" true
         env_var "DEPLOYMENT_DATABASE_NAME"    ""
         env_var "DEPLOYMENT_DATABASE_USER"    ""
         env_var "DEPLOYMENT_EXTRA_ENV_VARS"   ""
         env_var "DEPLOYMENT_EXTRA_JAVA_OPTS"  ""
-        env_var "DEPLOYMENT_EXO_PROFILES"     ""
+        env_var "DEPLOYMENT_EXO_PROFILES"     "-Dexo.profiles=${EXO_PROFILES}"
         env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
         env_var "DEPLOYMENT_SERVER_SCRIPT"    "bin/gatein.sh"
         env_var "DEPLOYMENT_APPSRV_TYPE"      "tomcat" #Server type
@@ -410,14 +411,12 @@ initialize_product_settings()
 		            env_var DEPLOYMENT_SERVER_SCRIPT   "bin/catalina.sh"
                 ;;
             esac                           
-            env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
             env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
             ;;
           plftrial)
             env_var PRODUCT_DESCRIPTION             "eXo Platform Trial Edition"      
             env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
             env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.trial"
-            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
             env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
             env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
@@ -429,7 +428,6 @@ initialize_product_settings()
             env_var PRODUCT_DESCRIPTION             "eXo Platform Community Edition"      
             env_var ARTIFACT_GROUPID                "org.exoplatform.platform"
             env_var ARTIFACT_ARTIFACTID             "exo.platform.packaging.community"
-            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
             env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
             env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var JMX_SERVER_PATCH_PRODUCT_NAME   "plf"
@@ -442,7 +440,6 @@ initialize_product_settings()
             env_var ARTIFACT_REPO_GROUP             "cp"
             env_var ARTIFACT_GROUPID                "com.exoplatform.intranet"
             env_var ARTIFACT_ARTIFACTID             "exo-intranet-package"
-            env_var DEPLOYMENT_EXO_PROFILES         "-Dexo.profiles=all"
             env_var DEPLOYMENT_SERVER_SCRIPT        "bin/catalina.sh"
             env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
@@ -985,6 +982,7 @@ DEPLOYMENT_SETUP_APACHE=$DEPLOYMENT_SETUP_APACHE
 DEPLOYMENT_SETUP_AWSTATS=$DEPLOYMENT_SETUP_AWSTATS
 DEPLOYMENT_SETUP_UFW=$DEPLOYMENT_SETUP_UFW
 PLF_BRANCH="$PLF_BRANCH"
+EXO_PROFILES="$EXO_PROFILES"
 EOF
 
   # Additional settings
@@ -1047,7 +1045,7 @@ do_start()
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
     export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
-    export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
+    export EXO_PROFILES="$EXO_PROFILES"
     ########################################
     # Externalized configuration for PLF 4
     ########################################
