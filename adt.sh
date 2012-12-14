@@ -113,7 +113,6 @@ Environment Variables :
     ks           eXo Knowledge
     cs           eXo Collaboration
     plf          eXo Platform Standard Edition
-    plf4         eXo Platform Standard Edition 4.x
     plfcom       eXo Platform Community Edition
     plftrial     eXo Platform Trial Edition
     compint      eXo Company Intranet
@@ -199,6 +198,7 @@ copyDefaultData()
 # We'll try to find it in the directory <PATCH_DIR> and we'll select it in this order :
 # <PRODUCT_NAME>-$PRODUCT_VERSION-<BASENAME>.patch
 # <PRODUCT_NAME>-$PRODUCT_BRANCH-<BASENAME>.patch
+# <PRODUCT_NAME>-$PRODUCT_MAJOR_BRANCH-<BASENAME>.patch
 # <PRODUCT_NAME>-<BASENAME>.patch  
 # <BASENAME>.patch
 find_patch()
@@ -210,6 +210,7 @@ find_patch()
   find_file $_variable \
   "$_patchDir/$_basename.patch" \
   "$_patchDir/$_product-$_basename.patch" \
+  "$_patchDir/$_product-$PRODUCT_MAJOR_BRANCH-$_basename.patch" \
   "$_patchDir/$_product-$PRODUCT_BRANCH-$_basename.patch" \
   "$_patchDir/$_product-$PRODUCT_VERSION-$_basename.patch"  
 }
@@ -285,6 +286,7 @@ initialize_product_settings()
         # $PRODUCT_BRANCH is computed from $PRODUCT_VERSION and is equal to the version up to the latest dot
         # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
         env_var PRODUCT_BRANCH `expr "$PRODUCT_VERSION" : '\([0-9]*\.[0-9]*\).*'`".x"
+        env_var PRODUCT_MAJOR_BRANCH `expr "$PRODUCT_VERSION" : '\([0-9]*\).*'`".x"				
 
         # Validate product and load artifact details
         case "$PRODUCT_NAME" in
@@ -403,19 +405,12 @@ initialize_product_settings()
               ;;
               *)
                 # 4.0.x and +
-                env_var ARTIFACT_ARTIFACTID      "platform-packaging-tomcat"
-                env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+		            env_var ARTIFACT_GROUPID           "org.exoplatform.platform.pkg"
+		            env_var ARTIFACT_ARTIFACTID        "platform-tomcat-standalone"
+		            env_var DEPLOYMENT_SERVER_SCRIPT   "bin/catalina.sh"
                 ;;
             esac                           
             env_var DEPLOYMENT_EXO_PROFILES    "-Dexo.profiles=all"
-            env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
-            ;;
-          plf4)
-            env_var PRODUCT_DESCRIPTION        "eXo Platform Tomcat Standalone"      
-            env_var ARTIFACT_GROUPID           "org.exoplatform.platform.pkg"
-            env_var ARTIFACT_ARTIFACTID        "platform-tomcat-standalone"
-            env_var DEPLOYMENT_SERVER_SCRIPT   "bin/catalina.sh"
-            env_var DEPLOYMENT_EXO_PROFILES    "all"
             env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
             ;;
           plftrial)
@@ -953,6 +948,7 @@ PRODUCT_NAME="$PRODUCT_NAME"
 PRODUCT_DESCRIPTION="$PRODUCT_DESCRIPTION"
 PRODUCT_VERSION="$PRODUCT_VERSION"
 PRODUCT_BRANCH="$PRODUCT_BRANCH"
+PRODUCT_MAJOR_BRANCH="$PRODUCT_MAJOR_BRANCH"
 ARTIFACT_GROUPID="$ARTIFACT_GROUPID"
 ARTIFACT_ARTIFACTID="$ARTIFACT_ARTIFACTID"
 ARTIFACT_TIMESTAMP="$ARTIFACT_TIMESTAMP"
