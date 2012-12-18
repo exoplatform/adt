@@ -634,15 +634,17 @@ do_drop_database()
 
 do_configure_server_for_jmx()
 {
-  # Install jmx jar
-  JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
-  echo "[INFO] Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
-  curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
-  if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $JMX_JAR_URL` ]; then
-    echo "[ERROR] !!! Sorry, cannot download ${JMX_JAR_URL}"
-    exit 1
-  fi
-  echo "[INFO] Done."
+	if [ ! -e "${DEPLOYMENT_DIR}/lib/*catalina-jmx-remote*.jar"]; then
+    # Install jmx jar
+    JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
+    echo "[INFO] Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
+    curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
+    if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $JMX_JAR_URL` ]; then
+      echo "[ERROR] !!! Sorry, cannot download ${JMX_JAR_URL}"
+      exit 1
+    fi
+    echo "[INFO] Done."
+	fi
   # JMX settings
   echo "[INFO] Creating JMX configuration files ..."  
   cat << EOF > $DEPLOYMENT_DIR/conf/jmxremote.access
