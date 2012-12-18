@@ -411,7 +411,7 @@ initialize_product_settings()
 		            env_var DEPLOYMENT_SERVER_SCRIPT   "bin/catalina.sh"
                 ;;
             esac                           
-            env_var PLF_BRANCH                 "$PRODUCT_BRANCH"                
+            env_var PLF_BRANCH                     "$PRODUCT_BRANCH"                
             ;;
           plftrial)
             env_var PRODUCT_DESCRIPTION             "eXo Platform Trial Edition"      
@@ -1047,7 +1047,19 @@ do_start()
     export CATALINA_PID=$DEPLOYMENT_PID_FILE
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=$DEPLOYMENT_DIR/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=$DEPLOYMENT_DIR/conf/jmxremote.access"
     export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
-    export EXO_PROFILES="$EXO_PROFILES"
+    if [ "$PRODUCT_NAME" == "plf" ]; then
+      case "$PRODUCT_BRANCH" in
+        "3.0.x"|"3.5.x")
+          export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
+          ;;
+        *)
+          # 4.0.x and +
+          export EXO_PROFILES="$EXO_PROFILES"
+          ;;
+      esac 
+		else
+      export EXO_PROFILES="$DEPLOYMENT_EXO_PROFILES"
+		fi
     ########################################
     # Externalized configuration for PLF 4
     ########################################
