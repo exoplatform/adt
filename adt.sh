@@ -634,7 +634,7 @@ do_drop_database()
 
 do_configure_server_for_jmx()
 {
-	if [ ! -e "${DEPLOYMENT_DIR}/lib/*catalina-jmx-remote*.jar"]; then
+	if [ ! -e "${DEPLOYMENT_DIR}/lib/*catalina-jmx-remote*.jar" ]; then
     # Install jmx jar
     JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
     echo "[INFO] Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
