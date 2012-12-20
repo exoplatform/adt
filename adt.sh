@@ -446,8 +446,8 @@ initialize_product_settings()
             ;;
           docs)
             env_var PRODUCT_DESCRIPTION         "eXo Platform Documentations Website"      
-            env_var ARTIFACT_GROUPID            "org.exoplatform.doc"
-            env_var ARTIFACT_ARTIFACTID         "website-packaging"
+            env_var ARTIFACT_GROUPID            "com.exoplatform.platform.documentation"
+            env_var ARTIFACT_ARTIFACTID         "platform-documentation-website-packaging"
             env_var DEPLOYMENT_SERVER_SCRIPT    "bin/catalina.sh"
             env_var DEPLOYMENT_DATABASE_ENABLED false
             ;;
