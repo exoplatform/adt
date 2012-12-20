@@ -445,6 +445,7 @@ initialize_product_settings()
             env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
             ;;
           docs)
+            env_var ARTIFACT_REPO_GROUP         "private"
             env_var PRODUCT_DESCRIPTION         "eXo Platform Documentations Website"      
             env_var ARTIFACT_GROUPID            "com.exoplatform.platform.documentation"
             env_var ARTIFACT_ARTIFACTID         "platform-documentation-website-packaging"
