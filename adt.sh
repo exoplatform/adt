@@ -163,7 +163,7 @@ updateRepo() {
     echo "[INFO] Update done ..."
   fi
   echo "[INFO] Repository remote ..."
-  git branch -v
+  git remote -v
   echo "[INFO] Repository branches ..."
   git branch -a
 }
