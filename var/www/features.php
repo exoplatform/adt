@@ -60,7 +60,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         // open directory and walk through the filenames
                         while ($file = readdir($handler)) {
                             // if file isn't this directory or its parent, add it to the results
-                            if ($file != "." && $file != ".." && preg_match($file, '/.*\.git/')) {
+                            if ($file != "." && $file != ".." && strpos($file, ".git")) {
                                 $results[] = $file;
                             }
                         }
