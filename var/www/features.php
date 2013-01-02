@@ -71,6 +71,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     }
                     //List all repos
                     $repos = getGitDirectoriesList($_SERVER['ADT_DATA'] . "/sources/");
+                    asort($repos);
                     $features = array();
                     foreach ($repos as $repoDirName) {
                         $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
@@ -79,6 +80,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                             $features[$branch][] = $repoDirName;
                         }
                     }
+                    ksort($features);
                     ?>
                     <table class="table table-striped table-bordered table-hover">
                         <thead>
