@@ -77,9 +77,8 @@ env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
-# List of github repositories
-env_var "GITHUB_ORGA" "exodev"
-env_var "REPOS_LIST" "commons calendar forum wiki social ecms integration platform"
+#env_var "REPOS_LIST" "commons calendar forum wiki social ecms integration platform"
+env_var "REPOS_LIST" "exodev:commons exodev:integration exoplatform:platform-tomcat-standalone"
 
 #
 # Usage message
