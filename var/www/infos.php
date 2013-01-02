@@ -33,6 +33,7 @@
             <a class="brand" href="#"><?=$_SERVER['SERVER_NAME'] ?></a>
             <ul class="nav">
                 <li><a href="/">Home</a></li>
+                <li><a href="/features.php">Features</a></li>
                 <li class="active"><a href="/infos.php">Servers list</a></li>
             </ul>
         </div>
