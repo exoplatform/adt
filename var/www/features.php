@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<?php
+require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
+?>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -73,9 +76,9 @@
                         <thead>
                         <tr>
                             <?php
-                            foreach ($repos as $repo) {
+                            foreach ($repos as $repoDirName) {
                                 ?>
-                                <th class="col-center"><?=$repo?></th>
+                                <th class="col-center"><?=$repoDirName?></th>
                             <?php
                             }
                             ?>
@@ -84,9 +87,10 @@
                         <tbody>
                         <tr>
                             <?php
-                            foreach ($repos as $repo) {
+                            foreach ($repos as $repoDirName) {
+                                $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
                                 ?>
-                                <td></td>
+                                <td><?$repo->getBranches()?></td>
                             <?php
                             }
                             ?>
