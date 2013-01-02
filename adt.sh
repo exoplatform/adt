@@ -149,10 +149,11 @@ EOF
 
 # Clone or update a repository $1 from Github's ${GITHUB_ORGA} organisation into ${SRC_DIR}
 updateRepo() {
-  local _repo=$1
+  local _orga=$(echo $1 | cut -d: -f1)
+  local _repo=$(echo $1 | cut -d: -f2)
   if [ ! -d ${SRC_DIR}/${_repo} ]; then
     echo "[INFO] Cloning repository ${_repo} into ${SRC_DIR} ..."
-    git clone git://github.com/${GITHUB_ORGA}/${_repo}.git ${SRC_DIR}/${_repo} --bare
+    git clone git://github.com/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
     echo "[INFO] Clone done ..."
   else
     echo "[INFO] Updating repository ${_repo} in ${SRC_DIR} ..."
