@@ -82,7 +82,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                                 $github_org = $matches[1];
                                 $github_repo = $matches[2];
                             }
-                            $features[$branch][$repoDirName]['http_url'] = "https://github.com/" + $github_org + "/" . $github_repo . "/tree/feature/" . $branch;
+                            $features[$branch][$repoDirName]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
                             $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/master --oneline");
                             if (empty($behind_commits_logs))
                                 $features[$branch][$repoDirName]['behind_commits'] = 0;
