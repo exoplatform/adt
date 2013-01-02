@@ -83,6 +83,8 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                                 $github_repo = $matches[2];
                             }
                             $features[$branch][$repoDirName]['http_url'] = "https://github.com/" + $github_org + "/" . $github_repo . "/tree/feature/" . $branch;
+                            $features[$branch][$repoDirName]['behind_commits'] = count(explode("\n", $repoObject->git("log origin/feature/" . $branch . "..origin/master --oneline")));
+                            $features[$branch][$repoDirName]['ahead_commits'] = count(explode("\n", $repoObject->git("log origin/master..origin/feature/" . $branch . " --oneline")));
                         }
                     }
                     ksort($features);
@@ -101,7 +103,11 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                             <tr>
                                 <td><?=$feature?></td>
                                 <?php foreach ($repos as $repoDirName) { ?>
-                                    <td><?php if (array_key_exists($repoDirName, $projects)) { ?><a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><i class="icon-ok"></i></a><?php }?></td>
+                                    <td>
+                                        <?php if (array_key_exists($repoDirName, $projects)) { ?>
+                                            <a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><i class="icon-ok"></i> <?=$projects[$repoDirName]['behind_commits']?> behind / <?=$projects[$repoDirName]['ahead_commits']?> ahead</a>
+                                        <?php }?>
+                                    </td>
                                 <?php } ?>
                             </tr>
                         <?php } ?>
