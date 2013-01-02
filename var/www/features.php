@@ -77,7 +77,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
                         $branches = array_filter(preg_replace('/.*\/feature\//', '', explode("\n", $repoObject->git('branch -r --list */feature/*'))));
                         foreach ($branches as $branch) {
-                            $features[$branch][] = $repoDirName;
+                            $features[$branch][$repoDirName]['url'] = $repoObject->git('config --get remote.origin.url');
                         }
                     }
                     ksort($features);
@@ -96,7 +96,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                             <tr>
                                 <td><?=$feature?></td>
                                 <?php foreach ($repos as $repoDirName) { ?>
-                                    <td><?php if (in_array($repoDirName, $projects)) { ?><i class="icon-ok"></i><?php }?></td>
+                                    <td><?php if (array_key_exists($repoDirName, $projects)) { ?><a href="<?=$projects[$repoDirName]['url']?>" target="_blank" title="Repository URL"><i class="icon-ok"></i></a><?php }?></td>
                                 <?php } ?>
                             </tr>
                         <?php } ?>
