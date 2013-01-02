@@ -158,15 +158,10 @@ updateRepo() {
     echo "[INFO] Updating repository ${_repo} in ${SRC_DIR} ..."
     cd ${SRC_DIR}/${_repo}.git
     git fetch --prune
+    git clean -f -d -x
     cd -
     echo "[INFO] Update done ..."
   fi
-  cd ${SRC_DIR}/${_repo}.git
-  echo "[INFO] Repository remote ..."
-  git remote -v
-  echo "[INFO] Repository branches ..."
-  git branch -a
-  cd -
 }
 
 init() {
