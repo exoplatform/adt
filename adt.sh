@@ -68,6 +68,7 @@ echo "[INFO] ADT_DATA = ${ADT_DATA}"
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
 env_var "DL_DIR" "${ADT_DATA}/downloads"
 env_var "SRV_DIR" "${ADT_DATA}/servers"
+env_var "SRC_DIR" "${ADT_DATA}/sources"
 env_var "CONF_DIR" "${ADT_DATA}/conf"
 env_var "APACHE_CONF_DIR" "${ADT_DATA}/conf/apache"
 env_var "AWSTATS_CONF_DIR" "${ADT_DATA}/conf/awstats"
@@ -76,6 +77,9 @@ env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
+# List of github repositories
+env_var "GITHUB_ORGA" "exodev"
+env_var "REPOS_LIST" "commons calendar forum wiki social ecms integration platform"
 
 #
 # Usage message
@@ -144,6 +148,26 @@ EOF
 }
 
 
+# Clone or update a repository $1 from Github's ${GITHUB_ORGA} organisation into ${SRC_DIR}
+updateRepo() {
+  local _repo=$1
+  if [ ! -d ${SRC_DIR}/${_repo} ]; then
+    echo "[INFO] Cloning repository ${_repo} into ${SRC_DIR} ..."
+    git clone git://github.com/${GITHUB_ORGA}/${_repo}.git ${SRC_DIR}/${_repo} --bare
+    echo "[INFO] Clone done ..."
+  else
+    echo "[INFO] Updating repository ${_repo} in ${SRC_DIR} ..."
+    cd ${SRC_DIR}/${_repo}
+    git fetch --prune
+    cd -
+    echo "[INFO] Update done ..."
+  fi
+  echo "[INFO] Repository remote ..."
+  git branch -v
+  echo "[INFO] Repository branches ..."
+  git branch -a
+}
+
 init() {
   validate_env_var "SCRIPT_DIR"
   validate_env_var "ADT_DATA"
@@ -159,6 +183,7 @@ init() {
   mkdir -p ${TMP_DIR}
   mkdir -p ${DL_DIR}
   mkdir -p ${SRV_DIR}
+  mkdir -p ${SRC_DIR}
   mkdir -p ${CONF_DIR}
   mkdir -p ${APACHE_CONF_DIR}/conf.d
   mkdir -p ${APACHE_CONF_DIR}/sites-available
@@ -180,6 +205,11 @@ init() {
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
     evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
     sudo /usr/sbin/service apache2 reload
+    # Initialize sources repositories used by PHP
+    for _repo in $REPOS_LIST
+    do
+      updateRepo ${_repo}
+    done
   fi
 }
 
