@@ -1,0 +1,3 @@
+SetEnv ADT_DATA "${ADT_DATA}"
+
+Include ${ADT_DATA}/conf/apache/

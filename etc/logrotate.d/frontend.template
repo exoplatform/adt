@@ -1,0 +1,9 @@
+${ADT_DATA}/var/log/apache2/${ACCEPTANCE_HOST}-*.log {
+  missingok
+  rotate 52
+  compress
+  delaycompress
+  notifempty
+  create 664 www-data www-data
+  sharedscripts
+}

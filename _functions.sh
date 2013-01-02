@@ -90,6 +90,16 @@ find_file() {
   set -u
 }
 
+#
+# Replace in file $1 all environment variables (${XXX}) and push the result in $2
+#
+evaluate_file_content() {
+  local _file_in=$1
+  local _file_out=$2
+  awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < $_file_in > $_file_out
+}
+
+
 do_curl() {
   if [ $# -lt 4 ]; then
     echo ""
