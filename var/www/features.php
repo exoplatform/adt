@@ -83,8 +83,16 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                                 $github_repo = $matches[2];
                             }
                             $features[$branch][$repoDirName]['http_url'] = "https://github.com/" + $github_org + "/" . $github_repo . "/tree/feature/" . $branch;
-                            $features[$branch][$repoDirName]['behind_commits'] = count(explode("\n", $repoObject->git("log origin/feature/" . $branch . "..origin/master --oneline")));
-                            $features[$branch][$repoDirName]['ahead_commits'] = count(explode("\n", $repoObject->git("log origin/master..origin/feature/" . $branch . " --oneline")));
+                            $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/master --oneline");
+                            if (empty($behind_commits_logs))
+                                $features[$branch][$repoDirName]['behind_commits'] = 0;
+                            else
+                                $features[$branch][$repoDirName]['behind_commits'] = count(explode("\n", $behind_commits_logs));
+                            $ahead_commits_logs = $repoObject->git("log origin/master..origin/feature/" . $branch . " --oneline");
+                            if (empty($ahead_commits_logs))
+                                $features[$branch][$repoDirName]['ahead_commits'] = 0;
+                            else
+                                $features[$branch][$repoDirName]['ahead_commits'] = count(explode("\n", $ahead_commits_logs));
                         }
                     }
                     ksort($features);
