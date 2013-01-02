@@ -38,7 +38,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
             <ul class="nav">
                 <li><a href="/">Home</a></li>
                 <li class="active"><a href="/features.php">Features</a></li>
-                <li><a href="/infos.php">Servers list</a></li>
+                <li><a href="/servers.php">Servers</a></li>
             </ul>
         </div>
     </div>
