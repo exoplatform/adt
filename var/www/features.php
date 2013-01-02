@@ -88,7 +88,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         <tr>
                             <?php
                             foreach ($repos as $repoDirName) {
-                                $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
+                                $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName,true);
                                 ?>
                                 <td><?$repoObject->getBranches()?></td>
                             <?php
