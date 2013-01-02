@@ -151,18 +151,18 @@ EOF
 updateRepo() {
   local _orga=$(echo $1 | cut -d: -f1)
   local _repo=$(echo $1 | cut -d: -f2)
-  if [ ! -d ${SRC_DIR}/${_repo} ]; then
+  if [ ! -d ${SRC_DIR}/${_repo}.git ]; then
     echo "[INFO] Cloning repository ${_repo} into ${SRC_DIR} ..."
     git clone git://github.com/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
     echo "[INFO] Clone done ..."
   else
     echo "[INFO] Updating repository ${_repo} in ${SRC_DIR} ..."
-    cd ${SRC_DIR}/${_repo}
+    cd ${SRC_DIR}/${_repo}.git
     git fetch --prune
     cd -
     echo "[INFO] Update done ..."
   fi
-  cd ${SRC_DIR}/${_repo}
+  cd ${SRC_DIR}/${_repo}.git
   echo "[INFO] Repository remote ..."
   git remote -v
   echo "[INFO] Repository branches ..."
