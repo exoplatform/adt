@@ -77,7 +77,12 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
                         $branches = array_filter(preg_replace('/.*\/feature\//', '', explode("\n", $repoObject->git('branch -r --list */feature/*'))));
                         foreach ($branches as $branch) {
-                            $features[$branch][$repoDirName]['url'] = $repoObject->git('config --get remote.origin.url');
+                            $fetch_url = $repoObject->git('config --get remote.origin.url');
+                            if (preg_match("/git:\/\/github\.com\/(.*)\/(.*)\.git/", $fetch_url, $matches)) {
+                                $github_org = $matches[1];
+                                $github_repo = $matches[2];
+                            }
+                            $features[$branch][$repoDirName]['http_url'] = "https://github.com/" + $github_org + "/" . $github_repo . "/tree/feature/" . $branch;
                         }
                     }
                     ksort($features);
@@ -96,7 +101,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                             <tr>
                                 <td><?=$feature?></td>
                                 <?php foreach ($repos as $repoDirName) { ?>
-                                    <td><?php if (array_key_exists($repoDirName, $projects)) { ?><a href="<?=$projects[$repoDirName]['url']?>" target="_blank" title="Repository URL"><i class="icon-ok"></i></a><?php }?></td>
+                                    <td><?php if (array_key_exists($repoDirName, $projects)) { ?><a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><i class="icon-ok"></i></a><?php }?></td>
                                 <?php } ?>
                             </tr>
                         <?php } ?>
