@@ -94,7 +94,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                             <tr>
                                 <td><?=$feature?></td>
                                 <?php foreach ($repos as $repoDirName) { ?>
-                                    <td><?php if (array_key_exists($repoDirName, $projects)) { ?><i class="icon-ok"></i><?php }?></td>
+                                    <td><?php if (in_array($repoDirName, $projects)) { ?><i class="icon-ok"></i><?php }?></td>
                                 <?php } ?>
                             </tr>
                         <?php } ?>
