@@ -77,8 +77,7 @@ env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
-#env_var "REPOS_LIST" "commons calendar forum wiki social ecms integration platform"
-env_var "REPOS_LIST" "exodev:commons exodev:integration exoplatform:platform-tomcat-standalone"
+env_var "REPOS_LIST" "exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-tomcat-standalone"
 
 #
 # Usage message
