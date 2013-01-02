@@ -632,8 +632,8 @@ do_configure_server_for_jmx() {
   fi
   # JMX settings
   echo "[INFO] Creating JMX configuration files ..."
-  cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/conf/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
-  cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/conf/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
+  cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
+  cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo "[INFO] Done."
   echo "[INFO] Opening firewall ports ..."
