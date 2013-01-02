@@ -46,7 +46,53 @@
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">
+                    <?php
+                    function getDirectoryList($directory)
+                    {
+                        // create an array to hold directory list
+                        $results = array();
+                        // create a handler for the directory
+                        $handler = opendir($directory);
+                        // open directory and walk through the filenames
+                        while ($file = readdir($handler)) {
+                            // if file isn't this directory or its parent, add it to the results
+                            if ($file != "." && $file != "..") {
+                                $results[] = $file;
+                            }
+                        }
+                        // tidy up: close the handler
+                        closedir($handler);
+                        // done!
+                        return $results;
+                    }
+                    //List all repos
+                    $repos = getDirectoryList($_SERVER['ADT_DATA'] . "/sources/");
+                    ?>
 
+                    <table class="table table-striped table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <?php
+                            foreach ($repos as $repo) {
+                                ?>
+                                <th class="col-center"><?=$repo?></th>
+                            <?php
+                            }
+                            ?>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr>
+                            <?php
+                            foreach ($repos as $repo) {
+                                ?>
+                                <td></td>
+                            <?php
+                            }
+                            ?>
+                        </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
