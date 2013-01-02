@@ -162,10 +162,12 @@ updateRepo() {
     cd -
     echo "[INFO] Update done ..."
   fi
+  cd ${SRC_DIR}/${_repo}
   echo "[INFO] Repository remote ..."
   git remote -v
   echo "[INFO] Repository branches ..."
   git branch -a
+  cd -
 }
 
 init() {
