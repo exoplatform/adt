@@ -206,7 +206,9 @@ init() {
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
     evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-    sudo /usr/sbin/service apache2 reload
+    if [ "${OS}" == "Ubuntu" ]; then
+      sudo /usr/sbin/service apache2 reload
+    fi
     # Initialize sources repositories used by PHP
     for _repo in $REPOS_LIST
     do
@@ -822,7 +824,9 @@ do_configure_apache() {
     rm ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
     evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
     sudo logrotate -s ${TMP_DIR}/logrotate-acceptance.status -f ${TMP_DIR}/logrotate-acceptance
-    sudo /usr/sbin/service apache2 reload
+    if [ "${OS}" == "Ubuntu" ]; then
+      sudo /usr/sbin/service apache2 reload
+    fi
     rm ${TMP_DIR}/logrotate-acceptance
     echo "[INFO] Done."
   fi
@@ -1029,7 +1033,9 @@ do_undeploy() {
         # Delete the vhost
         rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
         # Reload Apache to deactivate the config
-        sudo /usr/sbin/service apache2 reload
+        if [ "${OS}" == "Ubuntu" ]; then
+          sudo /usr/sbin/service apache2 reload
+        fi
       fi
       # Delete the server
       rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
