@@ -170,6 +170,7 @@ updateRepo() {
 }
 
 init() {
+  loadSystemInfo
   validate_env_var "SCRIPT_DIR"
   validate_env_var "ADT_DATA"
   validate_env_var "ETC_DIR"

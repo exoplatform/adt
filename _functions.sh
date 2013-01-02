@@ -466,3 +466,99 @@ backup_logs() {
     cd -
   fi
 }
+
+lowercase() {
+  echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
+}
+
+# Get informations about system
+loadSystemInfo() {
+  OS=`lowercase \`uname\``
+  OSSTR=""
+  KERNEL=`uname -r`
+  MACH=`uname -m`
+  ARCH=""
+  DIST=""
+  PSEUDONAME=""
+  REV=""
+  DistroBasedOn=""
+
+  if [ "{$OS}" == "windowsnt" ]; then
+    OS=windows
+  elif [ "{$OS}" == "darwin" ]; then
+    OS=mac
+  else
+    OS=`uname`
+    if [ "${OS}" = "SunOS" ]; then
+      OS=Solaris
+      ARCH=`uname -p`
+      OSSTR="${OS}${REV}(${ARCH}`uname-v`)"
+    elif [ "${OS}" = "AIX" ]; then
+      OSSTR="${OS}`oslevel` (`oslevel-r`)"
+    elif [ "${OS}" = "Linux" ]; then
+      if [ -f /etc/redhat-release ]; then
+        DistroBasedOn='RedHat'
+        DIST=`cat /etc/redhat-release | sed s/\ release.*//`
+        PSEUDONAME=`cat /etc/redhat-release | sed s/.*\(// | sed s/\)//`
+        REV=`cat /etc/redhat-release | sed s/.*release\ // | sed s/\ .*//`
+      elif [ -f /etc/SuSE-release ]; then
+        DistroBasedOn='SuSe'
+        PSEUDONAME=`cat /etc/SuSE-release | tr "\n" ' ' | sed s/VERSION.*//`
+        REV=`cat /etc/SuSE-release | tr "\n" ' ' | sed s/.*=\ //`
+      elif [ -f /etc/mandrake-release ]; then
+        DistroBasedOn='Mandrake'
+        PSEUDONAME=`cat /etc/mandrake-release | sed s/.*\(// | sed s/\)//`
+        REV=`cat /etc/mandrake-release | sed s/.*release\ // | sed s/\ .*//`
+      elif [ -f /etc/debian_version ]; then
+        DistroBasedOn='Debian'
+        DIST=`cat /etc/lsb-release | grep '^DISTRIB_ID' | awk -F= '{ print $2 }'`
+        PSEUDONAME=`cat /etc/lsb-release | grep '^DISTRIB_CODENAME' | awk -F= '{ print $2 }'`
+        REV=`cat /etc/lsb-release | grep '^DISTRIB_RELEASE' | awk -F= '{ print $2 }'`
+      fi
+      if [ -f /etc/UnitedLinux-release ]; then
+        DIST="${DIST}[`cat/etc/UnitedLinux-release|tr"\n"' '|seds/VERSION.*//`]"
+      fi
+      OS=`lowercase $OS`
+      DistroBasedOn=`lowercase $DistroBasedOn`
+      readonly OS
+      readonly OSSTR
+      readonly KERNEL
+      readonly MACH
+      readonly DIST
+      readonly PSEUDONAME
+      readonly REV
+      readonly DistroBasedOn
+    fi
+
+  fi
+  echo "========"
+  if [ -n "${OS}" ]; then
+    echo "[INFO] OS: ${OS}";
+  fi
+  if [ -n "${OSSTR}" ]; then
+    echo "[INFO] OSSTR: ${OSSTR}";
+  fi
+  if [ -n "${DIST}" ]; then
+    echo "[INFO] DIST: ${DIST}"
+  fi
+  if [ -n "${PSEUDONAME}" ]; then
+    echo "[INFO] PSEUDONAME: ${PSEUDONAME}"
+  fi
+  if [ -n "${REV}" ]; then
+    echo "[INFO] REV: ${REV}"
+  fi
+  if [ -n "${DistroBasedOn}" ]; then
+    echo "[INFO] DistroBasedOn: ${DistroBasedOn}"
+  fi
+  if [ -n "${KERNEL}" ]; then
+    echo "[INFO] KERNEL: ${KERNEL}"
+  fi
+  if [ -n "${MACH}" ]; then
+    echo "[INFO] MACH: ${MACH}"
+  fi
+  if [ -n "${ARCH}" ]; then
+    echo "[INFO] ARCH: ${ARCH}"
+  fi
+  echo "========"
+
+}
