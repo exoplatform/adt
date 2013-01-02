@@ -90,7 +90,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                             <?php
                             foreach ($repos as $repoDirName) {
                                 $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
-                                $branches = array_filter(preg_replace('/[\s\*]/', '', explode("\n", $repoObject->git('branch -r --list */feature/*'))));
+                                $branches = array_filter(preg_replace('/.*\/feature\//', '', explode("\n", $repoObject->git('branch -r --list */feature/*'))));
                                 ?>
                                 <td>
                                     <?php
