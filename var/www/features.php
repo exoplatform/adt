@@ -83,33 +83,21 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     <table class="table table-striped table-bordered table-hover">
                         <thead>
                         <tr>
-                            <?php
-                            foreach ($repos as $repoDirName) {
-                                ?>
+                            <th>Feature</th>
+                            <?php foreach ($repos as $repoDirName) { ?>
                                 <th class="col-center"><?=substr($repoDirName, 0, -4)?></th>
-                            <?php
-                            }
-                            ?>
+                            <?php } ?>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr>
-                            <?php
-                            foreach ($repos as $repoDirName) {
-                                $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
-                                $branches = array_filter(preg_replace('/.*\/feature\//', '', explode("\n", $repoObject->git('branch -r --list */feature/*'))));
-                                ?>
-                                <td>
-                                    <?php
-                                    foreach ($branches as $branch) {
-                                        echo $branch . "<br/>";
-                                    }
-                                    ?>
-                                </td>
-                            <?php
-                            }
-                            ?>
-                        </tr>
+                        <?php foreach ($features as $feature => $projects) { ?>
+                            <tr>
+                                <td><?=$feature?></td>
+                                <?php foreach ($repos as $repoDirName) { ?>
+                                    <td><?php if (array_key_exists($repoDirName, $projects)) { ?><i class="icon-ok"></i><?php }?></td>
+                                <?php } ?>
+                            </tr>
+                        <?php } ?>
                         </tbody>
                     </table>
                 </div>
