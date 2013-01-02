@@ -51,7 +51,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
             <div class="row-fluid">
                 <div class="span12">
                     <?php
-                    function getDirectoryList($directory)
+                    function getGitDirectoriesList($directory)
                     {
                         // create an array to hold directory list
                         $results = array();
@@ -60,7 +60,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         // open directory and walk through the filenames
                         while ($file = readdir($handler)) {
                             // if file isn't this directory or its parent, add it to the results
-                            if ($file != "." && $file != "..") {
+                            if ($file != "." && $file != ".." && preg_match($file, '/.*\.git/')) {
                                 $results[] = $file;
                             }
                         }
@@ -70,16 +70,15 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         return $results;
                     }
                     //List all repos
-                    $repos = getDirectoryList($_SERVER['ADT_DATA'] . "/sources/");
+                    $repos = getGitDirectoriesList($_SERVER['ADT_DATA'] . "/sources/");
                     ?>
-
                     <table class="table table-striped table-bordered table-hover">
                         <thead>
                         <tr>
                             <?php
                             foreach ($repos as $repoDirName) {
                                 ?>
-                                <th class="col-center"><?=$repoDirName?></th>
+                                <th class="col-center"><?=substr($repoDirName, 0, -4)?></th>
                             <?php
                             }
                             ?>
