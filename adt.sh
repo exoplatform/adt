@@ -768,11 +768,14 @@ do_configure_apache() {
     echo "[INFO] Configure and update AWStats ..."
     mkdir -p $AWSTATS_CONF_DIR
     # Regenerates stats for this Vhosts
+    export DOMAIN=${DEPLOYMENT_EXT_HOST}
     evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
     sudo /usr/lib/cgi-bin/awstats.pl -config=${DEPLOYMENT_EXT_HOST} -update || true
     # Regenerates stats for root vhosts
+    export DOMAIN=${ACCEPTANCE_HOST}
     evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${ACCEPTANCE_HOST}.conf
     sudo /usr/lib/cgi-bin/awstats.pl -config=${ACCEPTANCE_HOST} -update
+    unset DOMAIN
     echo "[INFO] Done."
   fi
   if ${DEPLOYMENT_SETUP_APACHE}; then
