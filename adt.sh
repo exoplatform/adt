@@ -33,10 +33,7 @@ echo "[INFO] # #################################################################
 echo "[INFO] # $SCRIPT_NAME"
 echo "[INFO] # #######################################################################"
 
-# Root dir for config files used by these scripts
-export SCRIPT_CONF_DIR=${SCRIPT_DIR}/conf
-
-# Configurable env vars. These variables can be loaded 
+# Configurable env vars. These variables can be loaded
 # from the env, /etc/default/adt or $HOME/.adtrc
 configurable_env_var "ADT_DEBUG" false
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
@@ -78,6 +75,7 @@ env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
 env_var "REPOS_LIST" "exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-tomcat-standalone"
+configurable_env_var "GIT_REPOS_UPDATED" false
 
 #
 # Usage message
@@ -164,6 +162,18 @@ updateRepo() {
   fi
 }
 
+# Update all git repositories used by PHP frontend
+updateRepos() {
+  if ! ${GIT_REPOS_UPDATED}; then
+    # Initialize sources repositories used by PHP
+    for _repo in $REPOS_LIST
+    do
+      updateRepo ${_repo}
+    done
+    env_var "GIT_REPOS_UPDATED" true
+  fi
+}
+
 init() {
   loadSystemInfo
   validate_env_var "SCRIPT_DIR"
@@ -204,11 +214,7 @@ init() {
     if [ "${DIST}" == "Ubuntu" ]; then
       sudo /usr/sbin/service apache2 reload
     fi
-    # Initialize sources repositories used by PHP
-    for _repo in $REPOS_LIST
-    do
-      updateRepo ${_repo}
-    done
+    updateRepos
   fi
 }
 
@@ -1146,6 +1152,15 @@ do_undeploy_all() {
   fi
 }
 
+#
+# Function that loads a php server to test Acceptance FrontEnd
+# requires PHP >= 5.4
+#
+do_load_php_server() {
+  updateRepos
+  php -S localhost:8080 -t ${SCRIPT_DIR}/var/www
+}
+
 # no action ? provide help
 if [ $# -lt 1 ]; then
   echo ""
@@ -1205,6 +1220,9 @@ case "${ACTION}" in
   ;;
   undeploy-all)
     do_undeploy_all
+  ;;
+  test-web)
+    do_load_php_server
   ;;
   *)
     echo "[ERROR] Invalid action \"${ACTION}\""
