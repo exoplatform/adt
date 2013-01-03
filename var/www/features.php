@@ -26,6 +26,11 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
             var s = document.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(ga, s);
         })();
+        var shiftWindow = function () {
+            scrollBy(0, -50)
+        };
+        if (location.hash) shiftWindow();
+        window.addEventListener("hashchange", shiftWindow);
     </script>
 </head>
 <body>
@@ -63,6 +68,21 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     $project["integration"] = $i++;
                     $project["platform"] = $i++;
                     $project["platform-tomcat-standalone"] = $i++;
+                    // this method will return the current page full url
+                    function currentPageURL()
+                    {
+                        $pageURL = 'http';
+                        if (array_key_exists('HTTPS', $_SERVER) && $_SERVER['HTTPS'] == 'on') {
+                            $pageURL .= 's';
+                        }
+                        $pageURL .= '://';
+                        if ($_SERVER['SERVER_PORT'] != '80') {
+                            $pageURL .= $_SERVER['SERVER_NAME'] . ':' . $_SERVER['SERVER_PORT'] . $_SERVER['REQUEST_URI'];
+                        } else {
+                            $pageURL .= $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
+                        }
+                        return $pageURL;
+                    }
                     function sortProjects($a, $b)
                     {
                         global $project;
@@ -129,7 +149,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         <tbody>
                         <?php foreach ($features as $feature => $projects) { ?>
                             <tr>
-                                <td><?=$feature?></td>
+                                <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?></td>
                                 <?php foreach ($repos as $repoDirName) { ?>
                                     <td class="col-center">
                                         <?php if (array_key_exists($repoDirName, $projects)) { ?>
