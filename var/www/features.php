@@ -96,7 +96,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                                 $features[$branch][$repoDirName]['ahead_commits'] = count(explode("\n", $ahead_commits_logs));
                         }
                     }
-                    ksort($features);
+                    ksort($features, SORT_NATURAL | SORT_FLAG_CASE);
                     ?>
                     <table class="table table-striped table-bordered table-hover">
                         <thead>
