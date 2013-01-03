@@ -52,6 +52,24 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                 <div class="span12">
                     <?php
                     $dataDirectory = getenv('ADT_DATA');
+                    // Default projects order
+                    $project["commons"] = 0;
+                    $project["calendar"] = 1;
+                    $project["ecms"] = 2;
+                    $project["social"] = 3;
+                    $project["forum"] = 4;
+                    $project["wiki"] = 5;
+                    $project["integration"] = 6;
+                    $project["platform"] = 7;
+                    $project["platform-tomcat-standalone"] = 8;
+                    function sortProjects($a, $b)
+                    {
+                        global $project;
+                        if ($a == $b) {
+                            return 0;
+                        }
+                        return strcmp($project[substr($a, 0, -4)], $project[substr($b, 0, -4)]);
+                    }
                     function getGitDirectoriesList($directory)
                     {
                         // create an array to hold directory list
@@ -72,7 +90,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     }
                     //List all repos
                     $repos = getGitDirectoriesList($dataDirectory . "/sources/");
-                    asort($repos, SORT_NATURAL | SORT_FLAG_CASE);
+                    usort($repos, "sortProjects");
                     $features = array();
                     foreach ($repos as $repoDirName) {
                         $repoObject = new PHPGit_Repository($dataDirectory . "/sources/" . $repoDirName);
