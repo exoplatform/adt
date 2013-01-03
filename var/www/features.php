@@ -51,7 +51,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
             <div class="row-fluid">
                 <div class="span12">
                     <?php
-                    $dataDirectory=$_SERVER['ADT_DATA'];
+                    $dataDirectory = getenv('ADT_DATA');
                     function getGitDirectoriesList($directory)
                     {
                         // create an array to hold directory list

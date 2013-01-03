@@ -29,12 +29,12 @@ function processIsRunning($pid)
 }
 
 //print each file name
-$vhosts = getDirectoryList($_SERVER['ADT_DATA'] . "/conf/adt/");
+$vhosts = getDirectoryList(getenv('ADT_DATA') . "/conf/adt/");
 $list = array();
 $now = new DateTime();
 foreach ($vhosts as $vhost) {
     // Parse deployment descriptor
-    $descriptor_array = parse_ini_file($_SERVER['ADT_DATA'] . "/conf/adt/" . $vhost);
+    $descriptor_array = parse_ini_file(getenv('ADT_DATA') . "/conf/adt/" . $vhost);
     if ($descriptor_array['ARTIFACT_DATE']) {
         $artifact_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['ARTIFACT_DATE'])->diff($now, true);
         if ($artifact_age->days)
@@ -64,7 +64,7 @@ foreach ($vhosts as $vhost) {
     $scheme = ((!empty($_SERVER['HTTPS'])) && ($_SERVER['HTTPS'] != 'off')) ? "https" : "http";
 
     $descriptor_array['DEPLOYMENT_LOG_APPSRV_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . "/logs.php?file=" . $descriptor_array['DEPLOYMENT_LOG_PATH'];
-    $descriptor_array['DEPLOYMENT_LOG_APACHE_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . "/logs.php?file=" . $_SERVER['ADT_DATA'] . "/var/log/apache2/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . "-access.log";
+    $descriptor_array['DEPLOYMENT_LOG_APACHE_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . "/logs.php?file=" . getenv('ADT_DATA') . "/var/log/apache2/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . "-access.log";
     $descriptor_array['DEPLOYMENT_AWSTATS_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . "/stats/awstats.pl?config=" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'];
     // status
     if (file_exists($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents($descriptor_array['DEPLOYMENT_PID_FILE'])))
@@ -72,18 +72,18 @@ foreach ($vhosts as $vhost) {
     else
         $descriptor_array['DEPLOYMENT_STATUS'] = "Down";
     // Acceptance process state
-    if (file_exists($_SERVER['ADT_DATA'] . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".status"))
-        $descriptor_array['ACCEPTANCE_STATE'] = file_get_contents($_SERVER['ADT_DATA'] . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".status");
+    if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".status"))
+        $descriptor_array['ACCEPTANCE_STATE'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".status");
     else
         $descriptor_array['ACCEPTANCE_STATE'] = "Implementing";
     // Specification Link
-    if (file_exists($_SERVER['ADT_DATA'] . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".spec"))
-        $descriptor_array['SPECIFICATIONS_LINK'] = file_get_contents($_SERVER['ADT_DATA'] . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".spec");
+    if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".spec"))
+        $descriptor_array['SPECIFICATIONS_LINK'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".spec");
     else
         $descriptor_array['SPECIFICATIONS_LINK'] = "";
     // Issue Link
-    if (file_exists($_SERVER['ADT_DATA'] . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".issue"))
-        $descriptor_array['ISSUE_NUM'] = file_get_contents($_SERVER['ADT_DATA'] . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".issue");
+    if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".issue"))
+        $descriptor_array['ISSUE_NUM'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".issue");
     else
         $descriptor_array['ISSUE_NUM'] = "";
     // Server hostname where is deployed the instance

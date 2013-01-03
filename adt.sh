@@ -1158,6 +1158,8 @@ do_undeploy_all() {
 #
 do_load_php_server() {
   updateRepos
+  export ADT_DATA=${ADT_DATA}
+  echo "[INFO] The Web server will be started on http://localhost:8080/"
   php -S localhost:8080 -t ${SCRIPT_DIR}/var/www
 }
 
@@ -1221,7 +1223,7 @@ case "${ACTION}" in
   undeploy-all)
     do_undeploy_all
   ;;
-  test-web)
+  web-server)
     do_load_php_server
   ;;
   *)
