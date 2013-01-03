@@ -116,7 +116,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     }
                     uksort($features, 'strcasecmp');
                     ?>
-                    <table class="table table-striped table-bordered table-hover">
+                    <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
                             <th class="col-center">Branch feature/*</th>
