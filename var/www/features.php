@@ -119,7 +119,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     <table class="table table-striped table-bordered table-hover">
                         <thead>
                         <tr>
-                            <th>Branch feature/*</th>
+                            <th class="col-center">Branch feature/*</th>
                             <?php foreach ($repos as $repoDirName) { ?>
                                 <th class="col-center"><?=substr($repoDirName, 0, -4)?></th>
                             <?php } ?>
@@ -130,11 +130,9 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                             <tr>
                                 <td><?=$feature?></td>
                                 <?php foreach ($repos as $repoDirName) { ?>
-                                    <td>
+                                    <td class="col-center">
                                         <?php if (array_key_exists($repoDirName, $projects)) { ?>
-                                            <div>
-                                                <a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><?php if ($projects[$repoDirName]['behind_commits'] > 0) { ?><span class="label label-important"><?= $projects[$repoDirName]['behind_commits'] ?> behind</span><?php } else { ?><?= $projects[$repoDirName]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($projects[$repoDirName]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $projects[$repoDirName]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $projects[$repoDirName]['ahead_commits'] ?> ahead<?php }?></a>
-                                            </div>
+                                            <a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><?php if ($projects[$repoDirName]['behind_commits'] > 0) { ?><span class="label label-important"><?= $projects[$repoDirName]['behind_commits'] ?> behind</span><?php } else { ?><?= $projects[$repoDirName]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($projects[$repoDirName]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $projects[$repoDirName]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $projects[$repoDirName]['ahead_commits'] ?> ahead<?php }?></a>
                                         <?php }?>
                                     </td>
                                 <?php } ?>
