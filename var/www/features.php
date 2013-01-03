@@ -49,6 +49,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">
+                    <p>This page summarizes all Git feature branches (<code>feature/***</code>) and their status compared to each project <code>master</code> branch.</p>
                     <?php
                     $dataDirectory = getenv('ADT_DATA');
                     // Default projects order
