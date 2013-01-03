@@ -51,6 +51,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
             <div class="row-fluid">
                 <div class="span12">
                     <?php
+                    $dataDirectory=$_SERVER['ADT_DATA'];
                     function getGitDirectoriesList($directory)
                     {
                         // create an array to hold directory list
@@ -70,11 +71,11 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         return $results;
                     }
                     //List all repos
-                    $repos = getGitDirectoriesList($_SERVER['ADT_DATA'] . "/sources/");
+                    $repos = getGitDirectoriesList($dataDirectory . "/sources/");
                     asort($repos);
                     $features = array();
                     foreach ($repos as $repoDirName) {
-                        $repoObject = new PHPGit_Repository($_SERVER['ADT_DATA'] . "/sources/" . $repoDirName);
+                        $repoObject = new PHPGit_Repository($dataDirectory . "/sources/" . $repoDirName);
                         $branches = array_filter(preg_replace('/.*\/feature\//', '', explode("\n", $repoObject->git('branch -r --list */feature/*'))));
                         foreach ($branches as $branch) {
                             $fetch_url = $repoObject->git('config --get remote.origin.url');
