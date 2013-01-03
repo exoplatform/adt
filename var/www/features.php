@@ -53,15 +53,16 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     <?php
                     $dataDirectory = getenv('ADT_DATA');
                     // Default projects order
-                    $project["commons"] = 0;
-                    $project["calendar"] = 1;
-                    $project["ecms"] = 2;
-                    $project["social"] = 3;
-                    $project["forum"] = 4;
-                    $project["wiki"] = 5;
-                    $project["integration"] = 6;
-                    $project["platform"] = 7;
-                    $project["platform-tomcat-standalone"] = 8;
+                    $i=0;
+                    $project["commons"] = $i++;
+                    $project["ecms"] = $i++;
+                    $project["social"] = $i++;
+                    $project["forum"] = $i++;
+                    $project["wiki"] = $i++;
+                    $project["calendar"] = $i++;
+                    $project["integration"] = $i++;
+                    $project["platform"] = $i++;
+                    $project["platform-tomcat-standalone"] = $i++;
                     function sortProjects($a, $b)
                     {
                         global $project;
