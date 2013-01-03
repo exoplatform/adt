@@ -1,6 +1,8 @@
 <?php
 require_once(dirname(__FILE__) . '/PHPGit/Repository.php');
 
+date_default_timezone_set('UTC');
+
 // this method will return the current page full url
 function currentPageURL()
 {
