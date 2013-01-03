@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <?php
-require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
 require_once(dirname(__FILE__) . '/lib/functions.php');
 ?>
 <html>
@@ -57,63 +56,27 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
                 <div class="span12">
                     <p>This page summarizes all Git feature branches (<code>feature/*</code>) and their status compared to each project <code>master</code> branch.</p>
                     <?php
-                    $dataDirectory = getenv('ADT_DATA');
-                    // Default projects order
-                    $i = 0;
-                    $project["commons"] = $i++;
-                    $project["ecms"] = $i++;
-                    $project["social"] = $i++;
-                    $project["forum"] = $i++;
-                    $project["wiki"] = $i++;
-                    $project["calendar"] = $i++;
-                    $project["integration"] = $i++;
-                    $project["platform"] = $i++;
-                    $project["platform-tomcat-standalone"] = $i++;
-                    //List all repos
-                    $repos = getGitDirectoriesList($dataDirectory . "/sources/");
-                    usort($repos, "sortProjects");
-                    $features = array();
-                    foreach ($repos as $repoDirName) {
-                        $repoObject = new PHPGit_Repository($dataDirectory . "/sources/" . $repoDirName);
-                        $branches = array_filter(preg_replace('/.*\/feature\//', '', array_filter(explode("\n", $repoObject->git('branch -r')), 'isFeature')));
-                        foreach ($branches as $branch) {
-                            $fetch_url = $repoObject->git('config --get remote.origin.url');
-                            if (preg_match("/git:\/\/github\.com\/(.*)\/(.*)\.git/", $fetch_url, $matches)) {
-                                $github_org = $matches[1];
-                                $github_repo = $matches[2];
-                            }
-                            $features[$branch][$repoDirName]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
-                            $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/master --oneline");
-                            if (empty($behind_commits_logs))
-                                $features[$branch][$repoDirName]['behind_commits'] = 0;
-                            else
-                                $features[$branch][$repoDirName]['behind_commits'] = count(explode("\n", $behind_commits_logs));
-                            $ahead_commits_logs = $repoObject->git("log origin/master..origin/feature/" . $branch . " --oneline");
-                            if (empty($ahead_commits_logs))
-                                $features[$branch][$repoDirName]['ahead_commits'] = 0;
-                            else
-                                $features[$branch][$repoDirName]['ahead_commits'] = count(explode("\n", $ahead_commits_logs));
-                        }
-                    }
-                    uksort($features, 'strcasecmp');
+                    //List all projects
+                    $projects = getProjects();
+                    $features = getFeatureBranches($projects);
                     ?>
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
                             <th class="col-center">Branch feature/*</th>
-                            <?php foreach ($repos as $repoDirName) { ?>
-                                <th class="col-center"><?=substr($repoDirName, 0, -4)?></th>
+                            <?php foreach ($projects as $project) { ?>
+                                <th class="col-center"><?=$project?></th>
                             <?php } ?>
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($features as $feature => $projects) { ?>
+                        <?php foreach ($features as $feature => $FBProjects) { ?>
                             <tr>
                                 <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?></td>
-                                <?php foreach ($repos as $repoDirName) { ?>
+                                <?php foreach ($projects as $project) { ?>
                                     <td class="col-center">
-                                        <?php if (array_key_exists($repoDirName, $projects)) { ?>
-                                            <a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><?php if ($projects[$repoDirName]['behind_commits'] > 0) { ?><span class="label label-important"><?= $projects[$repoDirName]['behind_commits'] ?> behind</span><?php } else { ?><?= $projects[$repoDirName]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($projects[$repoDirName]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $projects[$repoDirName]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $projects[$repoDirName]['ahead_commits'] ?> ahead<?php }?></a>
+                                        <?php if (array_key_exists($project, $FBProjects)) { ?>
+                                            <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="Repository URL"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> behind</span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $FBProjects[$project]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $FBProjects[$project]['ahead_commits'] ?> ahead<?php }?></a>
                                         <?php }?>
                                     </td>
                                 <?php } ?>

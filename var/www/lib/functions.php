@@ -1,4 +1,5 @@
 <?php
+require_once(dirname(__FILE__) . '/PHPGit/Repository.php');
 
 // this method will return the current page full url
 function currentPageURL()
@@ -14,14 +15,6 @@ function currentPageURL()
         $pageURL .= $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI'];
     }
     return $pageURL;
-}
-function sortProjects($a, $b)
-{
-    global $project;
-    if ($a == $b) {
-        return 0;
-    }
-    return strcmp($project[substr($a, 0, -4)], $project[substr($b, 0, -4)]);
 }
 function getGitDirectoriesList($directory)
 {
@@ -90,6 +83,63 @@ function processIsRunning($pid)
     exec("ps -p " . $pid, $output);
     // The process is running if there is a row N#1 (N#0 is the header)
     return isset($output[1]);
+}
+
+function sortProjects($a, $b)
+{
+    // Default projects order
+    $i = 0;
+    $projectsOrder["commons"] = $i++;
+    $projectsOrder["ecms"] = $i++;
+    $projectsOrder["social"] = $i++;
+    $projectsOrder["forum"] = $i++;
+    $projectsOrder["wiki"] = $i++;
+    $projectsOrder["calendar"] = $i++;
+    $projectsOrder["integration"] = $i++;
+    $projectsOrder["platform"] = $i++;
+    $projectsOrder["platform-tomcat-standalone"] = $i++;
+
+    if ($a == $b) {
+        return 0;
+    }
+    return strcmp($projectsOrder[$a], $projectsOrder[$b]);
+}
+
+function getProjects()
+{
+    //List all repos
+    $projects = preg_replace('/\.git/', '', getGitDirectoriesList(getenv('ADT_DATA') . "/sources/"));
+    usort($projects, "sortProjects");
+    return $projects;
+}
+
+function getFeatureBranches($projects)
+{
+    $features = array();
+    foreach ($projects as $project) {
+        $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
+        $branches = array_filter(preg_replace('/.*\/feature\//', '', array_filter(explode("\n", $repoObject->git('branch -r')), 'isFeature')));
+        foreach ($branches as $branch) {
+            $fetch_url = $repoObject->git('config --get remote.origin.url');
+            if (preg_match("/git:\/\/github\.com\/(.*)\/(.*)\.git/", $fetch_url, $matches)) {
+                $github_org = $matches[1];
+                $github_repo = $matches[2];
+            }
+            $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
+            $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/master --oneline");
+            if (empty($behind_commits_logs))
+                $features[$branch][$project]['behind_commits'] = 0;
+            else
+                $features[$branch][$project]['behind_commits'] = count(explode("\n", $behind_commits_logs));
+            $ahead_commits_logs = $repoObject->git("log origin/master..origin/feature/" . $branch . " --oneline");
+            if (empty($ahead_commits_logs))
+                $features[$branch][$project]['ahead_commits'] = 0;
+            else
+                $features[$branch][$project]['ahead_commits'] = count(explode("\n", $ahead_commits_logs));
+        }
+    }
+    uksort($features, 'strcasecmp');
+    return $features;
 }
 
 ?>
