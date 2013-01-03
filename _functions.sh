@@ -274,18 +274,18 @@ do_download_from_nexus() {
   echo "[INFO] Validating download integrity ..."
   # Read the SHA1 from Maven
   read -r mavenSha1 < $_sha1File || true
-  echo "$mavenSha1$_artifactFile" > ${mavenSha1}.tmp
+  echo "$mavenSha1  $_artifactFile" > $_sha1File.tmp
   set +e
-  shasum -c $mavenSha1.tmp
+  shasum -c $_sha1File.tmp
   if [ "$?" -ne "0" ]; then
     echo "[ERROR] Sorry, $_name download integrity failed"
     rm -f $_artifactFile
-    rm -f $mavenSha1
-    rm -f $mavenSha1.tmp
+    rm -f $_sha1File
+    rm -f $_sha1File.tmp
     exit 1
   fi
   set -e
-  rm -f $mavenSha1.tmp
+  rm -f $_sha1File.tmp
   echo "[INFO] Download integrity validated."
 
   #
