@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<?php
+require_once(dirname(__FILE__) . '/lib/functions.php');
+?>
 <html>
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -62,22 +65,6 @@
 </thead>
 <tbody>
 <?php
-function append_data($url, $data)
-{
-    $result = $data;
-    $values = (array)json_decode(file_get_contents($url));
-    while ($entry = current($values)) {
-        $key = key($values);
-        if (!array_key_exists($key, $data)) {
-            $result[$key] = $entry;
-        } else {
-            $result[$key] = array_merge($entry, $data[$key]);
-        }
-        ;
-        next($values);
-    }
-    return $result;
-}
 $merged_list = array();
 $merged_list = append_data('http://acceptance.exoplatform.org/list.php', $merged_list);
 $merged_list = append_data('http://acceptance2.exoplatform.org/list.php', $merged_list);
