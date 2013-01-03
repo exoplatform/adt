@@ -118,7 +118,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     <table class="table table-striped table-bordered table-hover">
                         <thead>
                         <tr>
-                            <th>Feature</th>
+                            <th>Branch feature/*</th>
                             <?php foreach ($repos as $repoDirName) { ?>
                                 <th class="col-center"><?=substr($repoDirName, 0, -4)?></th>
                             <?php } ?>
