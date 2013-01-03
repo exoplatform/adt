@@ -13,6 +13,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
     <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="//cdn.jsdelivr.net/jquery.sparkline/2.0/jquery.sparkline.min.js" type="text/javascript"></script>
     <script type="text/javascript">
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', 'UA-1292368-28']);
@@ -26,7 +27,6 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
             var s = document.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(ga, s);
         })();
-
     </script>
 </head>
 <body>
@@ -72,7 +72,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     }
                     //List all repos
                     $repos = getGitDirectoriesList($dataDirectory . "/sources/");
-                    asort($repos);
+                    asort($repos, SORT_NATURAL | SORT_FLAG_CASE);
                     $features = array();
                     foreach ($repos as $repoDirName) {
                         $repoObject = new PHPGit_Repository($dataDirectory . "/sources/" . $repoDirName);
@@ -114,7 +114,10 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                                 <?php foreach ($repos as $repoDirName) { ?>
                                     <td>
                                         <?php if (array_key_exists($repoDirName, $projects)) { ?>
-                                            <a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><i class="icon-ok"></i> <?=$projects[$repoDirName]['behind_commits']?> behind / <?=$projects[$repoDirName]['ahead_commits']?> ahead</a>
+                                            <div>
+                                                <div class="pull-left"><a href="<?=$projects[$repoDirName]['http_url']?>" target="_blank" title="Repository URL"><?php if ($projects[$repoDirName]['behind_commits'] > 0) { ?><span class="label label-important"><?= $projects[$repoDirName]['behind_commits'] ?> behind</span><?php } else { ?><?= $projects[$repoDirName]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($projects[$repoDirName]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $projects[$repoDirName]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $projects[$repoDirName]['ahead_commits'] ?> ahead<?php }?></a></div>
+                                                <div class="pull-right" id="sparkline-<?=str_replace(array("/", "."), "-", $feature . "-" . $repoDirName)?>"></div>
+                                            </div>
                                         <?php }?>
                                     </td>
                                 <?php } ?>
@@ -131,4 +134,23 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
 <!-- Footer ================================================== -->
 <div id="footer">Copyright © 2000-2013. All rights Reserved, eXo Platform SAS.</div>
 </body>
+<script type="text/javascript">
+    $(document).ready(function () {
+        <?php foreach ($features as $feature => $projects) {
+            foreach ($repos as $repoDirName) {
+                if (array_key_exists($repoDirName, $projects)) { ?>
+        $("#sparkline-<?=str_replace(array("/","."), "-", $feature . "-" . $repoDirName)?>").sparkline([<?=-$projects[$repoDirName]['behind_commits']?>, <?=$projects[$repoDirName]['ahead_commits']?>], {
+            type: 'bar',
+            height: '30',
+            barWidth: 5,
+            barSpacing: -5,
+            barColor: '#3399f3',
+            negBarColor: '#cd0200',
+            zeroColor: '#000000',
+            nullColor: '#000000 '});
+        <?php }
+          }
+      } ?>
+    });
+</script>
 </html>
