@@ -58,7 +58,7 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                     <?php
                     $dataDirectory = getenv('ADT_DATA');
                     // Default projects order
-                    $i=0;
+                    $i = 0;
                     $project["commons"] = $i++;
                     $project["ecms"] = $i++;
                     $project["social"] = $i++;
@@ -109,13 +109,17 @@ require_once(dirname(__FILE__) . '/lib/PHPGit/Repository.php');
                         // done!
                         return $results;
                     }
+                    function isFeature($branch)
+                    {
+                        return strpos($branch, "/feature/");
+                    }
                     //List all repos
                     $repos = getGitDirectoriesList($dataDirectory . "/sources/");
                     usort($repos, "sortProjects");
                     $features = array();
                     foreach ($repos as $repoDirName) {
                         $repoObject = new PHPGit_Repository($dataDirectory . "/sources/" . $repoDirName);
-                        $branches = array_filter(preg_replace('/.*\/feature\//', '', explode("\n", $repoObject->git('branch -r --list */feature/*'))));
+                        $branches = array_filter(preg_replace('/.*\/feature\//', '', array_filter(explode("\n", $repoObject->git('branch -r')), 'isFeature')));
                         foreach ($branches as $branch) {
                             $fetch_url = $repoObject->git('config --get remote.origin.url');
                             if (preg_match("/git:\/\/github\.com\/(.*)\/(.*)\.git/", $fetch_url, $matches)) {
