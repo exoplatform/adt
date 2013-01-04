@@ -41,6 +41,23 @@ function isFeature($branch)
     return strpos($branch, "/feature/");
 }
 
+function cmpPLFBranches($a, $b)
+{
+    // Branches are A.B.x or UNKNOWN
+    if ($a === 'UNKNOWN') {
+        return -strcasecmp('000', $b);
+    } else if ($b === 'UNKNOWN') {
+        return -strcasecmp($a, '000');
+    } else
+        return -strcasecmp($a, $b);
+}
+
+function cmpInstances($a, $b)
+{
+    return strcmp($a->PRODUCT_VERSION, $b->PRODUCT_VERSION);
+}
+
+
 function append_data($url, $data)
 {
     $result = $data;
@@ -51,10 +68,12 @@ function append_data($url, $data)
             $result[$key] = $entry;
         } else {
             $result[$key] = array_merge($entry, $data[$key]);
+            usort($result[$key], 'cmpInstances');
         }
         ;
         next($values);
     }
+    uksort($result, 'cmpPLFBranches');
     return $result;
 }
 
@@ -238,6 +257,21 @@ function getLocalAcceptanceInstances()
     return $instances;
 }
 
+function getGlobalAcceptanceInstances()
+{
+    $instances = apc_fetch('all_instances');
+
+    if (empty($instances)) {
+        $instances = array();
+        $instances = append_data('http://acceptance.exoplatform.org/list.php', $instances);
+        $instances = append_data('http://acceptance2.exoplatform.org/list.php', $instances);
+        $instances = append_data('http://acceptance3.exoplatform.org/list.php', $instances);
+        // Instances will be cached for 2 min
+        apc_store('all_instances', $instances, 120);
+    }
+    return $instances;
+}
+
 function getAcceptanceBranches()
 {
     $branches = apc_fetch('acceptance_branches');
@@ -255,23 +289,6 @@ function getAcceptanceBranches()
         apc_store('acceptance_branches', $branches, 120);
     }
     return $branches;
-}
-
-
-function getGlobalAcceptanceInstances()
-{
-    $instances = apc_fetch('all_instances');
-
-    if (empty($instances)) {
-        $instances = array();
-        $instances = append_data('http://acceptance.exoplatform.org/list.php', $instances);
-        $instances = append_data('http://acceptance2.exoplatform.org/list.php', $instances);
-        $instances = append_data('http://acceptance3.exoplatform.org/list.php', $instances);
-
-        // Instances will be cached for 2 min
-        apc_store('all_instances', $instances, 120);
-    }
-    return $instances;
 }
 
 function clearCaches()
