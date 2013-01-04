@@ -241,6 +241,7 @@ function getLocalAcceptanceInstances()
 
 function getGlobalAcceptanceInstances()
 {
+    openlog('PHP_Err: ', LOG_PERROR | LOG_CONS | LOG_NDELAY | LOG_PID, LOG_USER);
     $instances = apc_fetch('all_instances');
 
     if (empty($instances)) {
@@ -252,6 +253,8 @@ function getGlobalAcceptanceInstances()
         // Instances will be cached for 2 min
         apc_store('all_instances', $instances, 120);
     }
+    syslog(LOG_INFO, "All instances " . print_r($instances, true));
+    closelog();
     return $instances;
 }
 
