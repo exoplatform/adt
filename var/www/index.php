@@ -57,7 +57,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
     <th class="col-center">Status</th>
     <th class="col-center">Name</th>
     <th class="col-center">Snapshot Version</th>
-    <th class="col-center" colspan="3">Feature Branch</th>
+    <th class="col-center" colspan="4">Feature Branch</th>
     <th class="col-center">Built</th>
     <th class="col-center">Deployed</th>
     <th class="col-center">&nbsp;</th>
@@ -69,7 +69,7 @@ $all_instances = getGlobalAcceptanceInstances();
 foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
-        <td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
+        <td colspan="11" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
             <?php
             if ($plf_branch === "4.0.x") {
                 echo "Platform " . $plf_branch . " based build (R&D)";
@@ -126,7 +126,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             </td>
             <td class="col-center"><?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $base_version ?></a><?php } else { ?><?= $base_version ?><?php } ?></td>
             <?php if (empty($feature_branch)) { ?>
-                <td class="col-center" colspan="3"></td>
+                <td class="col-center" colspan="4"></td>
             <?php } else { ?>
                 <td class="col-center">
                     <?php
@@ -146,6 +146,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     }
                     ?>
                     <span class="label <?=$acceptance_state_class?>"><?=$descriptor_array->ACCEPTANCE_STATE?></span></td>
+                <td class="col-center"><?php if (!empty($descriptor_array->SCM_BRANCH)) { ?><a href="features.php#<?=str_replace(array("/", "."), "-", $descriptor_array->SCM_BRANCH)?>" rel="tooltip" title="SCM Branch used to host this FB development"><img src="images/fork_icon.png" alt="SCM Branch" title="SCM Branch" class="icon"/>&nbsp;<?= $descriptor_array->SCM_BRANCH ?><?php } ?></a></td>
                 <td class="col-center"><?php if (!empty($descriptor_array->ISSUE_NUM)) { ?><a href="https://jira.exoplatform.org/browse/<?=$descriptor_array->ISSUE_NUM?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature">&nbsp;<?= $descriptor_array->ISSUE_NUM ?></a><?php } ?></td>
                 <td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".", "_", $descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>
             <?php } ?>
@@ -166,7 +167,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                         <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="from" value="http://<?=$_SERVER['SERVER_NAME'] ?>">
+                        <input type="hidden" name="from" value="<?=currentPageURL() ?>">
                         <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
                         <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
                         <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
@@ -242,17 +243,20 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
 
                             <div class="controls" id="branch">
                                 <select name="branch">
+                                    <option value="UNSET">=== Undefined ===</option>
                                     <?php
                                     //List all projects
                                     $projects = getProjects();
                                     $features = getFeatureBranches($projects);
                                     foreach ($features as $feature => $FBProjects) {
-                                        ?>
-                                        <option <?php if (!empty($descriptor_array->SCM_BRANCH) && $descriptor_array->SCM_BRANCH === $feature) {
-                                            echo "selected";
-                                        }?>><?=$feature?>
-                                        </option>
-                                    <?php
+                                        if ((!empty($descriptor_array->SCM_BRANCH) && $descriptor_array->SCM_BRANCH === $feature) || !in_array($feature, getFeatureBranches($projects))) {
+                                            ?>
+                                            <option <?php if (!empty($descriptor_array->SCM_BRANCH) && $descriptor_array->SCM_BRANCH === $feature) {
+                                                echo "selected";
+                                            }?>><?=$feature?>
+                                            </option>
+                                        <?php
+                                        }
                                     }
                                     ?>
                                 </select>

@@ -26,11 +26,6 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
             var s = document.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(ga, s);
         })();
-        var shiftWindow = function () {
-            scrollBy(0, -50)
-        };
-        if (location.hash) shiftWindow();
-        window.addEventListener("hashchange", shiftWindow);
     </script>
 </head>
 <body>
@@ -55,6 +50,8 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
             <div class="row-fluid">
                 <div class="span12">
                     <p>This page summarizes all Git feature branches (<code>feature/*</code>) and their status compared to each project <code>master</code> branch.</p>
+
+                    <h3>Branches deployed on acceptance</h3>
                     <?php
                     //List all projects
                     $projects = getProjects();
@@ -70,18 +67,58 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
                         </tr>
                         </thead>
                         <tbody>
-                        <?php foreach ($features as $feature => $FBProjects) { ?>
-                            <tr>
-                                <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?></td>
-                                <?php foreach ($projects as $project) { ?>
-                                    <td class="col-center">
-                                        <?php if (array_key_exists($project, $FBProjects)) { ?>
-                                            <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="Repository URL"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> behind</span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $FBProjects[$project]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $FBProjects[$project]['ahead_commits'] ?> ahead<?php }?></a>
-                                        <?php }?>
-                                    </td>
-                                <?php } ?>
-                            </tr>
-                        <?php } ?>
+                        <?php
+                        foreach ($features as $feature => $FBProjects) {
+                            if (in_array($feature, getAcceptanceBranches())) {
+                                ?>
+                                <tr>
+                                    <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?></td>
+                                    <?php foreach ($projects as $project) { ?>
+                                        <td class="col-center">
+                                            <?php if (array_key_exists($project, $FBProjects)) { ?>
+                                                <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="Repository URL"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> behind</span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $FBProjects[$project]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $FBProjects[$project]['ahead_commits'] ?> ahead<?php }?></a>
+                                            <?php }?>
+                                        </td>
+                                    <?php } ?>
+                                </tr>
+                            <?php
+                            }
+                        } ?>
+                        </tbody>
+                    </table>
+                    <h3>Others branches</h3>
+                    <?php
+                    //List all projects
+                    $projects = getProjects();
+                    $features = getFeatureBranches($projects);
+                    ?>
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-center">Branch feature/*</th>
+                            <?php foreach ($projects as $project) { ?>
+                                <th class="col-center"><?=$project?></th>
+                            <?php } ?>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        foreach ($features as $feature => $FBProjects) {
+                            if (!in_array($feature, getAcceptanceBranches())) {
+                                ?>
+                                <tr>
+                                    <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?></td>
+                                    <?php foreach ($projects as $project) { ?>
+                                        <td class="col-center">
+                                            <?php if (array_key_exists($project, $FBProjects)) { ?>
+                                                <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="Repository URL"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> behind</span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $FBProjects[$project]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $FBProjects[$project]['ahead_commits'] ?> ahead<?php }?></a>
+                                            <?php }?>
+                                        </td>
+                                    <?php } ?>
+                                </tr>
+                            <?php
+                            }
+                        } ?>
                         </tbody>
                     </table>
                 </div>

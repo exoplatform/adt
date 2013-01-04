@@ -238,6 +238,25 @@ function getLocalAcceptanceInstances()
     return $instances;
 }
 
+function getAcceptanceBranches()
+{
+    $branches = apc_fetch('acceptance_branches');
+
+    if (empty($branches)) {
+        $branches = array();
+        foreach (getGlobalAcceptanceInstances() as $descriptor_arrays) {
+            foreach ($descriptor_arrays as $descriptor_array) {
+                if (!empty($descriptor_array->SCM_BRANCH)) {
+                    $branches[] = $descriptor_array->SCM_BRANCH;
+                }
+            }
+        }
+        // Instances will be cached for 2 min
+        apc_store('acceptance_branches', $branches, 120);
+    }
+    return $branches;
+}
+
 
 function getGlobalAcceptanceInstances()
 {
