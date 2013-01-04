@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
 require_once(dirname(__FILE__) . '/lib/functions.php');
-
+checkCaches();
 $file = $_GET['file'];
 $num_latest = 30; //the number of errors to show in the "Last Few Errors" section
 ?>

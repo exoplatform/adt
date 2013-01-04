@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <?php
 require_once(dirname(__FILE__) . '/lib/functions.php');
+checkCaches();
 ?>
 <html>
 <head>

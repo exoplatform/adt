@@ -274,4 +274,22 @@ function getGlobalAcceptanceInstances()
     return $instances;
 }
 
+function clearCaches()
+{
+    apc_delete("features");
+    apc_delete("projects");
+    apc_delete("local_instances");
+    apc_delete("all_instances");
+    apc_delete("acceptance_branches");
+}
+
+function checkCaches()
+{
+    if (array_key_exists('clearCaches', $_GET)) {
+        clearCaches();
+        header("Location: " . str_replace("?clearCaches=true", "", currentPageURL())); /* Redirect browser */
+        /* Make sure that code below does not get executed when we redirect. */
+        exit;
+    }
+}
 ?>
