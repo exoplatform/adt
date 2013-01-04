@@ -237,6 +237,28 @@ while ($descriptor_arrays = current($all_instances)) {
                                 <span class="help-block">Current status of the feature branch</span>
                             </div>
                         </div>
+                        <div class="control-group">
+                            <label class="control-label" for="branch"><strong>Git branch</strong></label>
+
+                            <div class="controls" id="branch">
+                                <select name="branch">
+                                    <?php
+                                    //List all projects
+                                    $projects = getProjects();
+                                    $features = getFeatureBranches($projects);
+                                    foreach ($features as $feature => $FBProjects) {
+                                        ?>
+                                        <option <?php if (!empty($descriptor_array->SCM_BRANCH) && $descriptor_array->SCM_BRANCH === $feature) {
+                                            echo "selected";
+                                        }?>><?=$feature?>
+                                        </option>
+                                    <?php
+                                    }
+                                    ?>
+                                </select>
+                                <span class="help-block">Git branch hosting this development</span>
+                            </div>
+                        </div>
                     </div>
                     <div class="modal-footer">
                         <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
