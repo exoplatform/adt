@@ -1160,7 +1160,7 @@ do_load_php_server() {
   updateRepos
   export ADT_DATA=${ADT_DATA}
   echo "[INFO] The Web server will be started on http://localhost:8080/"
-  php -S 0.0.0.0:8080 -t ${SCRIPT_DIR}/var/www
+  php -S localhost:8080 -t ${SCRIPT_DIR}/var/www
 }
 
 # no action ? provide help
