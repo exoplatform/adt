@@ -56,7 +56,7 @@ checkCaches();
                     <?php
                     //List all projects
                     $projects = getProjects();
-                    $features = getFeatureBranches($projects);
+                    $features = getFeatureBranches();
                     ?>
                     <table class="table table-bordered table-hover">
                         <thead>
@@ -88,11 +88,6 @@ checkCaches();
                         </tbody>
                     </table>
                     <h3>Others branches</h3>
-                    <?php
-                    //List all projects
-                    $projects = getProjects();
-                    $features = getFeatureBranches($projects);
-                    ?>
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>

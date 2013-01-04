@@ -122,13 +122,13 @@ function getProjects()
     return $projects;
 }
 
-function getFeatureBranches($projects)
+function getFeatureBranches()
 {
     $features = apc_fetch('features');
 
     if (empty($features)) {
         $features = array();
-        foreach ($projects as $project) {
+        foreach (getProjects() as $project) {
             $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
             $branches = array_filter(preg_replace('/.*\/feature\//', '', array_filter(explode("\n", $repoObject->git('branch -r')), 'isFeature')));
             foreach ($branches as $branch) {
