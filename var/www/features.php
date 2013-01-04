@@ -19,14 +19,21 @@ checkCaches();
         _gaq.push(['_setAccount', 'UA-1292368-28']);
         _gaq.push(['_trackPageview']);
 
-        (function () {
+        $(document).ready(function () {
             var ga = document.createElement('script');
             ga.type = 'text/javascript';
             ga.async = true;
             ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
             var s = document.getElementsByTagName('script')[0];
             s.parentNode.insertBefore(ga, s);
-        })();
+            $("tr").on("click", function (event) {
+                $(this).addClass('highlight').siblings().removeClass('highlight');
+            });
+            if (window.location.hash.length > 0) {
+                $trSelector = "a[name=" + window.location.hash.substring(1, window.location.hash.length) + "]";
+                $($trSelector).parents('tr').addClass('highlight').siblings().removeClass('highlight');
+            }
+        });
     </script>
 </head>
 <body>

@@ -291,9 +291,13 @@ table th.col-center, table td.col-center {
   text-align : center;
 }
 
+tr.highlight td {
+  background-color : #ffd700;
+}
+
 /* Fix for anchors due to fix navbar usage - see http://stackoverflow.com/questions/9047703/fixed-position-navbar-obscures-anchors */
 a[name] {
-  padding-top: 64px;
-  margin-top: -64px;
-  display: inline-block; /* required for webkit browsers */
+  padding-top : 64px;
+  margin-top  : -64px;
+  display     : inline-block; /* required for webkit browsers */
 }
