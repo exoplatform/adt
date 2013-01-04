@@ -13,7 +13,7 @@ Mandatory :
 Optional :
 
   * A mysql server with a local configuration (~/.my.cnf) that allows the current system user to create databases and grant rights. You can activate the usage of MySQL with the environment variable : DEPLOYMENT_DATABASE_TYPE=MYSQL
-  * An apache server to display the list of instances and to create a reverse proxy for all instances. Deactivated by default you can activate this feature with the environment variable : DEPLOYMENT_SETUP_APACHE=true
+  * An apache server (with PHP and its APC module) to display the list of instances and to create a reverse proxy for all instances. Deactivated by default you can activate this feature with the environment variable : DEPLOYMENT_SETUP_APACHE=true
   * An UFW firewall to protect your (ubuntu server). The script will automatically open or close required ports (HTTP, JMX, ...). Deactivated by default you can activate this feature with the environment variable : DEPLOYMENT_SETUP_UFM=true
   * An awstats instance to keep statistics of usage. Deactivated by default you can activate this feature with the environment variable : DEPLOYMENT_SETUP_AWSTATS=true
 
