@@ -38,7 +38,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container-fluid">
-            <a class="brand" href="#"><?=$_SERVER['SERVER_NAME'] ?></a>
+            <a class="brand" href="/"><?=$_SERVER['SERVER_NAME'] ?></a>
             <ul class="nav">
                 <li><a href="/">Home</a></li>
                 <li class="active"><a href="/features.php">Features</a></li>

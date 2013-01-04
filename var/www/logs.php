@@ -37,7 +37,7 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
 <div class="navbar navbar-fixed-top">
     <div class="navbar-inner">
         <div class="container-fluid">
-            <a class="brand" href="#"><?=$_SERVER['SERVER_NAME'] ?></a>
+            <a class="brand" href="/"><?=$_SERVER['SERVER_NAME'] ?></a>
             <ul class="nav">
                 <li><a href="/">Home</a></li>
                 <li><a href="/features.php">Features</a></li>
