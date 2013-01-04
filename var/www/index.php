@@ -66,17 +66,17 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 <tbody>
 <?php
 $all_instances = getGlobalAcceptanceInstances();
-while ($descriptor_arrays = current($all_instances)) {
+foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
         <td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
             <?php
-            if (key($all_instances) === "4.0.x") {
-                echo "Platform " . key($all_instances) . " based build (R&D)";
-            } elseif (key($all_instances) === "UNKNOWN") {
+            if ($plf_branch === "4.0.x") {
+                echo "Platform " . $plf_branch . " based build (R&D)";
+            } elseif ($plf_branch === "UNKNOWN") {
                 echo "Unclassified projects";
             } else {
-                echo "Platform " . key($all_instances) . " based build (Maintenance)";
+                echo "Platform " . $plf_branch . " based build (Maintenance)";
             }
             ?>
         </td>
