@@ -65,21 +65,18 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 </thead>
 <tbody>
 <?php
-$merged_list = array();
-$merged_list = append_data('http://acceptance.exoplatform.org/list.php', $merged_list);
-$merged_list = append_data('http://acceptance2.exoplatform.org/list.php', $merged_list);
-$merged_list = append_data('http://acceptance3.exoplatform.org/list.php', $merged_list);
-while ($descriptor_arrays = current($merged_list)) {
+$all_instances = getGlobalAcceptanceInstances();
+while ($descriptor_arrays = current($all_instances)) {
     ?>
     <tr>
         <td colspan="10" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
             <?php
-            if (key($merged_list) === "4.0.x") {
-                echo "Platform " . key($merged_list) . " based build (R&D)";
-            } elseif (key($merged_list) === "UNKNOWN") {
+            if (key($all_instances) === "4.0.x") {
+                echo "Platform " . key($all_instances) . " based build (R&D)";
+            } elseif (key($all_instances) === "UNKNOWN") {
                 echo "Unclassified projects";
             } else {
-                echo "Platform " . key($merged_list) . " based build (Maintenance)";
+                echo "Platform " . key($all_instances) . " based build (Maintenance)";
             }
             ?>
         </td>
@@ -250,7 +247,7 @@ while ($descriptor_arrays = current($merged_list)) {
         <?php
         }
     }
-    next($merged_list);
+    next($all_instances);
 }
 ?>
 </tbody>

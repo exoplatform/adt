@@ -157,9 +157,9 @@ function getFeatureBranches($projects)
     return $features;
 }
 
-function getAcceptanceInstances()
+function getLocalAcceptanceInstances()
 {
-    $instances = apc_fetch('instances');
+    $instances = apc_fetch('local_instances');
 
     if (empty($instances)) {
         $instances = array();
@@ -233,7 +233,24 @@ function getAcceptanceInstances()
                 $instances[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
         }
         // Instances will be cached for 2 min
-        apc_store('instances', $instances, 20);
+        apc_store('local_instances', $instances, 120);
+    }
+    return $instances;
+}
+
+
+function getGlobalAcceptanceInstances()
+{
+    $instances = apc_fetch('all_instances');
+
+    if (empty($instances)) {
+        $instances = array();
+        $instances = append_data('http://acceptance.exoplatform.org/list.php', $instances);
+        $instances = append_data('http://acceptance2.exoplatform.org/list.php', $instances);
+        $instances = append_data('http://acceptance3.exoplatform.org/list.php', $instances);
+
+        // Instances will be cached for 2 min
+        apc_store('all_instances', $instances, 120);
     }
     return $instances;
 }
