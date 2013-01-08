@@ -4,7 +4,7 @@
 # Initialize
 # #############################################################################                                              
 SCRIPT_NAME="${0##*/}"
-SCRIPT_DIR="${0%/*}"
+SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 #
 # LOAD PARAMETERS FROM SERVER AND USER SETTINGS
