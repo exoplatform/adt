@@ -73,26 +73,7 @@ checkCaches();
                         </thead>
                         <tbody>
                         <?php
-                        function append_data($url, $data)
-                        {
-                            $result = $data;
-                            $values = (array)json_decode(file_get_contents($url));
-                            while ($entry = current($values)) {
-                                $key = key($values);
-                                if (!array_key_exists($key, $data)) {
-                                    $result[$key] = $entry;
-                                } else {
-                                    $result[$key] = array_merge($entry, $data[$key]);
-                                }
-                                ;
-                                next($values);
-                            }
-                            return $result;
-                        }
-                        $merged_list = array();
-                        $merged_list = append_data('http://acceptance.exoplatform.org/list.php', $merged_list);
-                        $merged_list = append_data('http://acceptance2.exoplatform.org/list.php', $merged_list);
-                        $merged_list = append_data('http://acceptance3.exoplatform.org/list.php', $merged_list);
+                        $merged_list = getGlobalAcceptanceInstances();
                         $descriptor_arrays = array();
                         while ($tmp_array = current($merged_list)) {
                             $descriptor_arrays = array_merge($descriptor_arrays, $tmp_array);
