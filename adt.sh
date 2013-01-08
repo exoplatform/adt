@@ -948,14 +948,14 @@ do_start() {
     done
     # Display logs
     tail -f ${DEPLOYMENT_DIR}/logs/catalina.out &
-    local tailPID=$!
+    local _tailPID=$!
     # Check for the end of startup
     set +e
     while [ true ];
     do
       if grep -q "Server startup in" ${DEPLOYMENT_DIR}/logs/catalina.out; then
-        kill $tailPID
-        wait $tailPID 2 > /dev/null
+        kill ${_tailPID}
+        wait ${_tailPID} 2 > /dev/null
         break
       fi
     done
