@@ -591,6 +591,7 @@ do_unpack_server() {
   mkdir -p ${SRV_DIR}
   rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   cp -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+  rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   # We search the tomcat directory as the parent of a gatein directory
   pushd `find ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} -maxdepth 4 -mindepth 1 -name webapps -type d`/.. > /dev/null
   DEPLOYMENT_DIR=`pwd -P`
