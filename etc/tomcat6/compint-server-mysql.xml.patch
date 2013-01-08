@@ -7,7 +7,7 @@
 - 	    username="root" password="root"  driverClassName="com.mysql.jdbc.Driver"
 -        url="jdbc:mysql://localhost/intranetdb_portal"/>
 + 	    username="@DB_JCR_USR@" password="@DB_JCR_PWD@"  driverClassName="com.mysql.jdbc.Driver"
-+        url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@"/>
++        url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true"/>
  
  	 <!-- eXo IDM Datasource for portal -->
  	 <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
@@ -16,6 +16,6 @@
 -   		username="root" password="root" driverClassName="com.mysql.jdbc.Driver"
 -   		url="jdbc:mysql://localhost/intranetdb_users_portal"/>
 +   		username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver"
-+   		url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@"/>
++   		url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@?autoReconnect=true"/>
    
    </GlobalNamingResources>

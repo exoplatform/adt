@@ -920,11 +920,11 @@ do_start() {
     export EXO_DS_IDM_DRIVER="com.mysql.jdbc.Driver"
     export EXO_DS_IDM_USERNAME="${DEPLOYMENT_DATABASE_USER}"
     export EXO_DS_IDM_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
-    export EXO_DS_IDM_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}"
+    export EXO_DS_IDM_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
     export EXO_DS_PORTAL_DRIVER="com.mysql.jdbc.Driver"
     export EXO_DS_PORTAL_USERNAME="${DEPLOYMENT_DATABASE_USER}"
     export EXO_DS_PORTAL_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
-    export EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}"
+    export EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
 
     # Additional settings
     for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
