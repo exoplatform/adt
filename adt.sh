@@ -304,8 +304,8 @@ initialize_product_settings() {
       # To reuse patches between products
       env_var "PORTS_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "JMX_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "MYSQL_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "MYSQL_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "DB_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "DB_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
 
       # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
       # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
@@ -443,8 +443,8 @@ initialize_product_settings() {
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
           env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
+          env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
+          env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
         ;;
         plfcom)
@@ -454,8 +454,8 @@ initialize_product_settings() {
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
           env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var MYSQL_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
+          env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
+          env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
         ;;
         compint)
@@ -465,7 +465,7 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "exo-intranet-package"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var MYSQL_GATEIN_PATCH_PRODUCT_NAME "plf"
+          env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
         ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
@@ -496,9 +496,9 @@ initialize_product_settings() {
       # Patch to reconfigure server.xml for JMX
       find_patch JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure server.xml for MySQL
-      find_patch MYSQL_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml" "${MYSQL_SERVER_PATCH_PRODUCT_NAME}"
+      find_patch DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml" "${DB_SERVER_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
-      find_patch MYSQL_GATEIN_PATCH "${ETC_DIR}/gatein" "configuration.properties" "${MYSQL_GATEIN_PATCH_PRODUCT_NAME}"
+      find_patch DB_GATEIN_PATCH "${ETC_DIR}/gatein" "configuration.properties" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
     ;;
     start | stop | restart | undeploy)
     # Mandatory env vars. They need to be defined before launching the script
@@ -716,10 +716,10 @@ do_configure_server_for_database() {
         tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
 
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
-        if [ "${MYSQL_GATEIN_PATCH}" != "UNSET" ]; then
+        if [ "${DB_GATEIN_PATCH}" != "UNSET" ]; then
           # Prepare the patch
-          cp $MYSQL_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-          echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $MYSQL_GATEIN_PATCH ..."
+          cp $DB_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+          echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $DB_GATEIN_PATCH ..."
           cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori
           patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
           cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched
@@ -736,15 +736,15 @@ do_configure_server_for_database() {
       fi
 
       # Reconfigure server.xml for MySQL
-      if [ "${MYSQL_SERVER_PATCH}" != "UNSET" ]; then
+      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
-        cp $MYSQL_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-mysql.xml.patch
-        echo $MYSQL_SERVER_PATCH
-        echo "[INFO] Applying on server.xml the patch $MYSQL_SERVER_PATCH ..."
-        echo $MYSQL_SERVER_PATCH
-        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-mysql
-        patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-mysql.xml.patch
-        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-mysql
+        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        echo $DB_SERVER_PATCH
+        echo "[INFO] Applying on server.xml the patch $DB_SERVER_PATCH ..."
+        echo $DB_SERVER_PATCH
+        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
 
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
@@ -756,7 +756,25 @@ do_configure_server_for_database() {
       fi
     ;;
     HSQLDB)
-      echo "[INFO] Using default HSQLDB database. Nothing to do."
+      # Reconfigure server.xml for MySQL
+      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
+        # Prepare the patch
+        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        echo $DB_SERVER_PATCH
+        echo "[INFO] Applying on server.xml the patch $DB_SERVER_PATCH ..."
+        echo $DB_SERVER_PATCH
+        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        echo "[INFO] Done."
+      fi
     ;;
     *)
       echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""

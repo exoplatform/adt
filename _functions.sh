@@ -16,6 +16,17 @@ case "`uname`" in
   Darwin*) DARWIN=true ;;
 esac
 
+# Converts $1 in upper case
+toupper() {
+  echo "$1" | tr '[:lower:]' '[:upper:]'
+}
+
+# Converts $1 in lower case
+tolower() {
+  echo "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+
 # Checks that the env var with the name provided in param is defined
 validate_env_var() {
   set +u
