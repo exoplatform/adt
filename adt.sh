@@ -973,7 +973,7 @@ do_start() {
     do
       if grep -q "Server startup in" ${DEPLOYMENT_DIR}/logs/catalina.out; then
         kill ${_tailPID}
-        wait ${_tailPID} 2 > /dev/null
+        wait ${_tailPID} 2> /dev/null
         break
       fi
     done
