@@ -145,7 +145,7 @@
         # Only exo-employees can access
         Require group exo-employees 
     </Location>   
-    <Location /list.php>
+    <Location /rest/list.php>
         Order deny,allow
         Allow from all		
         Satisfy any
