@@ -930,11 +930,11 @@ do_start() {
     ########################################
     # Externalized configuration for PLF 4
     ########################################
-    export EXO_TOMCAT_SHUTDOWN_PORT="${DEPLOYMENT_SHUTDOWN_PORT}"
-    export EXO_TOMCAT_RMI_REGISTRY_PORT="${DEPLOYMENT_RMI_REG_PORT}"
-    export EXO_TOMCAT_RMI_SERVER_PORT="${DEPLOYMENT_RMI_SRV_PORT}"
-    export EXO_HTTP_PORT="${DEPLOYMENT_HTTP_PORT}"
-    export EXO_AJP_PORT="${DEPLOYMENT_AJP_PORT}"
+    export EXO_TOMCAT_SHUTDOWN_PORT=${DEPLOYMENT_SHUTDOWN_PORT}
+    export EXO_TOMCAT_RMI_REGISTRY_PORT=${DEPLOYMENT_RMI_REG_PORT}
+    export EXO_TOMCAT_RMI_SERVER_PORT=${DEPLOYMENT_RMI_SRV_PORT}
+    export EXO_HTTP_PORT=${DEPLOYMENT_HTTP_PORT}
+    export EXO_AJP_PORT=${DEPLOYMENT_AJP_PORT}
     export EXO_DS_IDM_DRIVER="com.mysql.jdbc.Driver"
     export EXO_DS_IDM_USERNAME="${DEPLOYMENT_DATABASE_USER}"
     export EXO_DS_IDM_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
@@ -949,6 +949,26 @@ do_start() {
     do
       export ${_var} = $(eval echo \${$_var})
     done
+
+    #Display the deployment descriptor
+    echo "[INFO] ========================= Deployment Descriptor ========================="
+    cat ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+    echo "[INFO] ================== Externalized configuration for PLF 4 ================="
+    echo EXO_TOMCAT_SHUTDOWN_PORT=${EXO_TOMCAT_SHUTDOWN_PORT}
+    echo EXO_TOMCAT_RMI_REGISTRY_PORT=${EXO_TOMCAT_RMI_REGISTRY_PORT}
+    echo EXO_TOMCAT_RMI_SERVER_PORT=${EXO_TOMCAT_RMI_SERVER_PORT}
+    echo EXO_HTTP_PORT=${EXO_HTTP_PORT}
+    echo EXO_AJP_PORT=${EXO_AJP_PORT}
+    echo EXO_DS_IDM_DRIVER=${EXO_DS_IDM_DRIVER}
+    echo EXO_DS_IDM_USERNAME=${EXO_DS_IDM_USERNAME}
+    echo EXO_DS_IDM_PASSWORD=${EXO_DS_IDM_PASSWORD}
+    echo EXO_DS_IDM_URL=${EXO_DS_IDM_URL}
+    echo EXO_DS_PORTAL_DRIVER=${EXO_DS_PORTAL_DRIVER}
+    echo EXO_DS_PORTAL_USERNAME=${EXO_DS_PORTAL_USERNAME}
+    echo EXO_DS_PORTAL_PASSWORD=${EXO_DS_PORTAL_PASSWORD}
+    echo EXO_DS_PORTAL_URL=${EXO_DS_PORTAL_URL}		
+    echo "[INFO] ========================================================================="
+
     cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
 
     # We need to backup existing logs if they already exist
