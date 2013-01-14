@@ -860,7 +860,7 @@ do_create_deployment_descriptor() {
   # Additional settings
   for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
   do
-    echo "${_var}=$(evalecho\${$_var})" >> ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+    echo "${_var}=$(eval echo\${$_var})" >> ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   done
   echo "[INFO] Done."
   #Display the deployment descriptor
@@ -871,7 +871,7 @@ do_create_deployment_descriptor() {
 
 do_load_deployment_descriptor() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME}${PRODUCT_VERSION} isn't deployed !"
+    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo "[WARNING] You need to deploy it first."
     exit 1
   else
@@ -883,7 +883,7 @@ do_load_deployment_descriptor() {
 # Function that deploys (Download+configure) the app server
 #
 do_deploy() {
-  echo "[INFO] Deploying server ${PRODUCT_NAME}${PRODUCT_VERSION} ..."
+  echo "[INFO] Deploying server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
   do_download_server
   if ${DEPLOYMENT_ENABLED}; then
     if ${DEPLOYMENT_DATABASE_ENABLED}; then
@@ -907,13 +907,13 @@ do_start() {
   # We load its settings from the configuration
   do_load_deployment_descriptor
   if ${DEPLOYMENT_ENABLED}; then
-    echo "[INFO] Starting server ${PRODUCT_NAME}${PRODUCT_VERSION} ..."
+    echo "[INFO] Starting server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
     chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
     mkdir -p ${DEPLOYMENT_DIR}/logs
     export CATALINA_HOME=${DEPLOYMENT_DIR}
     export CATALINA_PID=${DEPLOYMENT_PID_FILE}
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-    export JAVA_OPTS="$JAVA_JRMP_OPTS$DEPLOYMENT_EXTRA_JAVA_OPTS"
+    export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
     if [ "${PRODUCT_NAME}" == "plf" ]; then
       case "${PRODUCT_BRANCH}" in
         "3.0.x" | "3.5.x")
@@ -993,7 +993,7 @@ do_start() {
 #
 do_stop() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME}${PRODUCT_VERSION} isn't deployed !"
+    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo "[WARNING] The product cannot be stopped"
     exit 0
   else
@@ -1002,7 +1002,7 @@ do_stop() {
     do_load_deployment_descriptor
     if ${DEPLOYMENT_ENABLED}; then
       if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
-        echo "[INFO] Stopping server ${PRODUCT_NAME}${PRODUCT_VERSION} ..."
+        echo "[INFO] Stopping server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
         export CATALINA_HOME=${DEPLOYMENT_DIR}
         export CATALINA_PID=${DEPLOYMENT_PID_FILE}
         ########################################
@@ -1031,7 +1031,7 @@ do_stop() {
 #
 do_undeploy() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME}${PRODUCT_VERSION} isn't deployed !"
+    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo "[WARNING] The product cannot be undeployed"
     exit 0
   else
@@ -1044,7 +1044,7 @@ do_undeploy() {
       if ${DEPLOYMENT_DATABASE_ENABLED}; then
         do_drop_database
       fi
-      echo "[INFO] Undeploying server ${PRODUCT_NAME}${PRODUCT_VERSION} ..."
+      echo "[INFO] Undeploying server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
       if ${DEPLOYMENT_SETUP_AWSTATS}; then
         # Delete Awstat config
         rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
