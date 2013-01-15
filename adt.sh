@@ -1096,7 +1096,7 @@ do_undeploy() {
 # Function that lists all deployed servers
 #
 do_list() {
-  if [ "$(ls-A${ADT_CONF_DIR})" ]; then
+  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
     echo "[INFO] Deployed servers : "
     printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "HTTP_P" "AJP_P" "SHUTDOWN_P" "JMX_REG_P" "JMX_SRV_P" "RUNNING"
     printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" "==========" "====================" "==========" "==========" "==========" "==========" "==========" "=========="
@@ -1126,7 +1126,7 @@ do_list() {
 # Function that starts all deployed servers
 #
 do_start_all() {
-  if [ "$(ls-A${ADT_CONF_DIR})" ]; then
+  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
     echo "[INFO] Starting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
@@ -1143,7 +1143,7 @@ do_start_all() {
 # Function that restarts all deployed servers
 #
 do_restart_all() {
-  if [ "$(ls-A${ADT_CONF_DIR})" ]; then
+  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
     echo "[INFO] Restarting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
@@ -1161,7 +1161,7 @@ do_restart_all() {
 # Function that stops all deployed servers
 #
 do_stop_all() {
-  if [ "$(ls-A${ADT_CONF_DIR})" ]; then
+  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
     echo "[INFO] Stopping all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
@@ -1178,7 +1178,7 @@ do_stop_all() {
 # Function that undeploys all deployed servers
 #
 do_undeploy_all() {
-  if [ "$(ls-A${ADT_CONF_DIR})" ]; then
+  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
     echo "[INFO] Undeploying all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
