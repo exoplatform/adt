@@ -100,6 +100,10 @@ Action :
   undeploy-all Undeploys (deletes) all deployed servers
   list         Lists all deployed servers
 
+  init         Initializes the environment
+  update-repos Update Git repositories used by the web front-end
+  web-server   Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
+
 Environment Variables :
 
   They may be configured in the current shell environment or /etc/default/adt or \$HOME/.adtrc
@@ -202,19 +206,6 @@ init() {
   if [[ "${SCRIPT_DIR}" != "${ADT_DATA}" ]]; then
     rm -rf ${ETC_DIR}/*
     cp -rf ${SCRIPT_DIR}/* ${ADT_DATA}
-  fi
-  # Create the main vhost from the template
-  if ${DEPLOYMENT_SETUP_APACHE}; then
-    validate_env_var "ADT_DATA"
-    validate_env_var "ACCEPTANCE_HOST"
-    validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
-    validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
-    evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
-    evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-    if [ "${DIST}" == "Ubuntu" ]; then
-      sudo /usr/sbin/service apache2 reload
-    fi
-    updateRepos
   fi
 }
 
@@ -1224,7 +1215,19 @@ init
 
 case "${ACTION}" in
   init)
-  # Nothing specific to do
+    updateRepos
+    # Create the main vhost from the template
+    if ${DEPLOYMENT_SETUP_APACHE}; then
+      validate_env_var "ADT_DATA"
+      validate_env_var "ACCEPTANCE_HOST"
+      validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
+      validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
+      evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
+      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+      if [ "${DIST}" == "Ubuntu" ]; then
+        sudo /usr/sbin/service apache2 reload
+      fi
+    fi
   ;;
   deploy)
     initialize_product_settings
@@ -1262,7 +1265,11 @@ case "${ACTION}" in
   undeploy-all)
     do_undeploy_all
   ;;
+  update-repos)
+    updateRepos
+  ;;
   web-server)
+    updateRepos
     do_load_php_server
   ;;
   *)
