@@ -492,7 +492,7 @@ initialize_product_settings() {
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
       find_patch DB_GATEIN_PATCH "${ETC_DIR}/gatein" "configuration.properties" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
     ;;
-    start | stop | restart | undeploy)
+    start | stop | restart | clean-restart | undeploy)
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION" ;;
