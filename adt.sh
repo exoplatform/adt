@@ -1255,7 +1255,6 @@ case "${ACTION}" in
         echo "[INFO] Recreating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
         SQL="";
         SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
-        echo "[INFO] Existing databases will be dropped !"
         SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME} CHARACTER SET latin1 COLLATE latin1_bin;"
         mysql -e "$SQL"
         echo "[INFO] Done."
