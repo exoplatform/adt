@@ -88,21 +88,22 @@ print_usage() {
 This script manages automated deployment of eXo products for testing purpose.
 
 Action :
-  deploy       Deploys (Download+Configure) the server
-  start        Starts the server
-  stop         Stops the server
-  restart      Restarts the server
-  undeploy     Undeploys (deletes) the server
+  deploy         Deploys (Download+Configure) the server
+  start          Starts the server
+  stop           Stops the server
+  restart        Restarts the server
+  clean-restart  Restarts the server after having deleted all existing data
+  undeploy       Undeploys (deletes) the server
 
-  start-all    Starts all deployed servers
-  stop-all     Stops all deployed servers
-  restart-all  Restarts all deployed servers
-  undeploy-all Undeploys (deletes) all deployed servers
-  list         Lists all deployed servers
+  start-all      Starts all deployed servers
+  stop-all       Stops all deployed servers
+  restart-all    Restarts all deployed servers
+  undeploy-all   Undeploys (deletes) all deployed servers
+  list           Lists all deployed servers
 
-  init         Initializes the environment
-  update-repos Update Git repositories used by the web front-end
-  web-server   Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
+  init           Initializes the environment
+  update-repos   Update Git repositories used by the web front-end
+  web-server     Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
 
 Environment Variables :
 
@@ -1244,6 +1245,33 @@ case "${ACTION}" in
   restart)
     initialize_product_settings
     do_stop
+    do_start
+  ;;
+  clean-restart)
+    initialize_product_settings
+    do_stop
+    case ${DEPLOYMENT_DATABASE_TYPE} in
+      MYSQL)
+        echo "[INFO] Recreating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
+        SQL="";
+        SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
+        echo "[INFO] Existing databases will be dropped !"
+        SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME} CHARACTER SET latin1 COLLATE latin1_bin;"
+        mysql -e "$SQL"
+        echo "[INFO] Done."
+      ;;
+      HSQLDB)
+        # Nothing to do, it will be deleted with data
+      ;;
+      *)
+        echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+        print_usage
+        exit 1
+      ;;
+    esac
+    echo "[INFO] Dropping data ..."
+    rm -rf ${DEPLOYMENT_DIR}/gatein/data/*
+    echo "[INFO] Done."
     do_start
   ;;
   undeploy)
