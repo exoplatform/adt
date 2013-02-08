@@ -466,6 +466,14 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "platform-documentation-website-packaging"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var DEPLOYMENT_DATABASE_ENABLED false
+          case "${PRODUCT_BRANCH}" in
+            "4.0.x")
+              env_var PLF_BRANCH "4.0.x"
+            ;;
+            *)
+              env_var PLF_BRANCH "3.5.x"
+            ;;
+          esac
         ;;
         *)
           echo "[ERROR] Invalid product \"${PRODUCT_NAME}\""
