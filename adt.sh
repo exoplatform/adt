@@ -459,8 +459,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.intranet"
           env_var ARTIFACT_ARTIFACTID "exo-intranet-package"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
         ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
