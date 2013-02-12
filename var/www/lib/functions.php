@@ -266,6 +266,7 @@ function getGlobalAcceptanceInstances()
         $instances = append_data('http://acceptance.exoplatform.org/rest/list.php', $instances);
         $instances = append_data('http://acceptance2.exoplatform.org/rest/list.php', $instances);
         $instances = append_data('http://acceptance3.exoplatform.org/rest/list.php', $instances);
+        $instances = append_data('http://acceptance4.exoplatform.org/rest/list.php', $instances);				
         // Instances will be cached for 2 min
         apc_store('all_instances', $instances, 120);
     }
