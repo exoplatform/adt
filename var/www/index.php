@@ -9,11 +9,11 @@ checkCaches();
     <meta http-equiv="refresh" content="120">
     <title>Acceptance Live Instances</title>
     <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"/>
-    <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/css/bootstrap-combined.min.css" type="text/css" rel="stylesheet" media="all">
-    <link href="//netdna.bootstrapcdn.com/bootswatch/2.1.1/spacelab/bootstrap.min.css" type="text/css" rel="stylesheet" media="all">
+    <link href="//netdna.bootstrapcdn.com/bootswatch/2.3.0/spacelab/bootstrap.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
     <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js" type="text/javascript"></script>
-    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.2.2/js/bootstrap.min.js" type="text/javascript"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
+    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js" type="text/javascript"></script>
     <script type="text/javascript">
         var _gaq = _gaq || [];
         _gaq.push(['_setAccount', 'UA-1292368-28']);
@@ -70,7 +70,7 @@ $all_instances = getGlobalAcceptanceInstances();
 foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
-        <td colspan="11" style="background-color: #363636; color: #FBAD18; font-weight: bold;">
+        <td colspan="11" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
             <?php
             if ($plf_branch === "4.0.x") {
                 echo "Platform " . $plf_branch . " based build (R&D) - current";
@@ -119,15 +119,15 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 }
                 ?>
                 <?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?>
-                    <a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$product_html_label?></a>
+                    <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$product_html_label?></a>
                     <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
-                        <a rel="tooltip" title="Specifications" href="<?=$descriptor_array->SPECIFICATIONS_LINK?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
+                        <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                     <?php } ?>
                 <?php } else { ?>
                     <?= $product_html_label ?>
                 <?php } ?>
             </td>
-            <td class="col-center"><?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?><a href="<?=$descriptor_array->DEPLOYMENT_URL?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $base_version ?></a><?php } else { ?><?= $base_version ?><?php } ?></td>
+            <td class="col-center"><?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $base_version ?></a><?php } else { ?><?= $base_version ?><?php } ?></td>
             <?php if (empty($feature_branch)) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>
@@ -148,32 +148,37 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                         $acceptance_state_class = "label-success";
                     }
                     ?>
-                    <span class="label <?=$acceptance_state_class?>"><?=$descriptor_array->ACCEPTANCE_STATE?></span></td>
-                <td class="col-center"><?php if (!empty($descriptor_array->SCM_BRANCH)) { ?><a href="features.php#<?=str_replace(array("/", "."), "-", $descriptor_array->SCM_BRANCH)?>" rel="tooltip" title="SCM Branch used to host this FB development"><img src="images/fork_icon.png" alt="SCM Branch" title="SCM Branch" class="icon"/>&nbsp;<?= $descriptor_array->SCM_BRANCH ?><?php } ?></a></td>
-                <td class="col-center"><?php if (!empty($descriptor_array->ISSUE_NUM)) { ?><a href="https://jira.exoplatform.org/browse/<?=$descriptor_array->ISSUE_NUM?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature">&nbsp;<?= $descriptor_array->ISSUE_NUM ?></a><?php } ?></td>
-                <td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".", "_", $descriptor_array->PRODUCT_VERSION)?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>
+                    <span class="label <?= $acceptance_state_class ?>"><?=$descriptor_array->ACCEPTANCE_STATE?></span></td>
+                <td class="col-center"><?php if (!empty($descriptor_array->SCM_BRANCH)) { ?><a href="features.php#<?= str_replace(array("/", "."), "-", $descriptor_array->SCM_BRANCH) ?>" rel="tooltip" title="SCM Branch used to host this FB development"><img src="images/fork_icon.png" alt="SCM Branch" title="SCM Branch" class="icon"/>&nbsp;<?= $descriptor_array->SCM_BRANCH ?><?php } ?></a></td>
+                <td class="col-center"><?php if (!empty($descriptor_array->ISSUE_NUM)) { ?><a href="https://jira.exoplatform.org/browse/<?= $descriptor_array->ISSUE_NUM ?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature">&nbsp;<?= $descriptor_array->ISSUE_NUM ?></a><?php } ?></td>
+                <td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>
             <?php } ?>
-            <td class="col-center <?=$descriptor_array->ARTIFACT_AGE_CLASS?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
+            <td class="col-center <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
             <td class="col-center"><?php if ($descriptor_array->DEPLOYMENT_ENABLED) {
                     echo $descriptor_array->DEPLOYMENT_AGE_STRING;
                 } ?></td>
-            <td class="col-center"><?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?><a href="<?=$descriptor_array->DEPLOYMENT_LOG_APPSRV_URL?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs" class="left"/></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_LOG_APACHE_URL?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs" class="right"/></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_JMX_URL?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="center"/></a>&nbsp;<a href="<?=$descriptor_array->DEPLOYMENT_AWSTATS_URL?>" rel="tooltip" title="<?=$descriptor_array->PRODUCT_NAME . " " . $descriptor_array->PRODUCT_VERSION?> usage statistics" target="_blank"><img src="/images/server_chart.png"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         alt="<?=$descriptor_array->DEPLOYMENT_URL?> usage statistics"
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         width="16" height="16" class="center"/></a><?php } ?>
-                &nbsp;<a rel="tooltip" title="Download <?=$descriptor_array->ARTIFACT_GROUPID?>:<?=$descriptor_array->ARTIFACT_ARTIFACTID?>:<?=$descriptor_array->ARTIFACT_TIMESTAMP?> from Acceptance" href="<?=$descriptor_array->ARTIFACT_DL_URL?>"><i class="icon-download-alt"></i></a></td>
+            <td class="col-center">
+                <?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?>
+                    <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs" class="icon"/></a>&nbsp;
+                    <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs" class="icon"/></a>&nbsp;
+                    <a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a>&nbsp;
+                    <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="<?= $descriptor_array->PRODUCT_NAME . " " . $descriptor_array->PRODUCT_VERSION ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>&nbsp;
+                <?php } ?>
+                <a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="tooltip" title="Download <?= $descriptor_array->ARTIFACT_GROUPID ?>:<?= $descriptor_array->ARTIFACT_ARTIFACTID ?>:<?= $descriptor_array->ARTIFACT_TIMESTAMP ?> from Acceptance"><i class="icon-download-alt"></i></a>
+            </td>
         </tr>
         <?php if (!empty($feature_branch)) { ?>
-            <form class="form" action="http://<?=$descriptor_array->ACCEPTANCE_SERVER?>/editFeature.php" method="POST">
-                <div class="modal bigModal hide fade" id="edit-<?=$descriptor_array->PRODUCT_NAME?>-<?=str_replace(".", "_", $descriptor_array->PRODUCT_VERSION)?>" tabindex="-1" role="dialog" aria-labelledby="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>" aria-hidden="true">
+            <form class="form" action="http://<?= $descriptor_array->ACCEPTANCE_SERVER ?>/editFeature.php" method="POST">
+                <div class="modal bigModal hide fade" id="edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                        <h3 id="label-<?=$descriptor_array->PRODUCT_NAME?>-<?=$descriptor_array->PRODUCT_VERSION?>">Edit Feature Branch</h3>
+                        <h3 id="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>">Edit Feature Branch</h3>
                     </div>
                     <div class="modal-body">
-                        <input type="hidden" name="from" value="<?=currentPageURL() ?>">
-                        <input type="hidden" name="product" value="<?=$descriptor_array->PRODUCT_NAME?>">
-                        <input type="hidden" name="version" value="<?=$descriptor_array->PRODUCT_VERSION?>">
-                        <input type="hidden" name="server" value="<?=$descriptor_array->ACCEPTANCE_SERVER?>">
+                        <input type="hidden" name="from" value="<?= currentPageURL() ?>">
+                        <input type="hidden" name="product" value="<?= $descriptor_array->PRODUCT_NAME ?>">
+                        <input type="hidden" name="version" value="<?= $descriptor_array->PRODUCT_VERSION ?>">
+                        <input type="hidden" name="server" value="<?= $descriptor_array->ACCEPTANCE_SERVER ?>">
 
                         <div class="row-fluid">
                             <div class="span4"><strong>Product</strong></div>
@@ -194,7 +199,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                                     <label class="control-label" for="specifications"><strong>Specifications link</strong></label>
 
                                     <div class="controls">
-                                        <input class="input-xxlarge" type="url" id="specifications" name="specifications" placeholder="Url" value="<?=$descriptor_array->SPECIFICATIONS_LINK?>">
+                                        <input class="input-xxlarge" type="url" id="specifications" name="specifications" placeholder="Url" value="<?= $descriptor_array->SPECIFICATIONS_LINK ?>">
                                         <span class="help-block">eXo intranet URL of specifications</span>
                                     </div>
                                 </div>
@@ -206,7 +211,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                                     <label class="control-label" for="issue"><strong>Issue key</strong></label>
 
                                     <div class="controls">
-                                        <input class="input-medium" type="text" id="issue" name="issue" placeholder="XXX-nnnn" value="<?=$descriptor_array->ISSUE_NUM?>">
+                                        <input class="input-medium" type="text" id="issue" name="issue" placeholder="XXX-nnnn" value="<?= $descriptor_array->ISSUE_NUM ?>">
                                         <span class="help-block">Issue key where testers can give a feedback.</span>
                                     </div>
                                 </div>
@@ -295,7 +300,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
 </table>
 <p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and these credentials : <strong><code>acceptanceMonitor</code></strong> / <strong><code>monitorAcceptance!</code></strong></p>
 
-<p><a href="/stats/awstats.pl?config=<?=$_SERVER['SERVER_NAME'] ?>" title="http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left"/>http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>
+<p><a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" title="http://<?= $_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left"/>http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>
 </div>
 </div>
 </div>
