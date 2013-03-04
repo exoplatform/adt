@@ -389,7 +389,6 @@ initialize_product_settings() {
             # 4.0.x and +
               env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
               env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-              env_var "DEPLOYMENT_SERVER_LOGS_FILE" "platform.log"
               env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
               env_var PLF_BRANCH "${PRODUCT_BRANCH}"
               env_var EXO_PROFILES "all"
@@ -402,7 +401,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var "DEPLOYMENT_SERVER_LOGS_FILE" "platform.log"
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
@@ -902,6 +900,8 @@ do_start() {
     export JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
     export CATALINA_OPTS="$JAVA_JRMP_OPTS"
     export EXO_PROFILES="${EXO_PROFILES}"
+    export EXO_LOGS_DISPLAY_CONSOLE=true
+    export EXO_LOGS_CONSOLE_COLORIZED=true
     ########################################
     # Externalized configuration for PLF 4
     ########################################
