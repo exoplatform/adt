@@ -1,0 +1,29 @@
+--- server.xml	2013-03-04 20:08:39.000000000 +0100
++++ server.xml	2013-03-04 20:14:01.000000000 +0100
+@@ -23,7 +23,7 @@
+      define subcomponents such as "Valves" at this level.
+      Documentation at /docs/config/server.html
+  -->
+-<Server port="8005" shutdown="SHUTDOWN">
++<Server port="@SHUTDOWN_PORT@" shutdown="SHUTDOWN">
+ 
+   <!-- Security listener. Documentation at /docs/config/listeners.html
+   <Listener className="org.apache.catalina.security.SecurityListener" />
+@@ -103,7 +103,7 @@
+          APR (HTTP/AJP) Connector: /docs/apr.html
+          Define a non-SSL HTTP/1.1 Connector on port 8080
+     -->
+-    <Connector address="0.0.0.0" port="8080" protocol="org.apache.coyote.http11.Http11NioProtocol"
++    <Connector address="0.0.0.0" port="@HTTP_PORT@" protocol="org.apache.coyote.http11.Http11NioProtocol"
+                enableLookups="false" redirectPort="8443"
+                connectionTimeout="20000" disableUploadTimeout="true"
+                URIEncoding="UTF-8"
+@@ -129,7 +129,7 @@
+     -->
+ 
+     <!-- Define an AJP 1.3 Connector on port 8009 -->
+-    <Connector address="0.0.0.0" port="8009" protocol="AJP/1.3"
++    <Connector address="0.0.0.0" port="@AJP_PORT@" protocol="AJP/1.3"
+                connectionTimeout="20000"
+                redirectPort="8443"
+                URIEncoding="UTF-8"/>

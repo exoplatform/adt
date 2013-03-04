@@ -374,14 +374,26 @@ initialize_product_settings() {
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "eXo Platform Community Edition"
-          env_var ARTIFACT_GROUPID "org.exoplatform.platform"
-          env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.community"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          case "${PRODUCT_BRANCH}" in
+            "3.5.x")
+              env_var ARTIFACT_GROUPID "org.exoplatform.platform"
+              env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.community"
+              env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
+              env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
+              env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
+              env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
+            ;;
+            *)
+            # 4.0.x and +
+              env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
+              env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
+              env_var "DEPLOYMENT_SERVER_LOGS_FILE" "platform.log"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
+              env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+            ;;
+          esac
         ;;
         plfent)
           env_var PRODUCT_DESCRIPTION "eXo Platform Express/Enterprise Edition"
