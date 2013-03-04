@@ -114,6 +114,7 @@ Environment Variables :
     exogtn       GateIn eXo edition
     plf          eXo Platform Standard Edition
     plfcom       eXo Platform Community Edition
+    plfent       eXo Platform Express/Enterprise Edition
     plftrial     eXo Platform Trial Edition
     compint      eXo Company Intranet
     docs         eXo Platform Documentations Website
@@ -260,8 +261,10 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_EXO_PROFILES" "-Dexo.profiles=${EXO_PROFILES}"
       env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
       env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
+      env_var "DEPLOYMENT_SERVER_LOGS_FILE" "catalina.out"
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
       env_var "DEPLOYMENT_APPSRV_VERSION" "6.0.35" #Default version used to download additional resources like JMX lib
+      env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.23" #Default version used to download additional mysql driver
 
       env_var "ARTIFACT_GROUPID" ""
       env_var "ARTIFACT_ARTIFACTID" ""
@@ -293,6 +296,7 @@ initialize_product_settings() {
       env_var "JMX_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "DB_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "DB_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "EMAIL_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
 
       # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
       # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
@@ -379,6 +383,16 @@ initialize_product_settings() {
           env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
         ;;
+        plfent)
+          env_var PRODUCT_DESCRIPTION "eXo Platform Express/Enterprise Edition"
+          env_var ARTIFACT_REPO_GROUP "private"
+          env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
+          env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var "DEPLOYMENT_SERVER_LOGS_FILE" "platform.log"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+        ;;
         compint)
           env_var PRODUCT_DESCRIPTION "eXo Company Intranet"
           env_var ARTIFACT_REPO_GROUP "cp"
@@ -425,7 +439,9 @@ initialize_product_settings() {
       # Patch to reconfigure server.xml for MySQL
       find_patch DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml" "${DB_SERVER_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
-      find_patch DB_GATEIN_PATCH "${ETC_DIR}/gatein" "configuration.properties" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
+      find_patch DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
+      # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
+      find_patch EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
     ;;
     start | stop | restart | clean-restart | undeploy)
     # Mandatory env vars. They need to be defined before launching the script
@@ -523,7 +539,7 @@ do_unpack_server() {
   pushd `find ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} -maxdepth 4 -mindepth 1 -name webapps -type d`/.. > /dev/null
   DEPLOYMENT_DIR=`pwd -P`
   popd > /dev/null
-  DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/catalina.out
+  DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
   echo "[INFO] Server unpacked"
 }
 
@@ -582,7 +598,7 @@ do_drop_database() {
 }
 
 do_configure_server_for_jmx() {
-  if [ ! -e "${DEPLOYMENT_DIR}/lib/*catalina-jmx-remote*.jar" ]; then
+  if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote-*.jar ]; then
     # Install jmx jar
     JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
     echo "[INFO] Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
@@ -623,17 +639,44 @@ do_configure_server_for_jmx() {
   fi
 }
 
+do_configure_email() {
+  if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
+
+    # Ensure the configuration.properties doesn't have some windows end line characters
+    # '\015' is Ctrl+V Ctrl+M = ^M
+    cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
+    tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+
+    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
+    if [ "${EMAIL_GATEIN_PATCH}" != "UNSET" ]; then
+      # Prepare the patch
+      cp $EMAIL_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $EMAIL_GATEIN_PATCH ..."
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori
+      patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched
+
+      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_URL@" "${DEPLOYMENT_URL}"
+      echo "[INFO] Done."
+    fi
+
+  fi
+}
+
 do_configure_server_for_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
-      MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/5.1.16/mysql-connector-java-5.1.16.jar"
-      echo "[INFO] Download and install MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
-      curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
-      if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
-        echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"
-        exit 1
+      if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector-*.jar ]; then
+        MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
+        echo "[INFO] Download and install MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
+        curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
+        if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
+          echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"
+          exit 1
+        fi
+        echo "[INFO] Done."
       fi
-      echo "[INFO] Done."
       if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
 
@@ -723,6 +766,8 @@ do_patch_server() {
   # Reconfigure the server to use JMX
   do_configure_server_for_jmx
 
+  do_configure_email
+
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     # Reconfigure the server to use a database
     do_configure_server_for_database
@@ -763,7 +808,7 @@ do_configure_apache() {
     echo "[INFO] Creating Apache Virtual Host ..."
     mkdir -p ${APACHE_CONF_DIR}
     evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-    DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/catalina.out
+    DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
     echo "[INFO] Done."
     echo "[INFO] Rotate Apache logs ..."
     evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
@@ -899,7 +944,7 @@ do_start() {
     cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
 
     # We need to backup existing logs if they already exist
-    backup_logs "$CATALINA_HOME/logs/" "catalina.out"
+    backup_logs "$CATALINA_HOME/logs/" "${DEPLOYMENT_SERVER_LOGS_FILE}"
 
     # Startup the server
     ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
@@ -907,18 +952,18 @@ do_start() {
     # Wait for logs availability
     while [ true ];
     do
-      if [ -e "${DEPLOYMENT_DIR}/logs/catalina.out" ]; then
+      if [ -e "${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}" ]; then
         break
       fi
     done
     # Display logs
-    tail -f ${DEPLOYMENT_DIR}/logs/catalina.out &
+    tail -f ${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE} &
     local _tailPID=$!
     # Check for the end of startup
     set +e
     while [ true ];
     do
-      if grep -q "Server startup in" ${DEPLOYMENT_DIR}/logs/catalina.out; then
+      if grep -q "Server startup in" ${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}; then
         kill ${_tailPID}
         wait ${_tailPID} 2> /dev/null
         break

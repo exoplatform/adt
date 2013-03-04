@@ -59,33 +59,39 @@ List all deployed instances
 Usage
 -----
 
-    usage: ./adt.sh <action>
+      usage: ./adt.sh <action>
 
     This script manages automated deployment of eXo products for testing purpose.
 
     Action :
-      deploy       Deploys (Download+Configure) the server
-      start        Starts the server
-      stop         Stops the server
-      restart      Restarts the server
-      undeploy     Undeploys (deletes) the server
+      deploy         Deploys (Download+Configure) the server
+      start          Starts the server
+      stop           Stops the server
+      restart        Restarts the server
+      clean-restart  Restarts the server after having deleted all existing data
+      undeploy       Undeploys (deletes) the server
 
-      start-all    Starts all deployed servers
-      stop-all     Stops all deployed servers
-      restart-all  Restarts all deployed servers
-      undeploy-all Undeploys (deletes) all deployed servers
-      list         Lists all deployed servers
+      start-all      Starts all deployed servers
+      stop-all       Stops all deployed servers
+      restart-all    Restarts all deployed servers
+      undeploy-all   Undeploys (deletes) all deployed servers
+      list           Lists all deployed servers
+
+      init           Initializes the environment
+      update-repos   Update Git repositories used by the web front-end
+      web-server     Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
 
     Environment Variables :
 
       They may be configured in the current shell environment or /etc/default/adt or $HOME/.adtrc
-      
+
       PRODUCT_NAME                  : The product you want to manage. Possible values are :
         gatein       GateIn Community edition
         exogtn       GateIn eXo edition
-        plf          eXo Platform
-        plfcom       eXo Platform Community
-        plftrial     eXo Platform Trial
+        plf          eXo Platform Standard Edition
+        plfcom       eXo Platform Community Edition
+        plfent       eXo Platform Express/Enterprise Edition
+        plftrial     eXo Platform Trial Edition
         compint      eXo Company Intranet
         docs         eXo Platform Documentations Website
       PRODUCT_VERSION               : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
@@ -97,7 +103,7 @@ Usage
       DEPLOYMENT_AJP_PORT           : AJP Port (default: 8009)
       DEPLOYMENT_HTTP_PORT          : HTTP Port (default: 8080)
       DEPLOYMENT_SHUTDOWN_PORT      : SHUTDOWN Port (default: 8005)
-      DEPLOYMENT_RMI_REG_PORT       : RMI Registry Port for JMX (default: 10001) 
+      DEPLOYMENT_RMI_REG_PORT       : RMI Registry Port for JMX (default: 10001)
       DEPLOYMENT_RMI_SRV_PORT       : RMI Server Port for JMX (default: 10002)
       DEPLOYMENT_DATABASE_TYPE      : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
       ACCEPTANCE_HOST               : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
@@ -110,3 +116,4 @@ Usage
       REPOSITORY_PASSWORD           : The password to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
 
       ADT_DEBUG                     : Display debug details (default: false)
+
