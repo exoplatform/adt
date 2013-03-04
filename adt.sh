@@ -251,14 +251,13 @@ initialize_product_settings() {
 
 
       # Defaults values we can override by product/branch/version
-      env_var "EXO_PROFILES" "all"
+      env_var "EXO_PROFILES" "-Dexo.profiles=all"
       env_var "DEPLOYMENT_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
       env_var "DEPLOYMENT_EXTRA_ENV_VARS" ""
       env_var "DEPLOYMENT_EXTRA_JAVA_OPTS" ""
-      env_var "DEPLOYMENT_EXO_PROFILES" "-Dexo.profiles=${EXO_PROFILES}"
       env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
       env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
       env_var "DEPLOYMENT_SERVER_LOGS_FILE" "catalina.out"
@@ -357,6 +356,7 @@ initialize_product_settings() {
               env_var ARTIFACT_GROUPID "org.exoplatform.platform.pkg"
               env_var ARTIFACT_ARTIFACTID "platform-tomcat-standalone"
               env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+              env_var EXO_PROFILES "all"
             ;;
           esac
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
@@ -392,6 +392,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_SERVER_LOGS_FILE" "platform.log"
               env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
               env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+              env_var EXO_PROFILES "all"
             ;;
           esac
         ;;
@@ -404,6 +405,7 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SERVER_LOGS_FILE" "platform.log"
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var EXO_PROFILES "all"
         ;;
         compint)
           env_var PRODUCT_DESCRIPTION "eXo Company Intranet"
@@ -897,20 +899,9 @@ do_start() {
     export CATALINA_HOME=${DEPLOYMENT_DIR}
     export CATALINA_PID=${DEPLOYMENT_PID_FILE}
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-    export JAVA_OPTS="$JAVA_JRMP_OPTS $DEPLOYMENT_EXTRA_JAVA_OPTS"
-    if [ "${PRODUCT_NAME}" == "plf" ]; then
-      case "${PRODUCT_BRANCH}" in
-        "3.0.x" | "3.5.x")
-          export EXO_PROFILES="${DEPLOYMENT_EXO_PROFILES}"
-        ;;
-        *)
-        # 4.0.x and +
-          export EXO_PROFILES="${EXO_PROFILES}"
-        ;;
-      esac
-    else
-      export EXO_PROFILES="${DEPLOYMENT_EXO_PROFILES}"
-    fi
+    export JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
+    export CATALINA_OPTS="$JAVA_JRMP_OPTS"
+    export EXO_PROFILES="${EXO_PROFILES}"
     ########################################
     # Externalized configuration for PLF 4
     ########################################
@@ -927,6 +918,7 @@ do_start() {
     export EXO_DS_PORTAL_USERNAME="${DEPLOYMENT_DATABASE_USER}"
     export EXO_DS_PORTAL_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
     export EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
+    export EXO_DEV=true
 
     # Additional settings
     for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
