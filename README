@@ -34,23 +34,23 @@ You're ready to go
 
 Deploy a server : download and configure it
 
-    # adt.sh deploy social 1.3.0-SNAPSHOT
+    # adt.sh deploy plfcom 4.0.0-SNAPSHOT
     
 Start a server : start a deployed instance
     
-    # adt.sh start social 1.3.0-SNAPSHOT
+    # adt.sh start plfcom 4.0.0-SNAPSHOT
 
 Stop a server : stop a deployed instance
 
-    # adt.sh stop social 1.3.0-SNAPSHOT
+    # adt.sh stop plfcom 4.0.0-SNAPSHOT
 
 Restart a server : restart a deployed instance
 
-    # adt.sh restart social 1.3.0-SNAPSHOT
+    # adt.sh restart plfcom 4.0.0-SNAPSHOT
 
 Undeploy a server : stop a deployed instance if already running and delete it.
 
-    # adt.sh undeploy social 1.3.0-SNAPSHOT
+    # adt.sh undeploy plfcom 4.0.0-SNAPSHOT
 
 List all deployed instances
 
@@ -83,17 +83,11 @@ Usage
       PRODUCT_NAME                  : The product you want to manage. Possible values are :
         gatein       GateIn Community edition
         exogtn       GateIn eXo edition
-        webos        eXo WebOS
-        social       eXo Social
-        ecms         eXo Content
-        ks           eXo Knowledge
-        cs           eXo Collaboration
         plf          eXo Platform
         plfcom       eXo Platform Community
         plftrial     eXo Platform Trial
         compint      eXo Company Intranet
         docs         eXo Platform Documentations Website
-        android      eXo Mobile Android
       PRODUCT_VERSION               : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
       ADT_DATA                      : The path where data have to be stored (default: under the script path - /Users/arnaud/Code/eXo/adt)

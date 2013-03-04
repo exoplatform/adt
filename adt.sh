@@ -112,11 +112,6 @@ Environment Variables :
   PRODUCT_NAME                  : The product you want to manage. Possible values are :
     gatein       GateIn Community edition
     exogtn       GateIn eXo edition
-    webos        eXo WebOS
-    social       eXo Social
-    ecms         eXo Content
-    ks           eXo Knowledge
-    cs           eXo Collaboration
     plf          eXo Platform Standard Edition
     plfcom       eXo Platform Community Edition
     plftrial     eXo Platform Trial Edition
@@ -337,75 +332,6 @@ initialize_product_settings() {
           env_var ARTIFACT_CLASSIFIER "tomcat"
           case "${PRODUCT_BRANCH}" in
             "3.2.x")
-              env_var PLF_BRANCH "3.5.x"
-            ;;
-          esac
-        ;;
-        webos)
-          env_var PRODUCT_DESCRIPTION "eXo WebOS"
-          env_var ARTIFACT_GROUPID "org.exoplatform.webos"
-          env_var ARTIFACT_ARTIFACTID "exo.webos.packaging.assembly"
-          env_var ARTIFACT_CLASSIFIER "tomcat"
-          case "${PRODUCT_BRANCH}" in
-            *)
-              env_var PLF_BRANCH "3.5.x"
-            ;;
-          esac
-        ;;
-        ecms)
-          env_var PRODUCT_DESCRIPTION "eXo Content"
-          env_var ARTIFACT_GROUPID "org.exoplatform.ecms"
-          env_var ARTIFACT_ARTIFACTID "exo-ecms-delivery-wcm-assembly"
-          env_var ARTIFACT_CLASSIFIER "tomcat"
-          case "${PRODUCT_BRANCH}" in
-            "4.0.x")
-              env_var PLF_BRANCH "4.0.x"
-            ;;
-            *)
-              env_var PLF_BRANCH "3.5.x"
-            ;;
-          esac
-        ;;
-        social)
-          env_var PRODUCT_DESCRIPTION "eXo Social"
-          env_var ARTIFACT_GROUPID "org.exoplatform.social"
-          env_var ARTIFACT_ARTIFACTID "exo.social.packaging.pkg"
-          env_var ARTIFACT_CLASSIFIER "tomcat"
-          env_var DEPLOYMENT_GATEIN_CONF_PATH "gatein/conf/portal/socialdemo/socialdemo.properties"
-          case "${PRODUCT_BRANCH}" in
-            "4.0.x")
-              env_var PLF_BRANCH "4.0.x"
-            ;;
-            *)
-              env_var PLF_BRANCH "3.5.x"
-            ;;
-          esac
-        ;;
-        ks)
-          env_var PRODUCT_DESCRIPTION "eXo Knowledge"
-          env_var ARTIFACT_GROUPID "org.exoplatform.ks"
-          env_var ARTIFACT_ARTIFACTID "exo.ks.packaging.assembly"
-          env_var ARTIFACT_CLASSIFIER "tomcat"
-          env_var DEPLOYMENT_GATEIN_CONF_PATH "gatein/conf/portal/ksdemo/ksdemo.properties"
-          case "${PRODUCT_BRANCH}" in
-            "4.0.x")
-              env_var PLF_BRANCH "4.0.x"
-            ;;
-            *)
-              env_var PLF_BRANCH "3.5.x"
-            ;;
-          esac
-        ;;
-        cs)
-          env_var PRODUCT_DESCRIPTION "eXo Collaboration"
-          env_var ARTIFACT_GROUPID "org.exoplatform.cs"
-          env_var ARTIFACT_ARTIFACTID "exo.cs.packaging.assembly"
-          env_var ARTIFACT_CLASSIFIER "tomcat"
-          case "${PRODUCT_BRANCH}" in
-            "4.0.x")
-              env_var PLF_BRANCH "4.0.x"
-            ;;
-            *)
               env_var PLF_BRANCH "3.5.x"
             ;;
           esac
