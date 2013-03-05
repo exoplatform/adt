@@ -50,6 +50,9 @@ configurable_env_var "DEPLOYMENT_AJP_PORT" "8009"
 configurable_env_var "DEPLOYMENT_RMI_REG_PORT" "10001"
 configurable_env_var "DEPLOYMENT_RMI_SRV_PORT" "10002"
 configurable_env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "8200,8201,8202,8203,8204"
+configurable_env_var "DEPLOYMENT_LDAP_URL" ""
+configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
+configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
 configurable_env_var "KEEP_DB" false
 configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
 configurable_env_var "REPOSITORY_USERNAME" ""
@@ -298,6 +301,7 @@ initialize_product_settings() {
       env_var "DB_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "EMAIL_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "JOD_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "LDAP_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
 
       # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
       # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
@@ -459,6 +463,8 @@ initialize_product_settings() {
       find_patch EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
       find_patch JOD_GATEIN_PATCH "${ETC_DIR}/gatein" "jod-configuration.properties" "${JOD_GATEIN_PATCH_PRODUCT_NAME}"
+      # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
+      find_patch LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
     ;;
     start | stop | restart | clean-restart | undeploy)
     # Mandatory env vars. They need to be defined before launching the script
@@ -706,6 +712,33 @@ do_configure_jod() {
   fi
 }
 
+do_configure_ldap() {
+  if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
+
+    # Ensure the configuration.properties doesn't have some windows end line characters
+    # '\015' is Ctrl+V Ctrl+M = ^M
+    cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
+    tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+
+    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for LDAP
+    if [ "${LDAP_GATEIN_PATCH}" != "UNSET" ]; then
+      # Prepare the patch
+      cp $LDAP_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $LDAP_GATEIN_PATCH ..."
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.ldap
+      patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.ldap
+
+      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_URL@" "${DEPLOYMENT_LDAP_URL}"
+      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_ADMIN_DN@" "${DEPLOYMENT_LDAP_ADMIN_DN}"
+      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_ADMIN_PWD@" "${DEPLOYMENT_LDAP_ADMIN_PWD}"
+      echo "[INFO] Done."
+    fi
+
+  fi
+}
+
 do_configure_server_for_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
@@ -810,6 +843,7 @@ do_patch_server() {
 
   do_configure_email
   do_configure_jod
+  do_configure_ldap
 
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     # Reconfigure the server to use a database

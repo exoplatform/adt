@@ -1,0 +1,18 @@
+--- configuration.properties.patch3	2013-03-05 09:49:54.000000000 +0100
++++ configuration.properties	2013-03-05 10:05:27.000000000 +0100
+@@ -303,10 +303,10 @@
+ 
+ #LDAP parameter
+ #set ldap.read.only.mode=false if you want connect Intranet with LDAP in Read-Write mode
+-ldap.read.only.mode=${ldap.read.only.mode}
++ldap.read.only.mode=true
+ 
+ #LDAP parameter
+-ldap.providerURL=${ldap.providerURL}
+-ldap.adminDN=${ldap.adminDN}
+-ldap.adminPassword=${ldap.adminPassword}
+-ldap.searchTimeLimit=${ldap.searchTimeLimit}
++ldap.providerURL=@DEPLOYMENT_LDAP_URL@
++ldap.adminDN=@DEPLOYMENT_LDAP_ADMIN_DN@
++ldap.adminPassword=@DEPLOYMENT_LDAP_ADMIN_PWD@
++ldap.searchTimeLimit=600000
