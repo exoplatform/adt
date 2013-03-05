@@ -1,0 +1,30 @@
+--- configuration.properties.patched	2013-03-05 09:05:15.000000000 +0100
++++ configuration.properties	2013-03-05 09:45:59.000000000 +0100
+@@ -40,17 +40,17 @@
+ # Email Server #
+ ################
+ # Domain name: Help for sending links from email notifications. The default domain name is http://localhost:8080.
+-gatein.email.domain.url=${email.domain.url}
++gatein.email.domain.url=@DEPLOYMENT_URL@
+ # Email display in "from" field of email notification.
+-gatein.email.smtp.from=${email.smtp.from}
+-gatein.email.smtp.username=${email.smtp.username}
+-gatein.email.smtp.password=${email.smtp.password}
+-gatein.email.smtp.host=${email.smtp.host}
+-gatein.email.smtp.port=${email.smtp.port}
+-gatein.email.smtp.starttls.enable=${email.smtp.starttls.enable}
+-gatein.email.smtp.auth=${email.smtp.auth}
+-gatein.email.smtp.socketFactory.port=${email.smtp.socketFactory.port}
+-gatein.email.smtp.socketFactory.class=${email.smtp.socketFactory.class}
++gatein.email.smtp.from=exo-swf@exoplatform.com
++gatein.email.smtp.username=
++gatein.email.smtp.password=
++gatein.email.smtp.host=localhost
++gatein.email.smtp.port=25
++gatein.email.smtp.starttls.enable=false
++gatein.email.smtp.auth=false
++gatein.email.smtp.socketFactory.port=
++gatein.email.smtp.socketFactory.class=
+ 
+ 
+ ##########
