@@ -1,0 +1,13 @@
+--- configuration.properties	2013-03-05 09:46:58.000000000 +0100
++++ configuration.properties	2013-03-05 09:49:15.000000000 +0100
+@@ -292,8 +292,8 @@
+ cache.exo.wiki.PageRenderingCache.TimeToLive=-1
+ 
+ # JODConverter 3.0
+-#wcm.jodconverter.enable=true
+-wcm.jodconverter.portnumbers=8200,8201,8202,8203,8204
++wcm.jodconverter.enable=true
++wcm.jodconverter.portnumbers=@DEPLOYMENT_JOD_CONVERTER_PORTS@
+ #wcm.jodconverter.officehome=/usr/lib/libreoffice
+ #wcm.jodconverter.officehome=/opt/openoffice.org3
+ #wcm.jodconverter.taskqueuetimeout=30000

@@ -49,6 +49,7 @@ configurable_env_var "DEPLOYMENT_HTTP_PORT" "8080"
 configurable_env_var "DEPLOYMENT_AJP_PORT" "8009"
 configurable_env_var "DEPLOYMENT_RMI_REG_PORT" "10001"
 configurable_env_var "DEPLOYMENT_RMI_SRV_PORT" "10002"
+configurable_env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "8200,8201,8202,8203,8204"
 configurable_env_var "KEEP_DB" false
 configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
 configurable_env_var "REPOSITORY_USERNAME" ""
@@ -296,6 +297,7 @@ initialize_product_settings() {
       env_var "DB_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "DB_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "EMAIL_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "JOD_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
 
       # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
       # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
@@ -455,6 +457,8 @@ initialize_product_settings() {
       find_patch DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
       find_patch EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
+      # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
+      find_patch JOD_GATEIN_PATCH "${ETC_DIR}/gatein" "jod-configuration.properties" "${JOD_GATEIN_PATCH_PRODUCT_NAME}"
     ;;
     start | stop | restart | clean-restart | undeploy)
     # Mandatory env vars. They need to be defined before launching the script
@@ -666,11 +670,36 @@ do_configure_email() {
       # Prepare the patch
       cp $EMAIL_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
       echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $EMAIL_GATEIN_PATCH ..."
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.email
       patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.email
 
       replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_URL@" "${DEPLOYMENT_URL}"
+      echo "[INFO] Done."
+    fi
+
+  fi
+}
+
+do_configure_jod() {
+  if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
+
+    # Ensure the configuration.properties doesn't have some windows end line characters
+    # '\015' is Ctrl+V Ctrl+M = ^M
+    cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
+    tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+
+    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for JOD Converter
+    if [ "${JOD_GATEIN_PATCH}" != "UNSET" ]; then
+      # Prepare the patch
+      cp $JOD_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $JOD_GATEIN_PATCH ..."
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.jod
+      patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.jod
+
+      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_JOD_CONVERTER_PORTS@" "${DEPLOYMENT_JOD_CONVERTER_PORTS}"
       echo "[INFO] Done."
     fi
 
@@ -703,9 +732,9 @@ do_configure_server_for_database() {
           # Prepare the patch
           cp $DB_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
           echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $DB_GATEIN_PATCH ..."
-          cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori
+          cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.db
           patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-          cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched
+          cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.db
 
           replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
