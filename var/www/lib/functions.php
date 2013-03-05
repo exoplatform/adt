@@ -119,6 +119,7 @@ function sortProjects($a, $b)
     $projectsOrder["integration"] = $i++;
     $projectsOrder["platform"] = $i++;
     $projectsOrder["platform-tomcat-standalone"] = $i++;
+    $projectsOrder["platform-public-distributions"] = $i++;
 
     if ($a == $b) {
         return 0;
