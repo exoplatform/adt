@@ -809,6 +809,7 @@ do_patch_server() {
   do_configure_server_for_jmx
 
   do_configure_email
+  do_configure_jod
 
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     # Reconfigure the server to use a database
