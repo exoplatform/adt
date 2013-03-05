@@ -411,6 +411,7 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.intranet"
           env_var ARTIFACT_ARTIFACTID "exo-intranet-package"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var EXO_PROFILES "default"
         ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
