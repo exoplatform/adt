@@ -1,5 +1,8 @@
 #!/bin/bash -eu
 
+#Activate aliases usage in scripts
+shopt -s expand_aliases
+
 # ####################################
 # Generic bash functions library
 # ####################################
@@ -15,6 +18,14 @@ case "`uname`" in
   OS400*) OS400=true ;;
   Darwin*) DARWIN=true ;;
 esac
+
+# Various command aliases
+if $LINUX; then
+  alias display_time='/usr/bin/time -f "[INFO] Return code : %x\n[INFO] Time report (sec) : \t%e real,\t%U user,\t%S system"'
+else
+  # Various command aliases
+  alias display_time='/usr/bin/time'
+fi
 
 # Converts $1 in upper case
 toupper() {

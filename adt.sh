@@ -69,6 +69,7 @@ echo "[INFO] ADT_DATA = ${ADT_DATA}"
 
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
 env_var "DL_DIR" "${ADT_DATA}/downloads"
+env_var "DS_DIR" "${ADT_DATA}/datasets"
 env_var "SRV_DIR" "${ADT_DATA}/servers"
 env_var "SRC_DIR" "${ADT_DATA}/sources"
 env_var "CONF_DIR" "${ADT_DATA}/conf"
@@ -93,58 +94,67 @@ print_usage() {
 This script manages automated deployment of eXo products for testing purpose.
 
 Action :
-  deploy         Deploys (Download+Configure) the server
-  start          Starts the server
-  stop           Stops the server
-  restart        Restarts the server
-  clean-restart  Restarts the server after having deleted all existing data
-  undeploy       Undeploys (deletes) the server
+  deploy           Deploys (Download+Configure) the server
+  download-dataset Downloads the dataset required by the server
+  start            Starts the server
+  stop             Stops the server
+  restart          Restarts the server
+  clean-restart    Restarts the server after having deleted all existing data
+  undeploy         Undeploys (deletes) the server
 
-  start-all      Starts all deployed servers
-  stop-all       Stops all deployed servers
-  restart-all    Restarts all deployed servers
-  undeploy-all   Undeploys (deletes) all deployed servers
-  list           Lists all deployed servers
+  start-all        Starts all deployed servers
+  stop-all         Stops all deployed servers
+  restart-all      Restarts all deployed servers
+  undeploy-all     Undeploys (deletes) all deployed servers
+  list             Lists all deployed servers
 
-  init           Initializes the environment
-  update-repos   Update Git repositories used by the web front-end
-  web-server     Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
+  init             Initializes the environment
+  update-repos     Update Git repositories used by the web front-end
+  web-server       Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
 
 Environment Variables :
 
   They may be configured in the current shell environment or /etc/default/adt or \$HOME/.adtrc
   
-  PRODUCT_NAME                  : The product you want to manage. Possible values are :
-    gatein       GateIn Community edition
-    exogtn       GateIn eXo edition
-    plf          eXo Platform Standard Edition
-    plfcom       eXo Platform Community Edition
-    plfent       eXo Platform Express/Enterprise Edition
-    plftrial     eXo Platform Trial Edition
-    compint      eXo Company Intranet
-    docs         eXo Platform Documentations Website
-  PRODUCT_VERSION               : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+  PRODUCT_NAME                   : The product you want to manage. Possible values are :
+    gatein         GateIn Community edition
+    exogtn         GateIn eXo edition
+    plf            eXo Platform Standard Edition
+    plfcom         eXo Platform Community Edition
+    plfent         eXo Platform Express/Enterprise Edition
+    plftrial       eXo Platform Trial Edition
+    compint        eXo Company Intranet
+    docs           eXo Platform Documentations Website
+  PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
-  ADT_DATA                      : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
-  DEPLOYMENT_SETUP_APACHE       : Do you want to setup the apache configuration (default: false)
-  DEPLOYMENT_SETUP_AWSTATS      : Do you want to setup the awstats configuration (default: false)
-  DEPLOYMENT_SETUP_UFW          : Do you want to setup the ufw firewall configuration (default: false)
-  DEPLOYMENT_AJP_PORT           : AJP Port (default: 8009)
-  DEPLOYMENT_HTTP_PORT          : HTTP Port (default: 8080)
-  DEPLOYMENT_SHUTDOWN_PORT      : SHUTDOWN Port (default: 8005)
-  DEPLOYMENT_RMI_REG_PORT       : RMI Registry Port for JMX (default: 10001) 
-  DEPLOYMENT_RMI_SRV_PORT       : RMI Server Port for JMX (default: 10002)
-  DEPLOYMENT_DATABASE_TYPE      : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
-  ACCEPTANCE_HOST               : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
-  CROWD_ACCEPTANCE_APP_NAME     : The crowd application used to authenticate the front-end (default: none)
-  CROWD_ACCEPTANCE_APP_PASSWORD : The crowd application''s password used to authenticate the front-end (default: none)
-  KEEP_DB                       : Keep the current database content for MYSQL. By default the deployment process drops the database if it already exists. (default: false)
+  ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
+  DEPLOYMENT_SETUP_APACHE        : Do you want to setup the apache configuration (default: false)
+  DEPLOYMENT_SETUP_AWSTATS       : Do you want to setup the awstats configuration (default: false)
+  DEPLOYMENT_SETUP_UFW           : Do you want to setup the ufw firewall configuration (default: false)
+  DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports
+  DEPLOYMENT_AJP_PORT            : AJP Port (default: \${DEPLOYMENT_PORT_PREFIX}2)
+  DEPLOYMENT_HTTP_PORT           : HTTP Port (default: \${DEPLOYMENT_PORT_PREFIX}1)
+  DEPLOYMENT_SHUTDOWN_PORT       : SHUTDOWN Port (default: \${DEPLOYMENT_PORT_PREFIX}0)
+  DEPLOYMENT_RMI_REG_PORT        : RMI Registry Port for JMX (default: \${DEPLOYMENT_PORT_PREFIX}3)
+  DEPLOYMENT_RMI_SRV_PORT        : RMI Server Port for JMX (default: \${DEPLOYMENT_PORT_PREFIX}4)
+  DEPLOYMENT_JOD_CONVERTER_PORTS : JOD Converter ports used to launch OpenOffice instances (default : \${DEPLOYMENT_PORT_PREFIX}5,\${DEPLOYMENT_PORT_PREFIX}6,\${DEPLOYMENT_PORT_PREFIX}7,\${DEPLOYMENT_PORT_PREFIX}8,\${DEPLOYMENT_PORT_PREFIX}9)
 
-  REPOSITORY_SERVER_BASE_URL    : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
-  REPOSITORY_USERNAME           : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
-  REPOSITORY_PASSWORD           : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+  DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
+  KEEP_DB                        : Keep the current database content for MYSQL. By default the deployment process drops the database if it already exists. (default: false)
 
-  ADT_DEBUG                     : Display debug details (default: false)
+  ACCEPTANCE_HOST                : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
+  CROWD_ACCEPTANCE_APP_NAME      : The crowd application used to authenticate the front-end (default: none)
+  CROWD_ACCEPTANCE_APP_PASSWORD  : The crowd application''s password used to authenticate the front-end (default: none)
+
+  DEPLOYMENT_LDAP_URL            : LDAP URL to use if the server is using one (default: none)
+  DEPLOYMENT_LDAP_ADMIN_DN       : LDAP DN to use to logon into the LDAP server
+  DEPLOYMENT_LDAP_ADMIN_PWD      : LDAP password to use to logon into the LDAP server
+
+  REPOSITORY_SERVER_BASE_URL     : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
+  REPOSITORY_USERNAME            : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+  REPOSITORY_PASSWORD            : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+
+  ADT_DEBUG                      : Display debug details (default: false)
 EOF
 
 }
@@ -187,6 +197,7 @@ init() {
   validate_env_var "ETC_DIR"
   validate_env_var "TMP_DIR"
   validate_env_var "DL_DIR"
+  validate_env_var "DS_DIR"
   validate_env_var "SRV_DIR"
   validate_env_var "CONF_DIR"
   validate_env_var "APACHE_CONF_DIR"
@@ -195,6 +206,7 @@ init() {
   mkdir -p ${ETC_DIR}
   mkdir -p ${TMP_DIR}
   mkdir -p ${DL_DIR}
+  mkdir -p ${DS_DIR}
   mkdir -p ${SRV_DIR}
   mkdir -p ${SRC_DIR}
   mkdir -p ${CONF_DIR}
@@ -240,7 +252,7 @@ initialize_product_settings() {
 
   # validate additional parameters
   case "${ACTION}" in
-    deploy)
+    deploy | download-dataset)
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION"
@@ -294,6 +306,11 @@ initialize_product_settings() {
 
       # More user friendly description
       env_var "PRODUCT_DESCRIPTION" "${PRODUCT_NAME}"
+
+      # Datasets remote location
+      env_var "DATASET_DATA_VALUES_ARCHIVE"    ""
+      env_var "DATASET_DATA_INDEX_ARCHIVE"     ""
+      env_var "DATASET_DB_ARCHIVE"             ""
 
       # To reuse patches between products
       env_var "PORTS_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
@@ -419,6 +436,10 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "exo-intranet-package"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var EXO_PROFILES "default"
+          # Datasets remote location
+          env_var "DATASET_DATA_VALUES_ARCHIVE"    "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
+          env_var "DATASET_DATA_INDEX_ARCHIVE"     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
+          env_var "DATASET_DB_ARCHIVE"             "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
         ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
@@ -467,7 +488,7 @@ initialize_product_settings() {
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
       find_patch LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
     ;;
-    start | stop | restart | clean-restart | undeploy)
+    start | stop | restart | clean-restart | undeploy )
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION" ;;
@@ -506,6 +527,24 @@ do_download_server() {
   env_var ARTIFACT_REPO_URL ${PRODUCT_ARTIFACT_URL}
   env_var ARTIFACT_LOCAL_PATH ${PRODUCT_ARTIFACT_LOCAL_PATH}
   env_var ARTIFACT_DL_URL "http://${ACCEPTANCE_HOST}/downloads/${PRODUCT_NAME}-${ARTIFACT_TIMESTAMP}.${ARTIFACT_PACKAGING}"
+}
+
+do_download_dataset() {
+  validate_env_var "DS_DIR"
+  validate_env_var "PRODUCT_NAME"
+  validate_env_var "PRODUCT_BRANCH"
+  validate_env_var "PRODUCT_DESCRIPTION"
+  echo "[INFO] Updating local dataset for ${PRODUCT_DESCRIPTION} ${PRODUCT_BRANCH} from the storage server ..."
+  if [ ! -z "${DATASET_DATA_VALUES_ARCHIVE}" ] && [ ! -z "${DATASET_DATA_INDEX_ARCHIVE}" ] && [ ! -z "${DATASET_DB_ARCHIVE}" ]; then
+    mkdir -p ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}
+    display_time rsync -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DB_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
+    display_time rsync -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_INDEX_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
+    display_time rsync -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_VALUES_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
+  else
+    echo "[ERROR] Datasets not configured"
+    exit 1;
+  fi
+  echo "[INFO] Done"
 }
 
 #
@@ -1283,6 +1322,10 @@ case "${ACTION}" in
   deploy)
     initialize_product_settings
     do_deploy
+  ;;
+  download-dataset)
+    initialize_product_settings
+    do_download_dataset
   ;;
   start)
     initialize_product_settings
