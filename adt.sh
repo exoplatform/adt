@@ -54,7 +54,6 @@ configurable_env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}
 configurable_env_var "DEPLOYMENT_LDAP_URL" ""
 configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
 configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
-configurable_env_var "KEEP_DB" false
 configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
 configurable_env_var "REPOSITORY_USERNAME" ""
 configurable_env_var "REPOSITORY_PASSWORD" ""
@@ -68,6 +67,7 @@ popd > /dev/null
 echo "[INFO] ADT_DATA = ${ADT_DATA}"
 
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
+export TMPDIR=${TMP_DIR} #used by mktemp
 env_var "DL_DIR" "${ADT_DATA}/downloads"
 env_var "DS_DIR" "${ADT_DATA}/datasets"
 env_var "SRV_DIR" "${ADT_DATA}/servers"
@@ -99,7 +99,6 @@ Action :
   start            Starts the server
   stop             Stops the server
   restart          Restarts the server
-  clean-restart    Restarts the server after having deleted all existing data
   undeploy         Undeploys (deletes) the server
 
   start-all        Starts all deployed servers
@@ -140,7 +139,8 @@ Environment Variables :
   DEPLOYMENT_JOD_CONVERTER_PORTS : JOD Converter ports used to launch OpenOffice instances (default : \${DEPLOYMENT_PORT_PREFIX}5,\${DEPLOYMENT_PORT_PREFIX}6,\${DEPLOYMENT_PORT_PREFIX}7,\${DEPLOYMENT_PORT_PREFIX}8,\${DEPLOYMENT_PORT_PREFIX}9)
 
   DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
-  KEEP_DB                        : Keep the current database content for MYSQL. By default the deployment process drops the database if it already exists. (default: false)
+
+  DEPLOYMENT_MODE                : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy, values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
 
   ACCEPTANCE_HOST                : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
   CROWD_ACCEPTANCE_APP_NAME      : The crowd application used to authenticate the front-end (default: none)
@@ -269,7 +269,6 @@ initialize_product_settings() {
 
       # Defaults values we can override by product/branch/version
       env_var "EXO_PROFILES" "-Dexo.profiles=all"
-      env_var "DEPLOYMENT_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
@@ -436,6 +435,7 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "exo-intranet-package"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var EXO_PROFILES "default"
+          env_var "DEPLOYMENT_DATABASE_TYPE" "MYSQL"
           # Datasets remote location
           env_var "DATASET_DATA_VALUES_ARCHIVE"    "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
           env_var "DATASET_DATA_INDEX_ARCHIVE"     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
@@ -488,7 +488,7 @@ initialize_product_settings() {
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
       find_patch LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
     ;;
-    start | stop | restart | clean-restart | undeploy )
+    start | stop | restart | undeploy )
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION" ;;
@@ -544,6 +544,58 @@ do_download_dataset() {
     echo "[ERROR] Datasets not configured"
     exit 1;
   fi
+  echo "[INFO] Done"
+}
+
+do_restore_dataset(){
+  case ${DEPLOYMENT_DATABASE_TYPE} in
+    MYSQL)
+      do_drop_data
+      mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
+      echo "[INFO] Loading values ..."
+      display_time tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
+      echo "[INFO] Done"
+      echo "[INFO] Loading indexes ..."
+      display_time tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
+      echo "[INFO] Done"
+      do_drop_database
+      do_create_database
+      _tmpdir=`mktemp -d db-export.XXXXXXXXXX` || exit 1
+      _restorescript="${_tmpdir}/__restoreAllData.sql"
+      echo "[INFO] = Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
+      display_time tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
+      echo "[INFO] Done"
+      if [ ! -e ${_restorescript} ]; then
+       echo "[ERROR] SQL file (${_restorescript}) doesn't exist."
+       exit;
+      fi;
+      echo "[INFO] Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
+      pushd ${_tmpdir} > /dev/null 2>&1
+      display_time pv ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
+      popd > /dev/null 2>&1
+      echo "[INFO] Done"
+      rm -rf _tmpdir
+    ;;
+    HSQLDB)
+      echo "[ERROR] Dataset restoration isn't supported for database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      exit 1
+    ;;
+    *)
+      echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+}
+
+do_init_empty_data(){
+  echo "[INFO] Deleting all existing data for ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  if ${DEPLOYMENT_DATABASE_ENABLED}; then
+    do_drop_database
+    do_create_database
+  fi
+  do_drop_data
+  do_create_data
   echo "[INFO] Done"
 }
 
@@ -614,10 +666,6 @@ do_create_database() {
     MYSQL)
       echo "[INFO] Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       SQL=""
-      if (! $KEEP_DB); then
-        SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
-        echo "[INFO] Existing databases will be dropped !"
-      fi
       SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME} CHARACTER SET latin1 COLLATE latin1_bin;"
       SQL=$SQL"GRANT ALL ON ${DEPLOYMENT_DATABASE_NAME}.* TO '${DEPLOYMENT_DATABASE_USER}'@'localhost' IDENTIFIED BY '${DEPLOYMENT_DATABASE_USER}';"
       SQL=$SQL"FLUSH PRIVILEGES;"
@@ -626,7 +674,7 @@ do_create_database() {
       echo "[INFO] Done."
     ;;
     HSQLDB)
-      echo "[INFO] Using default HSQLDB database. Nothing to do."
+      echo "[INFO] Using default HSQLDB database. Nothing to do to create the Database."
     ;;
     *)
       echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
@@ -650,7 +698,9 @@ do_drop_database() {
       echo "[INFO] Done."
     ;;
     HSQLDB)
-      echo "[INFO] Using default HSQLDB database. Nothing to do."
+      echo "[INFO] Drops HSQLDB database ..."
+      rm -rf ${DEPLOYMENT_DIR}/gatein/data/hsqldb
+      echo "[INFO] Done."
     ;;
     *)
       echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
@@ -658,6 +708,30 @@ do_drop_database() {
       exit 1
     ;;
   esac
+}
+
+#
+# Drops all data used by the instance.
+#
+do_drop_data() {
+  echo "[INFO] Drops instance indexes ..."
+  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
+  echo "[INFO] Done."
+  echo "[INFO] Drops instance values ..."
+  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+  echo "[INFO] Done."
+}
+
+#
+# Creates all data directories used by the instance.
+#
+do_create_data() {
+  echo "[INFO] Creates instance indexes directory ..."
+  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
+  echo "[INFO] Done."
+  echo "[INFO] Creates instance values directory ..."
+  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+  echo "[INFO] Done."
 }
 
 do_configure_server_for_jmx() {
@@ -960,7 +1034,7 @@ do_create_deployment_descriptor() {
 
 do_load_deployment_descriptor() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
+    echo "[WARNING] ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} isn't deployed !"
     echo "[WARNING] You need to deploy it first."
     exit 1
   else
@@ -972,18 +1046,52 @@ do_load_deployment_descriptor() {
 # Function that deploys (Download+configure) the app server
 #
 do_deploy() {
-  echo "[INFO] Deploying server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
-  do_download_server
-  if ${DEPLOYMENT_ENABLED}; then
-    if ${DEPLOYMENT_DATABASE_ENABLED}; then
+  echo "[INFO] Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
+    echo "[INFO] Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    _tmpdir=`mktemp -d archive-data.XXXXXXXXXX` || exit 1
+    if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+      echo "[WARNING] This instance wasn't deployed before. Nothing to keep."
+      mkdir -p ${_tmpdir}/data
       do_create_database
+    else
+      # The server have been already deployed.
+      # We load its settings from the configuration
+      do_load_deployment_descriptor
+      mv ${DEPLOYMENT_DIR}/gatein/data ${_tmpdir}
     fi
-    do_unpack_server
-    do_patch_server
-    if ${DEPLOYMENT_SETUP_APACHE}; then
-      do_configure_apache
-    fi
+    echo "[INFO] Done."
   fi
+  if [ -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+    # Stop the server
+    do_stop
+  fi
+  do_download_server
+  do_unpack_server
+  do_patch_server
+  if ${DEPLOYMENT_SETUP_APACHE}; then
+    do_configure_apache
+  fi
+  case "${DEPLOYMENT_MODE}" in
+    NO_DATA)
+      do_init_empty_data
+    ;;
+    KEEP_DATA)
+      echo "[INFO] Restoring previous data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+      rm -rf ${DEPLOYMENT_DIR}/gatein/data
+      mv ${_tmpdir}/data ${DEPLOYMENT_DIR}/gatein
+      rm -rf ${_tmpdir}
+      echo "[INFO] Done."
+    ;;
+    RESTORE_DATASET)
+      do_restore_dataset
+    ;;
+    *)
+      echo "[ERROR] Invalid deployment mode \"${DEPLOYMENT_MODE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
   do_create_deployment_descriptor
   echo "[INFO] Server deployed"
 }
@@ -995,98 +1103,94 @@ do_start() {
   # The server is supposed to be already deployed.
   # We load its settings from the configuration
   do_load_deployment_descriptor
-  if ${DEPLOYMENT_ENABLED}; then
-    echo "[INFO] Starting server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
-    chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
-    mkdir -p ${DEPLOYMENT_DIR}/logs
-    export CATALINA_HOME=${DEPLOYMENT_DIR}
-    export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-    export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-    export JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
-    export CATALINA_OPTS="$JAVA_JRMP_OPTS"
-    export EXO_PROFILES="${EXO_PROFILES}"
-    export EXO_LOGS_DISPLAY_CONSOLE=true
-    export EXO_LOGS_CONSOLE_COLORIZED=true
-    ########################################
-    # Externalized configuration for PLF 4
-    ########################################
-    export EXO_TOMCAT_SHUTDOWN_PORT=${DEPLOYMENT_SHUTDOWN_PORT}
-    export EXO_TOMCAT_RMI_REGISTRY_PORT=${DEPLOYMENT_RMI_REG_PORT}
-    export EXO_TOMCAT_RMI_SERVER_PORT=${DEPLOYMENT_RMI_SRV_PORT}
-    export EXO_HTTP_PORT=${DEPLOYMENT_HTTP_PORT}
-    export EXO_AJP_PORT=${DEPLOYMENT_AJP_PORT}
-    export EXO_DS_IDM_DRIVER="com.mysql.jdbc.Driver"
-    export EXO_DS_IDM_USERNAME="${DEPLOYMENT_DATABASE_USER}"
-    export EXO_DS_IDM_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
-    export EXO_DS_IDM_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
-    export EXO_DS_PORTAL_DRIVER="com.mysql.jdbc.Driver"
-    export EXO_DS_PORTAL_USERNAME="${DEPLOYMENT_DATABASE_USER}"
-    export EXO_DS_PORTAL_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
-    export EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
-    export EXO_DEV=true
+  echo "[INFO] Starting server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
+  mkdir -p ${DEPLOYMENT_DIR}/logs
+  export CATALINA_HOME=${DEPLOYMENT_DIR}
+  export CATALINA_PID=${DEPLOYMENT_PID_FILE}
+  export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
+  export JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
+  export CATALINA_OPTS="$JAVA_JRMP_OPTS"
+  export EXO_PROFILES="${EXO_PROFILES}"
+  export EXO_LOGS_DISPLAY_CONSOLE=true
+  export EXO_LOGS_CONSOLE_COLORIZED=true
+  ########################################
+  # Externalized configuration for PLF 4
+  ########################################
+  export EXO_TOMCAT_SHUTDOWN_PORT=${DEPLOYMENT_SHUTDOWN_PORT}
+  export EXO_TOMCAT_RMI_REGISTRY_PORT=${DEPLOYMENT_RMI_REG_PORT}
+  export EXO_TOMCAT_RMI_SERVER_PORT=${DEPLOYMENT_RMI_SRV_PORT}
+  export EXO_HTTP_PORT=${DEPLOYMENT_HTTP_PORT}
+  export EXO_AJP_PORT=${DEPLOYMENT_AJP_PORT}
+  export EXO_DS_IDM_DRIVER="com.mysql.jdbc.Driver"
+  export EXO_DS_IDM_USERNAME="${DEPLOYMENT_DATABASE_USER}"
+  export EXO_DS_IDM_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
+  export EXO_DS_IDM_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
+  export EXO_DS_PORTAL_DRIVER="com.mysql.jdbc.Driver"
+  export EXO_DS_PORTAL_USERNAME="${DEPLOYMENT_DATABASE_USER}"
+  export EXO_DS_PORTAL_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
+  export EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
+  export EXO_DEV=true
 
-    # Additional settings
-    for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
-    do
-      export ${_var} = $(eval echo \${$_var})
-    done
+  # Additional settings
+  for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
+  do
+    export ${_var} = $(eval echo \${$_var})
+  done
 
-    #Display the deployment descriptor
-    echo "[INFO] ========================= Deployment Descriptor ========================="
-    cat ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
-    echo "[INFO] ================== Externalized configuration for PLF 4 ================="
-    echo EXO_TOMCAT_SHUTDOWN_PORT=${EXO_TOMCAT_SHUTDOWN_PORT}
-    echo EXO_TOMCAT_RMI_REGISTRY_PORT=${EXO_TOMCAT_RMI_REGISTRY_PORT}
-    echo EXO_TOMCAT_RMI_SERVER_PORT=${EXO_TOMCAT_RMI_SERVER_PORT}
-    echo EXO_HTTP_PORT=${EXO_HTTP_PORT}
-    echo EXO_AJP_PORT=${EXO_AJP_PORT}
-    echo EXO_DS_IDM_DRIVER=${EXO_DS_IDM_DRIVER}
-    echo EXO_DS_IDM_USERNAME=${EXO_DS_IDM_USERNAME}
-    echo EXO_DS_IDM_PASSWORD=${EXO_DS_IDM_PASSWORD}
-    echo EXO_DS_IDM_URL=${EXO_DS_IDM_URL}
-    echo EXO_DS_PORTAL_DRIVER=${EXO_DS_PORTAL_DRIVER}
-    echo EXO_DS_PORTAL_USERNAME=${EXO_DS_PORTAL_USERNAME}
-    echo EXO_DS_PORTAL_PASSWORD=${EXO_DS_PORTAL_PASSWORD}
-    echo EXO_DS_PORTAL_URL=${EXO_DS_PORTAL_URL}		
-    echo "[INFO] ========================================================================="
+  #Display the deployment descriptor
+  echo "[INFO] ========================= Deployment Descriptor ========================="
+  cat ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+  echo "[INFO] ================== Externalized configuration for PLF 4 ================="
+  echo EXO_TOMCAT_SHUTDOWN_PORT=${EXO_TOMCAT_SHUTDOWN_PORT}
+  echo EXO_TOMCAT_RMI_REGISTRY_PORT=${EXO_TOMCAT_RMI_REGISTRY_PORT}
+  echo EXO_TOMCAT_RMI_SERVER_PORT=${EXO_TOMCAT_RMI_SERVER_PORT}
+  echo EXO_HTTP_PORT=${EXO_HTTP_PORT}
+  echo EXO_AJP_PORT=${EXO_AJP_PORT}
+  echo EXO_DS_IDM_DRIVER=${EXO_DS_IDM_DRIVER}
+  echo EXO_DS_IDM_USERNAME=${EXO_DS_IDM_USERNAME}
+  echo EXO_DS_IDM_PASSWORD=${EXO_DS_IDM_PASSWORD}
+  echo EXO_DS_IDM_URL=${EXO_DS_IDM_URL}
+  echo EXO_DS_PORTAL_DRIVER=${EXO_DS_PORTAL_DRIVER}
+  echo EXO_DS_PORTAL_USERNAME=${EXO_DS_PORTAL_USERNAME}
+  echo EXO_DS_PORTAL_PASSWORD=${EXO_DS_PORTAL_PASSWORD}
+  echo EXO_DS_PORTAL_URL=${EXO_DS_PORTAL_URL}
+  echo "[INFO] ========================================================================="
 
-    cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
+  cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
 
-    # We need to backup existing logs if they already exist
-    backup_logs "$CATALINA_HOME/logs/" "${DEPLOYMENT_SERVER_LOGS_FILE}"
+  # We need to backup existing logs if they already exist
+  backup_logs "$CATALINA_HOME/logs/" "${DEPLOYMENT_SERVER_LOGS_FILE}"
 
-    # Startup the server
-    ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
+  # Startup the server
+  ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
 
-    # Wait for logs availability
-    while [ true ];
-    do
-      if [ -e "${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}" ]; then
-        break
-      fi
-    done
-    # Display logs
-    tail -f ${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE} &
-    local _tailPID=$!
-    # Check for the end of startup
-    set +e
-    while [ true ];
-    do
-      if grep -q "Server startup in" ${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}; then
-        kill ${_tailPID}
-        wait ${_tailPID} 2> /dev/null
-        break
-      fi
-    done
-    set -e
-    cd -
-    echo "[INFO] Server started"
-    echo "[INFO] URL  : ${DEPLOYMENT_URL}"
-    echo "[INFO] Logs : ${DEPLOYMENT_LOG_URL}"
-    echo "[INFO] JMX  : ${DEPLOYMENT_JMX_URL}"
-  else
-    echo "[WARNING] This product (${PRODUCT_NAME}:${PRODUCT_VERSION}) cannot be started"
-  fi
+  # Wait for logs availability
+  while [ true ];
+  do
+    if [ -e "${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}" ]; then
+      break
+    fi
+  done
+  # Display logs
+  tail -f ${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE} &
+  local _tailPID=$!
+  # Check for the end of startup
+  set +e
+  while [ true ];
+  do
+    if grep -q "Server startup in" ${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}; then
+      kill ${_tailPID}
+      wait ${_tailPID} 2> /dev/null
+      break
+    fi
+  done
+  set -e
+  cd -
+  echo "[INFO] Server started"
+  echo "[INFO] URL  : ${DEPLOYMENT_URL}"
+  echo "[INFO] Logs : ${DEPLOYMENT_LOG_URL}"
+  echo "[INFO] JMX  : ${DEPLOYMENT_JMX_URL}"
 }
 
 #
@@ -1094,35 +1198,31 @@ do_start() {
 #
 do_stop() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
+    echo "[WARNING] ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} isn't deployed !"
     echo "[WARNING] The product cannot be stopped"
     exit 0
   else
     # The server is supposed to be already deployed.
     # We load its settings from the configuration
     do_load_deployment_descriptor
-    if ${DEPLOYMENT_ENABLED}; then
-      if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
-        echo "[INFO] Stopping server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
-        export CATALINA_HOME=${DEPLOYMENT_DIR}
-        export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-        ########################################
-        # Externalized configuration for PLF 4
-        ########################################
-        export EXO_TOMCAT_SHUTDOWN_PORT="${DEPLOYMENT_SHUTDOWN_PORT}"
+    if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
+      echo "[INFO] Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+      export CATALINA_HOME=${DEPLOYMENT_DIR}
+      export CATALINA_PID=${DEPLOYMENT_PID_FILE}
+      ########################################
+      # Externalized configuration for PLF 4
+      ########################################
+      export EXO_TOMCAT_SHUTDOWN_PORT="${DEPLOYMENT_SHUTDOWN_PORT}"
 
-        # Additional settings
-        for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
-        do
-          export ${_var} = $(eval echo \${$_var})
-        done
-        ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force || true
-        echo "[INFO] Server stopped"
-      else
-        echo "[WARNING] No server directory to stop it"
-      fi
+      # Additional settings
+      for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
+      do
+        export ${_var} = $(eval echo \${$_var})
+      done
+      ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
+      echo "[INFO] Server stopped"
     else
-      echo "[WARNING] This product (${PRODUCT_NAME}:${PRODUCT_VERSION}) cannot be stopped"
+      echo "[WARNING] No server directory to stop it"
     fi
   fi
 }
@@ -1139,35 +1239,33 @@ do_undeploy() {
     # The server is supposed to be already deployed.
     # We load its settings from the configuration
     do_load_deployment_descriptor
-    if ${DEPLOYMENT_ENABLED}; then
-      # Stop the server
-      do_stop
-      if ${DEPLOYMENT_DATABASE_ENABLED}; then
-        do_drop_database
-      fi
-      echo "[INFO] Undeploying server ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
-      if ${DEPLOYMENT_SETUP_AWSTATS}; then
-        # Delete Awstat config
-        rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
-      fi
-      if ${DEPLOYMENT_SETUP_APACHE}; then
-        # Delete the vhost
-        rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
-        # Reload Apache to deactivate the config
-        if [ "${DIST}" == "Ubuntu" ]; then
-          sudo /usr/sbin/service apache2 reload
-        fi
-      fi
-      # Delete the server
-      rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
-      # Close firewall ports
-      if ${DEPLOYMENT_SETUP_UFW}; then
-        # Prod vs Dev (To be improved)
-        sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
-        sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}
-      fi
-      echo "[INFO] Server undeployed"
+    # Stop the server
+    do_stop
+    if ${DEPLOYMENT_DATABASE_ENABLED}; then
+      do_drop_database
     fi
+    echo "[INFO] Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    if ${DEPLOYMENT_SETUP_AWSTATS}; then
+      # Delete Awstat config
+      rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
+    fi
+    if ${DEPLOYMENT_SETUP_APACHE}; then
+      # Delete the vhost
+      rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
+      # Reload Apache to deactivate the config
+      if [ "${DIST}" == "Ubuntu" ]; then
+        sudo /usr/sbin/service apache2 reload
+      fi
+    fi
+    # Delete the server
+    rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+    # Close firewall ports
+    if ${DEPLOYMENT_SETUP_UFW}; then
+      # Prod vs Dev (To be improved)
+      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
+      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}
+    fi
+    echo "[INFO] Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   fi
@@ -1196,7 +1294,7 @@ do_list() {
       else
         STATUS="false"
       fi
-      printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" ${PRODUCT_NAME} ${PRODUCT_VERSION} ${DEPLOYMENT_HTTP_PORT} ${DEPLOYMENT_AJP_PORT} ${DEPLOYMENT_SHUTDOWN_PORT} ${DEPLOYMENT_RMI_REG_PORT} ${DEPLOYMENT_RMI_SRV_PORT} $STATUS
+      printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ${DEPLOYMENT_HTTP_PORT} ${DEPLOYMENT_AJP_PORT} ${DEPLOYMENT_SHUTDOWN_PORT} ${DEPLOYMENT_RMI_REG_PORT} ${DEPLOYMENT_RMI_SRV_PORT} $STATUS
     done
   else
     echo "[INFO] No server deployed."
@@ -1320,6 +1418,7 @@ case "${ACTION}" in
     fi
   ;;
   deploy)
+    configurable_env_var "DEPLOYMENT_MODE" "NO_DATA"
     initialize_product_settings
     do_deploy
   ;;
@@ -1336,34 +1435,25 @@ case "${ACTION}" in
     do_stop
   ;;
   restart)
+    configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
     initialize_product_settings
     do_stop
-    do_start
-  ;;
-  clean-restart)
-    initialize_product_settings
-    do_stop
-    case ${DEPLOYMENT_DATABASE_TYPE} in
-      MYSQL)
-        echo "[INFO] Recreating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
-        SQL="";
-        SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
-        SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME} CHARACTER SET latin1 COLLATE latin1_bin;"
-        mysql -e "$SQL"
-        echo "[INFO] Done."
+    case "${DEPLOYMENT_MODE}" in
+      NO_DATA)
+        do_init_empty_data
       ;;
-      HSQLDB)
-        # Nothing to do, it will be deleted with data
+      KEEP_DATA)
+        # We have nothing to touch
+      ;;
+      RESTORE_DATASET)
+        do_restore_dataset
       ;;
       *)
-        echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+        echo "[ERROR] Invalid deployment mode \"${DEPLOYMENT_MODE}\""
         print_usage
         exit 1
       ;;
     esac
-    echo "[INFO] Dropping data ..."
-    rm -rf ${DEPLOYMENT_DIR}/gatein/data/*
-    echo "[INFO] Done."
     do_start
   ;;
   undeploy)
@@ -1380,6 +1470,7 @@ case "${ACTION}" in
     do_stop_all
   ;;
   restart-all)
+    configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
     do_restart_all
   ;;
   undeploy-all)

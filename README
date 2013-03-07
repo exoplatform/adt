@@ -64,56 +64,66 @@ Usage
     This script manages automated deployment of eXo products for testing purpose.
 
     Action :
-      deploy         Deploys (Download+Configure) the server
-      start          Starts the server
-      stop           Stops the server
-      restart        Restarts the server
-      clean-restart  Restarts the server after having deleted all existing data
-      undeploy       Undeploys (deletes) the server
+      deploy           Deploys (Download+Configure) the server
+      download-dataset Downloads the dataset required by the server
+      start            Starts the server
+      stop             Stops the server
+      restart          Restarts the server
+      undeploy         Undeploys (deletes) the server
 
-      start-all      Starts all deployed servers
-      stop-all       Stops all deployed servers
-      restart-all    Restarts all deployed servers
-      undeploy-all   Undeploys (deletes) all deployed servers
-      list           Lists all deployed servers
+      start-all        Starts all deployed servers
+      stop-all         Stops all deployed servers
+      restart-all      Restarts all deployed servers
+      undeploy-all     Undeploys (deletes) all deployed servers
+      list             Lists all deployed servers
 
-      init           Initializes the environment
-      update-repos   Update Git repositories used by the web front-end
-      web-server     Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
+      init             Initializes the environment
+      update-repos     Update Git repositories used by the web front-end
+      web-server       Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
 
     Environment Variables :
 
       They may be configured in the current shell environment or /etc/default/adt or $HOME/.adtrc
 
-      PRODUCT_NAME                  : The product you want to manage. Possible values are :
-        gatein       GateIn Community edition
-        exogtn       GateIn eXo edition
-        plf          eXo Platform Standard Edition
-        plfcom       eXo Platform Community Edition
-        plfent       eXo Platform Express/Enterprise Edition
-        plftrial     eXo Platform Trial Edition
-        compint      eXo Company Intranet
-        docs         eXo Platform Documentations Website
-      PRODUCT_VERSION               : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+      PRODUCT_NAME                   : The product you want to manage. Possible values are :
+        gatein         GateIn Community edition
+        exogtn         GateIn eXo edition
+        plf            eXo Platform Standard Edition
+        plfcom         eXo Platform Community Edition
+        plfent         eXo Platform Express/Enterprise Edition
+        plftrial       eXo Platform Trial Edition
+        compint        eXo Company Intranet
+        docs           eXo Platform Documentations Website
+      PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
-      ADT_DATA                      : The path where data have to be stored (default: under the script path - /Users/arnaud/Code/eXo/adt)
-      DEPLOYMENT_SETUP_APACHE       : Do you want to setup the apache configuration (default: false)
-      DEPLOYMENT_SETUP_AWSTATS      : Do you want to setup the awstats configuration (default: false)
-      DEPLOYMENT_SETUP_UFW          : Do you want to setup the ufw firewall configuration (default: false)
-      DEPLOYMENT_AJP_PORT           : AJP Port (default: 8009)
-      DEPLOYMENT_HTTP_PORT          : HTTP Port (default: 8080)
-      DEPLOYMENT_SHUTDOWN_PORT      : SHUTDOWN Port (default: 8005)
-      DEPLOYMENT_RMI_REG_PORT       : RMI Registry Port for JMX (default: 10001)
-      DEPLOYMENT_RMI_SRV_PORT       : RMI Server Port for JMX (default: 10002)
-      DEPLOYMENT_DATABASE_TYPE      : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
-      ACCEPTANCE_HOST               : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
-      CROWD_ACCEPTANCE_APP_NAME     : The crowd application used to authenticate the front-end (default: none)
-      CROWD_ACCEPTANCE_APP_PASSWORD : The crowd application''s password used to authenticate the front-end (default: none)
-      KEEP_DB                       : Keep the current database content for MYSQL. By default the deployment process drops the database if it already exists. (default: false)
+      ADT_DATA                       : The path where data have to be stored (default: under the script path - /Users/arnaud/Code/eXo/adt)
+      DEPLOYMENT_SETUP_APACHE        : Do you want to setup the apache configuration (default: false)
+      DEPLOYMENT_SETUP_AWSTATS       : Do you want to setup the awstats configuration (default: false)
+      DEPLOYMENT_SETUP_UFW           : Do you want to setup the ufw firewall configuration (default: false)
+      DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports
+      DEPLOYMENT_AJP_PORT            : AJP Port (default: ${DEPLOYMENT_PORT_PREFIX}2)
+      DEPLOYMENT_HTTP_PORT           : HTTP Port (default: ${DEPLOYMENT_PORT_PREFIX}1)
+      DEPLOYMENT_SHUTDOWN_PORT       : SHUTDOWN Port (default: ${DEPLOYMENT_PORT_PREFIX}0)
+      DEPLOYMENT_RMI_REG_PORT        : RMI Registry Port for JMX (default: ${DEPLOYMENT_PORT_PREFIX}3)
+      DEPLOYMENT_RMI_SRV_PORT        : RMI Server Port for JMX (default: ${DEPLOYMENT_PORT_PREFIX}4)
+      DEPLOYMENT_JOD_CONVERTER_PORTS : JOD Converter ports used to launch OpenOffice instances (default : ${DEPLOYMENT_PORT_PREFIX}5,${DEPLOYMENT_PORT_PREFIX}6,${DEPLOYMENT_PORT_PREFIX}7,${DEPLOYMENT_PORT_PREFIX}8,${DEPLOYMENT_PORT_PREFIX}9)
 
-      REPOSITORY_SERVER_BASE_URL    : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
-      REPOSITORY_USERNAME           : The username to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
-      REPOSITORY_PASSWORD           : The password to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+      DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
 
-      ADT_DEBUG                     : Display debug details (default: false)
+      DEPLOYMENT_MODE                : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy, values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
+
+      ACCEPTANCE_HOST                : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
+      CROWD_ACCEPTANCE_APP_NAME      : The crowd application used to authenticate the front-end (default: none)
+      CROWD_ACCEPTANCE_APP_PASSWORD  : The crowd application''s password used to authenticate the front-end (default: none)
+
+      DEPLOYMENT_LDAP_URL            : LDAP URL to use if the server is using one (default: none)
+      DEPLOYMENT_LDAP_ADMIN_DN       : LDAP DN to use to logon into the LDAP server
+      DEPLOYMENT_LDAP_ADMIN_PWD      : LDAP password to use to logon into the LDAP server
+
+      REPOSITORY_SERVER_BASE_URL     : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
+      REPOSITORY_USERNAME            : The username to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+      REPOSITORY_PASSWORD            : The password to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+
+      ADT_DEBUG                      : Display debug details (default: false)
+
 

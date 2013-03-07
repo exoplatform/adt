@@ -19,11 +19,17 @@ case "`uname`" in
   Darwin*) DARWIN=true ;;
 esac
 
+# System dependent settings
+if $LINUX; then
+  TAR_BZIP2_COMPRESS_PRG=--use-compress-prog=pbzip2
+else
+  TAR_BZIP2_COMPRESS_PRG=
+fi
+
 # Various command aliases
 if $LINUX; then
   alias display_time='/usr/bin/time -f "[INFO] Return code : %x\n[INFO] Time report (sec) : \t%e real,\t%U user,\t%S system"'
 else
-  # Various command aliases
   alias display_time='/usr/bin/time'
 fi
 
