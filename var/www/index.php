@@ -103,9 +103,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
         }
         ?>
         <tr>
-            <td><?php if ($descriptor_array->DEPLOYMENT_ENABLED) {
-                    echo $status;
-                } ?></td>
+            <td><?=$status ?></td>
             <td>
                 <?php
                 $product_html_label = "-UNSET-";
@@ -118,16 +116,12 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $feature_branch;
                 }
                 ?>
-                <?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?>
-                    <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$product_html_label?></a>
-                    <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
-                        <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
-                    <?php } ?>
-                <?php } else { ?>
-                    <?= $product_html_label ?>
+                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$product_html_label?></a>
+                <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
+                    <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
             </td>
-            <td class="col-center"><?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $base_version ?></a><?php } else { ?><?= $base_version ?><?php } ?></td>
+            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $base_version ?></a></td>
             <?php if (empty($feature_branch)) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>
@@ -154,16 +148,12 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 <td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>
             <?php } ?>
             <td class="col-center <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
-            <td class="col-center"><?php if ($descriptor_array->DEPLOYMENT_ENABLED) {
-                    echo $descriptor_array->DEPLOYMENT_AGE_STRING;
-                } ?></td>
+            <td class="col-center"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
             <td class="col-center">
-                <?php if ($descriptor_array->DEPLOYMENT_ENABLED) { ?>
-                    <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs" class="icon"/></a>&nbsp;
-                    <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs" class="icon"/></a>&nbsp;
-                    <a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a>&nbsp;
-                    <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="<?= $descriptor_array->PRODUCT_NAME . " " . $descriptor_array->PRODUCT_VERSION ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>&nbsp;
-                <?php } ?>
+                <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs" class="icon"/></a>&nbsp;
+                <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs" class="icon"/></a>&nbsp;
+                <a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a>&nbsp;
+                <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="<?= $descriptor_array->PRODUCT_NAME . " " . $descriptor_array->PRODUCT_VERSION ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>&nbsp;
                 <a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="tooltip" title="Download <?= $descriptor_array->ARTIFACT_GROUPID ?>:<?= $descriptor_array->ARTIFACT_ARTIFACTID ?>:<?= $descriptor_array->ARTIFACT_TIMESTAMP ?> from Acceptance"><i class="icon-download-alt"></i></a>
             </td>
         </tr>

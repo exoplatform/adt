@@ -117,9 +117,7 @@ checkCaches();
                                 }
                                 ?>
                                 <td style="font-weight:bold;" class='col-center <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
-                                <td><?php if ($descriptor_array->DEPLOYMENT_ENABLED) {
-                                        echo $status;
-                                    } ?></td>
+                                <td><?= $status ?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_SHUTDOWN_PORT?></td>
