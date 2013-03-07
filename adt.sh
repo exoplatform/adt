@@ -67,7 +67,6 @@ popd > /dev/null
 echo "[INFO] ADT_DATA = ${ADT_DATA}"
 
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
-export TMPDIR=${TMP_DIR} #used by mktemp
 env_var "DL_DIR" "${ADT_DATA}/downloads"
 env_var "DS_DIR" "${ADT_DATA}/datasets"
 env_var "SRV_DIR" "${ADT_DATA}/servers"
@@ -553,17 +552,17 @@ do_restore_dataset(){
       do_drop_data
       mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
       echo "[INFO] Loading values ..."
-      display_time tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
+      display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
       echo "[INFO] Done"
       echo "[INFO] Loading indexes ..."
-      display_time tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
+      display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
       echo "[INFO] Done"
       do_drop_database
       do_create_database
-      _tmpdir=`mktemp -d db-export.XXXXXXXXXX` || exit 1
+      _tmpdir=`mktemp -d -t ${TMP_DIR}/db-export.XXXXXXXXXX` || exit 1
       _restorescript="${_tmpdir}/__restoreAllData.sql"
-      echo "[INFO] = Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
-      display_time tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
+      echo "[INFO] Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
+      display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
       echo "[INFO] Done"
       if [ ! -e ${_restorescript} ]; then
        echo "[ERROR] SQL file (${_restorescript}) doesn't exist."
@@ -574,7 +573,7 @@ do_restore_dataset(){
       display_time pv ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
       popd > /dev/null 2>&1
       echo "[INFO] Done"
-      rm -rf _tmpdir
+      rm -rf ${_tmpdir}
     ;;
     HSQLDB)
       echo "[ERROR] Dataset restoration isn't supported for database type \"${DEPLOYMENT_DATABASE_TYPE}\""
@@ -1049,7 +1048,7 @@ do_deploy() {
   echo "[INFO] Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     echo "[INFO] Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
-    _tmpdir=`mktemp -d archive-data.XXXXXXXXXX` || exit 1
+    _tmpdir=`mktemp -d -t ${TMP_DIR}/archive-data.XXXXXXXXXX` || exit 1
     if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
       echo "[WARNING] This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/data

@@ -22,8 +22,10 @@ esac
 # System dependent settings
 if $LINUX; then
   TAR_BZIP2_COMPRESS_PRG=--use-compress-prog=pbzip2
+  NICE_CMD="nice -n 20 ionice -c2 -n7"
 else
   TAR_BZIP2_COMPRESS_PRG=
+  NICE_CMD="nice -n 20"
 fi
 
 # Various command aliases
