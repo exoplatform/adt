@@ -559,7 +559,7 @@ do_restore_dataset(){
       echo "[INFO] Done"
       do_drop_database
       do_create_database
-      _tmpdir=`mktemp -d -t ${TMP_DIR}/db-export.XXXXXXXXXX` || exit 1
+      _tmpdir=`TMPDIR=${TMP_DIR}; mktemp -d -t db-export.XXXXXXXXXX` || exit 1
       _restorescript="${_tmpdir}/__restoreAllData.sql"
       echo "[INFO] Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
@@ -1050,7 +1050,7 @@ do_deploy() {
   echo "[INFO] Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     echo "[INFO] Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
-    _tmpdir=`mktemp -d -t ${TMP_DIR}/archive-data.XXXXXXXXXX` || exit 1
+    _tmpdir=`TMPDIR=${TMP_DIR}; mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
     if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
       echo "[WARNING] This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/data
