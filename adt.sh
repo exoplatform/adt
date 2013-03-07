@@ -602,7 +602,9 @@ do_init_empty_data(){
 # Function that unpacks the app server archive
 #
 do_unpack_server() {
+  echo "[INFO] Deleting existing server ..."
   rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+  echo "[INFO] Done"
   echo "[INFO] Unpacking server ..."
   mkdir -p ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   set +e
