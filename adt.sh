@@ -616,9 +616,7 @@ do_init_empty_data(){
 # Function that unpacks the app server archive
 #
 do_unpack_server() {
-  echo "[INFO] Deleting existing server ..."
   rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
-  echo "[INFO] Done"
   echo "[INFO] Unpacking server ..."
   mkdir -p ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   set +e
@@ -662,7 +660,9 @@ do_unpack_server() {
   set -e
   DEPLOYMENT_PID_FILE=${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.pid
   mkdir -p ${SRV_DIR}
+  echo "[INFO] Deleting existing server ..."
   rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+  echo "[INFO] Done"
   cp -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   # We search the tomcat directory as the parent of a gatein directory
