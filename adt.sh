@@ -51,6 +51,10 @@ configurable_env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}2"
 configurable_env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}3"
 configurable_env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}4"
 configurable_env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}5,${DEPLOYMENT_PORT_PREFIX}6,${DEPLOYMENT_PORT_PREFIX}7,${DEPLOYMENT_PORT_PREFIX}8,${DEPLOYMENT_PORT_PREFIX}9"
+configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
+configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
+configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
+configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MIN" "128m"
 configurable_env_var "DEPLOYMENT_LDAP_URL" ""
 configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
 configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
@@ -137,6 +141,11 @@ Environment Variables :
   DEPLOYMENT_RMI_REG_PORT        : RMI Registry Port for JMX (default: \${DEPLOYMENT_PORT_PREFIX}3)
   DEPLOYMENT_RMI_SRV_PORT        : RMI Server Port for JMX (default: \${DEPLOYMENT_PORT_PREFIX}4)
   DEPLOYMENT_JOD_CONVERTER_PORTS : JOD Converter ports used to launch OpenOffice instances (default : \${DEPLOYMENT_PORT_PREFIX}5,\${DEPLOYMENT_PORT_PREFIX}6,\${DEPLOYMENT_PORT_PREFIX}7,\${DEPLOYMENT_PORT_PREFIX}8,\${DEPLOYMENT_PORT_PREFIX}9)
+
+  DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
+  DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
+  DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
+  DEPLOYMENT_JVM_PERMSIZE_MIN    : Minimum permgem memory size (default: 128m)
 
   DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
 
@@ -429,17 +438,20 @@ initialize_product_settings() {
           env_var EXO_PROFILES "all"
         ;;
         compint)
-          env_var PRODUCT_DESCRIPTION "eXo Company Intranet"
-          env_var ARTIFACT_REPO_GROUP "cp"
-          env_var ARTIFACT_GROUPID "com.exoplatform.intranet"
-          env_var ARTIFACT_ARTIFACTID "exo-intranet-package"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var EXO_PROFILES "default"
-          env_var "DEPLOYMENT_DATABASE_TYPE" "MYSQL"
+          env_var PRODUCT_DESCRIPTION         "eXo Company Intranet"
+          env_var ARTIFACT_REPO_GROUP         "cp"
+          env_var ARTIFACT_GROUPID            "com.exoplatform.intranet"
+          env_var ARTIFACT_ARTIFACTID         "exo-intranet-package"
+          env_var DEPLOYMENT_SERVER_SCRIPT    "bin/catalina.sh"
+          env_var EXO_PROFILES                "default"
+          env_var DEPLOYMENT_DATABASE_TYPE    "MYSQL"
+          env_var DEPLOYMENT_JVM_SIZE_MAX     "2g"
+          env_var DEPLOYMENT_JVM_SIZE_MIN     "2g"
+          env_var DEPLOYMENT_JVM_PERMSIZE_MAX "512m"
           # Datasets remote location
-          env_var "DATASET_DATA_VALUES_ARCHIVE"    "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
-          env_var "DATASET_DATA_INDEX_ARCHIVE"     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
-          env_var "DATASET_DB_ARCHIVE"             "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
+          env_var DATASET_DATA_VALUES_ARCHIVE    "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
+          env_var DATASET_DATA_INDEX_ARCHIVE     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
+          env_var DATASET_DB_ARCHIVE             "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
         ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
@@ -1119,13 +1131,8 @@ do_start() {
   export EXO_LOGS_DISPLAY_CONSOLE=true
   export EXO_LOGS_CONSOLE_COLORIZED=true
   ########################################
-  # Externalized configuration for PLF 4
+  # Externalized configuration for PLF 4 (tomcat standalone - legacy)
   ########################################
-  export EXO_TOMCAT_SHUTDOWN_PORT=${DEPLOYMENT_SHUTDOWN_PORT}
-  export EXO_TOMCAT_RMI_REGISTRY_PORT=${DEPLOYMENT_RMI_REG_PORT}
-  export EXO_TOMCAT_RMI_SERVER_PORT=${DEPLOYMENT_RMI_SRV_PORT}
-  export EXO_HTTP_PORT=${DEPLOYMENT_HTTP_PORT}
-  export EXO_AJP_PORT=${DEPLOYMENT_AJP_PORT}
   export EXO_DS_IDM_DRIVER="com.mysql.jdbc.Driver"
   export EXO_DS_IDM_USERNAME="${DEPLOYMENT_DATABASE_USER}"
   export EXO_DS_IDM_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
@@ -1134,6 +1141,18 @@ do_start() {
   export EXO_DS_PORTAL_USERNAME="${DEPLOYMENT_DATABASE_USER}"
   export EXO_DS_PORTAL_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
   export EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
+  ########################################
+  # Externalized configuration for PLF 4
+  ########################################
+  export EXO_TOMCAT_SHUTDOWN_PORT=${DEPLOYMENT_SHUTDOWN_PORT}
+  export EXO_TOMCAT_RMI_REGISTRY_PORT=${DEPLOYMENT_RMI_REG_PORT}
+  export EXO_TOMCAT_RMI_SERVER_PORT=${DEPLOYMENT_RMI_SRV_PORT}
+  export EXO_HTTP_PORT=${DEPLOYMENT_HTTP_PORT}
+  export EXO_AJP_PORT=${DEPLOYMENT_AJP_PORT}
+  export EXO_JVM_SIZE_MAX=${DEPLOYMENT_JVM_SIZE_MAX}
+  export EXO_JVM_SIZE_MIN=${DEPLOYMENT_JVM_SIZE_MIN}
+  export EXO_JVM_PERMSIZE_MAX=${DEPLOYMENT_JVM_PERMSIZE_MAX}
+  export EXO_JVM_PERMSIZE_MIN=${DEPLOYMENT_JVM_PERMSIZE_MIN}
   export EXO_DEV=true
 
   # Additional settings

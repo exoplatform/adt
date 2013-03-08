@@ -108,6 +108,11 @@ Usage
       DEPLOYMENT_RMI_SRV_PORT        : RMI Server Port for JMX (default: ${DEPLOYMENT_PORT_PREFIX}4)
       DEPLOYMENT_JOD_CONVERTER_PORTS : JOD Converter ports used to launch OpenOffice instances (default : ${DEPLOYMENT_PORT_PREFIX}5,${DEPLOYMENT_PORT_PREFIX}6,${DEPLOYMENT_PORT_PREFIX}7,${DEPLOYMENT_PORT_PREFIX}8,${DEPLOYMENT_PORT_PREFIX}9)
 
+      DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
+      DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
+      DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
+      DEPLOYMENT_JVM_PERMSIZE_MIN    : Minimum permgem memory size (default: 128m)
+
       DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
 
       DEPLOYMENT_MODE                : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy, values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
