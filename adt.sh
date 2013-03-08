@@ -67,6 +67,7 @@ popd > /dev/null
 echo "[INFO] ADT_DATA = ${ADT_DATA}"
 
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
+export TMPDIR=${TMP_DIR}
 env_var "DL_DIR" "${ADT_DATA}/downloads"
 env_var "DS_DIR" "${ADT_DATA}/datasets"
 env_var "SRV_DIR" "${ADT_DATA}/servers"
@@ -559,7 +560,8 @@ do_restore_dataset(){
       echo "[INFO] Done"
       do_drop_database
       do_create_database
-      _tmpdir=`TMPDIR=${TMP_DIR}; mktemp -d -t db-export.XXXXXXXXXX` || exit 1
+      _tmpdir=`mktemp -d -t db-export.XXXXXXXXXX` || exit 1
+      echo "[INFO] Using temporary directory ${_tmpdir}"
       _restorescript="${_tmpdir}/__restoreAllData.sql"
       echo "[INFO] Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
@@ -1050,7 +1052,8 @@ do_deploy() {
   echo "[INFO] Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     echo "[INFO] Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
-    _tmpdir=`TMPDIR=${TMP_DIR}; mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
+    _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
+    echo "[INFO] Using temporary directory ${_tmpdir}"
     if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
       echo "[WARNING] This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/data
