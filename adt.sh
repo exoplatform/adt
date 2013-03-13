@@ -1049,7 +1049,7 @@ do_create_deployment_descriptor() {
 
 do_load_deployment_descriptor() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} isn't deployed !"
+    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo "[WARNING] You need to deploy it first."
     exit 1
   else
@@ -1220,7 +1220,7 @@ do_start() {
 #
 do_stop() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} isn't deployed !"
+    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo "[WARNING] The product cannot be stopped"
     exit 0
   else
