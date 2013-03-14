@@ -384,25 +384,34 @@ initialize_product_settings() {
               env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
             ;;
             *)
-            # 4.0.x and +
-              env_var ARTIFACT_GROUPID "org.exoplatform.platform.pkg"
-              env_var ARTIFACT_ARTIFACTID "platform-tomcat-standalone"
-              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-              env_var EXO_PROFILES "all"
+              # 4.0.x and +
+              echo "[ERROR] Product 'plf' not supported for versions > 3.x. Please use plfcom or plfent."
+              print_usage
+              exit 1
             ;;
           esac
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
         ;;
         plftrial)
-          env_var PRODUCT_DESCRIPTION "eXo Platform Trial Edition"
-          env_var ARTIFACT_GROUPID "org.exoplatform.platform"
-          env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.trial"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
-          env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
-          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          case "${PRODUCT_BRANCH}" in
+            "3.5.x")
+              env_var PRODUCT_DESCRIPTION "eXo Platform Trial Edition"
+              env_var ARTIFACT_GROUPID "org.exoplatform.platform"
+              env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.trial"
+              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+              env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
+              env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
+              env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
+              env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
+              env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+            ;;
+            *)
+              # 4.0.x and +
+              echo "[ERROR] Product 'plftrial' not supported for versions > 3.x. Please use plfcom or plfent."
+              print_usage
+              exit 1
+            ;;
+          esac
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "eXo Platform Community Edition"
