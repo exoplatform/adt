@@ -84,7 +84,7 @@ env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date "+%Y%m%d.%H%M%S"`
-env_var "REPOS_LIST" "exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-tomcat-standalone exoplatform:platform-public-distributions"
+env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions"
 configurable_env_var "GIT_REPOS_UPDATED" false
 
 #

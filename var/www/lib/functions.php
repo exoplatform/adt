@@ -110,6 +110,7 @@ function sortProjects($a, $b)
 {
     // Default projects order
     $i = 0;
+    $projectsOrder["platform-ui"] = $i++;
     $projectsOrder["commons"] = $i++;
     $projectsOrder["ecms"] = $i++;
     $projectsOrder["social"] = $i++;
@@ -118,7 +119,6 @@ function sortProjects($a, $b)
     $projectsOrder["calendar"] = $i++;
     $projectsOrder["integration"] = $i++;
     $projectsOrder["platform"] = $i++;
-    $projectsOrder["platform-tomcat-standalone"] = $i++;
     $projectsOrder["platform-public-distributions"] = $i++;
 
     if ($a == $b) {
