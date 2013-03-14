@@ -229,6 +229,14 @@ table th.col-center, table td.col-center {
   text-align : center;
 }
 
+table th.col-right, table td.col-right {
+  text-align : right;
+}
+
+table th.col-left, table td.col-left {
+  text-align : left;
+}
+
 tr.highlight td {
   background-color : #ffd700;
   font-weight: bold;

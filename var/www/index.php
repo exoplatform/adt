@@ -61,6 +61,7 @@ checkCaches();
     <th class="col-center" colspan="4">Feature Branch</th>
     <th class="col-center">Built</th>
     <th class="col-center">Deployed</th>
+    <th class="col-center">Artifact</th>
     <th class="col-center">&nbsp;</th>
 </tr>
 </thead>
@@ -70,7 +71,7 @@ $all_instances = getGlobalAcceptanceInstances();
 foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
-        <td colspan="11" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
+        <td colspan="12" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
             <?php
             if ($plf_branch === "4.0.x") {
                 echo "Platform " . $plf_branch . " based build (R&D) - current";
@@ -147,14 +148,14 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 <td class="col-center"><?php if (!empty($descriptor_array->ISSUE_NUM)) { ?><a href="https://jira.exoplatform.org/browse/<?= $descriptor_array->ISSUE_NUM ?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature">&nbsp;<?= $descriptor_array->ISSUE_NUM ?></a><?php } ?></td>
                 <td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>
             <?php } ?>
-            <td class="col-center <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
-            <td class="col-center"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+            <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
+            <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+            <td class="col-left" style="font-size: small"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="tooltip" title="Download <?= $descriptor_array->ARTIFACT_GROUPID ?>:<?= $descriptor_array->ARTIFACT_ARTIFACTID ?>:<?= $descriptor_array->ARTIFACT_TIMESTAMP ?> from Acceptance"><i class="icon-download-alt"></i>&nbsp;<?= $descriptor_array->ARTIFACT_TIMESTAMP?></a></td>
             <td class="col-center">
                 <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal_tomcat.png" width="32" height="16" alt="instance logs" class="icon"/></a>&nbsp;
                 <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal_apache.png" width="32" height="16" alt="apache logs" class="icon"/></a>&nbsp;
                 <a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a>&nbsp;
-                <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="<?= $descriptor_array->PRODUCT_NAME . " " . $descriptor_array->PRODUCT_VERSION ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>&nbsp;
-                <a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="tooltip" title="Download <?= $descriptor_array->ARTIFACT_GROUPID ?>:<?= $descriptor_array->ARTIFACT_ARTIFACTID ?>:<?= $descriptor_array->ARTIFACT_TIMESTAMP ?> from Acceptance"><i class="icon-download-alt"></i></a>
+                <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="<?= $descriptor_array->PRODUCT_NAME . " " . $descriptor_array->PRODUCT_VERSION ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>
             </td>
         </tr>
         <?php if (!empty($feature_branch)) { ?>
