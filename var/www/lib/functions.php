@@ -180,6 +180,7 @@ function getFeatureBranches()
 function getLocalAcceptanceInstances()
 {
     $instances = apc_fetch('local_instances');
+    $UTC = new DateTimeZone("UTC");
 
     if (empty($instances)) {
         $instances = array();
@@ -189,7 +190,7 @@ function getLocalAcceptanceInstances()
             // Parse deployment descriptor
             $descriptor_array = parse_ini_file(getenv('ADT_DATA') . "/conf/adt/" . $vhost);
             if ($descriptor_array['ARTIFACT_DATE']) {
-                $artifact_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['ARTIFACT_DATE'])->diff($now, true);
+                $artifact_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['ARTIFACT_DATE'], $UTC)->diff($now, true);
                 if ($artifact_age->days)
                     $descriptor_array['ARTIFACT_AGE_STRING'] = $artifact_age->format('%a day(s) ago');
                 else if ($artifact_age->h > 0)
