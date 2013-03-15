@@ -767,7 +767,7 @@ do_create_data() {
 }
 
 do_configure_server_for_jmx() {
-  if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote-*.jar ]; then
+  if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
     JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
     echo "[INFO] Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
@@ -888,7 +888,7 @@ do_configure_ldap() {
 do_configure_server_for_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
-      if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector-*.jar ]; then
+      if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector*.jar ]; then
         MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
         echo "[INFO] Download and install MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
         curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
