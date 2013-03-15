@@ -1088,7 +1088,12 @@ do_deploy() {
       # The server have been already deployed.
       # We load its settings from the configuration
       do_load_deployment_descriptor
-      mv ${DEPLOYMENT_DIR}/gatein/data ${_tmpdir}
+      if [ -d "${DEPLOYMENT_DIR}/gatein/data" ]; then
+        mv ${DEPLOYMENT_DIR}/gatein/data ${_tmpdir}
+      else
+        mkdir -p ${_tmpdir}/data
+        do_create_database
+      fi
     fi
     echo "[INFO] Done."
   fi
