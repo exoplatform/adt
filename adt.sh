@@ -1058,6 +1058,9 @@ do_create_deployment_descriptor() {
   do
     echo "${_var}=$(eval echo\${$_var})" >> ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   done
+
+  # escape any single quote
+  replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "\'" "\\\'"
   echo "[INFO] Done."
 }
 
