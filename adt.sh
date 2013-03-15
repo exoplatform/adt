@@ -447,24 +447,25 @@ initialize_product_settings() {
           env_var EXO_PROFILES "all"
         ;;
         compint)
-          env_var PRODUCT_DESCRIPTION         "eXo Company Intranet"
-          env_var ARTIFACT_REPO_GROUP         "cp"
-          env_var ARTIFACT_GROUPID            "com.exoplatform.intranet"
+          env_var PRODUCT_DESCRIPTION           "eXo Company Intranet"
+          env_var ARTIFACT_REPO_GROUP           "cp"
+          env_var ARTIFACT_GROUPID              "com.exoplatform.intranet"
           case "${PRODUCT_BRANCH}" in
             "3.5.x")
-  	          env_var ARTIFACT_ARTIFACTID         "exo-intranet-package"
+  	          env_var ARTIFACT_ARTIFACTID       "exo-intranet-package"
             ;;
             *)
               # 4.0.x and +
-		          env_var ARTIFACT_ARTIFACTID         "company-intranet-package"
+		          env_var ARTIFACT_ARTIFACTID       "company-intranet-package"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
             ;;
           esac
-          env_var DEPLOYMENT_SERVER_SCRIPT    "bin/catalina.sh"
-          env_var EXO_PROFILES                "default"
-          env_var DEPLOYMENT_DATABASE_TYPE    "MYSQL"
-          env_var DEPLOYMENT_JVM_SIZE_MAX     "2g"
-          env_var DEPLOYMENT_JVM_SIZE_MIN     "2g"
-          env_var DEPLOYMENT_JVM_PERMSIZE_MAX "512m"
+          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
+          env_var EXO_PROFILES                  "default"
+          env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
+          env_var DEPLOYMENT_JVM_SIZE_MAX       "2g"
+          env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
+          env_var DEPLOYMENT_JVM_PERMSIZE_MAX   "512m"
           # Datasets remote location
           env_var DATASET_DATA_VALUES_ARCHIVE    "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
           env_var DATASET_DATA_INDEX_ARCHIVE     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
