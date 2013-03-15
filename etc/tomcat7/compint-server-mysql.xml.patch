@@ -1,0 +1,20 @@
+--- server.xml	2013-03-15 19:14:41.000000000 +0100
++++ server.xml	2013-03-15 19:16:58.000000000 +0100
+@@ -69,7 +69,7 @@
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="root" password="root" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/plf?autoReconnect=true"/>
++              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@?autoReconnect=true"/>
+ 
+     <!-- eXo JCR Datasource for portal -->
+     <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
+@@ -79,7 +79,7 @@
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="root" password="root" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/plf?autoReconnect=true"/>
++              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true"/>
+ 
+   </GlobalNamingResources>
+ 

@@ -1059,10 +1059,6 @@ do_create_deployment_descriptor() {
     echo "${_var}=$(eval echo\${$_var})" >> ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   done
   echo "[INFO] Done."
-  #Display the deployment descriptor
-  echo "[INFO] ========================= Deployment Descriptor ========================="
-  cat ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
-  echo "[INFO] ========================================================================="
 }
 
 do_load_deployment_descriptor() {
@@ -1171,31 +1167,20 @@ do_start() {
   export EXO_JVM_SIZE_MIN=${DEPLOYMENT_JVM_SIZE_MIN}
   export EXO_JVM_PERMSIZE_MAX=${DEPLOYMENT_JVM_PERMSIZE_MAX}
   export EXO_JVM_PERMSIZE_MIN=${DEPLOYMENT_JVM_PERMSIZE_MIN}
+  ########################################
+  # Externalized configuration for Intranet
+  ########################################
+  export EXO_LDAP_PROVIDER_URL=${DEPLOYMENT_LDAP_PROVIDER_URL}
+  export EXO_LDAP_PROVIDER_ADMIN_CN=${DEPLOYMENT_LDAP_PROVIDER_ADMIN_CN}
+  export EXO_LDAP_PROVIDER_ADMIN_PWD=${DEPLOYMENT_LDAP_PROVIDER_ADMIN_PWD}
+  export EXO_DEPLOYMENT_URL=${DEPLOYMENT_URL}
+  export EXO_JOD_CONVERTER_PORTS=${DEPLOYMENT_JOD_CONVERTER_PORTS}
 
   # Additional settings
   for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
   do
     export ${_var} = $(eval echo \${$_var})
   done
-
-  #Display the deployment descriptor
-  echo "[INFO] ========================= Deployment Descriptor ========================="
-  cat ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
-  echo "[INFO] ================== Externalized configuration for PLF 4 ================="
-  echo EXO_TOMCAT_SHUTDOWN_PORT=${EXO_TOMCAT_SHUTDOWN_PORT}
-  echo EXO_TOMCAT_RMI_REGISTRY_PORT=${EXO_TOMCAT_RMI_REGISTRY_PORT}
-  echo EXO_TOMCAT_RMI_SERVER_PORT=${EXO_TOMCAT_RMI_SERVER_PORT}
-  echo EXO_HTTP_PORT=${EXO_HTTP_PORT}
-  echo EXO_AJP_PORT=${EXO_AJP_PORT}
-  echo EXO_DS_IDM_DRIVER=${EXO_DS_IDM_DRIVER}
-  echo EXO_DS_IDM_USERNAME=${EXO_DS_IDM_USERNAME}
-  echo EXO_DS_IDM_PASSWORD=${EXO_DS_IDM_PASSWORD}
-  echo EXO_DS_IDM_URL=${EXO_DS_IDM_URL}
-  echo EXO_DS_PORTAL_DRIVER=${EXO_DS_PORTAL_DRIVER}
-  echo EXO_DS_PORTAL_USERNAME=${EXO_DS_PORTAL_USERNAME}
-  echo EXO_DS_PORTAL_PASSWORD=${EXO_DS_PORTAL_PASSWORD}
-  echo EXO_DS_PORTAL_URL=${EXO_DS_PORTAL_URL}
-  echo "[INFO] ========================================================================="
 
   cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
 
