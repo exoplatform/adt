@@ -1061,7 +1061,7 @@ do_create_deployment_descriptor() {
 
   # escape any single quote
   if $LINUX; then
-    replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "\\\'" "\\\\\'"
+    replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "'" "\\\'"
   else
     replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "\'" "\\\'"
   fi
