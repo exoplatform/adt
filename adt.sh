@@ -1060,7 +1060,11 @@ do_create_deployment_descriptor() {
   done
 
   # escape any single quote
-  replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "\\x27" "\\x5C\\x27"
+  if $LINUX; then
+    replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "\'" "\\\\\'"
+  else
+    replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "\'" "\\\'"
+  fi
   echo "[INFO] Done."
 }
 
