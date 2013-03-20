@@ -372,7 +372,7 @@ initialize_product_settings() {
           esac
         ;;
         plf)
-          env_var PRODUCT_DESCRIPTION "eXo Platform Standard Edition"
+          env_var PRODUCT_DESCRIPTION "Platform SE"
           env_var ARTIFACT_GROUPID "org.exoplatform.platform"
           case "${PRODUCT_BRANCH}" in
             "3.0.x")
@@ -395,7 +395,7 @@ initialize_product_settings() {
         plftrial)
           case "${PRODUCT_BRANCH}" in
             "3.5.x")
-              env_var PRODUCT_DESCRIPTION "eXo Platform Trial Edition"
+              env_var PRODUCT_DESCRIPTION "Platform TE"
               env_var ARTIFACT_GROUPID "org.exoplatform.platform"
               env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.trial"
               env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
@@ -414,7 +414,7 @@ initialize_product_settings() {
           esac
         ;;
         plfcom)
-          env_var PRODUCT_DESCRIPTION "eXo Platform Community Edition"
+          env_var PRODUCT_DESCRIPTION "Platform CE"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           case "${PRODUCT_BRANCH}" in
@@ -437,7 +437,7 @@ initialize_product_settings() {
           esac
         ;;
         plfent)
-          env_var PRODUCT_DESCRIPTION "eXo Platform Express/Enterprise Edition"
+          env_var PRODUCT_DESCRIPTION "Platform EE"
           env_var ARTIFACT_REPO_GROUP "private"
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
