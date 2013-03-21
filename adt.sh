@@ -605,6 +605,9 @@ do_restore_dataset(){
       display_time pv ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
       popd > /dev/null 2>&1
       echo "[INFO] Done"
+      echo "[INFO] Drop if it exists the JCR_CONFIG table from ${DEPLOYMENT_DATABASE_NAME} ..."
+      mysql ${DEPLOYMENT_DATABASE_NAME} -e "DROP TABLE IF EXISTS JCR_CONFIG;"
+      echo "[INFO] Done"
       rm -rf ${_tmpdir}
     ;;
     HSQLDB)
