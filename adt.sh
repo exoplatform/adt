@@ -602,7 +602,7 @@ do_restore_dataset(){
       fi;
       echo "[INFO] Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
       pushd ${_tmpdir} > /dev/null 2>&1
-      display_time pv ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
+      pv -p -t -e -a -r -b ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
       popd > /dev/null 2>&1
       echo "[INFO] Done"
       echo "[INFO] Drop if it exists the JCR_CONFIG table from ${DEPLOYMENT_DATABASE_NAME} ..."
