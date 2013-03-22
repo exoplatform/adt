@@ -6,7 +6,7 @@
    <Listener className="org.apache.catalina.core.ThreadLocalLeakPreventionListener" />
 +  <!-- JMX fixed ports -->
 +  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" 
-+          rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" />
++          rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" useLocalPorts="false" />
  
    <!-- Global JNDI resources
         Documentation at /docs/jndi-resources-howto.html
