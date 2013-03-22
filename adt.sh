@@ -1185,6 +1185,7 @@ do_start() {
   ########################################
   # Externalized configuration for Intranet
   ########################################
+  export EXO_JVM_JMX_REMOTE_HOSTNAME=${DEPLOYMENT_EXT_HOST}
   export EXO_LDAP_URL=${DEPLOYMENT_LDAP_URL}
   export EXO_LDAP_ADMIN_DN=${DEPLOYMENT_LDAP_ADMIN_DN}
   export EXO_LDAP_ADMIN_PWD=${DEPLOYMENT_LDAP_ADMIN_PWD}
