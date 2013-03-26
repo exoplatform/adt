@@ -1149,7 +1149,7 @@ do_deploy() {
       exit 1
     ;;
   esac
-  if [ -e "${DEPLOYMENT_DIR}/webapps/crash*.war" ]; then
+  if [ -f ${DEPLOYMENT_DIR}/webapps/crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
   fi
   do_create_deployment_descriptor
