@@ -1270,9 +1270,9 @@ do_undeploy() {
     rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
     # Close firewall ports
     if ${DEPLOYMENT_SETUP_UFW}; then
-      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
-      sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}
-      sudo /usr/sbin/ufw deny ${DEPLOYMENT_CRASH_SSH_PORT}
+      sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_REG_PORT}
+      sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_SRV_PORT}
+      sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_CRASH_SSH_PORT}
     fi
     echo "[INFO] Server undeployed"
     # Delete the deployment descriptor
