@@ -278,7 +278,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
-      env_var "DEPLOYMENT_EXTRA_JAVA_OPTS" ""
       env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
       env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
       env_var "DEPLOYMENT_SERVER_LOGS_FILE" "catalina.out"
@@ -1168,7 +1167,6 @@ do_start() {
     export CATALINA_HOME=${DEPLOYMENT_DIR}
     export CATALINA_PID=${DEPLOYMENT_PID_FILE}
     export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-    export JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
     export CATALINA_OPTS="$JAVA_JRMP_OPTS"
     export EXO_PROFILES="${EXO_PROFILES}"
   fi
