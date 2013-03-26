@@ -232,25 +232,25 @@ init() {
   fi
 }
 
-# find_patch <VAR> <PATCH_DIR> <BASENAME> <PRODUCT_NAME>
-# Finds which patch to apply and store its path in <VAR>
-# We'll try to find it in the directory <PATCH_DIR> and we'll select it in this order :
-# <PRODUCT_NAME>-${PRODUCT_VERSION}-<BASENAME>.patch
-# <PRODUCT_NAME>-${PRODUCT_BRANCH}-<BASENAME>.patch
-# <PRODUCT_NAME>-${PRODUCT_MAJOR_BRANCH}-<BASENAME>.patch
-# <PRODUCT_NAME>-<BASENAME>.patch  
+# find_instance_file <VAR> <DIR> <BASENAME> <PRODUCT_NAME>
+# Finds which file to use and store its path in <VAR>
+# We'll try to find it in the directory <DIR> and we'll select it in this order :
+# <PRODUCT_NAME>-${PRODUCT_VERSION}-<BASENAME>
+# <PRODUCT_NAME>-${PRODUCT_BRANCH}-<BASENAME>
+# <PRODUCT_NAME>-${PRODUCT_MAJOR_BRANCH}-<BASENAME>
+# <PRODUCT_NAME>-<BASENAME>
 # <BASENAME>.patch
-find_patch() {
+find_instance_file() {
   local _variable=$1
   local _patchDir=$2
   local _basename=$3
   local _product=$4
   find_file $_variable  \
- "$_patchDir/$_basename.patch"  \
- "$_patchDir/$_product-$_basename.patch"  \
- "$_patchDir/$_product-${PRODUCT_MAJOR_BRANCH}-$_basename.patch"  \
- "$_patchDir/$_product-${PRODUCT_BRANCH}-$_basename.patch"  \
- "$_patchDir/$_product-${PRODUCT_VERSION}-$_basename.patch"
+ "$_patchDir/$_basename"  \
+ "$_patchDir/$_product-$_basename"  \
+ "$_patchDir/$_product-${PRODUCT_MAJOR_BRANCH}-$_basename"  \
+ "$_patchDir/$_product-${PRODUCT_BRANCH}-$_basename"  \
+ "$_patchDir/$_product-${PRODUCT_VERSION}-$_basename"
 }
 
 #
@@ -281,7 +281,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
-      env_var "DEPLOYMENT_EXTRA_ENV_VARS" ""
       env_var "DEPLOYMENT_EXTRA_JAVA_OPTS" ""
       env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
       env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
@@ -328,6 +327,7 @@ initialize_product_settings() {
       env_var "EMAIL_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "JOD_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "LDAP_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
 
       # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
       # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
@@ -504,19 +504,21 @@ initialize_product_settings() {
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
       fi
       # Patch to reconfigure server.xml to change ports
-      find_patch PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-ports.xml" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure server.xml for JMX
-      find_patch JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml.patch" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure server.xml for MySQL
-      find_patch DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
-      find_patch DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
+      find_instance_file DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties.patch" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
-      find_patch EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
+      find_instance_file EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties.patch" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
-      find_patch JOD_GATEIN_PATCH "${ETC_DIR}/gatein" "jod-configuration.properties" "${JOD_GATEIN_PATCH_PRODUCT_NAME}"
+      find_instance_file JOD_GATEIN_PATCH "${ETC_DIR}/gatein" "jod-configuration.properties.patch" "${JOD_GATEIN_PATCH_PRODUCT_NAME}"
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
-      find_patch LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
+      find_instance_file LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties.patch" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
+      # Path of the setenv file to use
+      find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-acceptance.sh" "${SET_ENV_PRODUCT_NAME}"
     ;;
     start | stop | restart | undeploy )
     # Mandatory env vars. They need to be defined before launching the script
@@ -1055,19 +1057,6 @@ do_create_deployment_descriptor() {
   echo "[INFO] Creating deployment descriptor ..."
   mkdir -p ${ADT_CONF_DIR}
   evaluate_file_content ${ETC_DIR}/adt/config.template ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
-
-  # Additional settings
-  for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
-  do
-    echo "${_var}=$(eval echo\${$_var})" >> ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
-  done
-
-  # escape any single quote
-  if $LINUX; then
-    replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "'" "\\\'"
-  else
-    replace_in_file ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST} "\'" "\\\'"
-  fi
   echo "[INFO] Done."
 }
 
@@ -1078,6 +1067,24 @@ do_load_deployment_descriptor() {
     exit 1
   else
     source ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+  fi
+}
+
+do_set_env() {
+  # PLF 4+ only
+  if [ -e ${DEPLOYMENT_DIR}/bin/setenv-customize.sample.sh ]; then
+    echo "[INFO] Creating setenv resources ..."
+    if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-customize.sh" ]; then
+      echo "[INFO] Installing bin/setenv-customize.sh ..."
+      cp ${ETC_DIR}/plf/setenv-customize.sh ${DEPLOYMENT_DIR}/bin/setenv-customize.sh
+      echo "[INFO] Done."
+    fi
+    if [ "${SET_ENV_FILE}" != "UNSET" ]; then
+      echo "[INFO] Installing bin/setenv-acceptance.sh ..."
+      evaluate_file_content ${SET_ENV_FILE} ${DEPLOYMENT_DIR}/bin/setenv-acceptance.sh
+      echo "[INFO] Done."
+    fi
+    echo "[INFO] Done."
   fi
 }
 
@@ -1138,6 +1145,7 @@ do_deploy() {
     ;;
   esac
   do_create_deployment_descriptor
+  do_set_env
   echo "[INFO] Server deployed"
 }
 
@@ -1151,60 +1159,22 @@ do_start() {
   echo "[INFO] Starting server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
   mkdir -p ${DEPLOYMENT_DIR}/logs
-  export CATALINA_HOME=${DEPLOYMENT_DIR}
-  export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-  export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-  export JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
-  export CATALINA_OPTS="$JAVA_JRMP_OPTS"
-  export EXO_PROFILES="${EXO_PROFILES}"
-  export EXO_LOGS_DISPLAY_CONSOLE=true
-  export EXO_LOGS_CONSOLE_COLORIZED=true
-  ########################################
-  # Externalized configuration for PLF 4 (tomcat standalone - legacy)
-  ########################################
-  export EXO_DS_IDM_DRIVER="com.mysql.jdbc.Driver"
-  export EXO_DS_IDM_USERNAME="${DEPLOYMENT_DATABASE_USER}"
-  export EXO_DS_IDM_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
-  export EXO_DS_IDM_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
-  export EXO_DS_PORTAL_DRIVER="com.mysql.jdbc.Driver"
-  export EXO_DS_PORTAL_USERNAME="${DEPLOYMENT_DATABASE_USER}"
-  export EXO_DS_PORTAL_PASSWORD="${DEPLOYMENT_DATABASE_USER}"
-  export EXO_DS_PORTAL_URL="jdbc:mysql://localhost:3306/${DEPLOYMENT_DATABASE_NAME}?autoReconnect=true"
-  ########################################
-  # Externalized configuration for PLF 4
-  ########################################
-  export EXO_TOMCAT_SHUTDOWN_PORT=${DEPLOYMENT_SHUTDOWN_PORT}
-  export EXO_TOMCAT_RMI_REGISTRY_PORT=${DEPLOYMENT_RMI_REG_PORT}
-  export EXO_TOMCAT_RMI_SERVER_PORT=${DEPLOYMENT_RMI_SRV_PORT}
-  export EXO_HTTP_PORT=${DEPLOYMENT_HTTP_PORT}
-  export EXO_AJP_PORT=${DEPLOYMENT_AJP_PORT}
-  export EXO_JVM_SIZE_MAX=${DEPLOYMENT_JVM_SIZE_MAX}
-  export EXO_JVM_SIZE_MIN=${DEPLOYMENT_JVM_SIZE_MIN}
-  export EXO_JVM_PERMSIZE_MAX=${DEPLOYMENT_JVM_PERMSIZE_MAX}
-  export EXO_JVM_PERMSIZE_MIN=${DEPLOYMENT_JVM_PERMSIZE_MIN}
-  ########################################
-  # Externalized configuration for Intranet
-  ########################################
-  export EXO_JVM_JMX_REMOTE_HOSTNAME=${DEPLOYMENT_EXT_HOST}
-  export EXO_LDAP_URL=${DEPLOYMENT_LDAP_URL}
-  export EXO_LDAP_ADMIN_DN=${DEPLOYMENT_LDAP_ADMIN_DN}
-  export EXO_LDAP_ADMIN_PWD=${DEPLOYMENT_LDAP_ADMIN_PWD}
-  export EXO_DEPLOYMENT_URL=${DEPLOYMENT_URL}
-  export EXO_JOD_CONVERTER_PORTS=${DEPLOYMENT_JOD_CONVERTER_PORTS}
+  if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-acceptance.sh" ]; then
+    export CATALINA_HOME=${DEPLOYMENT_DIR}
+    export CATALINA_PID=${DEPLOYMENT_PID_FILE}
+    export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
+    export JAVA_OPTS="$DEPLOYMENT_EXTRA_JAVA_OPTS"
+    export CATALINA_OPTS="$JAVA_JRMP_OPTS"
+    export EXO_PROFILES="${EXO_PROFILES}"
+  fi
 
-  # Additional settings
-  for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
-  do
-    export ${_var} = $(eval echo \${$_var})
-  done
-
-  cd `dirname ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT}`
+  cd `dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}`
 
   # We need to backup existing logs if they already exist
-  backup_logs "$CATALINA_HOME/logs/" "${DEPLOYMENT_SERVER_LOGS_FILE}"
+  backup_logs "${DEPLOYMENT_DIR}/logs/" "${DEPLOYMENT_SERVER_LOGS_FILE}"
 
   # Startup the server
-  ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} start
+  ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
 
   # Wait for logs availability
   while [ true ];
@@ -1248,19 +1218,12 @@ do_stop() {
     do_load_deployment_descriptor
     if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
       echo "[INFO] Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
-      export CATALINA_HOME=${DEPLOYMENT_DIR}
-      export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-      ########################################
-      # Externalized configuration for PLF 4
-      ########################################
-      export EXO_TOMCAT_SHUTDOWN_PORT="${DEPLOYMENT_SHUTDOWN_PORT}"
+      if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-acceptance.sh" ]; then
+        export CATALINA_HOME=${DEPLOYMENT_DIR}
+        export CATALINA_PID=${DEPLOYMENT_PID_FILE}
+      fi
 
-      # Additional settings
-      for _var in ${DEPLOYMENT_EXTRA_ENV_VARS}
-      do
-        export ${_var} = $(eval echo \${$_var})
-      done
-      ${CATALINA_HOME}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
+      ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
       echo "[INFO] Server stopped"
     else
       echo "[WARNING] No server directory to stop it"

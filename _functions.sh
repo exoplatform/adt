@@ -127,6 +127,12 @@ evaluate_file_content() {
   local _file_in=$1
   local _file_out=$2
   awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < $_file_in > $_file_out
+  # escape any single quote
+  if $LINUX; then
+    replace_in_file $_file_out "'" "\\\'"
+  else
+    replace_in_file $_file_out "\'" "\\\'"
+  fi
 }
 
 
