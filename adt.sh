@@ -45,14 +45,6 @@ configurable_env_var "DEPLOYMENT_SETUP_AWSTATS" false
 configurable_env_var "DEPLOYMENT_SETUP_UFW" false
 configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
 configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
-configurable_env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
-configurable_env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
-configurable_env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
-configurable_env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}03"
-configurable_env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}04"
-configurable_env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}05,${DEPLOYMENT_PORT_PREFIX}06,${DEPLOYMENT_PORT_PREFIX}07"
-configurable_env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
-configurable_env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
 configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
 configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
@@ -88,6 +80,15 @@ env_var "ETC_DIR" "${ADT_DATA}/etc"
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
 env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions"
 configurable_env_var "GIT_REPOS_UPDATED" false
+
+env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
+env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
+env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
+env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}03"
+env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}04"
+env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}05,${DEPLOYMENT_PORT_PREFIX}06,${DEPLOYMENT_PORT_PREFIX}07"
+env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
+env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
 #
 # Usage message
@@ -136,13 +137,7 @@ Environment Variables :
   DEPLOYMENT_SETUP_APACHE        : Do you want to setup the apache configuration (default: false)
   DEPLOYMENT_SETUP_AWSTATS       : Do you want to setup the awstats configuration (default: false)
   DEPLOYMENT_SETUP_UFW           : Do you want to setup the ufw firewall configuration (default: false)
-  DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports
-  DEPLOYMENT_AJP_PORT            : AJP Port (default: \${DEPLOYMENT_PORT_PREFIX}2)
-  DEPLOYMENT_HTTP_PORT           : HTTP Port (default: \${DEPLOYMENT_PORT_PREFIX}1)
-  DEPLOYMENT_SHUTDOWN_PORT       : SHUTDOWN Port (default: \${DEPLOYMENT_PORT_PREFIX}0)
-  DEPLOYMENT_RMI_REG_PORT        : RMI Registry Port for JMX (default: \${DEPLOYMENT_PORT_PREFIX}3)
-  DEPLOYMENT_RMI_SRV_PORT        : RMI Server Port for JMX (default: \${DEPLOYMENT_PORT_PREFIX}4)
-  DEPLOYMENT_JOD_CONVERTER_PORTS : JOD Converter ports used to launch OpenOffice instances (default : \${DEPLOYMENT_PORT_PREFIX}5,\${DEPLOYMENT_PORT_PREFIX}6,\${DEPLOYMENT_PORT_PREFIX}7,\${DEPLOYMENT_PORT_PREFIX}8,\${DEPLOYMENT_PORT_PREFIX}9)
+  DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
   DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
   DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)

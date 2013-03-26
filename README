@@ -96,17 +96,11 @@ Usage
         docs           eXo Platform Documentations Website
       PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
-      ADT_DATA                       : The path where data have to be stored (default: under the script path - /Users/arnaud/Code/eXo/adt)
+      ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
       DEPLOYMENT_SETUP_APACHE        : Do you want to setup the apache configuration (default: false)
       DEPLOYMENT_SETUP_AWSTATS       : Do you want to setup the awstats configuration (default: false)
       DEPLOYMENT_SETUP_UFW           : Do you want to setup the ufw firewall configuration (default: false)
-      DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports
-      DEPLOYMENT_AJP_PORT            : AJP Port (default: ${DEPLOYMENT_PORT_PREFIX}2)
-      DEPLOYMENT_HTTP_PORT           : HTTP Port (default: ${DEPLOYMENT_PORT_PREFIX}1)
-      DEPLOYMENT_SHUTDOWN_PORT       : SHUTDOWN Port (default: ${DEPLOYMENT_PORT_PREFIX}0)
-      DEPLOYMENT_RMI_REG_PORT        : RMI Registry Port for JMX (default: ${DEPLOYMENT_PORT_PREFIX}3)
-      DEPLOYMENT_RMI_SRV_PORT        : RMI Server Port for JMX (default: ${DEPLOYMENT_PORT_PREFIX}4)
-      DEPLOYMENT_JOD_CONVERTER_PORTS : JOD Converter ports used to launch OpenOffice instances (default : ${DEPLOYMENT_PORT_PREFIX}5,${DEPLOYMENT_PORT_PREFIX}6,${DEPLOYMENT_PORT_PREFIX}7,${DEPLOYMENT_PORT_PREFIX}8,${DEPLOYMENT_PORT_PREFIX}9)
+      DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
       DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
       DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
