@@ -75,9 +75,8 @@ checkCaches();
                         <?php
                         $merged_list = getGlobalAcceptanceInstances();
                         $descriptor_arrays = array();
-                        while ($tmp_array = current($merged_list)) {
+                        foreach ($merged_list as $tmp_array) {
                             $descriptor_arrays = array_merge($descriptor_arrays, $tmp_array);
-                            next($merged_list);
                         }
                         function cmp($a, $b)
                         {
