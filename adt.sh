@@ -284,6 +284,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
       env_var "DEPLOYMENT_APPSRV_VERSION" "6.0.35" #Default version used to download additional resources like JMX lib
       env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.23" #Default version used to download additional mysql driver
+      env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       env_var "ARTIFACT_GROUPID" ""
       env_var "ARTIFACT_ARTIFACTID" ""
@@ -1148,6 +1149,9 @@ do_deploy() {
       exit 1
     ;;
   esac
+  if [ -e "${DEPLOYMENT_DIR}/webapps/crash*.war" ]; then
+    env_var "DEPLOYMENT_CRASH_ENABLED" true
+  fi
   do_create_deployment_descriptor
   do_set_env
   echo "[INFO] Server deployed"
