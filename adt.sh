@@ -579,6 +579,8 @@ do_restore_dataset(){
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
       do_drop_data
+      do_drop_database
+      do_create_database
       mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
       echo "[INFO] Loading values ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
@@ -586,8 +588,6 @@ do_restore_dataset(){
       echo "[INFO] Loading indexes ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
       echo "[INFO] Done"
-      do_drop_database
-      do_create_database
       _tmpdir=`mktemp -d -t db-export.XXXXXXXXXX` || exit 1
       echo "[INFO] Using temporary directory ${_tmpdir}"
       _restorescript="${_tmpdir}/__restoreAllData.sql"
