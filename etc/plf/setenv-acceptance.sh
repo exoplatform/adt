@@ -35,7 +35,7 @@ export EXO_LOGS_COLORIZED_CONSOLE=true
 [ -z $EXO_JVM_JMX_REMOTE_HOSTNAME ] && EXO_JVM_JMX_REMOTE_HOSTNAME="${DEPLOYMENT_EXT_HOST}"
 # Email
 # Domain name: Help for sending links from email notifications. The default domain name is http://localhost:8080.
-[ -z $EXO_DEPLOYMENT_URL ] && EXO_DEPLOYMENT_URL="${DEPLOYMENT_EXT_HOST}"
+[ -z $EXO_DEPLOYMENT_URL ] && EXO_DEPLOYMENT_URL="${DEPLOYMENT_URL}"
 # Email display in "from" field of email notification.
 [ -z $EXO_EMAIL_FROM ] && EXO_EMAIL_FROM="noreply@exoplatform.com"
 [ -z $EXO_EMAIL_SMTP_USERNAME ] && EXO_EMAIL_SMTP_USERNAME=""

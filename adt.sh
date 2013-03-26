@@ -1166,8 +1166,35 @@ do_start() {
   if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-acceptance.sh" ]; then
     export CATALINA_HOME=${DEPLOYMENT_DIR}
     export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-    export JAVA_JRMP_OPTS="-Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.ssl=false -Dcom.sun.management.jmxremote.authenticate=true -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-    export CATALINA_OPTS="$JAVA_JRMP_OPTS"
+    CATALINA_OPTS=""
+    # JVM
+    CATALINA_OPTS="${CATALINA_OPTS} -XX:+HeapDumpOnOutOfMemoryError"
+    CATALINA_OPTS="${CATALINA_OPTS} -XX:HeapDumpPath=${DEPLOYMENT_DIR}/logs/"
+    # JMX
+    CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.ssl=false"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
+    CATALINA_OPTS="${CATALINA_OPTS} -Djava.rmi.server.hostname=${DEPLOYMENT_EXT_HOST}"
+    # Email
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.domain.url=${DEPLOYMENT_URL}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=noreply@exoplatform.com"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.username="
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.password="
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.host=localhost"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.port=25"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.starttls.enable=false"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.auth=false"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.port="
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class="
+    # JOD Server
+    CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${DEPLOYMENT_JOD_CONVERTER_PORTS}"
+    # Database
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.jcr.datasource.dialect=mysql-utf8"
+    # CRaSH
+    CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
+    export CATALINA_OPTS
     export EXO_PROFILES="${EXO_PROFILES}"
   fi
 
