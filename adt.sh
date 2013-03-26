@@ -50,7 +50,9 @@ configurable_env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}1"
 configurable_env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}2"
 configurable_env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}3"
 configurable_env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}4"
-configurable_env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}5,${DEPLOYMENT_PORT_PREFIX}6,${DEPLOYMENT_PORT_PREFIX}7,${DEPLOYMENT_PORT_PREFIX}8,${DEPLOYMENT_PORT_PREFIX}9"
+configurable_env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}5,${DEPLOYMENT_PORT_PREFIX}6,${DEPLOYMENT_PORT_PREFIX}7"
+configurable_env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}8"
+configurable_env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}9"
 configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
 configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
 configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
@@ -790,7 +792,7 @@ do_configure_server_for_jmx() {
   cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo "[INFO] Done."
-  echo "[INFO] Opening firewall ports ..."
+  echo "[INFO] Opening firewall ports for JMX ..."
   # Open firewall ports
   if ${DEPLOYMENT_SETUP_UFW}; then
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
@@ -1016,6 +1018,14 @@ do_patch_server() {
     replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
     echo "[INFO] Done."
   fi
+
+  echo "[INFO] Opening firewall ports for CRaSH ..."
+  # Open firewall ports
+  if ${DEPLOYMENT_SETUP_UFW}; then
+    sudo /usr/sbin/ufw allow ${DEPLOYMENT_CRASH_SSH_PORT}
+  fi
+  echo "[INFO] Done."
+
 }
 
 do_configure_apache() {
@@ -1265,9 +1275,9 @@ do_undeploy() {
     rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
     # Close firewall ports
     if ${DEPLOYMENT_SETUP_UFW}; then
-      # Prod vs Dev (To be improved)
       sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_REG_PORT}
       sudo /usr/sbin/ufw deny ${DEPLOYMENT_RMI_SRV_PORT}
+      sudo /usr/sbin/ufw deny ${DEPLOYMENT_CRASH_SSH_PORT}
     fi
     echo "[INFO] Server undeployed"
     # Delete the deployment descriptor

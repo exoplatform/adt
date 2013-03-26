@@ -50,3 +50,6 @@ CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class=${EXO_EM
 CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${EXO_JOD_CONVERTER_PORTS}"
 # Database
 CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.jcr.datasource.dialect=mysql-utf8"
+# CRaSH
+CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${EXO_CRASH_TELNET_PORT}"
+CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${EXO_CRASH_SSH_PORT}"
