@@ -9,7 +9,7 @@
 -gatein.jcr.datasource.url=jdbc:hsqldb:file:${gatein.db.data.dir}/data/jdbcjcr_${name}
 -gatein.jcr.datasource.username=sa
 -gatein.jcr.datasource.password=
-+gatein.jcr.datasource.dialect=mysql-utf8
++gatein.jcr.datasource.dialect=auto
 +gatein.jcr.datasource.driver=com.mysql.jdbc.Driver
 +gatein.jcr.datasource.url=jdbc:mysql://localhost:3306/@DB_JCR_NAME@
 +gatein.jcr.datasource.username=@DB_JCR_USR@

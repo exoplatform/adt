@@ -701,7 +701,7 @@ do_create_database() {
     MYSQL)
       echo "[INFO] Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       SQL=""
-      SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME} CHARACTER SET latin1 COLLATE latin1_bin;"
+      SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME};"
       SQL=$SQL"GRANT ALL ON ${DEPLOYMENT_DATABASE_NAME}.* TO '${DEPLOYMENT_DATABASE_USER}'@'localhost' IDENTIFIED BY '${DEPLOYMENT_DATABASE_USER}';"
       SQL=$SQL"FLUSH PRIVILEGES;"
       SQL=$SQL"SHOW DATABASES;"
@@ -1193,8 +1193,6 @@ do_start() {
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class="
     # JOD Server
     CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${DEPLOYMENT_JOD_CONVERTER_PORTS}"
-    # Database
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.jcr.datasource.dialect=mysql-utf8"
     # CRaSH
     CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
