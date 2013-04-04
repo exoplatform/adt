@@ -460,7 +460,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var EXO_PROFILES                  "default"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
-          env_var DEPLOYMENT_JVM_SIZE_MAX       "2g"
+          env_var DEPLOYMENT_JVM_SIZE_MAX       "3g"
           env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
           env_var DEPLOYMENT_JVM_PERMSIZE_MAX   "512m"
           # Datasets remote location
