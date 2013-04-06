@@ -515,7 +515,7 @@ initialize_product_settings() {
       # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
       find_instance_file LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties.patch" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
       # Path of the setenv file to use
-      find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-acceptance.sh" "${SET_ENV_PRODUCT_NAME}"
+      find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-local.sh" "${SET_ENV_PRODUCT_NAME}"
     ;;
     start | stop | restart | undeploy )
     # Mandatory env vars. They need to be defined before launching the script
@@ -1085,8 +1085,8 @@ do_set_env() {
       echo "[INFO] Done."
     fi
     if [ "${SET_ENV_FILE}" != "UNSET" ]; then
-      echo "[INFO] Installing bin/setenv-acceptance.sh ..."
-      evaluate_file_content ${SET_ENV_FILE} ${DEPLOYMENT_DIR}/bin/setenv-acceptance.sh
+      echo "[INFO] Installing bin/setenv-local.sh ..."
+      evaluate_file_content ${SET_ENV_FILE} ${DEPLOYMENT_DIR}/bin/setenv-local.sh
       echo "[INFO] Done."
     fi
     echo "[INFO] Done."
@@ -1167,7 +1167,7 @@ do_start() {
   echo "[INFO] Starting server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
   mkdir -p ${DEPLOYMENT_DIR}/logs
-  if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-acceptance.sh" ]; then
+  if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
     export CATALINA_HOME=${DEPLOYMENT_DIR}
     export CATALINA_PID=${DEPLOYMENT_PID_FILE}
     CATALINA_OPTS=""
@@ -1250,7 +1250,7 @@ do_stop() {
     do_load_deployment_descriptor
     if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
       echo "[INFO] Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
-      if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-acceptance.sh" ]; then
+      if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
         export CATALINA_HOME=${DEPLOYMENT_DIR}
         export CATALINA_PID=${DEPLOYMENT_PID_FILE}
       fi

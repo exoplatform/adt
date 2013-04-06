@@ -21,7 +21,7 @@
 # -----------------------------------------------------------------------------
 # Load environment specific settings
 # -----------------------------------------------------------------------------
-[ -e ${CATALINA_HOME}/bin/setenv-acceptance.sh ] && . ${CATALINA_HOME}/bin/setenv-acceptance.sh
+[ -e ${CATALINA_HOME}/bin/setenv-local.sh ] && . ${CATALINA_HOME}/bin/setenv-local.sh
 
 # -----------------------------------------------------------------------------
 # Update CATALINA_OPTS entries
