@@ -686,7 +686,7 @@ do_unpack_server() {
   cp -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   # We search the tomcat directory as the parent of a gatein directory
-  pushd `find ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} -maxdepth 4 -mindepth 1 -name webapps -not -path "*extension*" -type d`/.. > /dev/null
+  pushd `find ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} -maxdepth 4 -mindepth 1 -name webapps -not -path "*extensions*" -type d`/.. > /dev/null
   DEPLOYMENT_DIR=`pwd -P`
   popd > /dev/null
   DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
