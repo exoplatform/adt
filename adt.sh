@@ -1128,7 +1128,7 @@ do_deploy() {
   do_patch_server
 	# Install optional extension
 	if [ -f "${DEPLOYMENT_DIR}/extension.sh" ]; then
-		${DEPLOYMENT_DIR}/extension.sh install all
+		${DEPLOYMENT_DIR}/extension.sh --install all
 	fi
   if ${DEPLOYMENT_SETUP_APACHE}; then
     do_configure_apache
