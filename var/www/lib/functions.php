@@ -38,7 +38,8 @@ function getGitDirectoriesList($directory)
 }
 function isFeature($branch)
 {
-    return strpos($branch, "/feature/");
+    // All feature branches must be on the origin (see bug: SWF-2520)
+    return strpos($branch, "origin/feature/");
 }
 
 function cmpPLFBranches($a, $b)
