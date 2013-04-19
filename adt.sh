@@ -472,15 +472,16 @@ initialize_product_settings() {
           env_var ARTIFACT_REPO_GROUP "private"
           env_var PRODUCT_DESCRIPTION "eXo Platform Documentations Website"
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.documentation"
-          env_var ARTIFACT_ARTIFACTID "platform-documentation-website-packaging"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var DEPLOYMENT_DATABASE_ENABLED false
           case "${PRODUCT_BRANCH}" in
-            "4.0.x")
-              env_var PLF_BRANCH "4.0.x"
+            "3.5.x")
+              env_var PLF_BRANCH "3.5.x"
+		          env_var ARTIFACT_ARTIFACTID "platform-documentation-website-packaging"
             ;;
             *)
-              env_var PLF_BRANCH "3.5.x"
+              env_var PLF_BRANCH "4.0.x"
+		          env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
             ;;
           esac
         ;;
