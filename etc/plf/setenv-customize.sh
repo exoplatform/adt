@@ -46,8 +46,6 @@ CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.starttls.enable=${EXO_EMAIL_
 CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.auth=${EXO_EMAIL_SMTP_AUTH}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.port=${EXO_EMAIL_SMTP_SOCKET_FACTORY_PORT}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class=${EXO_EMAIL_SMTP_SOCKET_FACTORY_CLASS}"
-# JOD Server
-CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${EXO_JOD_CONVERTER_PORTS}"
 # CRaSH
 CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${EXO_CRASH_TELNET_PORT}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${EXO_CRASH_SSH_PORT}"
