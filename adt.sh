@@ -1187,7 +1187,7 @@ do_start() {
     CATALINA_OPTS="${CATALINA_OPTS} -Djava.rmi.server.hostname=${DEPLOYMENT_EXT_HOST}"
     # Email
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.domain.url=${DEPLOYMENT_URL}"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=noreply@exoplatform.com"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=noreply+acceptance@exoplatform.com"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.username="
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.password="
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.host=localhost"

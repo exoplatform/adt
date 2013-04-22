@@ -37,7 +37,7 @@ export EXO_LOGS_COLORIZED_CONSOLE=true
 # Domain name: Help for sending links from email notifications. The default domain name is http://localhost:8080.
 [ -z $EXO_DEPLOYMENT_URL ] && EXO_DEPLOYMENT_URL="${DEPLOYMENT_URL}"
 # Email display in "from" field of email notification.
-[ -z $EXO_EMAIL_FROM ] && EXO_EMAIL_FROM="noreply@exoplatform.com"
+[ -z $EXO_EMAIL_FROM ] && EXO_EMAIL_FROM="noreply+acceptance@exoplatform.com"
 [ -z $EXO_EMAIL_SMTP_USERNAME ] && EXO_EMAIL_SMTP_USERNAME=""
 [ -z $EXO_EMAIL_SMTP_PASSWORD ] && EXO_EMAIL_SMTP_PASSWORD=""
 [ -z $EXO_EMAIL_SMTP_HOST ] && EXO_EMAIL_SMTP_HOST="localhost"
