@@ -5,7 +5,7 @@
     <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
                 maxActive="20" maxIdle="10" maxWait="10000"
 -               username="sa" password="" driverClassName="org.hsqldb.jdbcDriver"
--               url="jdbc:hsqldb:file:../gatein/data/hsql/exo-jcr_portal"/>
+-               url="jdbc:hsqldb:file:${catalina.home}/gatein/data/hsql/exo-jcr_portal"/>
 +               username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" validationQuery="Select 1"
 +               url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true"/>
  
@@ -13,7 +13,7 @@
      <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
                 maxActive="20" maxIdle="10" maxWait="10000"
 -               username="sa" password="" driverClassName="org.hsqldb.jdbcDriver"
--               url="jdbc:hsqldb:file:../gatein/data/hsql/exo-idm_portal"/>     
+-               url="jdbc:hsqldb:file:${catalina.home}/gatein/data/hsql/exo-idm_portal"/>     
 +               username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" validationQuery="Select 1"
 +               url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@?autoReconnect=true"/>
                
