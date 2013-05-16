@@ -43,6 +43,7 @@ configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
 configurable_env_var "DEPLOYMENT_SETUP_APACHE" false
 configurable_env_var "DEPLOYMENT_SETUP_AWSTATS" false
 configurable_env_var "DEPLOYMENT_SETUP_UFW" false
+configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
 configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
 configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
 configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
@@ -137,6 +138,7 @@ Environment Variables :
   DEPLOYMENT_SETUP_APACHE        : Do you want to setup the apache configuration (default: false)
   DEPLOYMENT_SETUP_AWSTATS       : Do you want to setup the awstats configuration (default: false)
   DEPLOYMENT_SETUP_UFW           : Do you want to setup the ufw firewall configuration (default: false)
+  DEPLOYMENT_APACHE_SECURITY     : Do you want to have a public or a private deployment (default: private, values : private | public)
   DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
   DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
@@ -1042,7 +1044,19 @@ do_configure_apache() {
   if ${DEPLOYMENT_SETUP_APACHE}; then
     echo "[INFO] Creating Apache Virtual Host ..."
     mkdir -p ${APACHE_CONF_DIR}
-    evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+    case ${DEPLOYMENT_APACHE_SECURITY} in
+      public)
+        evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+      ;;
+      private)
+        evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+      ;;
+      *)
+        echo "[ERROR] Invalid apache security type \"${DEPLOYMENT_DATABASE_TYPE}\""
+        print_usage
+        exit 1
+      ;;
+    esac
     DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
     echo "[INFO] Done."
     echo "[INFO] Rotate Apache logs ..."
