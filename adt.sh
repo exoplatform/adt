@@ -130,6 +130,7 @@ Environment Variables :
     plfcom         eXo Platform Community Edition
     plfent         eXo Platform Express/Enterprise Edition
     plftrial       eXo Platform Trial Edition
+	addonchat      eXo Platform + eXo Addon Chat
     compint        eXo Company Intranet
     docs           eXo Platform Documentations Website
   PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
@@ -440,6 +441,16 @@ initialize_product_settings() {
           env_var ARTIFACT_REPO_GROUP "private"
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.39"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var EXO_PROFILES "all"
+        ;;
+        addonchat)
+          env_var PRODUCT_DESCRIPTION "Platform 4.0 EE + Chat eXo Addon"
+          env_var ARTIFACT_REPO_GROUP "private"
+          env_var ARTIFACT_GROUPID "com.exoplatform.addons.chat.distribution"
+          env_var ARTIFACT_ARTIFACTID "plf-enterprise-chat-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.39"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
