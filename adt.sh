@@ -471,7 +471,7 @@ initialize_product_settings() {
             ;;
           esac
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
-          env_var EXO_PROFILES                  "default"
+          env_var EXO_PROFILES                  "all"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
           env_var DEPLOYMENT_JVM_SIZE_MAX       "3g"
           env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
