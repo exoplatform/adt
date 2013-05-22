@@ -430,7 +430,7 @@ initialize_product_settings() {
             # 4.0.x and +
               env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
               env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.39"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
               env_var PLF_BRANCH "${PRODUCT_BRANCH}"
               env_var EXO_PROFILES "all"
             ;;
@@ -442,7 +442,7 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.39"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
         ;;
@@ -452,7 +452,7 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.addons.chat.distribution"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-chat-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.39"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
         ;;
@@ -467,7 +467,7 @@ initialize_product_settings() {
             *)
               # 4.0.x and +
 		          env_var ARTIFACT_ARTIFACTID       "company-intranet-package"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.39"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
             ;;
           esac
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
