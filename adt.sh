@@ -130,7 +130,7 @@ Environment Variables :
     plfcom         eXo Platform Community Edition
     plfent         eXo Platform Express/Enterprise Edition
     plftrial       eXo Platform Trial Edition
-	addonchat      eXo Platform + eXo Addon Chat
+	  addonchat      eXo Platform + eXo Addon Chat
     compint        eXo Company Intranet
     docs           eXo Platform Documentations Website
   PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
