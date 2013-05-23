@@ -155,4 +155,9 @@
         Allow from all
         Satisfy any
     </Location>
+    <Location /robots.txt>
+        Order deny,allow
+        Allow from all
+        Satisfy any
+    </Location>
 </VirtualHost>
