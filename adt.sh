@@ -124,15 +124,16 @@ Environment Variables :
   They may be configured in the current shell environment or /etc/default/adt or \$HOME/.adtrc
   
   PRODUCT_NAME                   : The product you want to manage. Possible values are :
-    gatein         GateIn Community edition
-    exogtn         GateIn eXo edition
-    plf            eXo Platform Standard Edition
-    plfcom         eXo Platform Community Edition
-    plfent         eXo Platform Express/Enterprise Edition
-    plftrial       eXo Platform Trial Edition
-	  addonchat      eXo Platform + eXo Addon Chat
-    compint        eXo Company Intranet
-    docs           eXo Platform Documentations Website
+    gatein         GateIn Community edition                - Apache Tomcat bundle
+    exogtn         GateIn eXo edition                      - Apache Tomcat bundle
+    plf            eXo Platform Standard Edition           - Apache Tomcat bundle
+    plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
+    plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
+    plfeap         eXo Platform Express/Enterprise Edition - JBoss EAP bundle
+    plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
+    addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
+    compint        eXo Company Intranet                    - Apache Tomcat bundle
+    docs           eXo Platform Documentations Website     - Apache Tomcat bundle
   PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
   ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
@@ -443,6 +444,17 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var EXO_PROFILES "all"
+        ;;
+        plfeap)
+          env_var PRODUCT_DESCRIPTION "Platform EE"
+          env_var ARTIFACT_REPO_GROUP "private"
+          env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
+          env_var ARTIFACT_ARTIFACTID "plf-enterprise-jbosseap-standalone"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/standalone.sh"
+          env_var DEPLOYMENT_APPSRV_TYPE "jbosseap"
+          env_var DEPLOYMENT_APPSRV_VERSION "6.0.1"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
         ;;
