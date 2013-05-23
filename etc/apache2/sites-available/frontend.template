@@ -150,7 +150,7 @@
         Allow from all		
         Satisfy any
     </Location>		
-    <Location /google*.php>
+    <Location /google*.html>
         Order deny,allow
         Allow from all
         Satisfy any
