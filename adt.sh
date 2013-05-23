@@ -1355,14 +1355,15 @@ do_undeploy() {
 do_list() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
     echo "[INFO] Deployed servers : "
-    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "HTTP_P" "AJP_P" "SHUTDOWN_P" "JMX_REG_P" "JMX_SRV_P" "RUNNING"
-    printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" "==========" "====================" "==========" "==========" "==========" "==========" "==========" "=========="
+    printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "========================================" "====================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "==========" "=========="
+    printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "Product" "Version" "HTTP_P" "AJP_P" "SHUTDOWN_P" "JMX_REG_P" "JMX_SRV_P" "JOD_CONVERTER" "CRASH_TEL" "CRASH_SSH" "RUNNING"
+    printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "========================================" "====================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "==========" "=========="
     for f in ${ADT_CONF_DIR}/*
     do
       source $f
       if [ -f ${DEPLOYMENT_PID_FILE} ]; then
         set +e
-        kill -0 `cat ${DEPLOYMENT_PID_FILE}`
+        kill -0 `cat ${DEPLOYMENT_PID_FILE}` > /dev/null 2>&1
         if [ $? -eq 0 ]; then
           STATUS="true"
         else
@@ -1372,7 +1373,7 @@ do_list() {
       else
         STATUS="false"
       fi
-      printf "%-10s %-20s %-10s %-10s %-10s %-10s %-10s %-10s\n" ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ${DEPLOYMENT_HTTP_PORT} ${DEPLOYMENT_AJP_PORT} ${DEPLOYMENT_SHUTDOWN_PORT} ${DEPLOYMENT_RMI_REG_PORT} ${DEPLOYMENT_RMI_SRV_PORT} $STATUS
+      printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_SHUTDOWN_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_JOD_CONVERTER_PORTS}" "${DEPLOYMENT_CRASH_TELNET_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
     done
   else
     echo "[INFO] No server deployed."
