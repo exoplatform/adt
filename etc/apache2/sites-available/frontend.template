@@ -145,9 +145,10 @@
         # Only exo-employees can access
         Require group exo-employees 
     </Location>   
-    <Location /rest/list.php>
+    <Location /rest/>
         Order deny,allow
-        Allow from all		
+        Deny from all
+        Allow from exoplatform.org
         Satisfy any
     </Location>		
     <Location /google*.html>
