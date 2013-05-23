@@ -107,54 +107,37 @@ function processIsRunning($pid)
     return isset($output[1]);
 }
 
-function sortProjects($a, $b)
+/*
+ * Get the list of all repositories
+ */
+function getRepositories()
 {
-    // Default projects order
-    $i = 0;
-    $projectsOrder["platform-ui"] = $i++;
-    $projectsOrder["commons"] = $i++;
-    $projectsOrder["ecms"] = $i++;
-    $projectsOrder["social"] = $i++;
-    $projectsOrder["forum"] = $i++;
-    $projectsOrder["wiki"] = $i++;
-    $projectsOrder["calendar"] = $i++;
-    $projectsOrder["integration"] = $i++;
-    $projectsOrder["platform"] = $i++;
-    $projectsOrder["platform-public-distributions"] = $i++;
-
-    if ($a == $b) {
-        return 0;
-    }
-    return strcmp($projectsOrder[$a], $projectsOrder[$b]);
+    return array(
+        "platform-ui",
+        "commons",
+        "ecms",
+        "social",
+        "forum",
+        "wiki",
+        "calendar",
+        "integration",
+        "platform",
+        "platform-public-distributions",
+        "platform-private-distributions");
 }
 
-function getProjects()
-{
-    $projects = apc_fetch('projects');
-
-    if (empty($projects)) {
-        //List all repos
-        $projects = preg_replace('/\.git/', '', getGitDirectoriesList(getenv('ADT_DATA') . "/sources/"));
-        usort($projects, "sortProjects");
-
-        // Projects will be cached for 1 hour
-        apc_store('projects', $projects, 3600);
-    }
-    return $projects;
-}
-
-function getFeatureBranches()
+function getFeatureBranches($projects)
 {
     $features = apc_fetch('features');
 
     if (empty($features)) {
         $features = array();
-        foreach (getProjects() as $project) {
+        foreach ($projects as $project) {
             $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
             $branches = array_filter(preg_replace('/.*\/feature\//', '', array_filter(explode("\n", $repoObject->git('branch -r')), 'isFeature')));
             foreach ($branches as $branch) {
                 $fetch_url = $repoObject->git('config --get remote.origin.url');
-                if (preg_match("/git:\/\/github\.com\/(.*)\/(.*)\.git/", $fetch_url, $matches)) {
+                if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
                     $github_org = $matches[1];
                     $github_repo = $matches[2];
                 }

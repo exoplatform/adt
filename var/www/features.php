@@ -62,8 +62,8 @@ checkCaches();
                     <h3>Branches deployed on acceptance</h3>
                     <?php
                     //List all projects
-                    $projects = getProjects();
-                    $features = getFeatureBranches();
+                    $projects = getRepositories();
+                    $features = getFeatureBranches($projects);
                     ?>
                     <table class="table table-bordered table-hover">
                         <thead>

@@ -79,7 +79,7 @@ env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
-env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions"
+env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions exoplatform:platform-private-distributions"
 configurable_env_var "GIT_REPOS_UPDATED" false
 
 #
@@ -165,17 +165,37 @@ EOF
 updateRepo() {
   local _orga=$(echo $1 | cut -d: -f1)
   local _repo=$(echo $1 | cut -d: -f2)
+  if [ -d ${SRC_DIR}/${_repo}.git -a ! -d ${SRC_DIR}/${_repo}.git/.git ]; then
+    echo "[INFO] Remove invalid repository ${_repo} from ${SRC_DIR} ..."
+    rm -rf ${SRC_DIR}/${_repo}.git
+    echo "[INFO] Removal done ..."
+  fi
   if [ ! -d ${SRC_DIR}/${_repo}.git ]; then
     echo "[INFO] Cloning repository ${_repo} into ${SRC_DIR} ..."
-    git clone git://github.com/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
+    git clone -v git@github.com:/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
     echo "[INFO] Clone done ..."
   else
+    pushd ${SRC_DIR}/${_repo}.git > /dev/null 2>&1
+    set +e
+    status=0
+    git remote set-url origin git@github.com:${_orga}/${_repo}.git
     echo "[INFO] Updating repository ${_repo} in ${SRC_DIR} ..."
-    cd ${SRC_DIR}/${_repo}.git
-    git fetch --prune
-    git clean -f -d -x
-    cd -
+    git fetch --progress --prune origin
+    status=$?
+    set -e
+    if [ $status -ne 0 ]; then
+      popd > /dev/null 2>&1
+      echo "[INFO] Remove invalid repository ${_repo} from ${SRC_DIR} ..."
+      rm -rf ${SRC_DIR}/${_repo}.git
+      echo "[INFO] Removal done ..."
+      echo "[INFO] Cloning repository ${_repo} into ${SRC_DIR} ..."
+      git clone -v git@github.com:/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
+      echo "[INFO] Clone done ..."
+      pushd ${SRC_DIR}/${_repo}.git > /dev/null 2>&1
+      git fetch --progress --prune origin
+    fi
     echo "[INFO] Update done ..."
+    popd > /dev/null 2>&1
   fi
 }
 
