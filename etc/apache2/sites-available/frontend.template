@@ -150,4 +150,9 @@
         Allow from all		
         Satisfy any
     </Location>		
+    <Location /google*.php>
+        Order deny,allow
+        Allow from all
+        Satisfy any
+    </Location>
 </VirtualHost>
