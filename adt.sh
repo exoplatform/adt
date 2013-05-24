@@ -627,6 +627,10 @@ do_restore_dataset(){
       fi;
       echo "[INFO] Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
       pushd ${_tmpdir} > /dev/null 2>&1
+      if [ ! -e ${HOME}/.my.cnf ]; then
+       echo "[ERROR] \${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
+       exit;
+      fi;
       pv -p -t -e -a -r -b ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
       popd > /dev/null 2>&1
       echo "[INFO] Done"
@@ -726,6 +730,10 @@ do_create_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
       echo "[INFO] Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
+      if [ ! -e ${HOME}/.my.cnf ]; then
+       echo "[ERROR] \${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
+       exit;
+      fi;
       SQL=""
       SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME};"
       SQL=$SQL"GRANT ALL ON ${DEPLOYMENT_DATABASE_NAME}.* TO '${DEPLOYMENT_DATABASE_USER}'@'localhost' IDENTIFIED BY '${DEPLOYMENT_DATABASE_USER}';"
@@ -752,6 +760,10 @@ do_drop_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
       echo "[INFO] Drops MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
+      if [ ! -e ${HOME}/.my.cnf ]; then
+       echo "[ERROR] \${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
+       exit;
+      fi;
       SQL=""
       SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
       SQL=$SQL"SHOW DATABASES;"
