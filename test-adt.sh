@@ -5,7 +5,7 @@ function test-adt() {
   export PRODUCT_VERSION=$2
   ./adt.sh deploy
   ./adt.sh start
-  open http://localhost:8001
+  open -g http://localhost:8001
   sleep 30
   ./adt.sh stop
 }
