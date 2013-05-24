@@ -57,7 +57,7 @@ checkCaches();
 <tr>
     <th class="col-center">Status</th>
     <th class="col-center">Name</th>
-    <th class="col-center">Snapshot Version</th>
+    <th class="col-center">Version</th>
     <th class="col-center" colspan="4">Feature Branch</th>
     <th class="col-center">Built</th>
     <th class="col-center">Deployed</th>
@@ -122,7 +122,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
             </td>
-            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $base_version ?></a></td>
+            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $descriptor_array->PRODUCT_VERSION ?></a></td>
             <?php if (empty($feature_branch)) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>

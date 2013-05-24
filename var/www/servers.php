@@ -60,7 +60,7 @@ checkCaches();
                         </tr>
                         <tr>
                             <th class="col-center">Name</th>
-                            <th class="col-center">Snapshot Version</th>
+                            <th class="col-center">Version</th>
                             <th class="col-center">Feature Branch</th>
                             <th class="col-center">Server</th>
                             <th class="col-center">Status</th>
@@ -105,7 +105,7 @@ checkCaches();
                             ?>
                             <tr>
                                 <td><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
-                                <td class="col-center"><?=$base_version?></td>
+                                <td class="col-center"><?=$descriptor_array->PRODUCT_VERSION?></td>
                                 <td class="col-center"><?=$feature_branch?></td>
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org") {
