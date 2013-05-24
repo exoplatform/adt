@@ -83,7 +83,7 @@ function getDirectoryList($directory)
     // create an array to hold directory list
     $results = array();
     // create a handler for the directory
-    $handler = opendir($directory);
+    $handler = opendir($directory) or die($directory." doesn't exist");
     // open directory and walk through the filenames
     while ($file = readdir($handler)) {
         // if file isn't this directory or its parent, add it to the results
@@ -130,7 +130,7 @@ function getFeatureBranches($projects)
 {
     $features = apc_fetch('features');
 
-    if (empty($features)) {
+    if (empty($features) || getenv('ADT_DEV_MODE')) {
         $features = array();
         foreach ($projects as $project) {
             $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
@@ -165,7 +165,7 @@ function getLocalAcceptanceInstances()
 {
     $instances = apc_fetch('local_instances');
 
-    if (empty($instances)) {
+    if (empty($instances) || getenv('ADT_DEV_MODE')) {
         $instances = array();
         $vhosts = getDirectoryList(getenv('ADT_DATA') . "/conf/adt/");
         $now = new DateTime();
@@ -246,12 +246,18 @@ function getGlobalAcceptanceInstances()
 {
     $instances = apc_fetch('all_instances');
 
-    if (empty($instances)) {
+    if (empty($instances) || getenv('ADT_DEV_MODE')) {
         $instances = array();
-        $instances = append_data('http://acceptance.exoplatform.org/rest/list.php', $instances);
-        $instances = append_data('http://acceptance2.exoplatform.org/rest/list.php', $instances);
-        $instances = append_data('http://acceptance3.exoplatform.org/rest/list.php', $instances);
-        $instances = append_data('http://acceptance4.exoplatform.org/rest/list.php', $instances);				
+        if ( getenv('ADT_DEV_MODE')) {
+            // Emulate decode/encode with json because they are converting array into objects
+            // TBD : Cleanup JSON decode/encode and array/objects
+            $instances = json_decode(json_encode(getLocalAcceptanceInstances()));
+        } else {
+            $instances = append_data('http://acceptance.exoplatform.org/rest/list.php', $instances);
+            $instances = append_data('http://acceptance2.exoplatform.org/rest/list.php', $instances);
+            $instances = append_data('http://acceptance3.exoplatform.org/rest/list.php', $instances);
+            $instances = append_data('http://acceptance4.exoplatform.org/rest/list.php', $instances);
+        }
         // Instances will be cached for 2 min
         apc_store('all_instances', $instances, 120);
     }
@@ -262,7 +268,7 @@ function getAcceptanceBranches()
 {
     $branches = apc_fetch('acceptance_branches');
 
-    if (empty($branches)) {
+    if (empty($branches) || getenv('ADT_DEV_MODE')) {
         $branches = array();
         foreach (getGlobalAcceptanceInstances() as $descriptor_arrays) {
             foreach ($descriptor_arrays as $descriptor_array) {

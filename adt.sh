@@ -1488,8 +1488,19 @@ do_undeploy_all() {
 do_load_php_server() {
   updateRepos
   export ADT_DATA=${ADT_DATA}
-  echo "[INFO] The Web server will be started on http://localhost:8080/"
-  php -S localhost:8080 -t ${SCRIPT_DIR}/var/www
+  export ADT_DEV_MODE=true
+  local _php_ini_file="${ETC_DIR}/php/cli-server.ini"
+  local _doc_root="${SCRIPT_DIR}/var/www"
+  local _php_router_file="${SCRIPT_DIR}/var/www/router.php"
+  local _php_listen_host=localhost
+  local _php_listen_port=8080
+  local _php_exe=$(which php)
+  if [ $? != 0 ]; then
+    echo "[ERROR] Unable to find PHP executable"
+    exit 1
+  fi
+  echo "[INFO] Starting the web server"
+  $_php_exe -S $_php_listen_host:$_php_listen_port -c $_php_ini_file -t $_doc_root $_php_router_file
 }
 
 # no action ? provide help

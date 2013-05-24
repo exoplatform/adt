@@ -151,6 +151,11 @@
         Allow from exoplatform.org
         Satisfy any
     </Location>		
+    <Location /info.php>
+        Order deny,allow
+        Deny from all
+        Allow from localhost 127.0.0.1
+    </Location>
     <Location /google*.html>
         Order deny,allow
         Allow from all

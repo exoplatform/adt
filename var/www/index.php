@@ -256,9 +256,10 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                                             <option value="UNSET">=== Undefined ===</option>
                                             <?php
                                             //List all projects
-                                            $features = getFeatureBranches();
+                                            $projects = getRepositories();
+                                            $features = getFeatureBranches($projects);
                                             foreach ($features as $feature => $FBProjects) {
-                                                if ((!empty($descriptor_array->SCM_BRANCH) && $descriptor_array->SCM_BRANCH === $feature) || !in_array($feature, getFeatureBranches())) {
+                                                if ((!empty($descriptor_array->SCM_BRANCH) && $descriptor_array->SCM_BRANCH === $feature) || !in_array($feature, getFeatureBranches($projects))) {
                                                     ?>
                                                     <option <?php if (!empty($descriptor_array->SCM_BRANCH) && $descriptor_array->SCM_BRANCH === $feature) {
                                                         echo "selected";
