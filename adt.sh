@@ -82,15 +82,6 @@ env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
 env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions"
 configurable_env_var "GIT_REPOS_UPDATED" false
 
-env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
-env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
-env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
-env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}03"
-env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}04"
-env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}05,${DEPLOYMENT_PORT_PREFIX}06,${DEPLOYMENT_PORT_PREFIX}07"
-env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
-env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
-
 #
 # Usage message
 #
@@ -266,16 +257,6 @@ initialize_product_settings() {
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION"
-
-      if ${DEPLOYMENT_SETUP_APACHE}; then
-        env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}"
-        env_var "DEPLOYMENT_EXT_PORT" "80"
-      else
-        env_var "DEPLOYMENT_EXT_HOST" "localhost"
-        env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
-      fi
-      env_var "DEPLOYMENT_URL" "http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_EXT_PORT}"
-
 
       # Defaults values we can override by product/branch/version
       env_var "EXO_PROFILES" "-Dexo.profiles=all"
@@ -1147,6 +1128,25 @@ do_set_env() {
 # Function that deploys (Download+configure) the app server
 #
 do_deploy() {
+
+  env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
+  env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
+  env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
+  env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}03"
+  env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}04"
+  env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}05,${DEPLOYMENT_PORT_PREFIX}06,${DEPLOYMENT_PORT_PREFIX}07"
+  env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
+  env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
+
+  if ${DEPLOYMENT_SETUP_APACHE}; then
+    env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}"
+    env_var "DEPLOYMENT_EXT_PORT" "80"
+  else
+    env_var "DEPLOYMENT_EXT_HOST" "localhost"
+    env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
+  fi
+  env_var "DEPLOYMENT_URL" "http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_EXT_PORT}"
+
   echo "[INFO] Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     echo "[INFO] Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
