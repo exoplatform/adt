@@ -598,3 +598,37 @@ loadSystemInfo() {
   echo "========"
 
 }
+
+# $1 : scheme : http, ..
+# $2 : host
+# $3 : port
+# $4 : path
+do_build_url() {
+  if [ $# -lt 4 ]; then
+    echo ""
+    echo "[ERROR] No enough parameters for function do_build_url !"
+    exit 1;
+  fi
+
+  #
+  # Function parameters
+  #
+  local _scheme="$1";
+  shift;
+  local _host="$1";
+  shift;
+  local _port="$1";
+  shift;
+  local _path="$1";
+  shift;
+
+  local _result="${_scheme}://${_host}";
+  if [ "$_port" == "80" ]; then
+    _result="${_result}${_path}";
+  else
+    _result="${_result}:${_port}${_path}";
+  fi
+
+  echo $_result
+}
+

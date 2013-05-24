@@ -36,8 +36,10 @@ echo "[INFO] # #################################################################
 # Configurable env vars. These variables can be loaded
 # from the env, /etc/default/adt or $HOME/.adtrc
 configurable_env_var "ADT_DEBUG" false
+configurable_env_var "ADT_DEV_MODE" false
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
 configurable_env_var "ACCEPTANCE_HOST" "acceptance.exoplatform.org"
+configurable_env_var "ACCEPTANCE_PORT" "80"
 configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
 configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
 configurable_env_var "DEPLOYMENT_SETUP_APACHE" false
@@ -582,7 +584,7 @@ do_download_server() {
   env_var ARTIFACT_DATE ${PRODUCT_ARTIFACT_DATE}
   env_var ARTIFACT_REPO_URL ${PRODUCT_ARTIFACT_URL}
   env_var ARTIFACT_LOCAL_PATH ${PRODUCT_ARTIFACT_LOCAL_PATH}
-  env_var ARTIFACT_DL_URL "http://${ACCEPTANCE_HOST}/downloads/${PRODUCT_NAME}-${ARTIFACT_TIMESTAMP}.${ARTIFACT_PACKAGING}"
+  env_var ARTIFACT_DL_URL $(do_build_url "http" "${ACCEPTANCE_HOST}" "${ACCEPTANCE_PORT}" "/downloads/${PRODUCT_NAME}-${ARTIFACT_TIMESTAMP}.${ARTIFACT_PACKAGING}")
 }
 
 do_download_dataset() {
@@ -1165,7 +1167,7 @@ do_deploy() {
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
   fi
-  env_var "DEPLOYMENT_URL" "http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_EXT_PORT}"
+  env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
 
   echo "[INFO] Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
@@ -1487,20 +1489,18 @@ do_undeploy_all() {
 #
 do_load_php_server() {
   updateRepos
-  export ADT_DATA=${ADT_DATA}
-  export ADT_DEV_MODE=true
+  env_var "ADT_DEV_MODE" "true"
+  env_var "ADT_DATA" ${ADT_DATA}
   local _php_ini_file="${ETC_DIR}/php/cli-server.ini"
   local _doc_root="${SCRIPT_DIR}/var/www"
   local _php_router_file="${SCRIPT_DIR}/var/www/router.php"
-  local _php_listen_host=localhost
-  local _php_listen_port=8080
   local _php_exe=$(which php)
   if [ $? != 0 ]; then
     echo "[ERROR] Unable to find PHP executable"
     exit 1
   fi
   echo "[INFO] Starting the web server"
-  $_php_exe -S $_php_listen_host:$_php_listen_port -c $_php_ini_file -t $_doc_root $_php_router_file
+  $_php_exe -S $ACCEPTANCE_HOST:$ACCEPTANCE_PORT -c $_php_ini_file -t $_doc_root $_php_router_file
 }
 
 # no action ? provide help
