@@ -38,8 +38,15 @@ $ext = pathinfo($path, PATHINFO_EXTENSION);
 if (empty($ext)) {
     $path = rtrim($path, "/") . "/" . DIRECTORY_INDEX;
 }
+
 if (in_array($ext, $extensions)) {
     return false;
+}
+
+// Allow to download local ZIPs
+if ($ext == "zip") {
+    header("Content-Type: application/octet-stream");
+    readfile(getenv('ADT_DATA').$path);
 }
 
 // If the file exists then return false and let the server handle it
