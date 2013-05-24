@@ -5,21 +5,19 @@ function test-adt() {
   export PRODUCT_VERSION=$2
   ./adt.sh deploy
   ./adt.sh start
-  if $ADT_TESTS_OPEN_BROWSER; then  
-    open http://localhost:8080
-  fi
+  open http://localhost:8001
   sleep 30
   ./adt.sh stop
-  ./adt.sh undeploy
 }
 
-test-adt exogtn   3.1.14-PLF-SNAPSHOT
 test-adt exogtn   3.2.4-PLF
-test-adt gatein   3.4.0.Final-SNAPSHOT
-test-adt plf      3.0.9
-test-adt plf      3.5.3
-test-adt plf      4.0.0.Alpha1-SNAPSHOT
-test-adt compint  3.5.0-SNAPSHOT
-test-adt docs     1.1-SNAPSHOT
-test-adt plfcom   3.5.3
-test-adt plftrial 3.5.3
+test-adt plf      3.0.10
+test-adt plf      3.5.7
+test-adt plfcom   4.0.0
+test-adt plfent   4.0.0
+test-adt docs     4.0.x-SNAPSHOT
+test-adt plfcom   4.0.x-SNAPSHOT
+test-adt plfent   4.0.x-SNAPSHOT
+
+./adt.sh list
+./adt.sh undeploy-all
