@@ -29,9 +29,9 @@ fi
 # Load shared functions
 source "${SCRIPT_DIR}/_functions.sh"
 
-echo "[INFO] # #######################################################################"
-echo "[INFO] # $SCRIPT_NAME"
-echo "[INFO] # #######################################################################"
+echo_info "# #######################################################################"
+echo_info "# $SCRIPT_NAME"
+echo_info "# #######################################################################"
 
 # Configurable env vars. These variables can be loaded
 # from the env, /etc/default/adt or $HOME/.adtrc
@@ -65,7 +65,7 @@ mkdir -p ${ADT_DATA}
 pushd ${ADT_DATA} > /dev/null
 ADT_DATA=`pwd -P`
 popd > /dev/null
-echo "[INFO] ADT_DATA = ${ADT_DATA}"
+echo_info "ADT_DATA = ${ADT_DATA}"
 
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
 export TMPDIR=${TMP_DIR}
@@ -168,35 +168,35 @@ updateRepo() {
   local _orga=$(echo $1 | cut -d: -f1)
   local _repo=$(echo $1 | cut -d: -f2)
   if [ -d ${SRC_DIR}/${_repo}.git -a ! -d ${SRC_DIR}/${_repo}.git/.git ]; then
-    echo "[INFO] Remove invalid repository ${_repo} from ${SRC_DIR} ..."
+    echo_info "Remove invalid repository ${_repo} from ${SRC_DIR} ..."
     rm -rf ${SRC_DIR}/${_repo}.git
-    echo "[INFO] Removal done ..."
+    echo_info "Removal done ..."
   fi
   if [ ! -d ${SRC_DIR}/${_repo}.git ]; then
-    echo "[INFO] Cloning repository ${_repo} into ${SRC_DIR} ..."
+    echo_info "Cloning repository ${_repo} into ${SRC_DIR} ..."
     git clone -v git@github.com:/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
-    echo "[INFO] Clone done ..."
+    echo_info "Clone done ..."
   else
     pushd ${SRC_DIR}/${_repo}.git > /dev/null 2>&1
     set +e
     status=0
     git remote set-url origin git@github.com:${_orga}/${_repo}.git
-    echo "[INFO] Updating repository ${_repo} in ${SRC_DIR} ..."
+    echo_info "Updating repository ${_repo} in ${SRC_DIR} ..."
     git fetch --progress --prune origin
     status=$?
     set -e
     if [ $status -ne 0 ]; then
       popd > /dev/null 2>&1
-      echo "[INFO] Remove invalid repository ${_repo} from ${SRC_DIR} ..."
+      echo_info "Remove invalid repository ${_repo} from ${SRC_DIR} ..."
       rm -rf ${SRC_DIR}/${_repo}.git
-      echo "[INFO] Removal done ..."
-      echo "[INFO] Cloning repository ${_repo} into ${SRC_DIR} ..."
+      echo_info "Removal done ..."
+      echo_info "Cloning repository ${_repo} into ${SRC_DIR} ..."
       git clone -v git@github.com:/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
-      echo "[INFO] Clone done ..."
+      echo_info "Clone done ..."
       pushd ${SRC_DIR}/${_repo}.git > /dev/null 2>&1
       git fetch --progress --prune origin
     fi
-    echo "[INFO] Update done ..."
+    echo_info "Update done ..."
     popd > /dev/null 2>&1
   fi
 }
@@ -389,7 +389,7 @@ initialize_product_settings() {
             ;;
             *)
               # 4.0.x and +
-              echo "[ERROR] Product 'plf' not supported for versions > 3.x. Please use plfcom or plfent."
+              echo_error "Product 'plf' not supported for versions > 3.x. Please use plfcom or plfent."
               print_usage
               exit 1
             ;;
@@ -411,7 +411,7 @@ initialize_product_settings() {
             ;;
             *)
               # 4.0.x and +
-              echo "[ERROR] Product 'plftrial' not supported for versions > 3.x. Please use plfcom or plfent."
+              echo_error "Product 'plftrial' not supported for versions > 3.x. Please use plfcom or plfent."
               print_usage
               exit 1
             ;;
@@ -514,7 +514,7 @@ initialize_product_settings() {
           esac
         ;;
         *)
-          echo "[ERROR] Invalid product \"${PRODUCT_NAME}\""
+          echo_error "Invalid product \"${PRODUCT_NAME}\""
           print_usage
           exit 1
         ;;
@@ -554,7 +554,7 @@ initialize_product_settings() {
     # Nothing to do
     ;;
     *)
-      echo "[ERROR] Invalid action \"${ACTION}\""
+      echo_error "Invalid action \"${ACTION}\""
       print_usage
       exit 1
     ;;
@@ -592,17 +592,17 @@ do_download_dataset() {
   validate_env_var "PRODUCT_NAME"
   validate_env_var "PRODUCT_BRANCH"
   validate_env_var "PRODUCT_DESCRIPTION"
-  echo "[INFO] Updating local dataset for ${PRODUCT_DESCRIPTION} ${PRODUCT_BRANCH} from the storage server ..."
+  echo_info "Updating local dataset for ${PRODUCT_DESCRIPTION} ${PRODUCT_BRANCH} from the storage server ..."
   if [ ! -z "${DATASET_DATA_VALUES_ARCHIVE}" ] && [ ! -z "${DATASET_DATA_INDEX_ARCHIVE}" ] && [ ! -z "${DATASET_DB_ARCHIVE}" ]; then
     mkdir -p ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}
     display_time rsync -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DB_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
     display_time rsync -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_INDEX_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
     display_time rsync -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_VALUES_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
   else
-    echo "[ERROR] Datasets not configured"
+    echo_error "Datasets not configured"
     exit 1;
   fi
-  echo "[INFO] Done"
+  echo_info "Done"
 }
 
 do_restore_dataset(){
@@ -612,42 +612,42 @@ do_restore_dataset(){
       do_drop_database
       do_create_database
       mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
-      echo "[INFO] Loading values ..."
+      echo_info "Loading values ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
-      echo "[INFO] Done"
-      echo "[INFO] Loading indexes ..."
+      echo_info "Done"
+      echo_info "Loading indexes ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
-      echo "[INFO] Done"
+      echo_info "Done"
       _tmpdir=`mktemp -d -t db-export.XXXXXXXXXX` || exit 1
-      echo "[INFO] Using temporary directory ${_tmpdir}"
+      echo_info "Using temporary directory ${_tmpdir}"
       _restorescript="${_tmpdir}/__restoreAllData.sql"
-      echo "[INFO] Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
+      echo_info "Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
-      echo "[INFO] Done"
+      echo_info "Done"
       if [ ! -e ${_restorescript} ]; then
-       echo "[ERROR] SQL file (${_restorescript}) doesn't exist."
+       echo_error "SQL file (${_restorescript}) doesn't exist."
        exit;
       fi;
-      echo "[INFO] Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
+      echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
       pushd ${_tmpdir} > /dev/null 2>&1
       if [ ! -e ${HOME}/.my.cnf ]; then
-       echo "[ERROR] \${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
+       echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
        exit;
       fi;
       pv -p -t -e -a -r -b ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
       popd > /dev/null 2>&1
-      echo "[INFO] Done"
-      echo "[INFO] Drop if it exists the JCR_CONFIG table from ${DEPLOYMENT_DATABASE_NAME} ..."
+      echo_info "Done"
+      echo_info "Drop if it exists the JCR_CONFIG table from ${DEPLOYMENT_DATABASE_NAME} ..."
       mysql ${DEPLOYMENT_DATABASE_NAME} -e "DROP TABLE IF EXISTS JCR_CONFIG;"
-      echo "[INFO] Done"
+      echo_info "Done"
       rm -rf ${_tmpdir}
     ;;
     HSQLDB)
-      echo "[ERROR] Dataset restoration isn't supported for database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Dataset restoration isn't supported for database type \"${DEPLOYMENT_DATABASE_TYPE}\""
       exit 1
     ;;
     *)
-      echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
       print_usage
       exit 1
     ;;
@@ -655,14 +655,14 @@ do_restore_dataset(){
 }
 
 do_init_empty_data(){
-  echo "[INFO] Deleting all existing data for ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  echo_info "Deleting all existing data for ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     do_drop_database
     do_create_database
   fi
   do_drop_data
   do_create_data
-  echo "[INFO] Done"
+  echo_info "Done"
 }
 
 #
@@ -670,7 +670,7 @@ do_init_empty_data(){
 #
 do_unpack_server() {
   rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
-  echo "[INFO] Unpacking server ..."
+  echo_info "Unpacking server ..."
   mkdir -p ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   set +e
   case ${ARTIFACT_PACKAGING} in
@@ -678,12 +678,12 @@ do_unpack_server() {
       unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
       if [ "$?" -ne "0" ]; then
         # If unpack fails we try to redownload the archive
-        echo "[WARNING] unpack of the server failed. We will try to download it a second time."
+        echo_warn "unpack of the server failed. We will try to download it a second time."
         rm ${ARTIFACT_LOCAL_PATH}
         do_download_server
         unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
         if [ "$?" -ne "0" ]; then
-          echo "[ERROR] Unable to unpack the server."
+          echo_error "Unable to unpack the server."
           exit 1
         fi
       fi
@@ -693,19 +693,19 @@ do_unpack_server() {
       tar -xzf ${ARTIFACT_LOCAL_PATH}
       if [ "$?" -ne "0" ]; then
         # If unpack fails we try to redownload the archive
-        echo "[WARNING] unpack of the server failed. We will try to download it a second time."
+        echo_warn "unpack of the server failed. We will try to download it a second time."
         rm ${ARTIFACT_LOCAL_PATH}
         do_download_server
         tar -xzf ${ARTIFACT_LOCAL_PATH}
         if [ "$?" -ne "0" ]; then
-          echo "[ERROR] Unable to unpack the server."
+          echo_error "Unable to unpack the server."
           exit 1
         fi
       fi
       cd -
     ;;
     *)
-      echo "[ERROR] Invalid packaging \"${ARTIFACT_PACKAGING}\""
+      echo_error "Invalid packaging \"${ARTIFACT_PACKAGING}\""
       print_usage
       exit 1
     ;;
@@ -713,9 +713,9 @@ do_unpack_server() {
   set -e
   DEPLOYMENT_PID_FILE=${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.pid
   mkdir -p ${SRV_DIR}
-  echo "[INFO] Deleting existing server ..."
+  echo_info "Deleting existing server ..."
   rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
-  echo "[INFO] Done"
+  echo_info "Done"
   cp -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   # We search the tomcat directory as the parent of a gatein directory
@@ -723,7 +723,7 @@ do_unpack_server() {
   DEPLOYMENT_DIR=`pwd -P`
   popd > /dev/null
   DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
-  echo "[INFO] Server unpacked"
+  echo_info "Server unpacked"
 }
 
 #
@@ -732,9 +732,9 @@ do_unpack_server() {
 do_create_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
-      echo "[INFO] Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
+      echo_info "Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       if [ ! -e ${HOME}/.my.cnf ]; then
-       echo "[ERROR] \${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
+       echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
        exit;
       fi;
       SQL=""
@@ -743,13 +743,13 @@ do_create_database() {
       SQL=$SQL"FLUSH PRIVILEGES;"
       SQL=$SQL"SHOW DATABASES;"
       mysql -e "$SQL"
-      echo "[INFO] Done."
+      echo_info "Done."
     ;;
     HSQLDB)
-      echo "[INFO] Using default HSQLDB database. Nothing to do to create the Database."
+      echo_info "Using default HSQLDB database. Nothing to do to create the Database."
     ;;
     *)
-      echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
       print_usage
       exit 1
     ;;
@@ -762,24 +762,24 @@ do_create_database() {
 do_drop_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
-      echo "[INFO] Drops MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
+      echo_info "Drops MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       if [ ! -e ${HOME}/.my.cnf ]; then
-       echo "[ERROR] \${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
+       echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
        exit;
       fi;
       SQL=""
       SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
       SQL=$SQL"SHOW DATABASES;"
       mysql -e "$SQL"
-      echo "[INFO] Done."
+      echo_info "Done."
     ;;
     HSQLDB)
-      echo "[INFO] Drops HSQLDB database ..."
+      echo_info "Drops HSQLDB database ..."
       rm -rf ${DEPLOYMENT_DIR}/gatein/data/hsqldb
-      echo "[INFO] Done."
+      echo_info "Done."
     ;;
     *)
-      echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
       print_usage
       exit 1
     ;;
@@ -790,65 +790,65 @@ do_drop_database() {
 # Drops all data used by the instance.
 #
 do_drop_data() {
-  echo "[INFO] Drops instance indexes ..."
+  echo_info "Drops instance indexes ..."
   rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
-  echo "[INFO] Done."
-  echo "[INFO] Drops instance values ..."
+  echo_info "Done."
+  echo_info "Drops instance values ..."
   rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
-  echo "[INFO] Done."
+  echo_info "Done."
 }
 
 #
 # Creates all data directories used by the instance.
 #
 do_create_data() {
-  echo "[INFO] Creates instance indexes directory ..."
+  echo_info "Creates instance indexes directory ..."
   mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
-  echo "[INFO] Done."
-  echo "[INFO] Creates instance values directory ..."
+  echo_info "Done."
+  echo_info "Creates instance values directory ..."
   mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
-  echo "[INFO] Done."
+  echo_info "Done."
 }
 
 do_configure_server_for_jmx() {
   if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
     JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
-    echo "[INFO] Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
+    echo_info "Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
     curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
     if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $JMX_JAR_URL` ]; then
-      echo "[ERROR] !!! Sorry, cannot download ${JMX_JAR_URL}"
+      echo_error "!!! Sorry, cannot download ${JMX_JAR_URL}"
       exit 1
     fi
-    echo "[INFO] Done."
+    echo_info "Done."
   fi
   # JMX settings
-  echo "[INFO] Creating JMX configuration files ..."
+  echo_info "Creating JMX configuration files ..."
   cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
   cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
-  echo "[INFO] Done."
-  echo "[INFO] Opening firewall ports for JMX ..."
+  echo_info "Done."
+  echo_info "Opening firewall ports for JMX ..."
   # Open firewall ports
   if ${DEPLOYMENT_SETUP_UFW}; then
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}
   fi
-  echo "[INFO] Done."
+  echo_info "Done."
   DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 
   # Reconfigure server.xml for JMX
   if [ "${JMX_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
     cp $JMX_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-jmx.xml.patch
-    echo "[INFO] Applying on server.xml the patch $JMX_SERVER_PATCH ..."
+    echo_info "Applying on server.xml the patch $JMX_SERVER_PATCH ..."
     cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-jmx
     patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-jmx.xml.patch
     cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-jmx
 
     replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@JMX_RMI_REGISTRY_PORT@" "${DEPLOYMENT_RMI_REG_PORT}"
     replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@JMX_RMI_SERVER_PORT@" "${DEPLOYMENT_RMI_SRV_PORT}"
-    echo "[INFO] Done."
+    echo_info "Done."
   fi
 }
 
@@ -865,13 +865,13 @@ do_configure_email() {
     if [ "${EMAIL_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
       cp $EMAIL_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-      echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $EMAIL_GATEIN_PATCH ..."
+      echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $EMAIL_GATEIN_PATCH ..."
       cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.email
       patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
       cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.email
 
       replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_URL@" "${DEPLOYMENT_URL}"
-      echo "[INFO] Done."
+      echo_info "Done."
     fi
 
   fi
@@ -890,13 +890,13 @@ do_configure_jod() {
     if [ "${JOD_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
       cp $JOD_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-      echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $JOD_GATEIN_PATCH ..."
+      echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $JOD_GATEIN_PATCH ..."
       cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.jod
       patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
       cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.jod
 
       replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_JOD_CONVERTER_PORTS@" "${DEPLOYMENT_JOD_CONVERTER_PORTS}"
-      echo "[INFO] Done."
+      echo_info "Done."
     fi
 
   fi
@@ -915,7 +915,7 @@ do_configure_ldap() {
     if [ "${LDAP_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
       cp $LDAP_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-      echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $LDAP_GATEIN_PATCH ..."
+      echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $LDAP_GATEIN_PATCH ..."
       cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.ldap
       patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
       cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.ldap
@@ -923,7 +923,7 @@ do_configure_ldap() {
       replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_URL@" "${DEPLOYMENT_LDAP_URL}"
       replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_ADMIN_DN@" "${DEPLOYMENT_LDAP_ADMIN_DN}"
       replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_ADMIN_PWD@" "${DEPLOYMENT_LDAP_ADMIN_PWD}"
-      echo "[INFO] Done."
+      echo_info "Done."
     fi
 
   fi
@@ -934,13 +934,13 @@ do_configure_server_for_database() {
     MYSQL)
       if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector*.jar ]; then
         MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
-        echo "[INFO] Download and install MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
+        echo_info "Download and install MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
         curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
         if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
-          echo "[ERROR] !!! Sorry, cannot download ${MYSQL_JAR_URL}"
+          echo_error "!!! Sorry, cannot download ${MYSQL_JAR_URL}"
           exit 1
         fi
-        echo "[INFO] Done."
+        echo_info "Done."
       fi
       if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
@@ -954,7 +954,7 @@ do_configure_server_for_database() {
         if [ "${DB_GATEIN_PATCH}" != "UNSET" ]; then
           # Prepare the patch
           cp $DB_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-          echo "[INFO] Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $DB_GATEIN_PATCH ..."
+          echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $DB_GATEIN_PATCH ..."
           cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.db
           patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
           cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.db
@@ -965,7 +965,7 @@ do_configure_server_for_database() {
           replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-          echo "[INFO] Done."
+          echo_info "Done."
         fi
 
       fi
@@ -974,9 +974,7 @@ do_configure_server_for_database() {
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
         cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo $DB_SERVER_PATCH
-        echo "[INFO] Applying on server.xml the patch $DB_SERVER_PATCH ..."
-        echo $DB_SERVER_PATCH
+        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
@@ -987,7 +985,7 @@ do_configure_server_for_database() {
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        echo "[INFO] Done."
+        echo_info "Done."
       fi
     ;;
     HSQLDB)
@@ -995,9 +993,7 @@ do_configure_server_for_database() {
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
         cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo $DB_SERVER_PATCH
-        echo "[INFO] Applying on server.xml the patch $DB_SERVER_PATCH ..."
-        echo $DB_SERVER_PATCH
+        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
@@ -1008,11 +1004,11 @@ do_configure_server_for_database() {
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        echo "[INFO] Done."
+        echo_info "Done."
       fi
     ;;
     *)
-      echo "[ERROR] Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
       print_usage
       exit 1
     ;;
@@ -1044,7 +1040,7 @@ do_patch_server() {
   if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
     cp $PORTS_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-ports.xml.patch
-    echo "[INFO] Applying on server.xml the patch $PORTS_SERVER_PATCH ..."
+    echo_info "Applying on server.xml the patch $PORTS_SERVER_PATCH ..."
     cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-ports
     patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-ports.xml.patch
     cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-ports
@@ -1052,21 +1048,21 @@ do_patch_server() {
     replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@SHUTDOWN_PORT@" "${DEPLOYMENT_SHUTDOWN_PORT}"
     replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
     replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
-    echo "[INFO] Done."
+    echo_info "Done."
   fi
 
-  echo "[INFO] Opening firewall ports for CRaSH ..."
+  echo_info "Opening firewall ports for CRaSH ..."
   # Open firewall ports
   if ${DEPLOYMENT_SETUP_UFW}; then
     sudo /usr/sbin/ufw allow ${DEPLOYMENT_CRASH_SSH_PORT}
   fi
-  echo "[INFO] Done."
+  echo_info "Done."
 
 }
 
 do_configure_apache() {
   if ${DEPLOYMENT_SETUP_AWSTATS}; then
-    echo "[INFO] Configure and update AWStats ..."
+    echo_info "Configure and update AWStats ..."
     mkdir -p $AWSTATS_CONF_DIR
     # Regenerates stats for this Vhosts
     export DOMAIN=${DEPLOYMENT_EXT_HOST}
@@ -1077,10 +1073,10 @@ do_configure_apache() {
     evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${ACCEPTANCE_HOST}.conf
     sudo /usr/lib/cgi-bin/awstats.pl -config=${ACCEPTANCE_HOST} -update
     unset DOMAIN
-    echo "[INFO] Done."
+    echo_info "Done."
   fi
   if ${DEPLOYMENT_SETUP_APACHE}; then
-    echo "[INFO] Creating Apache Virtual Host ..."
+    echo_info "Creating Apache Virtual Host ..."
     mkdir -p ${APACHE_CONF_DIR}
     case ${DEPLOYMENT_APACHE_SECURITY} in
       public)
@@ -1090,14 +1086,14 @@ do_configure_apache() {
         evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
       ;;
       *)
-        echo "[ERROR] Invalid apache security type \"${DEPLOYMENT_DATABASE_TYPE}\""
+        echo_error "Invalid apache security type \"${DEPLOYMENT_DATABASE_TYPE}\""
         print_usage
         exit 1
       ;;
     esac
     DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
-    echo "[INFO] Done."
-    echo "[INFO] Rotate Apache logs ..."
+    echo_info "Done."
+    echo_info "Rotate Apache logs ..."
     evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
     sudo logrotate -s ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}.status -f ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
     rm ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
@@ -1107,21 +1103,21 @@ do_configure_apache() {
       sudo /usr/sbin/service apache2 reload
     fi
     rm ${TMP_DIR}/logrotate-acceptance
-    echo "[INFO] Done."
+    echo_info "Done."
   fi
 }
 
 do_create_deployment_descriptor() {
-  echo "[INFO] Creating deployment descriptor ..."
+  echo_info "Creating deployment descriptor ..."
   mkdir -p ${ADT_CONF_DIR}
   evaluate_file_content ${ETC_DIR}/adt/config.template ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
-  echo "[INFO] Done."
+  echo_info "Done."
 }
 
 do_load_deployment_descriptor() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
-    echo "[WARNING] You need to deploy it first."
+    echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
+    echo_warn "You need to deploy it first."
     exit 1
   else
     source ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
@@ -1131,18 +1127,18 @@ do_load_deployment_descriptor() {
 do_set_env() {
   # PLF 4+ only
   if [ -e ${DEPLOYMENT_DIR}/bin/setenv-customize.sample.sh ]; then
-    echo "[INFO] Creating setenv resources ..."
+    echo_info "Creating setenv resources ..."
     if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-customize.sh" ]; then
-      echo "[INFO] Installing bin/setenv-customize.sh ..."
+      echo_info "Installing bin/setenv-customize.sh ..."
       cp ${ETC_DIR}/plf/setenv-customize.sh ${DEPLOYMENT_DIR}/bin/setenv-customize.sh
-      echo "[INFO] Done."
+      echo_info "Done."
     fi
     if [ "${SET_ENV_FILE}" != "UNSET" ]; then
-      echo "[INFO] Installing bin/setenv-local.sh ..."
+      echo_info "Installing bin/setenv-local.sh ..."
       evaluate_file_content ${SET_ENV_FILE} ${DEPLOYMENT_DIR}/bin/setenv-local.sh
-      echo "[INFO] Done."
+      echo_info "Done."
     fi
-    echo "[INFO] Done."
+    echo_info "Done."
   fi
 }
 
@@ -1169,13 +1165,13 @@ do_deploy() {
   fi
   env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
 
-  echo "[INFO] Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  echo_info "Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
-    echo "[INFO] Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    echo_info "Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
     _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
-    echo "[INFO] Using temporary directory ${_tmpdir}"
+    echo_info "Using temporary directory ${_tmpdir}"
     if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-      echo "[WARNING] This instance wasn't deployed before. Nothing to keep."
+      echo_warn "This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/data
       do_create_database
     else
@@ -1189,7 +1185,7 @@ do_deploy() {
         do_create_database
       fi
     fi
-    echo "[INFO] Done."
+    echo_info "Done."
   fi
   if [ -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
@@ -1210,17 +1206,17 @@ do_deploy() {
       do_init_empty_data
     ;;
     KEEP_DATA)
-      echo "[INFO] Restoring previous data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+      echo_info "Restoring previous data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
       rm -rf ${DEPLOYMENT_DIR}/gatein/data
       mv ${_tmpdir}/data ${DEPLOYMENT_DIR}/gatein
       rm -rf ${_tmpdir}
-      echo "[INFO] Done."
+      echo_info "Done."
     ;;
     RESTORE_DATASET)
       do_restore_dataset
     ;;
     *)
-      echo "[ERROR] Invalid deployment mode \"${DEPLOYMENT_MODE}\""
+      echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
       print_usage
       exit 1
     ;;
@@ -1230,7 +1226,7 @@ do_deploy() {
   fi
   do_create_deployment_descriptor
   do_set_env
-  echo "[INFO] Server deployed"
+  echo_info "Server deployed"
 }
 
 #
@@ -1240,7 +1236,7 @@ do_start() {
   # The server is supposed to be already deployed.
   # We load its settings from the configuration
   do_load_deployment_descriptor
-  echo "[INFO] Starting server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  echo_info "Starting server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
   mkdir -p ${DEPLOYMENT_DIR}/logs
   if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
@@ -1306,10 +1302,10 @@ do_start() {
   done
   set -e
   cd -
-  echo "[INFO] Server started"
-  echo "[INFO] URL  : ${DEPLOYMENT_URL}"
-  echo "[INFO] Logs : ${DEPLOYMENT_LOG_URL}"
-  echo "[INFO] JMX  : ${DEPLOYMENT_JMX_URL}"
+  echo_info "Server started"
+  echo_info "URL  : ${DEPLOYMENT_URL}"
+  echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
+  echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
 }
 
 #
@@ -1317,24 +1313,23 @@ do_start() {
 #
 do_stop() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
-    echo "[WARNING] The product cannot be stopped"
+    echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
+    echo_warn "The product cannot be stopped"
     exit 0
   else
     # The server is supposed to be already deployed.
     # We load its settings from the configuration
     do_load_deployment_descriptor
     if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
-      echo "[INFO] Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+      echo_info "Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ... "
       if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
         export CATALINA_HOME=${DEPLOYMENT_DIR}
         export CATALINA_PID=${DEPLOYMENT_PID_FILE}
       fi
-
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
-      echo "[INFO] Server stopped"
+      echo "Server deployed."
     else
-      echo "[WARNING] No server directory to stop it"
+      echo_warn "No server directory to stop it"
     fi
   fi
 }
@@ -1344,8 +1339,8 @@ do_stop() {
 #
 do_undeploy() {
   if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    echo "[WARNING] ${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
-    echo "[WARNING] The product cannot be undeployed"
+    echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
+    echo_warn "The product cannot be undeployed"
     exit 0
   else
     # The server is supposed to be already deployed.
@@ -1356,7 +1351,7 @@ do_undeploy() {
     if ${DEPLOYMENT_DATABASE_ENABLED}; then
       do_drop_database
     fi
-    echo "[INFO] Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
     if ${DEPLOYMENT_SETUP_AWSTATS}; then
       # Delete Awstat config
       rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
@@ -1377,7 +1372,7 @@ do_undeploy() {
       sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_SRV_PORT}
       sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_CRASH_SSH_PORT}
     fi
-    echo "[INFO] Server undeployed"
+    echo_info "Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
   fi
@@ -1388,7 +1383,7 @@ do_undeploy() {
 #
 do_list() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
-    echo "[INFO] Deployed servers : "
+    echo_info "Deployed servers : "
     printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "========================================" "====================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "==========" "=========="
     printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "Product" "Version" "HTTP_P" "AJP_P" "SHUTDOWN_P" "JMX_REG_P" "JMX_SRV_P" "JOD_CONVERTER" "CRASH_TEL" "CRASH_SSH" "RUNNING"
     printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "========================================" "====================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "==========" "=========="
@@ -1410,7 +1405,7 @@ do_list() {
       printf "%-40s %-20s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_SHUTDOWN_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_JOD_CONVERTER_PORTS}" "${DEPLOYMENT_CRASH_TELNET_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
     done
   else
-    echo "[INFO] No server deployed."
+    echo_info "No server deployed."
   fi
 }
 
@@ -1419,15 +1414,15 @@ do_list() {
 #
 do_start_all() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
-    echo "[INFO] Starting all servers ..."
+    echo_info "Starting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
       source $f
       do_start
     done
-    echo "[INFO] All servers started"
+    echo_info "All servers started"
   else
-    echo "[INFO] No server deployed."
+    echo_info "No server deployed."
   fi
 }
 
@@ -1436,16 +1431,16 @@ do_start_all() {
 #
 do_restart_all() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
-    echo "[INFO] Restarting all servers ..."
+    echo_info "Restarting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
       source $f
       do_stop
       do_start
     done
-    echo "[INFO] All servers restarted"
+    echo_info "All servers restarted"
   else
-    echo "[INFO] No server deployed."
+    echo_info "No server deployed."
   fi
 }
 
@@ -1454,15 +1449,15 @@ do_restart_all() {
 #
 do_stop_all() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
-    echo "[INFO] Stopping all servers ..."
+    echo_info "Stopping all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
       source $f
       do_stop
     done
-    echo "[INFO] All servers stopped"
+    echo_info "All servers stopped"
   else
-    echo "[INFO] No server deployed."
+    echo_info "No server deployed."
   fi
 }
 
@@ -1471,15 +1466,15 @@ do_stop_all() {
 #
 do_undeploy_all() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
-    echo "[INFO] Undeploying all servers ..."
+    echo_info "Undeploying all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
       source $f
       do_undeploy
     done
-    echo "[INFO] All servers undeployed"
+    echo_info "All servers undeployed"
   else
-    echo "[INFO] No server deployed."
+    echo_info "No server deployed."
   fi
 }
 
@@ -1496,17 +1491,16 @@ do_load_php_server() {
   local _php_router_file="${SCRIPT_DIR}/var/www/router.php"
   local _php_exe=$(which php)
   if [ $? != 0 ]; then
-    echo "[ERROR] Unable to find PHP executable"
+    echo_error "Unable to find PHP executable"
     exit 1
   fi
-  echo "[INFO] Starting the web server"
+  echo_info "Starting the web server (PHP 5.4+ is required)"
   $_php_exe -S $ACCEPTANCE_HOST:$ACCEPTANCE_PORT -c $_php_ini_file -t $_doc_root $_php_router_file
 }
 
 # no action ? provide help
 if [ $# -lt 1 ]; then
-  echo ""
-  echo "[ERROR] No action defined !"
+  echo_error "No action defined !"
   print_usage
   exit 1;
 fi
@@ -1571,7 +1565,7 @@ case "${ACTION}" in
         do_restore_dataset
       ;;
       *)
-        echo "[ERROR] Invalid deployment mode \"${DEPLOYMENT_MODE}\""
+        echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
         print_usage
         exit 1
       ;;
@@ -1606,7 +1600,7 @@ case "${ACTION}" in
     do_load_php_server
   ;;
   *)
-    echo "[ERROR] Invalid action \"${ACTION}\""
+    echo_error "Invalid action \"${ACTION}\""
     print_usage
     exit 1
   ;;

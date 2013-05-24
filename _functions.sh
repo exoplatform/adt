@@ -52,11 +52,11 @@ validate_env_var() {
   PARAM_NAME=$1
   PARAM_VALUE=$(eval echo \${$1-UNSET})
   if [ "${PARAM_VALUE}" = "UNSET" ]; then
-    echo "[ERROR] Environment variable $PARAM_NAME is not set";
-    echo "Please set it either : "
-    echo "* in your shell environment (export $PARAM_NAME=xxx)"
-    echo "* in the system file /etc/default/adt"
-    echo "* in the user file \$HOME/.adtrc"
+    echo_error "Environment variable $PARAM_NAME is not set";
+    echo_error "Please set it either : "
+    echo_error "* in your shell environment (export $PARAM_NAME=xxx)"
+    echo_error "* in the system file /etc/default/adt"
+    echo_error "* in the user file \$HOME/.adtrc"
     exit 1;
   fi
   set -u
@@ -74,9 +74,7 @@ configurable_env_var() {
     eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
     export eval ${PARAM_NAME}
   fi
-  if (${ADT_DEBUG}); then
-    echo "[DEBUG] $PARAM_NAME=$PARAM_VALUE"
-  fi
+  echo_debug "$PARAM_NAME=$PARAM_VALUE"
   set -u
 }
 
@@ -88,9 +86,7 @@ env_var() {
   PARAM_VALUE=$2
   eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
   export eval ${PARAM_NAME}
-  if (${ADT_DEBUG}); then
-    echo "[DEBUG] $PARAM_NAME=$PARAM_VALUE"
-  fi
+  echo_debug "$PARAM_NAME=$PARAM_VALUE"
   set -u
 }
 
@@ -138,8 +134,7 @@ evaluate_file_content() {
 
 do_curl() {
   if [ $# -lt 4 ]; then
-    echo ""
-    echo "[ERROR] No enough parameters for function do_curl !"
+    echo_error "No enough parameters for function do_curl !"
     exit 1;
   fi
 
@@ -155,17 +150,17 @@ do_curl() {
   local _description="$1";
   shift;
 
-  echo "[INFO] Downloading $_description from $_url ..."
+  echo_info "Downloading $_description from $_url ..."
   set +e
   curl $_curlOptions "$_url" > $_filePath
   if [ "$?" -ne "0" ]; then
-    echo "[ERROR] Sorry, cannot download $_description"
+    echo_error "Sorry, cannot download $_description"
     rm -f $_filePath # Remove potential corrupted file
     exit 1
   fi
   set -e
-  echo "[INFO] $_description downloaded"
-  echo "[INFO] Local path : $_filePath"
+  echo_info "$_description downloaded"
+  echo_info "Local path : $_filePath"
 }
 
 #
@@ -177,8 +172,7 @@ do_curl() {
 #
 do_download_from_nexus() {
   if [ $# -lt 10 ]; then
-    echo ""
-    echo "[ERROR] No enough parameters for function do_download_from_nexus !"
+    echo_error "No enough parameters for function do_download_from_nexus !"
     exit 1;
   fi
 
@@ -254,7 +248,7 @@ do_download_from_nexus() {
     set -e
     if [ -z "$_artifactTimestamp" ] && [ -e "$_metadataFile.bck" ]; then
       # We will restore the previous one to get its timestamp and redeploy it
-      echo "[WARNING] Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
+      echo_warn "Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv $_metadataFile.bck $_metadataFile
       if $DARWIN; then
         _artifactTimestamp=`xpath $_metadataFile $_xpathQuery`
@@ -264,11 +258,11 @@ do_download_from_nexus() {
       fi
     fi
     if [ -z "$_artifactTimestamp" ]; then
-      echo "[ERROR] No package available in the remote repository and no previous version available locally."
+      echo_error "No package available in the remote repository and no previous version available locally."
       exit 1;
     fi
     rm -f $_metadataFile.bck
-    echo "[INFO] Latest timestamp : $_artifactTimestamp"
+    echo_info "Latest timestamp : $_artifactTimestamp"
     _artifactDate=`expr "$_artifactTimestamp" : '.*-\(.*\)-.*'`
   fi
 
@@ -299,7 +293,7 @@ do_download_from_nexus() {
   # Download the artifact
   #
   if [ -e "$_artifactFile" ]; then
-    echo "[INFO] $_name was already downloaded. Skip artifact download !"
+    echo_info "$_name was already downloaded. Skip artifact download !"
   else
     do_curl "$_curlOptions" "$_artifactUrl" "$_artifactFile" "Artifact $_name"
   fi
@@ -307,14 +301,14 @@ do_download_from_nexus() {
   #
   # Validate download integrity
   #
-  echo "[INFO] Validating download integrity ..."
+  echo_info "Validating download integrity ..."
   # Read the SHA1 from Maven
   read -r mavenSha1 < $_sha1File || true
   echo "$mavenSha1  $_artifactFile" > $_sha1File.tmp
   set +e
   shasum -c $_sha1File.tmp
   if [ "$?" -ne "0" ]; then
-    echo "[ERROR] Sorry, $_name download integrity failed"
+    echo_error "Sorry, $_name download integrity failed"
     rm -f $_artifactFile
     rm -f $_sha1File
     rm -f $_sha1File.tmp
@@ -322,12 +316,12 @@ do_download_from_nexus() {
   fi
   set -e
   rm -f $_sha1File.tmp
-  echo "[INFO] Download integrity validated."
+  echo_info "Download integrity validated."
 
   #
   # Validate archive integrity
   #
-  echo "[INFO] Validating archive integrity ..."
+  echo_info "Validating archive integrity ..."
   set +e
   case "$_artifactPackaging" in
     zip)
@@ -340,23 +334,23 @@ do_download_from_nexus() {
       gzip -t $_artifactFile
     ;;
     *)
-      echo "[WARNING] No method to validate \"$_artifactPackaging\" file type."
+      echo_warn "No method to validate \"$_artifactPackaging\" file type."
     ;;
   esac
   if [ "$?" -ne "0" ]; then
-    echo "[ERROR] Sorry, $_name archive integrity failed. Local copy is deleted."
+    echo_error "Sorry, $_name archive integrity failed. Local copy is deleted."
     rm -f $_artifactFile
     rm -f $mavenSha1
     exit 1
   fi
   set -e
-  echo "[INFO] Archive integrity validated."
+  echo_info "Archive integrity validated."
 
   #
   # Create an info file with all details about the artifact
   #
   local _artifactInfo="$_downloadDirectory/$_fileBaseName-$_artifactTimestamp.info"
-  echo "[INFO] Creating archive descriptor ..."
+  echo_info "Creating archive descriptor ..."
   cat << EOF > $_artifactInfo
 ${_prefix}_VERSION="$_artifactVersion"
 ${_prefix}_ARTIFACT_GROUPID="$_artifactGroupId"
@@ -369,11 +363,11 @@ ${_prefix}_ARTIFACT_URL="$_artifactUrl"
 ${_prefix}_ARTIFACT_LOCAL_PATH="$_artifactFile"
 EOF
 
-  echo "[INFO] Done."
+  echo_info "Done."
   #Display the deployment descriptor
-  echo "[INFO] ========================== Archive Descriptor ==========================="
+  echo_info "========================== Archive Descriptor ==========================="
   cat $_artifactInfo
-  echo "[INFO] ========================================================================="
+  echo_info "========================================================================="
 
   #
   # Create a symlink if it is a SNAPSHOT to the TIMESTAMPED version
@@ -386,8 +380,7 @@ EOF
 
 do_load_artifact_descriptor() {
   if [ $# -lt 3 ]; then
-    echo ""
-    echo "[ERROR] No enough parameters for function do_load_artifact_descriptor !"
+    echo_error "No enough parameters for function do_load_artifact_descriptor !"
     exit 1;
   fi
   local _downloadDirectory="$1";
@@ -404,8 +397,7 @@ do_load_artifact_descriptor() {
 #
 do_download() {
   if [ $# -lt 5 ]; then
-    echo ""
-    echo "[ERROR] No enough parameters for function do_download !"
+    echo_error "No enough parameters for function do_download !"
     exit 1;
   fi
 
@@ -448,7 +440,7 @@ do_download() {
   # Download the file
   #
   if [ -e "$_localPath" ]; then
-    echo "[INFO] $_description was already downloaded. Skip file download !"
+    echo_info "$_description was already downloaded. Skip file download !"
   else
     do_curl "$_curlOptions" "$_fileURL" "$_localPath" "$_description"
   fi
@@ -456,33 +448,33 @@ do_download() {
   #
   # Validate download integrity
   #
-  echo "[INFO] Validating download integrity ..."
+  echo_info "Validating download integrity ..."
   set +e
   cd `dirname ${_localPath}`
   shasum -c $_sha1File
   if [ "$?" -ne "0" ]; then
-    echo "[ERROR] Sorry, $_description download integrity failed"
+    echo_error "Sorry, $_description download integrity failed"
     rm -f $_localPath
     rm -f $_sha1File
     exit 1
   fi
   cd -
   set -e
-  echo "[INFO] Download integrity validated."
+  echo_info "Download integrity validated."
 
   #
   # Validate archive integrity
   #
-  echo "[INFO] Validating archive integrity ..."
+  echo_info "Validating archive integrity ..."
   set +e
   zip -T $_localPath
   if [ "$?" -ne "0" ]; then
-    echo "[ERROR] Sorry, $_description archive integrity failed"
+    echo_error "Sorry, $_description archive integrity failed"
     rm -f $_localPath
     exit 1
   fi
   set -e
-  echo "[INFO] Archive integrity validated."
+  echo_info "Archive integrity validated."
 }
 
 # Backup the file passed as parameter
@@ -494,9 +486,9 @@ backup_logs() {
     for file in $2
     do
       if [ -e $file ]; then
-        echo "Archiving existing log file $file as archived-on-${_start_date}-$file   ..."
+        echo_info "Archiving existing log file $file as archived-on-${_start_date}-$file   ..."
         mv $file archived-on-${_start_date}-$file
-        echo "Done."
+        echo_info "Done."
       fi
     done
     cd -
@@ -567,35 +559,35 @@ loadSystemInfo() {
     fi
 
   fi
-  echo "========"
+  echo_info "========"
   if [ -n "${OS}" ]; then
-    echo "[INFO] OS: ${OS}";
+    echo_info "OS: ${OS}";
   fi
   if [ -n "${OSSTR}" ]; then
-    echo "[INFO] OSSTR: ${OSSTR}";
+    echo_info "OSSTR: ${OSSTR}";
   fi
   if [ -n "${DIST}" ]; then
-    echo "[INFO] DIST: ${DIST}"
+    echo_info "DIST: ${DIST}"
   fi
   if [ -n "${PSEUDONAME}" ]; then
-    echo "[INFO] PSEUDONAME: ${PSEUDONAME}"
+    echo_info "PSEUDONAME: ${PSEUDONAME}"
   fi
   if [ -n "${REV}" ]; then
-    echo "[INFO] REV: ${REV}"
+    echo_info "REV: ${REV}"
   fi
   if [ -n "${DistroBasedOn}" ]; then
-    echo "[INFO] DistroBasedOn: ${DistroBasedOn}"
+    echo_info "DistroBasedOn: ${DistroBasedOn}"
   fi
   if [ -n "${KERNEL}" ]; then
-    echo "[INFO] KERNEL: ${KERNEL}"
+    echo_info "KERNEL: ${KERNEL}"
   fi
   if [ -n "${MACH}" ]; then
-    echo "[INFO] MACH: ${MACH}"
+    echo_info "MACH: ${MACH}"
   fi
   if [ -n "${ARCH}" ]; then
-    echo "[INFO] ARCH: ${ARCH}"
+    echo_info "ARCH: ${ARCH}"
   fi
-  echo "========"
+  echo_info "========"
 
 }
 
@@ -605,8 +597,7 @@ loadSystemInfo() {
 # $4 : path
 do_build_url() {
   if [ $# -lt 4 ]; then
-    echo ""
-    echo "[ERROR] No enough parameters for function do_build_url !"
+    echo_error "No enough parameters for function do_build_url !"
     exit 1;
   fi
 
@@ -632,3 +623,46 @@ do_build_url() {
   echo $_result
 }
 
+# Display DEBUG message
+echo_debug() {
+  if (${ADT_DEBUG}); then
+    echo -e "\033[1;36m[DEBUG]\033[0m " $@
+  fi
+}
+
+# Display DEBUG message without trailing newline character
+echo_n_debug() {
+  if (${ADT_DEBUG}); then
+    echo -n -e "\033[1;36m[DEBUG]\033[0m " $@
+  fi
+}
+
+# Display INFO message
+echo_info() {
+  echo -e "\033[1;32m[INFO]\033[0m " $@
+}
+
+# Display INFO message without trailing newline character
+echo_n_info() {
+  echo -n -e "\033[1;32m[INFO]\033[0m " $@
+}
+
+# Display WARN message
+echo_warn() {
+  echo -e "\033[1;33m[WARN]\033[0m " $@
+}
+
+# Display WARN message without trailing newline character
+echo_n_warn() {
+  echo -n -e "\033[1;33m[WARN]\033[0m " $@
+}
+
+# Display ERROR message
+echo_error() {
+  echo -e "\033[1;31m[ERROR]\033[0m" $@
+}
+
+# Display ERROR message without trailing newline character
+echo_n_error() {
+  echo -n -e "\033[1;31m[ERROR]\033[0m" $@
+}
