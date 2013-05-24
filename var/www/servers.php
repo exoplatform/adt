@@ -104,7 +104,7 @@ checkCaches();
                             }
                             ?>
                             <tr>
-                                <td><?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
+                                <td><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
                                 <td class="col-center"><?=$base_version?></td>
                                 <td class="col-center"><?=$feature_branch?></td>
                                 <?php
