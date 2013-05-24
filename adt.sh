@@ -129,7 +129,7 @@ Environment Variables :
     plf            eXo Platform Standard Edition           - Apache Tomcat bundle
     plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
     plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
-    plfeap         eXo Platform Express/Enterprise Edition - JBoss EAP bundle
+    plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
     plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
     addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
     compint        eXo Company Intranet                    - Apache Tomcat bundle
@@ -447,7 +447,7 @@ initialize_product_settings() {
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
         ;;
-        plfeap)
+        plfenteap)
           env_var PRODUCT_DESCRIPTION "Platform EE"
           env_var ARTIFACT_REPO_GROUP "private"
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
