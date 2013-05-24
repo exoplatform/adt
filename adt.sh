@@ -1485,17 +1485,28 @@ do_undeploy_all() {
 do_load_php_server() {
   updateRepos
   env_var "ADT_DEV_MODE" "true"
+  env_var "ACCEPTANCE_HOST" "localhost"
+  env_var "ACCEPTANCE_PORT" "8080"
   env_var "ADT_DATA" ${ADT_DATA}
   local _php_ini_file="${ETC_DIR}/php/cli-server.ini"
   local _doc_root="${SCRIPT_DIR}/var/www"
   local _php_router_file="${SCRIPT_DIR}/var/www/router.php"
+  set +e
   local _php_exe=$(which php)
   if [ $? != 0 ]; then
     echo_error "Unable to find PHP executable"
     exit 1
   fi
+  set -e
   echo_info "Starting the web server (PHP 5.4+ is required)"
+  $_php_exe -r \@phpinfo\(\)\; | grep 'PHP Version' -m 1
+  set +e
   $_php_exe -S $ACCEPTANCE_HOST:$ACCEPTANCE_PORT -c $_php_ini_file -t $_doc_root $_php_router_file
+  if [ $? != 0 ]; then
+    echo_error "Unable to start PHP Web Server"
+    exit 1
+  fi
+  set -e
 }
 
 # no action ? provide help
