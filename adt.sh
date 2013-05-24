@@ -37,6 +37,7 @@ echo_info "# ###################################################################
 # from the env, /etc/default/adt or $HOME/.adtrc
 configurable_env_var "ADT_DEBUG" false
 configurable_env_var "ADT_DEV_MODE" false
+configurable_env_var "ADT_OFFLINE" false
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
 configurable_env_var "ACCEPTANCE_HOST" "acceptance.exoplatform.org"
 configurable_env_var "ACCEPTANCE_PORT" "80"
@@ -203,7 +204,7 @@ updateRepo() {
 
 # Update all git repositories used by PHP frontend
 updateRepos() {
-  if ! ${GIT_REPOS_UPDATED}; then
+  if  ! ${ADT_OFFLINE} && ! ${GIT_REPOS_UPDATED}; then
     # Initialize sources repositories used by PHP
     for _repo in $REPOS_LIST
     do
@@ -214,6 +215,8 @@ updateRepos() {
 }
 
 init() {
+  ${ADT_OFFLINE} && echo_warn "OFFLINE Mode activated !!!"
+
   loadSystemInfo
   validate_env_var "SCRIPT_DIR"
   validate_env_var "ADT_DATA"
@@ -574,11 +577,16 @@ do_download_server() {
   validate_env_var "ARTIFACT_PACKAGING"
   validate_env_var "ARTIFACT_CLASSIFIER"
 
-  # Downloads the product from Nexus
-  do_download_from_nexus  \
- "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}"  \
- "${ARTIFACT_GROUPID}" "${ARTIFACT_ARTIFACTID}" "${PRODUCT_VERSION}" "${ARTIFACT_PACKAGING}" "${ARTIFACT_CLASSIFIER}"  \
- "${DL_DIR}" "${PRODUCT_NAME}" "PRODUCT"
+
+  if ! ${ADT_OFFLINE}; then
+    # Downloads the product from Nexus
+    do_download_from_nexus  \
+   "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}"  \
+   "${ARTIFACT_GROUPID}" "${ARTIFACT_ARTIFACTID}" "${PRODUCT_VERSION}" "${ARTIFACT_PACKAGING}" "${ARTIFACT_CLASSIFIER}"  \
+   "${DL_DIR}" "${PRODUCT_NAME}" "PRODUCT"
+  else
+    echo_warn "ADT is offline and won't try to download the server !"
+  fi
   do_load_artifact_descriptor "${DL_DIR}" "${PRODUCT_NAME}" "${PRODUCT_VERSION}"
   env_var ARTIFACT_TIMESTAMP ${PRODUCT_ARTIFACT_TIMESTAMP}
   env_var ARTIFACT_DATE ${PRODUCT_ARTIFACT_DATE}
@@ -814,12 +822,36 @@ do_configure_server_for_jmx() {
   if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
     JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
-    echo_info "Downloading and installing JMX remote lib from ${JMX_JAR_URL} ..."
-    curl ${JMX_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $JMX_JAR_URL`
-    if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $JMX_JAR_URL` ]; then
-      echo_error "!!! Sorry, cannot download ${JMX_JAR_URL}"
+    if [ ! -e ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL` ]; then
+      if ${ADT_OFFLINE}; then
+        echo_error "ADT is offine and the JMX remote lib isn't available locally"
+        exit 1
+      else
+        mkdir -p ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/
+        echo_info "Downloading JMX remote lib from ${JMX_JAR_URL} ..."
+        set +e
+        curl --fail --show-error --location-trusted ${JMX_JAR_URL} > ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL`
+        if [ "$?" -ne "0" ]; then
+          echo_error "Cannot download ${JMX_JAR_URL}"
+          rm -f ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL` # Remove potential corrupted file
+          exit 1
+        fi
+        set -e
+        echo_info "Done."
+      fi
+    fi
+    echo_info "Validating JMX remote lib integrity ..."
+    set +e
+    jar -tf "${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/"`basename $JMX_JAR_URL` > /dev/null
+    if [ "$?" -ne "0" ]; then
+      echo_error "Sorry, "`basename $JMX_JAR_URL`" integrity failed. Local copy is deleted."
+      rm -f "${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/"`basename $JMX_JAR_URL`
       exit 1
     fi
+    set -e
+    echo_info "JMX remote lib integrity validated."
+    echo_info "Installing JMX remote lib ..."
+    cp -f ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL` ${DEPLOYMENT_DIR}/lib/
     echo_info "Done."
   fi
   # JMX settings
@@ -934,12 +966,36 @@ do_configure_server_for_database() {
     MYSQL)
       if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector*.jar ]; then
         MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
-        echo_info "Download and install MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
-        curl ${MYSQL_JAR_URL} > ${DEPLOYMENT_DIR}/lib/`basename $MYSQL_JAR_URL`
-        if [ ! -e "${DEPLOYMENT_DIR}/lib/"`basename $MYSQL_JAR_URL` ]; then
-          echo_error "!!! Sorry, cannot download ${MYSQL_JAR_URL}"
+        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL` ]; then
+          if ${ADT_OFFLINE}; then
+            echo_error "ADT is offine and the MySQL JDBC Driver isn't available locally"
+            exit 1
+          else
+            mkdir -p ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/
+            echo_info "Downloading MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
+            set +e
+            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL`
+            if [ "$?" -ne "0" ]; then
+              echo_error "Cannot download ${MYSQL_JAR_URL}"
+              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` # Remove potential corrupted file
+              exit 1
+            fi
+            set -e
+            echo_info "Done."
+          fi
+        fi
+        echo_info "Validating MySQL JDBC Driver integrity ..."
+        set +e
+        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` > /dev/null
+        if [ "$?" -ne "0" ]; then
+          echo_error "Sorry, "`basename $MYSQL_JAR_URL`" integrity failed. Local copy is deleted."
+          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL`
           exit 1
         fi
+        set -e
+        echo_info "MySQL JDBC Driver integrity validated."
+        echo_info "Installing MySQL JDBC Driver ..."
+        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` ${DEPLOYMENT_DIR}/lib/
         echo_info "Done."
       fi
       if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
@@ -1327,7 +1383,7 @@ do_stop() {
         export CATALINA_PID=${DEPLOYMENT_PID_FILE}
       fi
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
-      echo "Server deployed."
+      echo_info "Server stopped."
     else
       echo_warn "No server directory to stop it"
     fi
