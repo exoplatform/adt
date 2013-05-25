@@ -12,7 +12,7 @@ function test-adt() {
 
 test-adt exogtn   3.2.4-PLF
 test-adt plf      3.0.10
-test-adt plf      3.5.6
+test-adt plf      3.5.7-SNAPSHOT
 test-adt plfcom   4.0.0
 test-adt plfent   4.0.0
 test-adt docs     4.0.x-SNAPSHOT
