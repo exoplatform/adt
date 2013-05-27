@@ -1,12 +1,26 @@
 #!/bin/bash -eu
 
-export ACCEPTANCE_HOST=localhost
-export ACCEPTANCE_PORT=8080
+
+# Load local config from $HOME/.adtrc
+[ -e "$HOME/.adtrc" ] && source $HOME/.adtrc
+
+# Load shared functions
+source "./_functions_core.sh"
+
+env_var "ACCEPTANCE_HOST" "localhost"
+env_var "ACCEPTANCE_PORT" "8080"
 
 function test-adt() {
-  export PRODUCT_NAME=$1
-  export PRODUCT_VERSION=$2
-  export DEPLOYMENT_PORT_PREFIX=$3
+  env_var "PRODUCT_NAME" $1
+  env_var "PRODUCT_VERSION" $2
+  env_var "DEPLOYMENT_PORT_PREFIX" $3
+  echo_info "# #######################################################################"
+  echo_info "#"
+  echo_info "# Testing $PRODUCT_NAME $PRODUCT_VERSION"
+  echo_info "#"
+  echo_info "# #######################################################################"
+  echo_info "#"
+  echo_info "#"
   ./adt.sh deploy
   ./adt.sh start
   open -g http://localhost:${DEPLOYMENT_PORT_PREFIX}01
@@ -14,16 +28,28 @@ function test-adt() {
   ./adt.sh stop
 }
 
+if [ -z "${REPOSITORY_USERNAME+xxx}" -o -z "${REPOSITORY_PASSWORD+xxx}"  ]; then
+  echo_warn "Credentials not set !!!"
+  echo_warn "You cannot test private distributions"
+  echo_warn "Create a file ~/.adtrc"
+  echo_warn "Put it in these 2 lines :"
+  echo_warn "REPOSITORY_USERNAME=xxxxx"
+  echo_warn "REPOSITORY_PASSWORD=yyyyy"
+  echo_warn "Where xxxxx/yyyyy are your LDAP credentials"
+else
+  # PLF Enterprise Edition - Tomcat
+  test-adt plfent    4.0.0             402
+  test-adt plfent    4.0.x-SNAPSHOT    403
+
+  # PLF Enterprise Edition - JBossEAP
+  #KO test-adt plfenteap 4.0.x-SNAPSHOT    404
+fi
+
+
 # PLF Community Edition - Tomcat
 test-adt plfcom    4.0.0             400
 test-adt plfcom    4.0.x-SNAPSHOT    401
 
-# PLF Enterprise Edition - Tomcat
-test-adt plfent    4.0.0             402
-test-adt plfent    4.0.x-SNAPSHOT    403
-
-# PLF Enterprise Edition - JBossEAP
-#KO test-adt plfenteap 4.0.x-SNAPSHOT    404
 
 # PLF Documentations - Tomcat
 test-adt docs      4.0.x-SNAPSHOT    405
