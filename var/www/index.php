@@ -88,9 +88,9 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     <?php
     foreach ($descriptor_arrays as $descriptor_array) {
         if ($descriptor_array->DEPLOYMENT_STATUS == "Up")
-            $status = "<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
+            $status = "<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left icon\"/>&nbsp;Up";
         else
-            $status = "<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
+            $status = "<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left icon\"/>&nbsp;Down !";
         $matches = array();
         if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
             $base_version = $matches[1];
@@ -117,7 +117,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $feature_branch;
                 }
                 ?>
-                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$product_html_label?> <img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/></a>
+                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?=$product_html_label?></a>
                 <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
@@ -293,7 +293,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
 </table>
 <p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and these credentials : <strong><code>acceptanceMonitor</code></strong> / <strong><code>monitorAcceptance!</code></strong></p>
 
-<p><a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" title="http://<?= $_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left"/>http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>
+<p><a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" title="http://<?= $_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left icon"/>http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>
 </div>
 </div>
 </div>
