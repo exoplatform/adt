@@ -29,31 +29,30 @@ fi
 # Load functions
 source "${SCRIPT_DIR}/_functions.sh"
 
-echo_info "# #######################################################################"
+echo_info "# ======================================================================="
 echo_info "# $SCRIPT_NAME"
-echo_info "# #######################################################################"
+echo_info "# ======================================================================="
 
 # Configurable env vars. These variables can be loaded
 # from the env, /etc/default/adt or $HOME/.adtrc
 
+# Development mode ?
 configurable_env_var "ADT_DEV_MODE" false
 ${ADT_DEV_MODE} && echo_warn "Development Mode activated (no apache, no firewall, no awstats) !!!"
 
+# Offline mode ?
 configurable_env_var "ADT_OFFLINE" false
 ${ADT_OFFLINE} && echo_warn "Offline Mode activated !!!"
 
+# Data directory (this script directory by default)
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
-
-configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
-configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
-
-# Create ADT_DATA if required
-mkdir -p ${ADT_DATA}
 # Convert to an absolute path
 pushd ${ADT_DATA} > /dev/null
 ADT_DATA=`pwd -P`
 popd > /dev/null
 echo_info "ADT_DATA = ${ADT_DATA}"
+# Create ADT_DATA if required
+mkdir -p ${ADT_DATA}
 
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
 export TMPDIR=${TMP_DIR}
@@ -94,6 +93,8 @@ case "${ACTION}" in
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     # Create the main vhost from the template
     if ${DEPLOYMENT_SETUP_APACHE}; then
+      configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
+      configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
       validate_env_var "ADT_DATA"
       validate_env_var "ACCEPTANCE_HOST"
       validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
