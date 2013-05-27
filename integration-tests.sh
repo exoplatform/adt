@@ -56,4 +56,7 @@ test-adt exogtn   3.2.8-PLF-SNAPSHOT 328
 
 ./adt.sh list
 
-./adt.sh web-server
+./adt.sh web-server &
+open -g http://$ACCEPTANCE_HOST:$ACCEPTANCE_PORT
+fg
+
