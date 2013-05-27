@@ -56,15 +56,15 @@ evaluate_file_content() {
 }
 
 # Backup the file passed as parameter
-backup_logs() {
+backup_file() {
   if [ -d $1 ]; then
-    # We need to backup existing logs if they already exist
+    # We need to backup existing file if they already exist
     cd $1
     local _start_date=`date -u "+%Y%m%d-%H%M%S-UTC"`
     for file in $2
     do
       if [ -e $file ]; then
-        echo_info "Archiving existing log file $file as archived-on-${_start_date}-$file   ..."
+        echo_info "Archiving existing file $file as archived-on-${_start_date}-$file   ..."
         mv $file archived-on-${_start_date}-$file
         echo_info "Done."
       fi

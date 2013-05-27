@@ -20,10 +20,6 @@ tolower() {
   echo "$1" | tr '[:upper:]' '[:lower:]'
 }
 
-lowercase() {
-  echo "$1" | sed "y/ABCDEFGHIJKLMNOPQRSTUVWXYZ/abcdefghijklmnopqrstuvwxyz/"
-}
-
 # $1 : scheme : http, ..
 # $2 : host
 # $3 : port

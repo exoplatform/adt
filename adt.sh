@@ -26,13 +26,7 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
-# Load shared functions
-source "${SCRIPT_DIR}/_functions_core.sh"
-source "${SCRIPT_DIR}/_functions_aliases.sh"
-source "${SCRIPT_DIR}/_functions_string.sh"
-source "${SCRIPT_DIR}/_functions_files.sh"
-source "${SCRIPT_DIR}/_functions_download.sh"
-source "${SCRIPT_DIR}/_functions_git.sh"
+# Load functions
 source "${SCRIPT_DIR}/_functions.sh"
 
 echo_info "# #######################################################################"
@@ -97,7 +91,7 @@ shift
 case "${ACTION}" in
   init)
     init
-    updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
+    clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     # Create the main vhost from the template
     if ${DEPLOYMENT_SETUP_APACHE}; then
       validate_env_var "ADT_DATA"
@@ -183,12 +177,12 @@ case "${ACTION}" in
   ;;
   update-repos)
     init
-    updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
+    clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
   ;;
   web-server)
     env_var "ADT_DEV_MODE" "true"
     init
-    updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
+    clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     do_load_php_server
   ;;
   *)

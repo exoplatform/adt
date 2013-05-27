@@ -13,7 +13,7 @@ source "./_functions_core.sh"
 # Clone or update a repository $1 from Github's ${GITHUB_ORGA} organisation into ${SRC_DIR}
 # $1 : GitHub repository in format organization:repository
 # $2 : Directory where to store repositories
-updateRepo() {
+clone_or_fetch_git_repo() {
   local _orga=$(echo $1 | cut -d: -f1)
   local _repo=$(echo $1 | cut -d: -f2)
   local _src_dir=$2
@@ -55,7 +55,7 @@ updateRepo() {
 # $1 : offline ?
 # $2 : Directory where to store repositories
 # $3 and following : Github repositories in format organization:repository
-updateRepos() {
+clone_or_fetch_git_repos() {
   local _offline=$1
   shift
   local _src_dir=$1
@@ -65,7 +65,7 @@ updateRepos() {
     # Initialize sources repositories
     for _repo in ${_repositories}
     do
-      updateRepo "${_repo}" "${_src_dir}"
+      clone_or_fetch_git_repo "${_repo}" "${_src_dir}"
     done
     _GIT_REPOS_UPDATED=true
   fi

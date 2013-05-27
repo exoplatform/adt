@@ -1,5 +1,20 @@
 #!/bin/bash -eu
 
+# Load shared functions (they are specific to ADT)
+source "${SCRIPT_DIR}/_functions_core.sh"
+source "${SCRIPT_DIR}/_functions_aliases.sh"
+source "${SCRIPT_DIR}/_functions_string.sh"
+source "${SCRIPT_DIR}/_functions_system.sh"
+source "${SCRIPT_DIR}/_functions_files.sh"
+source "${SCRIPT_DIR}/_functions_download.sh"
+source "${SCRIPT_DIR}/_functions_git.sh"
+
+# #################################################################################
+#
+# All following functions are usable only in ADT context using shared env variables
+#
+# #################################################################################
+
 #
 # Usage message
 #
@@ -464,7 +479,7 @@ do_download_server() {
 
   if ! ${ADT_OFFLINE}; then
     # Downloads the product from Nexus
-    do_download_from_nexus  \
+    do_download_maven_artifact  \
    "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}"  \
    "${ARTIFACT_GROUPID}" "${ARTIFACT_ARTIFACTID}" "${PRODUCT_VERSION}" "${ARTIFACT_PACKAGING}" "${ARTIFACT_CLASSIFIER}"  \
    "${DL_DIR}" "${PRODUCT_NAME}" "PRODUCT"
@@ -1237,7 +1252,7 @@ do_start() {
   cd `dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}`
 
   # We need to backup existing logs if they already exist
-  backup_logs "${DEPLOYMENT_DIR}/logs/" "${DEPLOYMENT_SERVER_LOGS_FILE}"
+  backup_file "${DEPLOYMENT_DIR}/logs/" "${DEPLOYMENT_SERVER_LOGS_FILE}"
 
   # Startup the server
   ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start

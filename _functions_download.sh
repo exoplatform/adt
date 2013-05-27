@@ -46,15 +46,15 @@ do_curl() {
 }
 
 #
-# Function that downloads an artifact from nexus
+# Function that downloads an artifact from a repository
 # It will be updated if a SNAPSHOT is asked and a more recent version exists
 # Because Nexus REST APIs don't use Maven 3 metadata to download the latest SNAPSHOT
 # of a given GAVCE we need to manually get the timestamp using xpath
 # see https://issues.sonatype.org/browse/NEXUS-4423
 #
-do_download_from_nexus() {
+do_download_maven_artifact() {
   if [ $# -lt 10 ]; then
-    echo_error "No enough parameters for function do_download_from_nexus !"
+    echo_error "No enough parameters for function do_download_maven_artifact !"
     exit 1;
   fi
 
@@ -275,11 +275,11 @@ do_load_artifact_descriptor() {
 }
 
 #
-# Function that downloads a dataset from a web server
+# Function that downloads a file from a web server
 #
-do_download() {
+do_http_download_with_sha1() {
   if [ $# -lt 5 ]; then
-    echo_error "No enough parameters for function do_download !"
+    echo_error "No enough parameters for function do_http_download_with_sha1 !"
     exit 1;
   fi
 
