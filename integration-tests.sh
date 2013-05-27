@@ -7,8 +7,7 @@
 # Load shared functions
 source "./_functions_core.sh"
 
-env_var "ACCEPTANCE_HOST" "localhost"
-env_var "ACCEPTANCE_PORT" "8080"
+env_var "ADT_DEV_MODE" true
 
 function test-adt() {
   env_var "PRODUCT_NAME" $1
