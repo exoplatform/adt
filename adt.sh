@@ -34,44 +34,23 @@ source "${SCRIPT_DIR}/_functions_files.sh"
 source "${SCRIPT_DIR}/_functions_download.sh"
 source "${SCRIPT_DIR}/_functions_git.sh"
 
-# System dependent settings
-if $LINUX; then
-  TAR_BZIP2_COMPRESS_PRG=--use-compress-prog=pbzip2
-  NICE_CMD="nice -n 20 ionice -c2 -n7"
-else
-  TAR_BZIP2_COMPRESS_PRG=
-  NICE_CMD="nice -n 20"
-fi
-
 echo_info "# #######################################################################"
 echo_info "# $SCRIPT_NAME"
 echo_info "# #######################################################################"
 
 # Configurable env vars. These variables can be loaded
 # from the env, /etc/default/adt or $HOME/.adtrc
+
 configurable_env_var "ADT_DEV_MODE" false
+${ADT_DEV_MODE} && echo_warn "Development Mode activated (no apache, no firewall, no awstats) !!!"
+
 configurable_env_var "ADT_OFFLINE" false
+${ADT_OFFLINE} && echo_warn "Offline Mode activated !!!"
+
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
-configurable_env_var "ACCEPTANCE_HOST" "acceptance.exoplatform.org"
-configurable_env_var "ACCEPTANCE_PORT" "80"
+
 configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
 configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
-configurable_env_var "DEPLOYMENT_SETUP_APACHE" false
-configurable_env_var "DEPLOYMENT_SETUP_AWSTATS" false
-configurable_env_var "DEPLOYMENT_SETUP_UFW" false
-configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
-configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
-configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
-configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
-configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
-configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
-configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MIN" "128m"
-configurable_env_var "DEPLOYMENT_LDAP_URL" ""
-configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
-configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
-configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
-configurable_env_var "REPOSITORY_USERNAME" ""
-configurable_env_var "REPOSITORY_PASSWORD" ""
 
 # Create ADT_DATA if required
 mkdir -p ${ADT_DATA}
@@ -177,8 +156,13 @@ EOF
 }
 
 init() {
-  ${ADT_OFFLINE} && echo_warn "OFFLINE Mode activated !!!"
-
+  if ${ADT_DEV_MODE}; then
+    configurable_env_var "ACCEPTANCE_HOST" "localhost"
+    configurable_env_var "ACCEPTANCE_PORT" "8080"
+  else
+    configurable_env_var "ACCEPTANCE_HOST" "acceptance.exoplatform.org"
+    configurable_env_var "ACCEPTANCE_PORT" "80"
+  fi
   loadSystemInfo
   validate_env_var "SCRIPT_DIR"
   validate_env_var "ADT_DATA"
@@ -549,6 +533,10 @@ do_download_server() {
   validate_env_var "ARTIFACT_PACKAGING"
   validate_env_var "ARTIFACT_CLASSIFIER"
 
+  configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
+  configurable_env_var "REPOSITORY_USERNAME" ""
+  configurable_env_var "REPOSITORY_PASSWORD" ""
+
 
   if ! ${ADT_OFFLINE}; then
     # Downloads the product from Nexus
@@ -588,6 +576,14 @@ do_download_dataset() {
 do_restore_dataset(){
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
+      # System dependent settings
+      if $LINUX; then
+        TAR_BZIP2_COMPRESS_PRG=--use-compress-prog=pbzip2
+        NICE_CMD="nice -n 20 ionice -c2 -n7"
+      else
+        TAR_BZIP2_COMPRESS_PRG=
+        NICE_CMD="nice -n 20"
+      fi
       do_drop_data
       do_drop_database
       do_create_database
@@ -1174,7 +1170,21 @@ do_set_env() {
 # Function that deploys (Download+configure) the app server
 #
 do_deploy() {
+  configurable_env_var "DEPLOYMENT_SETUP_APACHE" false
+  configurable_env_var "DEPLOYMENT_SETUP_AWSTATS" false
+  configurable_env_var "DEPLOYMENT_SETUP_UFW" false
+  configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
+  configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
+  configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
+  configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
+  configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
+  configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MIN" "128m"
+  configurable_env_var "DEPLOYMENT_LDAP_URL" ""
+  configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
+  configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
+  configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
 
+  # Ports
   env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
   env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
@@ -1511,10 +1521,6 @@ do_undeploy_all() {
 # requires PHP >= 5.4
 #
 do_load_php_server() {
-  env_var "ADT_DEV_MODE" "true"
-  env_var "ACCEPTANCE_HOST" "localhost"
-  env_var "ACCEPTANCE_PORT" "8080"
-  env_var "ADT_DATA" ${ADT_DATA}
   local _php_ini_file="${ETC_DIR}/php/cli-server.ini"
   local _doc_root="${SCRIPT_DIR}/var/www"
   local _php_router_file="${SCRIPT_DIR}/var/www/router.php"
@@ -1553,10 +1559,9 @@ fi
 ACTION=$1
 shift
 
-init
-
 case "${ACTION}" in
   init)
+    init
     updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     # Create the main vhost from the template
     if ${DEPLOYMENT_SETUP_APACHE}; then
@@ -1573,23 +1578,28 @@ case "${ACTION}" in
   ;;
   deploy)
     configurable_env_var "DEPLOYMENT_MODE" "NO_DATA"
+    init
     initialize_product_settings
     do_deploy
   ;;
   download-dataset)
+    init
     initialize_product_settings
     do_download_dataset
   ;;
   start)
+    init
     initialize_product_settings
     do_start
   ;;
   stop)
+    init
     initialize_product_settings
     do_stop
   ;;
   restart)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
+    init
     initialize_product_settings
     do_stop
     case "${DEPLOYMENT_MODE}" in
@@ -1611,29 +1621,38 @@ case "${ACTION}" in
     do_start
   ;;
   undeploy)
+    init
     initialize_product_settings
     do_undeploy
   ;;
   list)
+    init
     do_list
   ;;
   start-all)
+    init
     do_start_all
   ;;
   stop-all)
+    init
     do_stop_all
   ;;
   restart-all)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
+    init
     do_restart_all
   ;;
   undeploy-all)
+    init
     do_undeploy_all
   ;;
   update-repos)
+    init
     updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
   ;;
   web-server)
+    env_var "ADT_DEV_MODE" "true"
+    init
     updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     do_load_php_server
   ;;
