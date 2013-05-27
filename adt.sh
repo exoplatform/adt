@@ -27,7 +27,21 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
 fi
 
 # Load shared functions
-source "${SCRIPT_DIR}/_functions.sh"
+source "${SCRIPT_DIR}/_functions_core.sh"
+source "${SCRIPT_DIR}/_functions_aliases.sh"
+source "${SCRIPT_DIR}/_functions_string.sh"
+source "${SCRIPT_DIR}/_functions_files.sh"
+source "${SCRIPT_DIR}/_functions_download.sh"
+source "${SCRIPT_DIR}/_functions_git.sh"
+
+# System dependent settings
+if $LINUX; then
+  TAR_BZIP2_COMPRESS_PRG=--use-compress-prog=pbzip2
+  NICE_CMD="nice -n 20 ionice -c2 -n7"
+else
+  TAR_BZIP2_COMPRESS_PRG=
+  NICE_CMD="nice -n 20"
+fi
 
 echo_info "# #######################################################################"
 echo_info "# $SCRIPT_NAME"
@@ -35,7 +49,6 @@ echo_info "# ###################################################################
 
 # Configurable env vars. These variables can be loaded
 # from the env, /etc/default/adt or $HOME/.adtrc
-configurable_env_var "ADT_DEBUG" false
 configurable_env_var "ADT_DEV_MODE" false
 configurable_env_var "ADT_OFFLINE" false
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
@@ -83,7 +96,6 @@ env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
 env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions exoplatform:platform-private-distributions"
-configurable_env_var "GIT_REPOS_UPDATED" false
 
 #
 # Usage message
@@ -161,57 +173,6 @@ Environment Variables :
   ADT_DEBUG                      : Display debug details (default: false)
 EOF
 
-}
-
-
-# Clone or update a repository $1 from Github's ${GITHUB_ORGA} organisation into ${SRC_DIR}
-updateRepo() {
-  local _orga=$(echo $1 | cut -d: -f1)
-  local _repo=$(echo $1 | cut -d: -f2)
-  if [ -d ${SRC_DIR}/${_repo}.git -a ! -d ${SRC_DIR}/${_repo}.git/.git ]; then
-    echo_info "Remove invalid repository ${_repo} from ${SRC_DIR} ..."
-    rm -rf ${SRC_DIR}/${_repo}.git
-    echo_info "Removal done ..."
-  fi
-  if [ ! -d ${SRC_DIR}/${_repo}.git ]; then
-    echo_info "Cloning repository ${_repo} into ${SRC_DIR} ..."
-    git clone -v git@github.com:/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
-    echo_info "Clone done ..."
-  else
-    pushd ${SRC_DIR}/${_repo}.git > /dev/null 2>&1
-    set +e
-    status=0
-    git remote set-url origin git@github.com:${_orga}/${_repo}.git
-    echo_info "Updating repository ${_repo} in ${SRC_DIR} ..."
-    git fetch --progress --prune origin
-    status=$?
-    set -e
-    if [ $status -ne 0 ]; then
-      popd > /dev/null 2>&1
-      echo_info "Remove invalid repository ${_repo} from ${SRC_DIR} ..."
-      rm -rf ${SRC_DIR}/${_repo}.git
-      echo_info "Removal done ..."
-      echo_info "Cloning repository ${_repo} into ${SRC_DIR} ..."
-      git clone -v git@github.com:/${_orga}/${_repo}.git ${SRC_DIR}/${_repo}.git
-      echo_info "Clone done ..."
-      pushd ${SRC_DIR}/${_repo}.git > /dev/null 2>&1
-      git fetch --progress --prune origin
-    fi
-    echo_info "Update done ..."
-    popd > /dev/null 2>&1
-  fi
-}
-
-# Update all git repositories used by PHP frontend
-updateRepos() {
-  if  ! ${ADT_OFFLINE} && ! ${GIT_REPOS_UPDATED}; then
-    # Initialize sources repositories used by PHP
-    for _repo in $REPOS_LIST
-    do
-      updateRepo ${_repo}
-    done
-    env_var "GIT_REPOS_UPDATED" true
-  fi
 }
 
 init() {
@@ -1539,7 +1500,6 @@ do_undeploy_all() {
 # requires PHP >= 5.4
 #
 do_load_php_server() {
-  updateRepos
   env_var "ADT_DEV_MODE" "true"
   env_var "ACCEPTANCE_HOST" "localhost"
   env_var "ACCEPTANCE_PORT" "8080"
@@ -1586,7 +1546,7 @@ init
 
 case "${ACTION}" in
   init)
-    updateRepos
+    updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     # Create the main vhost from the template
     if ${DEPLOYMENT_SETUP_APACHE}; then
       validate_env_var "ADT_DATA"
@@ -1660,10 +1620,10 @@ case "${ACTION}" in
     do_undeploy_all
   ;;
   update-repos)
-    updateRepos
+    updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
   ;;
   web-server)
-    updateRepos
+    updateRepos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     do_load_php_server
   ;;
   *)
