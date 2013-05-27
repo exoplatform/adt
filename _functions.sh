@@ -8,6 +8,7 @@ source "${SCRIPT_DIR}/_functions_system.sh"
 source "${SCRIPT_DIR}/_functions_files.sh"
 source "${SCRIPT_DIR}/_functions_download.sh"
 source "${SCRIPT_DIR}/_functions_git.sh"
+source "${SCRIPT_DIR}/_functions_ufw.sh"
 
 # #################################################################################
 #
@@ -753,18 +754,8 @@ do_configure_server_for_jmx() {
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo_info "Done."
   # Open firewall ports
-  if ! $ADT_DEV_MODE; then
-    if [ -e /usr/sbin/ufw ]; then
-      echo_info "Opening firewall ports for JMX ..."
-      sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
-      sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}
-      echo_info "Done."
-    else
-      echo_error "It is impossible to setup firewall rules to open ports for JMX. Did you install UFW ?"
-    fi
-  else
-    echo_warn "Development Mode: No firewall setup for JMX."
-  fi
+  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" $ADT_DEV_MODE
+  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" $ADT_DEV_MODE
   DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 
   # Patch to reconfigure server.xml for JMX
@@ -1026,18 +1017,8 @@ do_patch_server() {
     echo_info "Done."
   fi
 
-  # Open firewall ports
-  if ! $ADT_DEV_MODE; then
-    if [ -e /usr/sbin/ufw ]; then
-      echo_info "Opening firewall ports for CRaSH ..."
-      sudo /usr/sbin/ufw allow ${DEPLOYMENT_CRASH_SSH_PORT}
-      echo_info "Done."
-    else
-      echo_error "It is impossible to setup firewall rules to open port for CRaSH. Did you install UFW ?"
-    fi
-  else
-    echo_warn "Development Mode: No firewall setup for CRaSH."
-  fi
+  # Open firewall port for CRaSH
+  do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" $ADT_DEV_MODE
 }
 
 do_configure_apache() {
@@ -1405,19 +1386,9 @@ do_undeploy() {
     # Delete the server
     rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
     # Close firewall ports
-    if ! $ADT_DEV_MODE; then
-      if [ -e /usr/sbin/ufw ]; then
-        echo_info "Closing firewall ports for JMX and CRaSH ..."
-        sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_REG_PORT}
-        sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_SRV_PORT}
-        sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_CRASH_SSH_PORT}
-        echo_info "Done."
-      else
-        echo_error "It is impossible to setup firewall rules to close ports for CRaSH and JMX. Did you install UFW ?"
-      fi
-    else
-      echo_warn "Development Mode: No firewall setup for JMX and CRaSH."
-    fi
+    do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" $ADT_DEV_MODE
+    do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" $ADT_DEV_MODE
+    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" $ADT_DEV_MODE
     echo_info "Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
