@@ -125,6 +125,7 @@ Environment Variables :
     plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
     plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
     plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
+    plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
     addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
     compint        eXo Company Intranet                    - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
@@ -442,6 +443,16 @@ initialize_product_settings() {
               env_var EXO_PROFILES "all"
             ;;
           esac
+        ;;
+        plfdemo)
+          env_var PRODUCT_DESCRIPTION "Platform 4.0 EE Public Demo"
+          env_var ARTIFACT_REPO_GROUP "private"
+          env_var ARTIFACT_GROUPID "com.exoplatform.demo"
+          env_var ARTIFACT_ARTIFACTID "demo-login-enterprise-tomcat-standalone"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var EXO_PROFILES "all"
         ;;
         plfent)
           env_var PRODUCT_DESCRIPTION "Platform EE"
