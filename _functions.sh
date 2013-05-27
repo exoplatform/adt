@@ -11,6 +11,7 @@ source "${SCRIPT_DIR}/_functions_git.sh"
 source "${SCRIPT_DIR}/_functions_ufw.sh"
 source "${SCRIPT_DIR}/_functions_apache.sh"
 source "${SCRIPT_DIR}/_functions_logrotate.sh"
+source "${SCRIPT_DIR}/_functions_awstats.sh"
 
 # #################################################################################
 #
