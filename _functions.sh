@@ -1084,7 +1084,7 @@ do_configure_apache() {
   do_logrotate "${TMP_DIR}/logrotate-acceptance" $ADT_DEV_MODE
   rm ${TMP_DIR}/logrotate-acceptance
 
-  do_reload_apache
+  do_reload_apache $ADT_DEV_MODE
 
   echo_info "Done."
 }
@@ -1348,7 +1348,7 @@ do_undeploy() {
     # Delete the vhost
     rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
     # Reload Apache to deactivate the config
-    do_reload_apache
+    do_reload_apache $ADT_DEV_MODE
     # Delete the server
     rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
     # Close firewall ports
