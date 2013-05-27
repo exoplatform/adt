@@ -9,7 +9,7 @@ function test-adt() {
   export DEPLOYMENT_PORT_PREFIX=$3
   ./adt.sh deploy
   ./adt.sh start
-  open -g http://localhost:8001
+  open -g http://localhost:${DEPLOYMENT_PORT_PREFIX}01
   sleep 30
   ./adt.sh stop
 }
