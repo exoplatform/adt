@@ -1,6 +1,5 @@
 #!/bin/bash -eu
 
-export DEPLOYMENT_DATABASE_TYPE=MYSQL
 export ACCEPTANCE_HOST=localhost
 export ACCEPTANCE_PORT=8080
 
