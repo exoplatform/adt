@@ -62,9 +62,6 @@ Environment Variables :
   PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
   ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
-  DEPLOYMENT_SETUP_APACHE        : Do you want to setup the apache configuration (default: false)
-  DEPLOYMENT_SETUP_AWSTATS       : Do you want to setup the awstats configuration (default: false)
-  DEPLOYMENT_SETUP_UFW           : Do you want to setup the ufw firewall configuration (default: false)
   DEPLOYMENT_APACHE_SECURITY     : Do you want to have a public or a private deployment (default: private, values : private | public)
   DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
@@ -90,12 +87,14 @@ Environment Variables :
   REPOSITORY_PASSWORD            : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
 
   ADT_DEBUG                      : Display debug details (default: false)
+  ADT_DEV_MODE                   : Development mode. Apache server, awstats and ufw are deactivated. (default: false)
+
 EOF
 
 }
 
 init() {
-  if ${ADT_DEV_MODE}; then
+  if $ADT_DEV_MODE; then
     configurable_env_var "ACCEPTANCE_HOST" "localhost"
     configurable_env_var "ACCEPTANCE_PORT" "8080"
   else
@@ -427,20 +426,6 @@ initialize_product_settings() {
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
       fi
-      # Patch to reconfigure server.xml to change ports
-      find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
-      # Patch to reconfigure server.xml for JMX
-      find_instance_file JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml.patch" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
-      # Patch to reconfigure server.xml for MySQL
-      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
-      # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
-      find_instance_file DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties.patch" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
-      # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
-      find_instance_file EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties.patch" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
-      # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
-      find_instance_file JOD_GATEIN_PATCH "${ETC_DIR}/gatein" "jod-configuration.properties.patch" "${JOD_GATEIN_PATCH_PRODUCT_NAME}"
-      # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
-      find_instance_file LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties.patch" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
       # Path of the setenv file to use
       find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-local.sh" "${SET_ENV_PRODUCT_NAME}"
     ;;
@@ -477,7 +462,7 @@ do_download_server() {
   configurable_env_var "REPOSITORY_PASSWORD" ""
 
 
-  if ! ${ADT_OFFLINE}; then
+  if ! $ADT_OFFLINE; then
     # Downloads the product from Nexus
     do_download_maven_artifact  \
    "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}"  \
@@ -767,14 +752,23 @@ do_configure_server_for_jmx() {
   cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo_info "Done."
-  echo_info "Opening firewall ports for JMX ..."
   # Open firewall ports
-  if ${DEPLOYMENT_SETUP_UFW}; then
-    sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
-    sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}
+  if ! $ADT_DEV_MODE; then
+    if [ -e /usr/sbin/ufw ]; then
+      echo_info "Opening firewall ports for JMX ..."
+      sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_REG_PORT}
+      sudo /usr/sbin/ufw allow ${DEPLOYMENT_RMI_SRV_PORT}
+      echo_info "Done."
+    else
+      echo_error "It is impossible to setup firewall rules to open ports for JMX. Did you install UFW ?"
+    fi
+  else
+    echo_warn "Development Mode: No firewall setup for JMX."
   fi
-  echo_info "Done."
   DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
+
+  # Patch to reconfigure server.xml for JMX
+  find_instance_file JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml.patch" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
 
   # Reconfigure server.xml for JMX
   if [ "${JMX_SERVER_PATCH}" != "UNSET" ]; then
@@ -799,6 +793,9 @@ do_configure_email() {
     # '\015' is Ctrl+V Ctrl+M = ^M
     cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
     tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+
+    # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
+    find_instance_file EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties.patch" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
 
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
     if [ "${EMAIL_GATEIN_PATCH}" != "UNSET" ]; then
@@ -825,6 +822,9 @@ do_configure_jod() {
     cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
     tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
 
+    # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for JOD
+    find_instance_file JOD_GATEIN_PATCH "${ETC_DIR}/gatein" "jod-configuration.properties.patch" "${JOD_GATEIN_PATCH_PRODUCT_NAME}"
+
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for JOD Converter
     if [ "${JOD_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
@@ -850,6 +850,9 @@ do_configure_ldap() {
     cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
     tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
 
+    # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
+    find_instance_file LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties.patch" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
+
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for LDAP
     if [ "${LDAP_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
@@ -869,6 +872,9 @@ do_configure_ldap() {
 }
 
 do_configure_server_for_database() {
+  # Patch to reconfigure server.xml for database
+  find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
       if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector*.jar ]; then
@@ -913,6 +919,9 @@ do_configure_server_for_database() {
         cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
         tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
 
+        # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
+        find_instance_file DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties.patch" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
+
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
         if [ "${DB_GATEIN_PATCH}" != "UNSET" ]; then
           # Prepare the patch
@@ -952,7 +961,7 @@ do_configure_server_for_database() {
       fi
     ;;
     HSQLDB)
-      # Reconfigure server.xml for MySQL
+      # Reconfigure server.xml for HSQLDB
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
         cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
@@ -999,6 +1008,9 @@ do_patch_server() {
     do_configure_server_for_database
   fi
 
+  # Patch to reconfigure server.xml to change ports
+  find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+
   # Reconfigure server.xml to change ports
   if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
@@ -1014,60 +1026,110 @@ do_patch_server() {
     echo_info "Done."
   fi
 
-  echo_info "Opening firewall ports for CRaSH ..."
   # Open firewall ports
-  if ${DEPLOYMENT_SETUP_UFW}; then
-    sudo /usr/sbin/ufw allow ${DEPLOYMENT_CRASH_SSH_PORT}
+  if ! $ADT_DEV_MODE; then
+    if [ -e /usr/sbin/ufw ]; then
+      echo_info "Opening firewall ports for CRaSH ..."
+      sudo /usr/sbin/ufw allow ${DEPLOYMENT_CRASH_SSH_PORT}
+      echo_info "Done."
+    else
+      echo_error "It is impossible to setup firewall rules to open port for CRaSH. Did you install UFW ?"
+    fi
+  else
+    echo_warn "Development Mode: No firewall setup for CRaSH."
   fi
-  echo_info "Done."
-
 }
 
 do_configure_apache() {
-  if ${DEPLOYMENT_SETUP_AWSTATS}; then
-    echo_info "Configure and update AWStats ..."
-    mkdir -p $AWSTATS_CONF_DIR
-    # Regenerates stats for this Vhosts
-    export DOMAIN=${DEPLOYMENT_EXT_HOST}
-    evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
-    sudo /usr/lib/cgi-bin/awstats.pl -config=${DEPLOYMENT_EXT_HOST} -update || true
-    # Regenerates stats for root vhosts
-    export DOMAIN=${ACCEPTANCE_HOST}
-    evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${ACCEPTANCE_HOST}.conf
-    sudo /usr/lib/cgi-bin/awstats.pl -config=${ACCEPTANCE_HOST} -update
-    unset DOMAIN
-    echo_info "Done."
-  fi
-  if ${DEPLOYMENT_SETUP_APACHE}; then
-    echo_info "Creating Apache Virtual Host ..."
-    mkdir -p ${APACHE_CONF_DIR}
-    case ${DEPLOYMENT_APACHE_SECURITY} in
-      public)
-        evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-      ;;
-      private)
-        evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-      ;;
-      *)
-        echo_error "Invalid apache security type \"${DEPLOYMENT_DATABASE_TYPE}\""
-        print_usage
-        exit 1
-      ;;
-    esac
-    DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
-    echo_info "Done."
-    echo_info "Rotate Apache logs ..."
-    evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
-    sudo logrotate -s ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}.status -f ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
-    rm ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
-    evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
-    sudo logrotate -s ${TMP_DIR}/logrotate-acceptance.status -f ${TMP_DIR}/logrotate-acceptance
-    if [ "${DIST}" == "Ubuntu" ]; then
-      sudo /usr/sbin/service apache2 reload
+  echo_info "Configure and update AWStats ..."
+  mkdir -p $AWSTATS_CONF_DIR
+  # Regenerates stats for this Vhosts
+  export DOMAIN=${DEPLOYMENT_EXT_HOST}
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
+  # Update AWStats
+  if ! $ADT_DEV_MODE; then
+    if [ -e /usr/lib/cgi-bin/awstats.pl ]; then
+      echo_info "Generating AWStats data for ${DEPLOYMENT_EXT_HOST} ..."
+      sudo /usr/lib/cgi-bin/awstats.pl -config=${DEPLOYMENT_EXT_HOST} -update || true
+      echo_info "Done."
+    else
+      echo_error "It is impossible to generate AWStats data for ${DEPLOYMENT_EXT_HOST}. Did you install AWStats ?"
     fi
-    rm ${TMP_DIR}/logrotate-acceptance
-    echo_info "Done."
+  else
+    echo_warn "Development Mode: No AWStats data for ${DEPLOYMENT_EXT_HOST}."
   fi
+  # Regenerates stats for root vhosts
+  export DOMAIN=${ACCEPTANCE_HOST}
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${ACCEPTANCE_HOST}.conf
+  if ! $ADT_DEV_MODE; then
+    if [ -e /usr/lib/cgi-bin/awstats.pl ]; then
+      echo_info "Generating AWStats data for ${ACCEPTANCE_HOST} ..."
+      sudo /usr/lib/cgi-bin/awstats.pl -config=${ACCEPTANCE_HOST} -update
+      echo_info "Done."
+    else
+      echo_error "It is impossible to generate AWStats data for ${ACCEPTANCE_HOST}. Did you install AWStats ?"
+    fi
+  else
+    echo_warn "Development Mode: No AWStats data for ${ACCEPTANCE_HOST}."
+  fi
+  unset DOMAIN
+  echo_info "Done."
+  echo_info "Creating Apache Virtual Host ..."
+  mkdir -p ${APACHE_CONF_DIR}
+  case ${DEPLOYMENT_APACHE_SECURITY} in
+    public)
+      evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+    ;;
+    private)
+      evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+    ;;
+    *)
+      echo_error "Invalid apache security type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+  DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
+  echo_info "Done."
+  echo_info "Rotate Apache logs ..."
+  evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
+  if ! $ADT_DEV_MODE; then
+    if [ -e /usr/sbin/logrotate ]; then
+      echo_info "Rotate logs of acceptance instance ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
+      sudo /usr/sbin/logrotate -s ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}.status -f ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
+      echo_info "Done."
+    else
+      echo_error "It is impossible to rotate logs of acceptance instance ${PRODUCT_NAME} ${PRODUCT_VERSION}. Did you install logrotate ?"
+    fi
+  else
+    echo_warn "Development Mode: No rotation of ${PRODUCT_NAME} ${PRODUCT_VERSION} apache logs."
+  fi
+  rm ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
+  evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
+  if ! $ADT_DEV_MODE; then
+    if [ -e /usr/sbin/logrotate ]; then
+      echo_info "Rotate logs of acceptance front-end ..."
+      sudo /usr/sbin/logrotate -s ${TMP_DIR}/logrotate-acceptance.status -f ${TMP_DIR}/logrotate-acceptance
+      echo_info "Done."
+    else
+      echo_error "It is impossible to rotate logs of acceptance front-end. Did you install logrotate ?"
+    fi
+  else
+    echo_warn "Development Mode: No rotation of front-end apache logs."
+  fi
+  if ! $ADT_DEV_MODE; then
+    if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
+      echo_info "Reloading Apache server ..."
+      sudo /usr/sbin/service apache2 reload
+      echo_info "Done."
+    else
+      echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
+    fi
+  else
+    echo_warn "Development Mode: No Apache server reload."
+  fi
+  rm ${TMP_DIR}/logrotate-acceptance
+  echo_info "Done."
 }
 
 do_create_deployment_descriptor() {
@@ -1109,9 +1171,6 @@ do_set_env() {
 # Function that deploys (Download+configure) the app server
 #
 do_deploy() {
-  configurable_env_var "DEPLOYMENT_SETUP_APACHE" false
-  configurable_env_var "DEPLOYMENT_SETUP_AWSTATS" false
-  configurable_env_var "DEPLOYMENT_SETUP_UFW" false
   configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
   configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
@@ -1133,12 +1192,12 @@ do_deploy() {
   env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
   env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
-  if ${DEPLOYMENT_SETUP_APACHE}; then
-    env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}"
-    env_var "DEPLOYMENT_EXT_PORT" "80"
-  else
+  if $ADT_DEV_MODE; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
+  else
+    env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}"
+    env_var "DEPLOYMENT_EXT_PORT" "80"
   fi
   env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
 
@@ -1175,9 +1234,7 @@ do_deploy() {
 	if [ -f "${DEPLOYMENT_DIR}/extension.sh" ]; then
 		${DEPLOYMENT_DIR}/extension.sh --install all
 	fi
-  if ${DEPLOYMENT_SETUP_APACHE}; then
-    do_configure_apache
-  fi
+  do_configure_apache
   case "${DEPLOYMENT_MODE}" in
     NO_DATA)
       do_init_empty_data
@@ -1329,25 +1386,37 @@ do_undeploy() {
       do_drop_database
     fi
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
-    if ${DEPLOYMENT_SETUP_AWSTATS}; then
-      # Delete Awstat config
-      rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
-    fi
-    if ${DEPLOYMENT_SETUP_APACHE}; then
-      # Delete the vhost
-      rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
-      # Reload Apache to deactivate the config
-      if [ "${DIST}" == "Ubuntu" ]; then
+    # Delete Awstat config
+    rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
+    # Delete the vhost
+    rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
+    # Reload Apache to deactivate the config
+    if ! $ADT_DEV_MODE; then
+      if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
+        echo_info "Reloading Apache server ..."
         sudo /usr/sbin/service apache2 reload
+        echo_info "Done."
+      else
+        echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
       fi
+    else
+      echo_warn "Development Mode: No Apache server reload."
     fi
     # Delete the server
     rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
     # Close firewall ports
-    if ${DEPLOYMENT_SETUP_UFW}; then
-      sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_REG_PORT}
-      sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_SRV_PORT}
-      sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_CRASH_SSH_PORT}
+    if ! $ADT_DEV_MODE; then
+      if [ -e /usr/sbin/ufw ]; then
+        echo_info "Closing firewall ports for JMX and CRaSH ..."
+        sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_REG_PORT}
+        sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_RMI_SRV_PORT}
+        sudo /usr/sbin/ufw delete allow ${DEPLOYMENT_CRASH_SSH_PORT}
+        echo_info "Done."
+      else
+        echo_error "It is impossible to setup firewall rules to close ports for CRaSH and JMX. Did you install UFW ?"
+      fi
+    else
+      echo_warn "Development Mode: No firewall setup for JMX and CRaSH."
     fi
     echo_info "Server undeployed"
     # Delete the deployment descriptor

@@ -38,11 +38,11 @@ echo_info "# ===================================================================
 
 # Development mode ?
 configurable_env_var "ADT_DEV_MODE" false
-${ADT_DEV_MODE} && echo_warn "Development Mode activated (no apache, no firewall, no awstats) !!!"
+$ADT_DEV_MODE && echo_warn "Development Mode activated."
 
 # Offline mode ?
 configurable_env_var "ADT_OFFLINE" false
-${ADT_OFFLINE} && echo_warn "Offline Mode activated !!!"
+$ADT_OFFLINE && echo_warn "Offline Mode activated !!!"
 
 # Data directory (this script directory by default)
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
@@ -92,18 +92,24 @@ case "${ACTION}" in
     init
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     # Create the main vhost from the template
-    if ${DEPLOYMENT_SETUP_APACHE}; then
-      configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
-      configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
-      validate_env_var "ADT_DATA"
-      validate_env_var "ACCEPTANCE_HOST"
-      validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
-      validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
-      evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
-      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-      if [ "${DIST}" == "Ubuntu" ]; then
+    configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
+    configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
+    validate_env_var "ADT_DATA"
+    validate_env_var "ACCEPTANCE_HOST"
+    validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
+    validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
+    evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
+    evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+    if ! $ADT_DEV_MODE; then
+      if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
+        echo_info "Reloading Apache server ..."
         sudo /usr/sbin/service apache2 reload
+        echo_info "Done."
+      else
+        echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
       fi
+    else
+      echo_warn "Development Mode: No Apache server reload."
     fi
   ;;
   deploy)

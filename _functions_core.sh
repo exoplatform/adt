@@ -17,9 +17,9 @@ validate_env_var() {
   if [ "${PARAM_VALUE}" = "UNSET" ]; then
     echo_error "Environment variable $PARAM_NAME is not set";
     echo_error "Please set it either : "
-    echo_error "* in your shell environment (export $PARAM_NAME=xxx)"
-    echo_error "* in the system file /etc/default/adt"
-    echo_error "* in the user file \$HOME/.adtrc"
+    echo_error "- in your shell environment (export $PARAM_NAME=xxx)"
+    echo_error "- in the system file /etc/default/adt"
+    echo_error "- in the user file \$HOME/.adtrc"
     exit 1;
   fi
   set -u
