@@ -1029,32 +1029,12 @@ do_configure_apache() {
   # Regenerates stats for this Vhosts
   export DOMAIN=${DEPLOYMENT_EXT_HOST}
   evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
-  # Update AWStats
-  if ! $ADT_DEV_MODE; then
-    if [ -e /usr/lib/cgi-bin/awstats.pl ]; then
-      echo_info "Generating AWStats data for ${DEPLOYMENT_EXT_HOST} ..."
-      sudo /usr/lib/cgi-bin/awstats.pl -config=${DEPLOYMENT_EXT_HOST} -update || true
-      echo_info "Done."
-    else
-      echo_error "It is impossible to generate AWStats data for ${DEPLOYMENT_EXT_HOST}. Did you install AWStats ?"
-    fi
-  else
-    echo_warn "Development Mode: No AWStats data for ${DEPLOYMENT_EXT_HOST}."
-  fi
+  do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
+  unset DOMAIN
   # Regenerates stats for root vhosts
   export DOMAIN=${ACCEPTANCE_HOST}
   evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${ACCEPTANCE_HOST}.conf
-  if ! $ADT_DEV_MODE; then
-    if [ -e /usr/lib/cgi-bin/awstats.pl ]; then
-      echo_info "Generating AWStats data for ${ACCEPTANCE_HOST} ..."
-      sudo /usr/lib/cgi-bin/awstats.pl -config=${ACCEPTANCE_HOST} -update
-      echo_info "Done."
-    else
-      echo_error "It is impossible to generate AWStats data for ${ACCEPTANCE_HOST}. Did you install AWStats ?"
-    fi
-  else
-    echo_warn "Development Mode: No AWStats data for ${ACCEPTANCE_HOST}."
-  fi
+  do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
   unset DOMAIN
   echo_info "Done."
   echo_info "Creating Apache Virtual Host ..."
