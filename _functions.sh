@@ -10,6 +10,7 @@ source "${SCRIPT_DIR}/_functions_download.sh"
 source "${SCRIPT_DIR}/_functions_git.sh"
 source "${SCRIPT_DIR}/_functions_ufw.sh"
 source "${SCRIPT_DIR}/_functions_apache.sh"
+source "${SCRIPT_DIR}/_functions_logrotate.sh"
 
 # #################################################################################
 #
@@ -1074,33 +1075,17 @@ do_configure_apache() {
   DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
   echo_info "Done."
   echo_info "Rotate Apache logs ..."
+
   evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
-  if ! $ADT_DEV_MODE; then
-    if [ -e /usr/sbin/logrotate ]; then
-      echo_info "Rotate logs of acceptance instance ${PRODUCT_NAME} ${PRODUCT_VERSION} ..."
-      sudo /usr/sbin/logrotate -s ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}.status -f ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
-      echo_info "Done."
-    else
-      echo_error "It is impossible to rotate logs of acceptance instance ${PRODUCT_NAME} ${PRODUCT_VERSION}. Did you install logrotate ?"
-    fi
-  else
-    echo_warn "Development Mode: No rotation of ${PRODUCT_NAME} ${PRODUCT_VERSION} apache logs."
-  fi
+  do_logrotate "${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}" $ADT_DEV_MODE
   rm ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
+
   evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
-  if ! $ADT_DEV_MODE; then
-    if [ -e /usr/sbin/logrotate ]; then
-      echo_info "Rotate logs of acceptance front-end ..."
-      sudo /usr/sbin/logrotate -s ${TMP_DIR}/logrotate-acceptance.status -f ${TMP_DIR}/logrotate-acceptance
-      echo_info "Done."
-    else
-      echo_error "It is impossible to rotate logs of acceptance front-end. Did you install logrotate ?"
-    fi
-  else
-    echo_warn "Development Mode: No rotation of front-end apache logs."
-  fi
-  do_reload_apache
+  do_logrotate "${TMP_DIR}/logrotate-acceptance" $ADT_DEV_MODE
   rm ${TMP_DIR}/logrotate-acceptance
+
+  do_reload_apache
+
   echo_info "Done."
 }
 
