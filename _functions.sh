@@ -13,6 +13,7 @@ source "${SCRIPT_DIR}/_functions_apache.sh"
 source "${SCRIPT_DIR}/_functions_logrotate.sh"
 source "${SCRIPT_DIR}/_functions_awstats.sh"
 source "${SCRIPT_DIR}/_functions_tomcat.sh"
+source "${SCRIPT_DIR}/_functions_jbosseap.sh"
 
 # #################################################################################
 #
@@ -360,6 +361,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/standalone.sh"
           env_var DEPLOYMENT_APPSRV_TYPE "jbosseap"
           env_var DEPLOYMENT_APPSRV_VERSION "6.0.1"
+          env_var DEPLOYMENT_SERVER_LOGS_FILE "server.log"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
         ;;
@@ -623,11 +625,26 @@ do_unpack_server() {
   echo_info "Done"
   cp -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
   rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
-  # We search the tomcat directory as the parent of a gatein directory
-  pushd `find ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} -maxdepth 4 -mindepth 1 -name webapps -not -path "*extensions*" -type d`/.. > /dev/null
+
+  # We search the server directory
+  pushd `find ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} -maxdepth 4 -mindepth 1 -name bin -type d`/.. > /dev/null
   DEPLOYMENT_DIR=`pwd -P`
   popd > /dev/null
-  DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
+
+  case ${DEPLOYMENT_APPSRV_TYPE} in
+    tomcat)
+      DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOGS_FILE}
+    ;;
+    jbosseap)
+      DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/standalone/log/${DEPLOYMENT_SERVER_LOGS_FILE}
+    ;;
+    *)
+      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+
   echo_info "Server unpacked"
 }
 
@@ -858,7 +875,19 @@ do_deploy() {
   fi
   do_download_server
   do_unpack_server
-  do_configure_tomcat_server
+  case ${DEPLOYMENT_APPSRV_TYPE} in
+    tomcat)
+      do_configure_tomcat_server
+    ;;
+    jbosseap)
+      do_configure_jbosseap_server
+    ;;
+    *)
+      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
   do_configure_apache
   case "${DEPLOYMENT_MODE}" in
     NO_DATA)

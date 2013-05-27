@@ -11,6 +11,10 @@ set -u
 source "./_functions_core.sh"
 source "./_functions_ufw.sh"
 
+# #############################################################################
+# TDB : Use functions that aren't using global vars
+# #############################################################################
+
 do_configure_tomcat_jmx() {
   if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
