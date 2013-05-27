@@ -608,7 +608,7 @@ do_download_dataset() {
     display_time rsync -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_VALUES_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
   else
     echo_error "Datasets not configured"
-    exit 1;
+    exit 1
   fi
   echo_info "Done"
 }
@@ -634,13 +634,13 @@ do_restore_dataset(){
       echo_info "Done"
       if [ ! -e ${_restorescript} ]; then
        echo_error "SQL file (${_restorescript}) doesn't exist."
-       exit;
+       exit 1
       fi;
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
       pushd ${_tmpdir} > /dev/null 2>&1
       if [ ! -e ${HOME}/.my.cnf ]; then
        echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
-       exit;
+       exit 1
       fi;
       pv -p -t -e -a -r -b ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
       popd > /dev/null 2>&1
@@ -743,7 +743,7 @@ do_create_database() {
       echo_info "Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       if [ ! -e ${HOME}/.my.cnf ]; then
        echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
-       exit;
+       exit 1
       fi;
       SQL=""
       SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME};"
@@ -773,7 +773,7 @@ do_drop_database() {
       echo_info "Drops MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       if [ ! -e ${HOME}/.my.cnf ]; then
        echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
-       exit;
+       exit 1
       fi;
       SQL=""
       SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
@@ -1569,7 +1569,7 @@ do_load_php_server() {
 if [ $# -lt 1 ]; then
   echo_error "No action defined !"
   print_usage
-  exit 1;
+  exit 1
 fi
 
 # If help is asked
