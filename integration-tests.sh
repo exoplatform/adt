@@ -34,7 +34,7 @@ test-adt plf       3.0.10            310
 test-adt plf       3.0.11-SNAPSHOT   311
 
 #TBD test-adt plf       3.5.0-GA          350
-test-adt plf       3.5.1             351
+#KO(PermGen error) test-adt plf       3.5.1             351
 test-adt plf       3.5.2             352
 test-adt plf       3.5.3             353
 test-adt plf       3.5.4             354
