@@ -63,4 +63,4 @@ do_ufw_close_port(){
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_UFW_LOADED=true
-echo_debug "_functions_aliases.sh Loaded"
+echo_debug "_functions_ufw.sh Loaded"

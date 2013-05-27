@@ -9,6 +9,7 @@ source "${SCRIPT_DIR}/_functions_files.sh"
 source "${SCRIPT_DIR}/_functions_download.sh"
 source "${SCRIPT_DIR}/_functions_git.sh"
 source "${SCRIPT_DIR}/_functions_ufw.sh"
+source "${SCRIPT_DIR}/_functions_apache.sh"
 
 # #################################################################################
 #
@@ -1098,17 +1099,7 @@ do_configure_apache() {
   else
     echo_warn "Development Mode: No rotation of front-end apache logs."
   fi
-  if ! $ADT_DEV_MODE; then
-    if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
-      echo_info "Reloading Apache server ..."
-      sudo /usr/sbin/service apache2 reload
-      echo_info "Done."
-    else
-      echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
-    fi
-  else
-    echo_warn "Development Mode: No Apache server reload."
-  fi
+  do_reload_apache
   rm ${TMP_DIR}/logrotate-acceptance
   echo_info "Done."
 }
@@ -1372,17 +1363,7 @@ do_undeploy() {
     # Delete the vhost
     rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
     # Reload Apache to deactivate the config
-    if ! $ADT_DEV_MODE; then
-      if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
-        echo_info "Reloading Apache server ..."
-        sudo /usr/sbin/service apache2 reload
-        echo_info "Done."
-      else
-        echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
-      fi
-    else
-      echo_warn "Development Mode: No Apache server reload."
-    fi
+    do_reload_apache
     # Delete the server
     rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
     # Close firewall ports
