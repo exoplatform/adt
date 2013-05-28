@@ -1057,10 +1057,13 @@ do_undeploy() {
 #
 do_list() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
+    txtgrn=$(tput setaf 2) # Green
+    txtred=$(tput setaf 1) # Red
+    txtrst=$(tput sgr0) # Text reset.
     echo_info "Deployed servers : "
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "=========="
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "Product" "Version" "Prefix" "HTTP_P" "AJP_P" "JMX_REG_P" "JMX_SRV_P" "JOD_CONVERTER" "CRASH_SSH" "RUNNING"
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "=========="
+    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "=========="
+    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "Bundle" "Database" "Prefix" "HTTP_P" "AJP_P" "JMX_REG_P" "JMX_SRV_P" "CRASH_SSH" "RUNNING"
+    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "=========="
     for f in ${ADT_CONF_DIR}/*
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
@@ -1070,15 +1073,15 @@ do_list() {
         set +e
         kill -0 `cat ${DEPLOYMENT_PID_FILE}` > /dev/null 2>&1
         if [ $? -eq 0 ]; then
-          STATUS="true"
+          STATUS="${txtgrn}true${txtrst}"
         else
-          STATUS="false"
+          STATUS="${txtred}false${txtrst}"
         fi
         set -e
       else
-        STATUS="false"
+        STATUS="${txtred}false${txtrst}"
       fi
-      printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_JOD_CONVERTER_PORTS}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
+      printf "%-40s %-25s %-10s %-10s %10s %10s %10s %10s %10s %10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_APPSRV_TYPE}" "${DEPLOYMENT_DATABASE_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
       )
     done
   else
