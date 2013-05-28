@@ -728,12 +728,12 @@ do_configure_apache() {
   # Regenerates stats for this Vhosts
   export DOMAIN=${DEPLOYMENT_EXT_HOST}
   evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
-  do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
+  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
   unset DOMAIN
   # Regenerates stats for root vhosts
   export DOMAIN=${ACCEPTANCE_HOST}
   evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${ACCEPTANCE_HOST}.conf
-  do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
+  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
   unset DOMAIN
   echo_info "Done."
   echo_info "Creating Apache Virtual Host ..."
