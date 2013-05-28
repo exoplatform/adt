@@ -843,6 +843,8 @@ do_deploy() {
       mkdir -p ${_tmpdir}/data
       do_create_database
     else
+      # Use a subshell to not expose settings loaded from the deployment descriptor
+      (
       # The server have been already deployed.
       # We load its settings from the configuration
       do_load_deployment_descriptor
@@ -852,6 +854,7 @@ do_deploy() {
         mkdir -p ${_tmpdir}/data
         do_create_database
       fi
+      )
     fi
     echo_info "Done."
   fi
@@ -903,6 +906,8 @@ do_deploy() {
 # Function that starts the app server
 #
 do_start() {
+  # Use a subshell to not expose settings loaded from the deployment descriptor
+  (
   # The server is supposed to be already deployed.
   # We load its settings from the configuration
   do_load_deployment_descriptor
@@ -976,6 +981,7 @@ do_start() {
   echo_info "URL  : ${DEPLOYMENT_URL}"
   echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
   echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
+  )
 }
 
 #
@@ -987,6 +993,8 @@ do_stop() {
     echo_warn "The product cannot be stopped"
     exit 0
   else
+    # Use a subshell to not expose settings loaded from the deployment descriptor
+    (
     # The server is supposed to be already deployed.
     # We load its settings from the configuration
     do_load_deployment_descriptor
@@ -1001,6 +1009,7 @@ do_stop() {
     else
       echo_warn "No server directory to stop it"
     fi
+    )
   fi
 }
 
@@ -1013,6 +1022,8 @@ do_undeploy() {
     echo_warn "The product cannot be undeployed"
     exit 0
   else
+    # Use a subshell to not expose settings loaded from the deployment descriptor
+    (
     # The server is supposed to be already deployed.
     # We load its settings from the configuration
     do_load_deployment_descriptor
@@ -1037,6 +1048,7 @@ do_undeploy() {
     echo_info "Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+    )
   fi
 }
 
@@ -1051,6 +1063,8 @@ do_list() {
     printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "=========="
     for f in ${ADT_CONF_DIR}/*
     do
+      # Use a subshell to not expose settings loaded from the deployment descriptor
+      (
       source $f
       if [ -f ${DEPLOYMENT_PID_FILE} ]; then
         set +e
@@ -1065,6 +1079,7 @@ do_list() {
         STATUS="false"
       fi
       printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_JOD_CONVERTER_PORTS}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
+      )
     done
   else
     echo_info "No server deployed."
@@ -1079,8 +1094,11 @@ do_start_all() {
     echo_info "Starting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
+      # Use a subshell to not expose settings loaded from the deployment descriptor
+      (
       source $f
       do_start
+      )
     done
     echo_info "All servers started"
   else
@@ -1096,9 +1114,12 @@ do_restart_all() {
     echo_info "Restarting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
+      # Use a subshell to not expose settings loaded from the deployment descriptor
+      (
       source $f
       do_stop
       do_start
+      )
     done
     echo_info "All servers restarted"
   else
@@ -1114,8 +1135,11 @@ do_stop_all() {
     echo_info "Stopping all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
+      # Use a subshell to not expose settings loaded from the deployment descriptor
+      (
       source $f
       do_stop
+      )
     done
     echo_info "All servers stopped"
   else
@@ -1131,8 +1155,11 @@ do_undeploy_all() {
     echo_info "Undeploying all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
+      # Use a subshell to not expose settings loaded from the deployment descriptor
+      (
       source $f
       do_undeploy
+      )
     done
     echo_info "All servers undeployed"
   else
