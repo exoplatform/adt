@@ -225,6 +225,7 @@ initialize_product_settings() {
       env_var "JOD_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "LDAP_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "STANDALONE_PRODUCT_NAME" "${PRODUCT_NAME}"
 
       # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
       # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x

@@ -15,12 +15,147 @@ source "./_functions_ufw.sh"
 # TDB : Use functions that aren't using global vars
 # #############################################################################
 
+do_configure_jbosseap_jmx() {
+  # JMX settings
+  echo_info "Creating JMX configuration files ..."
+  cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.access
+  cp -f ${ETC_DIR}/jmx/jmxremote.password ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
+  chmod 400 ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
+  echo_info "Done."
+  # Open firewall ports
+  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" $ADT_DEV_MODE
+  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" $ADT_DEV_MODE
+  DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
+}
+
+do_configure_jbosseap_datasources() {
+  # Patch to reconfigure standalone.xml for database
+  find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
+  case ${DEPLOYMENT_DATABASE_TYPE} in
+    MYSQL)
+      if [ ! -f ${DEPLOYMENT_DIR}/standalone/deployments/mysql-connector*.jar ]; then
+        MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
+        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL` ]; then
+          if ${ADT_OFFLINE}; then
+            echo_error "ADT is offine and the MySQL JDBC Driver isn't available locally"
+            exit 1
+          else
+            mkdir -p ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/
+            echo_info "Downloading MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
+            set +e
+            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL`
+            if [ "$?" -ne "0" ]; then
+              echo_error "Cannot download ${MYSQL_JAR_URL}"
+              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` # Remove potential corrupted file
+              exit 1
+            fi
+            set -e
+            echo_info "Done."
+          fi
+        fi
+        echo_info "Validating MySQL JDBC Driver integrity ..."
+        set +e
+        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` > /dev/null
+        if [ "$?" -ne "0" ]; then
+          echo_error "Sorry, "`basename $MYSQL_JAR_URL`" integrity failed. Local copy is deleted."
+          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL`
+          exit 1
+        fi
+        set -e
+        echo_info "MySQL JDBC Driver integrity validated."
+        echo_info "Installing MySQL JDBC Driver ..."
+        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` ${DEPLOYMENT_DIR}/standalone/deployments/
+        echo_info "Done."
+      fi
+
+      # Reconfigure standalone.xml for MySQL
+      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
+        # Prepare the patch
+        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_DRIVER@" `basename $MYSQL_JAR_URL`
+        echo_info "Done."
+      fi
+    ;;
+    HSQLDB)
+      # Reconfigure server.xml for HSQLDB
+      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
+        # Prepare the patch
+        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        echo_info "Done."
+      fi
+    ;;
+    *)
+      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+}
+
+do_configure_jbosseap_standalone() {
+  # PLF 4+ only
+  if [ -e ${DEPLOYMENT_DIR}/bin/standalone-customize.sample.conf ]; then
+    echo_info "Creating standalone configuration ..."
+    if [ ! -f "${DEPLOYMENT_DIR}/bin/standalone-customize.conf" ]; then
+      echo_info "Installing bin/standalone-customize.conf ..."
+      cp ${ETC_DIR}/plf/standalone-customize.conf ${DEPLOYMENT_DIR}/bin/standalone-customize.conf
+      echo_info "Done."
+    fi
+    # Path of the standalone file to use
+    find_instance_file STANDALONE_FILE "${ETC_DIR}/plf" "standalone-local.conf" "${STANDALONE_PRODUCT_NAME}"
+    if [ "${STANDALONE_FILE}" != "UNSET" ]; then
+      echo_info "Installing bin/standalone-local.conf ..."
+      evaluate_file_content ${STANDALONE_FILE} ${DEPLOYMENT_DIR}/bin/standalone-local.conf
+      echo_info "Done."
+    fi
+    echo_info "Done."
+  fi
+}
+
 #
 # Function that configure the server for ours needs
 #
 do_configure_jbosseap_server() {
 
-  echo_info "###### TO BE DONE ######"
+  # Ensure the standalone.xml doesn't have some windows end line characters
+  # '\015' is Ctrl+V Ctrl+M = ^M
+  cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.orig
+  tr -d '\015' < ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.orig > ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml
+
+  # Reconfigure the server to use JMX
+  do_configure_jbosseap_jmx
+
+  if ${DEPLOYMENT_DATABASE_ENABLED}; then
+    # Reconfigure the server to use a database
+    do_configure_jbosseap_datasources
+  fi
+
+  # Environment variables configuration
+  do_configure_jbosseap_standalone
+
 }
 
 # #############################################################################

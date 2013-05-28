@@ -53,8 +53,8 @@ do_configure_tomcat_jmx() {
   fi
   # JMX settings
   echo_info "Creating JMX configuration files ..."
-  cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
-  cp -f ${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
+  cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
+  cp -f ${ETC_DIR}/jmx/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo_info "Done."
   # Open firewall ports
@@ -166,7 +166,7 @@ do_configure_tomcat_ldap() {
   fi
 }
 
-do_configure_tomcat_datasource() {
+do_configure_tomcat_datasources() {
   # Patch to reconfigure server.xml for database
   find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
@@ -343,7 +343,7 @@ do_configure_tomcat_server() {
 
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     # Reconfigure the server to use a database
-    do_configure_tomcat_datasource
+    do_configure_tomcat_datasources
   fi
 
   do_configure_tomcat_ports
