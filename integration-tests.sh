@@ -41,7 +41,7 @@ else
   test-adt plfent    4.0.x-SNAPSHOT    403
 
   # PLF Enterprise Edition - JBossEAP
-  #KO test-adt plfenteap 4.0.x-SNAPSHOT    404
+  test-adt plfenteap 4.0.x-SNAPSHOT    404
 fi
 
 
