@@ -305,6 +305,26 @@ do_configure_tomcat_ports() {
   fi
 }
 
+do_configure_tomcat_setenv() {
+  # PLF 4+ only
+  if [ -e ${DEPLOYMENT_DIR}/bin/setenv-customize.sample.sh ]; then
+    echo_info "Creating setenv resources ..."
+    if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-customize.sh" ]; then
+      echo_info "Installing bin/setenv-customize.sh ..."
+      cp ${ETC_DIR}/plf/setenv-customize.sh ${DEPLOYMENT_DIR}/bin/setenv-customize.sh
+      echo_info "Done."
+    fi
+    # Path of the setenv file to use
+    find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-local.sh" "${SET_ENV_PRODUCT_NAME}"
+    if [ "${SET_ENV_FILE}" != "UNSET" ]; then
+      echo_info "Installing bin/setenv-local.sh ..."
+      evaluate_file_content ${SET_ENV_FILE} ${DEPLOYMENT_DIR}/bin/setenv-local.sh
+      echo_info "Done."
+    fi
+    echo_info "Done."
+  fi
+}
+
 #
 # Function that configure the server for ours needs
 #
@@ -327,6 +347,8 @@ do_configure_tomcat_server() {
   fi
 
   do_configure_tomcat_ports
+
+  do_configure_tomcat_setenv
 
   if [ -f ${DEPLOYMENT_DIR}/webapps/crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true

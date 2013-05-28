@@ -433,8 +433,6 @@ initialize_product_settings() {
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
       fi
-      # Path of the setenv file to use
-      find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-local.sh" "${SET_ENV_PRODUCT_NAME}"
     ;;
     start | stop | restart | undeploy )
     # Mandatory env vars. They need to be defined before launching the script
@@ -795,24 +793,6 @@ do_load_deployment_descriptor() {
   fi
 }
 
-do_set_env() {
-  # PLF 4+ only
-  if [ -e ${DEPLOYMENT_DIR}/bin/setenv-customize.sample.sh ]; then
-    echo_info "Creating setenv resources ..."
-    if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-customize.sh" ]; then
-      echo_info "Installing bin/setenv-customize.sh ..."
-      cp ${ETC_DIR}/plf/setenv-customize.sh ${DEPLOYMENT_DIR}/bin/setenv-customize.sh
-      echo_info "Done."
-    fi
-    if [ "${SET_ENV_FILE}" != "UNSET" ]; then
-      echo_info "Installing bin/setenv-local.sh ..."
-      evaluate_file_content ${SET_ENV_FILE} ${DEPLOYMENT_DIR}/bin/setenv-local.sh
-      echo_info "Done."
-    fi
-    echo_info "Done."
-  fi
-}
-
 #
 # Function that deploys (Download+configure) the app server
 #
@@ -910,7 +890,6 @@ do_deploy() {
     ;;
   esac
   do_create_deployment_descriptor
-  do_set_env
   echo_info "Server deployed"
 }
 
