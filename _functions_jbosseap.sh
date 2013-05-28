@@ -187,7 +187,7 @@ do_configure_jbosseap_server() {
   tr -d '\015' < ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.orig > ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml
 
   # Reconfigure the server to use JMX
-  do_configure_jbosseap_jmx
+  #do_configure_jbosseap_jmx
 
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     # Reconfigure the server to use a database
