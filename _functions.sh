@@ -69,6 +69,7 @@ Environment Variables :
 
   ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
   DEPLOYMENT_APACHE_SECURITY     : Do you want to have a public or a private deployment (default: private, values : private | public)
+  DEPLOYMENT_APACHE_VHOST_ALIAS  : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
   DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
   DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 2g)
@@ -790,6 +791,7 @@ do_load_deployment_descriptor() {
 #
 do_deploy() {
   configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
+  configurable_env_var "DEPLOYMENT_APACHE_VHOST_ALIAS" ""
   configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "2g"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
