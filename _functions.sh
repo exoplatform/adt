@@ -1006,7 +1006,6 @@ do_stop() {
     do_load_deployment_descriptor
     if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
       echo_info "Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ... "
-
       case ${DEPLOYMENT_APPSRV_TYPE} in
         tomcat)
           if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
@@ -1017,13 +1016,13 @@ do_stop() {
         ;;
         jbosseap)
           ${DEPLOYMENT_DIR}/bin/jboss-cli.sh --controller=localhost:${DEPLOYMENT_MGT_NATIVE_PORT} --connect command=:shutdown > /dev/null 2>&1 || true
-          echo_info "Waiting for JBoss shutdown "
+          echo_n_info "Waiting for shutdown "
           while [ -e ${DEPLOYMENT_PID_FILE} ];
           do
             sleep 5
             echo -n "."
           done
-          echo_info "Done."
+          echo " OK."
         ;;
         *)
           echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
