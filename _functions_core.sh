@@ -148,55 +148,48 @@ loadSystemInfo() {
 # Logging functions
 # #################
 
-TXT_GREEN=$(tput -Txterm setaf 2)
-TXT_RED=$(tput -Txterm setaf 1)
-TXT_CYAN=$(tput -Txterm setaf 6)
-TXT_YELLOW=$(tput -Txterm setaf 3)
-TXT_BOLD=$(tput -Txterm bold)
-TXT_RESET=$(tput -Txterm sgr0) # Text reset.
-
 # Display DEBUG message
 echo_debug() {
   set +u
-  $ADT_DEBUG && printf "${TXT_CYAN}[DEBUG]${TXT_RESET} %s\n" "$@"
+  $ADT_DEBUG && echo -e "\033[1;36m[DEBUG]\033[0m " $@
   set -u
 }
 
 # Display DEBUG message without trailing newline character
 echo_n_debug() {
   set +u
-  $ADT_DEBUG && printf "${TXT_CYAN}[DEBUG]${TXT_RESET} %s" "$@"
+  $ADT_DEBUG && echo -n -e "\033[1;36m[DEBUG]\033[0m " $@
   set -u
 }
 
 # Display INFO message
 echo_info() {
-  printf "${TXT_GREEN}[INFO]${TXT_RESET}  %s\n" "$@"
+  echo -e "\033[1;32m[INFO]\033[0m " $@
 }
 
 # Display INFO message without trailing newline character
 echo_n_info() {
-  printf "${TXT_GREEN}[INFO]${TXT_RESET}  %s" "$@"
+  echo -n -e "\033[1;32m[INFO]\033[0m " $@
 }
 
 # Display WARN message
 echo_warn() {
-  printf "${TXT_BOLD}${TXT_YELLOW}[WARN]${TXT_RESET}  %s\n" "$@"
+  echo -e "\033[1;33m[WARN]\033[0m " $@
 }
 
 # Display WARN message without trailing newline character
 echo_n_warn() {
-  printf "${TXT_BOLD}${TXT_YELLOW}[WARN]${TXT_RESET}  %s" "$@"
+  echo -n -e "\033[1;33m[WARN]\033[0m " $@
 }
 
 # Display ERROR message
 echo_error() {
-  printf "${TXT_BOLD}${TXT_RED}[ERROR]${TXT_RESET} %s\n" "$@"
+  echo -e "\033[1;31m[ERROR]\033[0m" $@
 }
 
 # Display ERROR message without trailing newline character
 echo_n_error() {
-  printf "${TXT_BOLD}${TXT_RED}[ERROR]${TXT_RESET} %s" "$@"
+  echo -n -e "\033[1;31m[ERROR]\033[0m" $@
 }
 
 # Configurable env vars. These variables can be loaded
