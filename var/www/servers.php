@@ -66,12 +66,12 @@ checkCaches();
                             <th class="col-center">Database</th>
                             <th class="col-center">Server</th>
                             <th class="col-center">Status</th>
-                            <th class="col-right">Prefix</th>
-                            <th class="col-right">HTTP</th>
-                            <th class="col-right">AJP</th>
-                            <th class="col-right">JMX RMI Registration</th>
-                            <th class="col-right">JMX RMI Server</th>
-                            <th class="col-right">CRaSH SSH</th>
+                            <th class="col-center">Prefix</th>
+                            <th class="col-center">HTTP</th>
+                            <th class="col-center">AJP</th>
+                            <th class="col-center">JMX RMI Registration</th>
+                            <th class="col-center">JMX RMI Server</th>
+                            <th class="col-center">CRaSH SSH</th>
                         </tr>
                         </thead>
                         <tbody>
@@ -105,10 +105,10 @@ checkCaches();
                             ?>
                             <tr>
                                 <td><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
-                                <td class="col-center"><?=$descriptor_array->PRODUCT_VERSION?></td>
-                                <td class="col-center"><?=$feature_branch?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_DATABASE_TYPE?></td>
+                                <td class="col-left"><?=$descriptor_array->PRODUCT_VERSION?></td>
+                                <td class="col-right"><?=$feature_branch?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_DATABASE_TYPE?></td>
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org") {
                                     $host_html_color = "blue";
@@ -120,14 +120,14 @@ checkCaches();
                                     $host_html_color = "purple";
                                 }
                                 ?>
-                                <td style="font-weight:bold;" class='col-center <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
-                                <td><?= $status ?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT?></td>
+                                <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
+                                <td class="col-left"><?= $status ?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT?></td>
                             </tr>
                         <?php
                         }
