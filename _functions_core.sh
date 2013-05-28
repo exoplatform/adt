@@ -148,11 +148,11 @@ loadSystemInfo() {
 # Logging functions
 # #################
 
-TXT_GREEN=$(tput -Txterm-256color setaf 2)
-TXT_RED=$(tput -Txterm-256color setaf 1)
-TXT_CYAN=$(tput -Txterm-256color setaf 6)
-TXT_YELLOW=$(tput -Txterm-256color setaf 3)
-TXT_RESET=$(tput -Txterm-256color sgr0) # Text reset.
+TXT_GREEN=$(tput -Txterm setaf 2)
+TXT_RED=$(tput -Txterm setaf 1)
+TXT_CYAN=$(tput -Txterm setaf 6)
+TXT_YELLOW=$(tput -Txterm setaf 3)
+TXT_RESET=$(tput -Txterm sgr0) # Text reset.
 
 # Display DEBUG message
 echo_debug() {
