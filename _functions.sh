@@ -1082,6 +1082,11 @@ do_undeploy() {
 #
 do_list() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
+    TXT_GREEN=$(tput -Txterm-256color setaf 2)
+    TXT_RED=$(tput -Txterm-256color setaf 1)
+    TXT_CYAN=$(tput -Txterm-256color setaf 6)
+    TXT_YELLOW=$(tput -Txterm-256color setaf 3)
+    TXT_RESET=$(tput -Txterm-256color sgr0) # Text reset.
     echo_info "Deployed servers : "
     printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "=========="
     printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "Bundle" "Database" "Prefix" "HTTP_P" "AJP_P" "JMX_REG_P" "JMX_SRV_P" "CRASH_SSH" "RUNNING"
