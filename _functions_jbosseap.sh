@@ -122,6 +122,16 @@ do_configure_jbosseap_ports() {
   # Patch to reconfigure standalone.xml to change ports
   find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
 
+  # JBOSS Specific ports
+  env_var "DEPLOYMENT_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
+  env_var "DEPLOYMENT_OSGI_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}11"
+  env_var "DEPLOYMENT_REMOTING_PORT" "${DEPLOYMENT_PORT_PREFIX}12"
+  env_var "DEPLOYMENT_TXN_RECOVERY_ENV_PORT" "${DEPLOYMENT_PORT_PREFIX}13"
+  env_var "DEPLOYMENT_TXN_STATUS_MGR_PORT" "${DEPLOYMENT_PORT_PREFIX}14"
+  env_var "DEPLOYMENT_MGT_NATIVE_PORT" "${DEPLOYMENT_PORT_PREFIX}15"
+  env_var "DEPLOYMENT_MGT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}16"
+  env_var "DEPLOYMENT_MGT_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}17"
+
   # Reconfigure standalone.xml to change ports
   if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
@@ -133,6 +143,15 @@ do_configure_jbosseap_ports() {
 
     replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
     replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
+    
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@HTTPS_PORT@" "${DEPLOYMENT_HTTPS_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@OSGI_HTTP_PORT@" "${DEPLOYMENT_OSGI_HTTP_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@REMOTING_PORT@" "${DEPLOYMENT_REMOTING_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@TXN_RECOVERY_ENV_PORT@" "${DEPLOYMENT_TXN_RECOVERY_ENV_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@TXN_STATUS_MGR_PORT@" "${DEPLOYMENT_TXN_STATUS_MGR_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@MGT_NATIVE_PORT@" "${DEPLOYMENT_MGT_NATIVE_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@MGT_HTTP_PORT@" "${DEPLOYMENT_MGT_HTTP_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@MGT_HTTPS_PORT@" "${DEPLOYMENT_MGT_HTTPS_PORT}"
     echo_info "Done."
   fi
 }

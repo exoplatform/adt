@@ -809,13 +809,18 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
   configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
 
-  # Ports
-  env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
+  # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
   env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
+
+  # JMX ports
   env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}03"
   env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}04"
+
+  # JOD ports
   env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}05,${DEPLOYMENT_PORT_PREFIX}06,${DEPLOYMENT_PORT_PREFIX}07"
+
+  # CRaSH ports
   env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
   env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
@@ -1041,9 +1046,9 @@ do_undeploy() {
 do_list() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
     echo_info "Deployed servers : "
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "==========" "=========="
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "Product" "Version" "HTTP_P" "AJP_P" "SHUTDOWN_P" "JMX_REG_P" "JMX_SRV_P" "JOD_CONVERTER" "CRASH_TEL" "CRASH_SSH" "RUNNING"
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "==========" "=========="
+    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "=========="
+    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "Product" "Version" "Prefix" "HTTP_P" "AJP_P" "JMX_REG_P" "JMX_SRV_P" "JOD_CONVERTER" "CRASH_SSH" "RUNNING"
+    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==============================" "==========" "=========="
     for f in ${ADT_CONF_DIR}/*
     do
       source $f
@@ -1059,7 +1064,7 @@ do_list() {
       else
         STATUS="false"
       fi
-      printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_SHUTDOWN_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_JOD_CONVERTER_PORTS}" "${DEPLOYMENT_CRASH_TELNET_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
+      printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-30s %-10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_JOD_CONVERTER_PORTS}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
     done
   else
     echo_info "No server deployed."

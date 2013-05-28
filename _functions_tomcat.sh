@@ -289,6 +289,9 @@ do_configure_tomcat_ports() {
   # Patch to reconfigure server.xml to change ports
   find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
 
+  # Tomcat Specific ports
+  env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
+
   # Reconfigure server.xml to change ports
   if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch

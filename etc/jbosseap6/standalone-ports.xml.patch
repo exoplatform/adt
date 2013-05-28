@@ -14,16 +14,16 @@
 -    <socket-binding name="remoting" port="4447"/>
 -    <socket-binding name="txn-recovery-environment" port="4712"/>
 -    <socket-binding name="txn-status-manager" port="4713"/>
-+    <!--<socket-binding name="management-native" interface="management" port="${jboss.management.native.port:9999}"/>-->
-+    <!--<socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>-->
-+    <!--<socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9443}"/>-->
++    <socket-binding name="management-native" interface="management" port="@MGT_NATIVE_PORT@"/>
++    <socket-binding name="management-http" interface="management" port="@MGT_HTTP_PORT@"/>
++    <socket-binding name="management-https" interface="management" port="@MGT_HTTPS_PORT@"/>
 +    <socket-binding name="ajp" port="@AJP_PORT@"/>
 +    <socket-binding name="http" port="@HTTP_PORT@"/>
-+    <!--<socket-binding name="https" port="8443"/>-->
-+    <!--<socket-binding name="osgi-http" interface="management" port="8090"/>-->
-+    <!--<socket-binding name="remoting" port="4447"/>-->
-+    <!--<socket-binding name="txn-recovery-environment" port="4712"/>-->
-+    <!--<socket-binding name="txn-status-manager" port="4713"/>-->
++    <socket-binding name="https" port="@HTTPS_PORT@"/>
++    <socket-binding name="osgi-http" interface="management" port="@OSGI_HTTP_PORT@"/>
++    <socket-binding name="remoting" port="@REMOTING_PORT@"/>
++    <socket-binding name="txn-recovery-environment" port="@TXN_RECOVERY_ENV_PORT@"/>
++    <socket-binding name="txn-status-manager" port="@TXN_STATUS_MGR_PORT@"/>
      <outbound-socket-binding name="mail-smtp">
        <remote-destination host="localhost" port="25"/>
      </outbound-socket-binding>

@@ -56,7 +56,7 @@ checkCaches();
                         <tr>
                             <th class="col-center" colspan="3">Product</th>
                             <th class="col-center" colspan="2">Deployment</th>
-                            <th class="col-center" colspan="8">Ports</th>
+                            <th class="col-center" colspan="7">Ports</th>
                         </tr>
                         <tr>
                             <th class="col-center">Name</th>
@@ -64,13 +64,12 @@ checkCaches();
                             <th class="col-center">Feature Branch</th>
                             <th class="col-center">Server</th>
                             <th class="col-center">Status</th>
-                            <th class="col-center">Shutdown</th>
+                            <th class="col-center">Prefix</th>
                             <th class="col-center">HTTP</th>
                             <th class="col-center">AJP</th>
                             <th class="col-center">JMX RMI Registration</th>
                             <th class="col-center">JMX RMI Server</th>
                             <th class="col-center">JOD</th>
-                            <th class="col-center">CRaSH Telnet</th>
                             <th class="col-center">CRaSH SSH</th>
                         </tr>
                         </thead>
@@ -120,13 +119,12 @@ checkCaches();
                                 ?>
                                 <td style="font-weight:bold;" class='col-center <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
                                 <td><?= $status ?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_SHUTDOWN_PORT?></td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>XX</td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_JOD_CONVERTER_PORTS?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CRASH_TELNET_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT?></td>
                             </tr>
                         <?php
