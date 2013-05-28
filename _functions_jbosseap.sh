@@ -73,7 +73,7 @@ do_configure_jbosseap_datasources() {
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
         cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
+        echo_info "Applying on standalone.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
@@ -89,11 +89,11 @@ do_configure_jbosseap_datasources() {
       fi
     ;;
     HSQLDB)
-      # Reconfigure server.xml for HSQLDB
+      # Reconfigure standalone.xml for HSQLDB
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
         cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
+        echo_info "Applying on standalone.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
@@ -113,6 +113,28 @@ do_configure_jbosseap_datasources() {
       exit 1
     ;;
   esac
+}
+
+#
+# Function that configure the jbossEAP server ports
+#
+do_configure_jbosseap_ports() {
+  # Patch to reconfigure standalone.xml to change ports
+  find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+
+  # Reconfigure standalone.xml to change ports
+  if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
+    # Prepare the patch
+    cp $PORTS_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
+    echo_info "Applying on standalone.xml the patch $PORTS_SERVER_PATCH ..."
+    cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-ports
+    patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
+    cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-ports
+
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
+    echo_info "Done."
+  fi
 }
 
 do_configure_jbosseap_standalone() {
@@ -152,6 +174,9 @@ do_configure_jbosseap_server() {
     # Reconfigure the server to use a database
     do_configure_jbosseap_datasources
   fi
+
+  # Configure server ports
+  do_configure_jbosseap_ports
 
   # Environment variables configuration
   do_configure_jbosseap_standalone
