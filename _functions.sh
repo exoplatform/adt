@@ -71,7 +71,7 @@ Environment Variables :
   DEPLOYMENT_APACHE_SECURITY     : Do you want to have a public or a private deployment (default: private, values : private | public)
   DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
-  DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
+  DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 2g)
   DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
   DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
   DEPLOYMENT_JVM_PERMSIZE_MIN    : Minimum permgem memory size (default: 128m)
@@ -793,7 +793,7 @@ do_load_deployment_descriptor() {
 do_deploy() {
   configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
   configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
-  configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "1g"
+  configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "2g"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
   configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
   configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MIN" "128m"
