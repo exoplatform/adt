@@ -152,6 +152,7 @@ TXT_GREEN=$(tput -Txterm setaf 2)
 TXT_RED=$(tput -Txterm setaf 1)
 TXT_CYAN=$(tput -Txterm setaf 6)
 TXT_YELLOW=$(tput -Txterm setaf 3)
+TXT_BOLD=$(tput -Txterm bold)
 TXT_RESET=$(tput -Txterm sgr0) # Text reset.
 
 # Display DEBUG message
@@ -180,22 +181,22 @@ echo_n_info() {
 
 # Display WARN message
 echo_warn() {
-  printf "${TXT_YELLOW}[WARN]${TXT_RESET}  %s\n" "$@"
+  printf "${TXT_BOLD}${TXT_YELLOW}[WARN]${TXT_RESET}  %s\n" "$@"
 }
 
 # Display WARN message without trailing newline character
 echo_n_warn() {
-  printf "${TXT_YELLOW}[WARN]${TXT_RESET}  %s" "$@"
+  printf "${TXT_BOLD}${TXT_YELLOW}[WARN]${TXT_RESET}  %s" "$@"
 }
 
 # Display ERROR message
 echo_error() {
-  printf "${TXT_RED}[ERROR]${TXT_RESET} %s\n" "$@"
+  printf "${TXT_BOLD}${TXT_RED}[ERROR]${TXT_RESET} %s\n" "$@"
 }
 
 # Display ERROR message without trailing newline character
 echo_n_error() {
-  printf "${TXT_RED}[ERROR]${TXT_RESET} %s" "$@"
+  printf "${TXT_BOLD}${TXT_RED}[ERROR]${TXT_RESET} %s" "$@"
 }
 
 # Configurable env vars. These variables can be loaded
