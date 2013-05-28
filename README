@@ -99,10 +99,9 @@ Usage
       ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
       DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
-      DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
+      DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 2g)
       DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
       DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
-      DEPLOYMENT_JVM_PERMSIZE_MIN    : Minimum permgem memory size (default: 128m)
 
       DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
 

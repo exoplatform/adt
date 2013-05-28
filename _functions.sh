@@ -74,7 +74,6 @@ Environment Variables :
   DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 2g)
   DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
   DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
-  DEPLOYMENT_JVM_PERMSIZE_MIN    : Minimum permgem memory size (default: 128m)
 
   DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
 
@@ -796,7 +795,6 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "2g"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
   configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
-  configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MIN" "128m"
   configurable_env_var "DEPLOYMENT_LDAP_URL" ""
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
