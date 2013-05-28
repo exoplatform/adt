@@ -88,9 +88,9 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     <?php
     foreach ($descriptor_arrays as $descriptor_array) {
         if ($descriptor_array->DEPLOYMENT_STATUS == "Up")
-            $status = "<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
+            $status = "<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left icon\"/>&nbsp;Up";
         else
-            $status = "<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
+            $status = "<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left icon\"/>&nbsp;Down !";
         $matches = array();
         if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
             $base_version = $matches[1];
@@ -116,13 +116,16 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 if (!empty($feature_branch)) {
                     $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $feature_branch;
                 }
+                $product_html_popover = "<strong>Product:</strong> " . $product_html_label . "<br/>";
+                $product_html_popover = $product_html_popover . "<strong>Version:</strong> " . $descriptor_array->PRODUCT_VERSION . "<br/>";
+                $product_html_popover = $product_html_popover . "<strong>Packaging:</strong> " . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . htmlentities(" <img src=\"/images/".$descriptor_array->DEPLOYMENT_APPSRV_TYPE.".png\" width=\"16\" height=\"16\" alt=\"".$descriptor_array->DEPLOYMENT_APPSRV_TYPE." bundle\" class=\"icon\"/> <br/>");
                 ?>
-                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><i class="icon-home"></i> <?=$product_html_label?> <img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/></a>
+                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true"><i class="icon-home"></i> <img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?=$product_html_label?></a>
                 <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
             </td>
-            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="tooltip" title="Open the instance in a new window"><?= $descriptor_array->PRODUCT_VERSION ?></a></td>
+            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true"><?= $descriptor_array->PRODUCT_VERSION ?></a></td>
             <?php if (empty($feature_branch)) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>
@@ -150,12 +153,12 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             <?php } ?>
             <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
             <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-            <td class="col-left" style="font-size: small"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="tooltip" title="Download <?= $descriptor_array->ARTIFACT_GROUPID ?>:<?= $descriptor_array->ARTIFACT_ARTIFACTID ?>:<?= $descriptor_array->ARTIFACT_TIMESTAMP ?> from Acceptance"><i class="icon-download-alt"></i>&nbsp;<?= $descriptor_array->ARTIFACT_TIMESTAMP?></a></td>
+            <td class="col-left" style="font-size: small"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i>&nbsp;<?= $descriptor_array->ARTIFACT_TIMESTAMP?></a></td>
             <td class="col-left">
                 <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs" class="icon"/><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="instance logs" class="icon"/></a>&nbsp;
                 <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="apache logs" class="icon"/><img src="/images/apache.png" width="16" height="16" alt="apache logs" class="icon"/></a>&nbsp;
                 <a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a>&nbsp;
-                <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="<?= $descriptor_array->PRODUCT_NAME . " " . $descriptor_array->PRODUCT_VERSION ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>&nbsp;
+                <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="Usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>&nbsp;
                 <?php if (property_exists($descriptor_array,'DEPLOYMENT_CRASH_ENABLED') && $descriptor_array->DEPLOYMENT_CRASH_ENABLED) {?><a href="<?= "ssh://root@".$descriptor_array->DEPLOYMENT_EXT_HOST.":".$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT ?>" rel="tooltip" title="CRaSH SSH Access"><i class="icon-laptop"></i></a>&nbsp;<?php } ?>
             </td>
         </tr>
@@ -293,7 +296,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
 </table>
 <p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and these credentials : <strong><code>acceptanceMonitor</code></strong> / <strong><code>monitorAcceptance!</code></strong></p>
 
-<p><a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" title="http://<?= $_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left"/>http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>
+<p><a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" title="http://<?= $_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left icon"/>http://<?=$_SERVER['SERVER_NAME'] ?> usage statistics</a></p>
 </div>
 </div>
 </div>
@@ -305,7 +308,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
 <script type="text/javascript">
     $(document).ready(function () {
         $('body').tooltip({ selector: '[rel=tooltip]'});
-        $('body').popover({ selector: '[rel=popover]'});
+        $('body').popover({ selector: '[rel=popover]', trigger: 'hover'});
     });
 </script>
 

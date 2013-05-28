@@ -13,9 +13,9 @@ Mandatory :
 Optional :
 
   * A mysql server with a local configuration (~/.my.cnf) that allows the current system user to create databases and grant rights. You can activate the usage of MySQL with the environment variable : DEPLOYMENT_DATABASE_TYPE=MYSQL
-  * An apache server (with PHP and its APC module) to display the list of instances and to create a reverse proxy for all instances. Deactivated by default you can activate this feature with the environment variable : DEPLOYMENT_SETUP_APACHE=true
-  * An UFW firewall to protect your (ubuntu server). The script will automatically open or close required ports (HTTP, JMX, ...). Deactivated by default you can activate this feature with the environment variable : DEPLOYMENT_SETUP_UFM=true
-  * An awstats instance to keep statistics of usage. Deactivated by default you can activate this feature with the environment variable : DEPLOYMENT_SETUP_AWSTATS=true
+  * An apache server (with PHP and its APC module) to display the list of instances and to create a reverse proxy for all instances.
+  * An UFW firewall to protect your (ubuntu server). The script will automatically open or close required ports (HTTP, JMX, ...).
+  * An awstats instance to keep statistics of usage.
 
 Prepare your environment
 ------------------------
@@ -97,15 +97,11 @@ Usage
       PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
       ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
-      DEPLOYMENT_SETUP_APACHE        : Do you want to setup the apache configuration (default: false)
-      DEPLOYMENT_SETUP_AWSTATS       : Do you want to setup the awstats configuration (default: false)
-      DEPLOYMENT_SETUP_UFW           : Do you want to setup the ufw firewall configuration (default: false)
       DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
 
-      DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 1g)
+      DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 2g)
       DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
       DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
-      DEPLOYMENT_JVM_PERMSIZE_MIN    : Minimum permgem memory size (default: 128m)
 
       DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
 
@@ -124,5 +120,6 @@ Usage
       REPOSITORY_PASSWORD            : The password to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
 
       ADT_DEBUG                      : Display debug details (default: false)
+      ADT_DEV_MODE                   : Development mode. Apache server, awstats and ufw are deactivated. (default: false)
 
 
