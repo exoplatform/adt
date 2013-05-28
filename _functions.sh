@@ -1048,9 +1048,6 @@ do_undeploy() {
 #
 do_list() {
   if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
-    txtgrn=$(tput setaf 2) # Green
-    txtred=$(tput setaf 1) # Red
-    txtrst=$(tput sgr0) # Text reset.
     echo_info "Deployed servers : "
     printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "=========="
     printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "Bundle" "Database" "Prefix" "HTTP_P" "AJP_P" "JMX_REG_P" "JMX_SRV_P" "CRASH_SSH" "RUNNING"
@@ -1064,13 +1061,13 @@ do_list() {
         set +e
         kill -0 `cat ${DEPLOYMENT_PID_FILE}` > /dev/null 2>&1
         if [ $? -eq 0 ]; then
-          STATUS="${txtgrn}true${txtrst}"
+          STATUS="${TXT_GREEN}true${TXT_RESET}"
         else
-          STATUS="${txtred}false${txtrst}"
+          STATUS="${TXT_RED}false${TXT_RESET}"
         fi
         set -e
       else
-        STATUS="${txtred}false${txtrst}"
+        STATUS="${TXT_RED}false${TXT_RESET}"
       fi
       printf "%-40s %-25s %-10s %-10s %10s %10s %10s %10s %10s %10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_APPSRV_TYPE}" "${DEPLOYMENT_DATABASE_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
       )
