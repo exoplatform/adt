@@ -200,6 +200,10 @@ do_configure_jbosseap_server() {
   # Environment variables configuration
   do_configure_jbosseap_standalone
 
+	# Install optional extension
+	echo_info "Installing PLF extensions ..."
+	cp -rf ${DEPLOYMENT_DIR}/standalone/extensions/*.?ar ${DEPLOYMENT_DIR}/standalone/deployments/
+	echo_info "Done."
 }
 
 # #############################################################################
