@@ -204,6 +204,13 @@ do_configure_jbosseap_server() {
 	echo_info "Installing PLF extensions ..."
 	cp -rf ${DEPLOYMENT_DIR}/standalone/extensions/*.?ar ${DEPLOYMENT_DIR}/standalone/deployments/
 	echo_info "Done."
+
+	if [ -f ${DEPLOYMENT_DIR}/standalone/deployments/*crash*.war ]; then
+    env_var "DEPLOYMENT_CRASH_ENABLED" true
+    # Open firewall port for CRaSH
+    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" $ADT_DEV_MODE
+  fi
+
 }
 
 # #############################################################################

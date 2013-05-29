@@ -353,16 +353,18 @@ do_configure_tomcat_server() {
 
   do_configure_tomcat_setenv
 
-  if [ -f ${DEPLOYMENT_DIR}/webapps/crash*.war ]; then
+	# Install optional extension
+	if [ -f "${DEPLOYMENT_DIR}/extension.sh" ]; then
+		echo_info "Installing PLF extensions ..."
+		${DEPLOYMENT_DIR}/extension.sh --install all
+	  echo_info "Done."
+	fi
+
+	if [ -f ${DEPLOYMENT_DIR}/webapps/crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
     # Open firewall port for CRaSH
     do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" $ADT_DEV_MODE
   fi
-
-	# Install optional extension
-	if [ -f "${DEPLOYMENT_DIR}/extension.sh" ]; then
-		${DEPLOYMENT_DIR}/extension.sh --install all
-	fi
 
 }
 
