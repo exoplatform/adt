@@ -118,9 +118,18 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 }
                 $product_html_popover = "<strong>Product:</strong> " . $product_html_label . "<br/>";
                 $product_html_popover = $product_html_popover . "<strong>Version:</strong> " . $descriptor_array->PRODUCT_VERSION . "<br/>";
-                $product_html_popover = $product_html_popover . "<strong>Packaging:</strong> " . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . htmlentities(" <img src=\"/images/".$descriptor_array->DEPLOYMENT_APPSRV_TYPE.".png\" width=\"16\" height=\"16\" alt=\"".$descriptor_array->DEPLOYMENT_APPSRV_TYPE." bundle\" class=\"icon\"/> <br/>");
+                $product_html_popover = $product_html_popover . "<strong>Packaging:</strong> " . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . " <img src=\"/images/" . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . ".png\" width=\"16\" height=\"16\" alt=\"" . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . " bundle\" class=\"icon\"/> <br/>";
+                $product_html_popover = $product_html_popover . "<strong>Visibility:</strong> " . $descriptor_array->DEPLOYMENT_APACHE_SECURITY;
+                if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "public") {
+                    $product_html_popover = $product_html_popover . " <i class=\"icon-globe\"></i>";
+                }
+                if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") {
+                    $product_html_popover = $product_html_popover . " <i class=\"icon-lock\"></i>";
+                }
+                $product_html_popover = $product_html_popover . "<br/>";
+                $product_html_popover = htmlentities($product_html_popover);
                 ?>
-                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true"><i class="icon-home"></i> <img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?=$product_html_label?></a>
+                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true"><?php if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "public") { ?><i class="icon-globe"></i> <?php } if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") { ?><i class="icon-lock"></i> <?php } ?><img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?= $product_html_label ?></a>
                 <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
