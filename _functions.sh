@@ -951,7 +951,7 @@ do_start() {
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
     ;;
     jbosseap)
-      END_STARTUP_MSG="JBAS015874"
+      END_STARTUP_MSG="JBAS01587[45]"
       # Startup the server
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}  > /dev/null 2>&1 &
     ;;
