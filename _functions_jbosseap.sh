@@ -201,9 +201,11 @@ do_configure_jbosseap_server() {
   do_configure_jbosseap_standalone
 
 	# Install optional extension
-	echo_info "Installing PLF extensions ..."
-	cp -rf ${DEPLOYMENT_DIR}/standalone/extensions/*.?ar ${DEPLOYMENT_DIR}/standalone/deployments/
-	echo_info "Done."
+	if [ -f "${DEPLOYMENT_DIR}/extension.sh" ]; then
+		echo_info "Installing PLF extensions ..."
+		${DEPLOYMENT_DIR}/extension.sh --install all
+	  echo_info "Done."
+	fi
 
 	if [ -f ${DEPLOYMENT_DIR}/standalone/deployments/*crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
