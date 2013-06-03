@@ -62,7 +62,7 @@ checkCaches();
     <th class="col-center">Built</th>
     <th class="col-center">Deployed</th>
     <th class="col-center">Artifact</th>
-    <th class="col-center">&nbsp;</th>
+    <th class="col-center" colspan="5">&nbsp;</th>
 </tr>
 </thead>
 <tbody>
@@ -71,7 +71,7 @@ $all_instances = getGlobalAcceptanceInstances();
 foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
-        <td colspan="12" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
+        <td colspan="16" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
             <?php
             if ($plf_branch === "4.0.x") {
                 echo "Platform " . $plf_branch . " based build (R&D) - current";
@@ -163,13 +163,11 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
             <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
             <td class="col-left" style="font-size: small"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i>&nbsp;<?= $descriptor_array->ARTIFACT_TIMESTAMP?></a></td>
-            <td class="col-left">
-                <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs" class="icon"/><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="instance logs" class="icon"/></a>&nbsp;
-                <a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="apache logs" class="icon"/><img src="/images/apache.png" width="16" height="16" alt="apache logs" class="icon"/></a>&nbsp;
-                <?php if (! empty($descriptor_array->DEPLOYMENT_JMX_URL)) {?><a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a>&nbsp;<?php } ?>
-                <a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="Usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a>&nbsp;
-                <?php if (property_exists($descriptor_array,'DEPLOYMENT_CRASH_ENABLED') && $descriptor_array->DEPLOYMENT_CRASH_ENABLED) {?><a href="<?= "ssh://root@".$descriptor_array->DEPLOYMENT_EXT_HOST.":".$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT ?>" rel="tooltip" title="CRaSH SSH Access"><i class="icon-laptop"></i></a>&nbsp;<?php } ?>
-            </td>
+            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs" class="icon"/><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="instance logs" class="icon"/></a></td>
+            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="apache logs" class="icon"/><img src="/images/apache.png" width="16" height="16" alt="apache logs" class="icon"/></a></td>
+            <td class="col-center"><?php if (! empty($descriptor_array->DEPLOYMENT_JMX_URL)) {?><a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a><?php } ?></td>
+            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="Usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a></td>
+            <td class="col-center"><?php if (property_exists($descriptor_array,'DEPLOYMENT_CRASH_ENABLED') && $descriptor_array->DEPLOYMENT_CRASH_ENABLED) {?><a href="ssh://root@<?=$descriptor_array->DEPLOYMENT_EXT_HOST.":".$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT ?>" rel="tooltip" title="CRaSH SSH Access"><i class="icon-laptop"></i></a><?php } ?></td>
         </tr>
         <?php if (!empty($feature_branch)) { ?>
             <form class="form" action="http://<?= $descriptor_array->ACCEPTANCE_SERVER ?>/editFeature.php" method="POST">
