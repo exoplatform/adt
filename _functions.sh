@@ -341,7 +341,7 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "demo-login-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
-          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
         ;;
         plfent)
@@ -373,7 +373,7 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-chat-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
-          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
         ;;
         compint)
