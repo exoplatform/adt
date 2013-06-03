@@ -74,7 +74,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
         <td colspan="16" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
             <?php
             if ($plf_branch === "4.0.x") {
-                echo "Platform " . $plf_branch . " based build (R&D) - current";
+                echo "Platform " . $plf_branch . " based build (Maintenance)";
             } elseif ($plf_branch === "4.1.x") {
                 echo "Platform " . $plf_branch . " based build (R&D) - next ;-)";
             } elseif ($plf_branch === "UNKNOWN") {
