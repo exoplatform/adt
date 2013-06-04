@@ -2,13 +2,13 @@
 +++ standalone.xml	2013-05-28 14:17:44.000000000 +0200
 @@ -545,6 +545,7 @@
      </subsystem>
-     <subsystem xmlns="urn:jboss:domain:web:1.2" default-virtual-server="default-host" native="false">
+     <subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="false">
        <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
 +      <connector name="ajp" protocol="AJP/1.3" scheme="http" socket-binding="ajp"/>
        <virtual-server name="default-host" enable-welcome-root="false">
          <alias name="localhost"/>
          <alias name="example.com"/>
-@@ -580,16 +581,16 @@
+@@ -580,15 +581,15 @@
      </interface>
    </interfaces>
    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
@@ -18,7 +18,6 @@
 -    <socket-binding name="ajp" port="8009"/>
 -    <socket-binding name="http" port="8080"/>
 -    <socket-binding name="https" port="8443"/>
--    <socket-binding name="osgi-http" interface="management" port="8090"/>
 -    <socket-binding name="remoting" port="4447"/>
 -    <socket-binding name="txn-recovery-environment" port="4712"/>
 -    <socket-binding name="txn-status-manager" port="4713"/>
@@ -28,7 +27,6 @@
 +    <socket-binding name="ajp" port="@AJP_PORT@"/>
 +    <socket-binding name="http" port="@HTTP_PORT@"/>
 +    <socket-binding name="https" port="@HTTPS_PORT@"/>
-+    <socket-binding name="osgi-http" interface="management" port="@OSGI_HTTP_PORT@"/>
 +    <socket-binding name="remoting" port="@REMOTING_PORT@"/>
 +    <socket-binding name="txn-recovery-environment" port="@TXN_RECOVERY_ENV_PORT@"/>
 +    <socket-binding name="txn-status-manager" port="@TXN_STATUS_MGR_PORT@"/>
