@@ -240,20 +240,30 @@ initialize_product_settings() {
             "3.0.x" | "3.1.x" | "3.2.x" | "3.3.x" | "3.4.x")
               env_var ARTIFACT_GROUPID "org.exoplatform.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.pkg.tc6"
+	          env_var ARTIFACT_CLASSIFIER "bundle"
+            ;;
+            "4.0.x")
+              env_var ARTIFACT_GROUPID "org.gatein.portal"
+              env_var ARTIFACT_ARTIFACTID "portal.web"
+	          env_var ARTIFACT_CLASSIFIER "tomcat-distrib"
+              env_var ARTIFACT_PACKAGING "tar.gz"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
+              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+	          env_var DEPLOYMENT_DATABASE_ENABLED false
             ;;
             *)
             # 3.5.x and +
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
               env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
+	          env_var ARTIFACT_CLASSIFIER "bundle"
             ;;
           esac
-          env_var ARTIFACT_CLASSIFIER "bundle"
           case "${PRODUCT_BRANCH}" in
             "3.5.x")
               env_var PLF_BRANCH "4.0.x"
             ;;
-            "3.6.x")
+            "3.6.x"|"4.0.x")
               env_var PLF_BRANCH "4.1.x"
             ;;
           esac
