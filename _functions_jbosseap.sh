@@ -29,8 +29,8 @@ do_configure_jbosseap_jmx() {
 }
 
 do_configure_jbosseap_datasources() {
-  # Patch to reconfigure standalone.xml for database
-  find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+  # Patch to reconfigure standalone-exo.xml for database
+  find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
@@ -69,41 +69,41 @@ do_configure_jbosseap_datasources() {
         echo_info "Done."
       fi
 
-      # Reconfigure standalone.xml for MySQL
+      # Reconfigure standalone-exo.xml for MySQL
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
         cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on standalone.xml the patch $DB_SERVER_PATCH ..."
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        echo_info "Applying on standalone-exo.xml the patch $DB_SERVER_PATCH ..."
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
 
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_DRIVER@" `basename $MYSQL_JAR_URL`
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_DRIVER@" `basename $MYSQL_JAR_URL`
         echo_info "Done."
       fi
     ;;
     HSQLDB)
-      # Reconfigure standalone.xml for HSQLDB
+      # Reconfigure standalone-exo.xml for HSQLDB
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
         cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on standalone.xml the patch $DB_SERVER_PATCH ..."
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        echo_info "Applying on standalone-exo.xml the patch $DB_SERVER_PATCH ..."
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
 
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
         echo_info "Done."
       fi
     ;;
@@ -119,8 +119,8 @@ do_configure_jbosseap_datasources() {
 # Function that configure the jbossEAP server ports
 #
 do_configure_jbosseap_ports() {
-  # Patch to reconfigure standalone.xml to change ports
-  find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+  # Patch to reconfigure standalone-exo.xml to change ports
+  find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
 
   # JBOSS Specific ports
   env_var "DEPLOYMENT_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
@@ -131,25 +131,25 @@ do_configure_jbosseap_ports() {
   env_var "DEPLOYMENT_MGT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}15"
   env_var "DEPLOYMENT_MGT_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}16"
 
-  # Reconfigure standalone.xml to change ports
+  # Reconfigure standalone-exo.xml to change ports
   if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
     cp $PORTS_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
-    echo_info "Applying on standalone.xml the patch $PORTS_SERVER_PATCH ..."
-    cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.ori-ports
-    patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
-    cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.patched-ports
+    echo_info "Applying on standalone-exo.xml the patch $PORTS_SERVER_PATCH ..."
+    cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-ports
+    patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
+    cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.patched-ports
 
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
     
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@HTTPS_PORT@" "${DEPLOYMENT_HTTPS_PORT}"
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@REMOTING_PORT@" "${DEPLOYMENT_REMOTING_PORT}"
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@TXN_RECOVERY_ENV_PORT@" "${DEPLOYMENT_TXN_RECOVERY_ENV_PORT}"
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@TXN_STATUS_MGR_PORT@" "${DEPLOYMENT_TXN_STATUS_MGR_PORT}"
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@MGT_NATIVE_PORT@" "${DEPLOYMENT_MGT_NATIVE_PORT}"
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@MGT_HTTP_PORT@" "${DEPLOYMENT_MGT_HTTP_PORT}"
-    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml "@MGT_HTTPS_PORT@" "${DEPLOYMENT_MGT_HTTPS_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@HTTPS_PORT@" "${DEPLOYMENT_HTTPS_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@REMOTING_PORT@" "${DEPLOYMENT_REMOTING_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@TXN_RECOVERY_ENV_PORT@" "${DEPLOYMENT_TXN_RECOVERY_ENV_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@TXN_STATUS_MGR_PORT@" "${DEPLOYMENT_TXN_STATUS_MGR_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@MGT_NATIVE_PORT@" "${DEPLOYMENT_MGT_NATIVE_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@MGT_HTTP_PORT@" "${DEPLOYMENT_MGT_HTTP_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@MGT_HTTPS_PORT@" "${DEPLOYMENT_MGT_HTTPS_PORT}"
     echo_info "Done."
   fi
 }
@@ -179,10 +179,10 @@ do_configure_jbosseap_standalone() {
 #
 do_configure_jbosseap_server() {
 
-  # Ensure the standalone.xml doesn't have some windows end line characters
+  # Ensure the standalone-exo.xml doesn't have some windows end line characters
   # '\015' is Ctrl+V Ctrl+M = ^M
-  cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.orig
-  tr -d '\015' < ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml.orig > ${DEPLOYMENT_DIR}/standalone/configuration/standalone.xml
+  cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.orig
+  tr -d '\015' < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.orig > ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml
 
   # Reconfigure the server to use JMX
   #do_configure_jbosseap_jmx
