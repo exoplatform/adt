@@ -20,7 +20,7 @@
            <!-- PostgreSQL -->
            <!--
            <driver>XXXX.jar</driver>
-@@ -215,22 +215,24 @@
+@@ -215,22 +215,22 @@
              <flush-strategy>FailingConnectionOnly</flush-strategy>
            </pool>
            <security>
@@ -36,9 +36,7 @@
              <!-- Generic -->
 +            <!--
              <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
-+            -->
              <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
-+            <!--
              <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
 +            -->
              <!-- MySQL -->
