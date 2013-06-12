@@ -183,7 +183,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_SERVER_LOG_FILE" "catalina.out"
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
       env_var "DEPLOYMENT_APPSRV_VERSION" "6.0.35" #Default version used to download additional resources like JMX lib
-      env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.23" #Default version used to download additional mysql driver
+      env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       env_var "ARTIFACT_GROUPID" ""
