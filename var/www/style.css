@@ -1,7 +1,7 @@
 /** Main layout **/
 html, body {
   height : 100%;
-  margin : 0px;
+  margin : 0;
 }
 
 body {
@@ -54,8 +54,8 @@ body:before {
  * Icon
  */
 img.icon {
-  border         : 0px, 5px, 0px, 5px;
-  padding: 0px 0px 3px 0px;
+  border         : 0, 5px, 0, 5px;
+  padding: 0 0 3px 0;
   vertical-align : bottom;
 }
 
