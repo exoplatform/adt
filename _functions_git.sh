@@ -35,7 +35,7 @@ clone_or_fetch_git_repo() {
     git fetch --progress --prune origin
     status=$?
     set -e
-    if [ $status -ne 0 ]; then
+    if [ ${status} -ne 0 ]; then
       popd > /dev/null 2>&1
       echo_info "Remove invalid repository ${_repo} from ${_src_dir} ..."
       rm -rf ${_src_dir}/${_repo}.git

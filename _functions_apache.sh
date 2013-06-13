@@ -15,7 +15,7 @@ source "./_functions_core.sh"
 do_reload_apache(){
   local _dev_mode=$1
   shift
-  if ! $_dev_mode; then
+  if ! ${_dev_mode}; then
     if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
       echo_info "Reloading Apache server ..."
       sudo /usr/sbin/service apache2 reload

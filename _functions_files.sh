@@ -32,10 +32,10 @@ find_file() {
   local _varName=$1
   shift;
   # default value set to UNSET
-  env_var $_varName "UNSET"
+  env_var ${_varName} "UNSET"
   for i in $*
   do
-    [ -e "$i" ] && env_var $_varName "$i"
+    [ -e "$i" ] && env_var ${_varName} "$i"
   done
   set -u
 }
@@ -46,12 +46,12 @@ find_file() {
 evaluate_file_content() {
   local _file_in=$1
   local _file_out=$2
-  awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < $_file_in > $_file_out
+  awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < ${_file_in} > ${_file_out}
   # escape any single quote
-  if $LINUX; then
-    replace_in_file $_file_out "'" "\\\'"
+  if ${LINUX}; then
+    replace_in_file ${_file_out} "'" "\\\'"
   else
-    replace_in_file $_file_out "\'" "\\\'"
+    replace_in_file ${_file_out} "\'" "\\\'"
   fi
 }
 
@@ -63,9 +63,9 @@ backup_file() {
     local _start_date=`date -u "+%Y%m%d-%H%M%S-UTC"`
     for file in $2
     do
-      if [ -e $file ]; then
+      if [ -e ${file} ]; then
         echo_info "Archiving existing file $file as archived-on-${_start_date}-$file   ..."
-        mv $file archived-on-${_start_date}-$file
+        mv ${file} archived-on-${_start_date}-${file}
         echo_info "Done."
       fi
     done

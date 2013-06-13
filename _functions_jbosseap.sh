@@ -23,8 +23,8 @@ do_configure_jbosseap_jmx() {
   chmod 400 ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
   echo_info "Done."
   # Open firewall ports
-  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" $ADT_DEV_MODE
-  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" $ADT_DEV_MODE
+  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
+  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
   DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 }
 
@@ -36,7 +36,7 @@ do_configure_jbosseap_datasources() {
     MYSQL)
       if [ ! -f ${DEPLOYMENT_DIR}/standalone/deployments/mysql-connector*.jar ]; then
         MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
-        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL` ]; then
+        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}` ]; then
           if ${ADT_OFFLINE}; then
             echo_error "ADT is offine and the MySQL JDBC Driver isn't available locally"
             exit 1
@@ -44,10 +44,10 @@ do_configure_jbosseap_datasources() {
             mkdir -p ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/
             echo_info "Downloading MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
             set +e
-            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL`
+            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}`
             if [ "$?" -ne "0" ]; then
               echo_error "Cannot download ${MYSQL_JAR_URL}"
-              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` # Remove potential corrupted file
+              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` # Remove potential corrupted file
               exit 1
             fi
             set -e
@@ -56,23 +56,23 @@ do_configure_jbosseap_datasources() {
         fi
         echo_info "Validating MySQL JDBC Driver integrity ..."
         set +e
-        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` > /dev/null
+        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` > /dev/null
         if [ "$?" -ne "0" ]; then
-          echo_error "Sorry, "`basename $MYSQL_JAR_URL`" integrity failed. Local copy is deleted."
-          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL`
+          echo_error "Sorry, "`basename ${MYSQL_JAR_URL}`" integrity failed. Local copy is deleted."
+          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}`
           exit 1
         fi
         set -e
         echo_info "MySQL JDBC Driver integrity validated."
         echo_info "Installing MySQL JDBC Driver ..."
-        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` ${DEPLOYMENT_DIR}/standalone/deployments/
+        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` ${DEPLOYMENT_DIR}/standalone/deployments/
         echo_info "Done."
       fi
 
       # Reconfigure standalone-exo.xml for MySQL
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
-        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         echo_info "Applying on standalone-exo.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
@@ -84,7 +84,7 @@ do_configure_jbosseap_datasources() {
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_DRIVER@" `basename $MYSQL_JAR_URL`
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_DRIVER@" `basename ${MYSQL_JAR_URL}`
         echo_info "Done."
       fi
     ;;
@@ -92,7 +92,7 @@ do_configure_jbosseap_datasources() {
       # Reconfigure standalone-exo.xml for HSQLDB
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
-        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         echo_info "Applying on standalone-exo.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
@@ -134,7 +134,7 @@ do_configure_jbosseap_ports() {
   # Reconfigure standalone-exo.xml to change ports
   if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
-    cp $PORTS_SERVER_PATCH ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
+    cp ${PORTS_SERVER_PATCH} ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
     echo_info "Applying on standalone-exo.xml the patch $PORTS_SERVER_PATCH ..."
     cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-ports
     patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-ports.xml.patch
@@ -208,7 +208,7 @@ do_configure_jbosseap_server() {
 	if [ -f ${DEPLOYMENT_DIR}/standalone/deployments/platform.ear/*crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
     # Open firewall port for CRaSH
-    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" $ADT_DEV_MODE
+    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
   fi
 
 }

@@ -18,7 +18,7 @@ do_generate_awstats(){
   shift
   local _dev_mode=$1
   shift
-  if ! $_dev_mode; then
+  if ! ${_dev_mode}; then
     if [ -e /usr/lib/cgi-bin/awstats.pl ]; then
       echo_info "Generating AWStats data for domain ${_domain} ..."
       sudo /usr/lib/cgi-bin/awstats.pl -config=${_domain} -update

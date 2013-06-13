@@ -100,7 +100,7 @@ EOF
 }
 
 init() {
-  if $ADT_DEV_MODE; then
+  if ${ADT_DEV_MODE}; then
     configurable_env_var "ACCEPTANCE_HOST" "localhost"
     configurable_env_var "ACCEPTANCE_PORT" "8080"
   else
@@ -152,7 +152,7 @@ find_instance_file() {
   local _patchDir=$2
   local _basename=$3
   local _product=$4
-  find_file $_variable  \
+  find_file ${_variable}  \
  "$_patchDir/$_basename"  \
  "$_patchDir/$_product-$_basename"  \
  "$_patchDir/$_product-${PRODUCT_MAJOR_BRANCH}-$_basename"  \
@@ -472,7 +472,7 @@ do_download_server() {
   configurable_env_var "REPOSITORY_PASSWORD" ""
 
 
-  if ! $ADT_OFFLINE; then
+  if ! ${ADT_OFFLINE}; then
     # Downloads the product from Nexus
     do_download_maven_artifact  \
    "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}"  \
@@ -511,7 +511,7 @@ do_restore_dataset(){
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
       # System dependent settings
-      if $LINUX; then
+      if ${LINUX}; then
         TAR_BZIP2_COMPRESS_PRG=--use-compress-prog=pbzip2
         NICE_CMD="nice -n 20 ionice -c2 -n7"
       else
@@ -662,10 +662,10 @@ do_create_database() {
        exit 1
       fi;
       SQL=""
-      SQL=$SQL"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME};"
-      SQL=$SQL"GRANT ALL ON ${DEPLOYMENT_DATABASE_NAME}.* TO '${DEPLOYMENT_DATABASE_USER}'@'localhost' IDENTIFIED BY '${DEPLOYMENT_DATABASE_USER}';"
-      SQL=$SQL"FLUSH PRIVILEGES;"
-      SQL=$SQL"SHOW DATABASES;"
+      SQL=${SQL}"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME};"
+      SQL=${SQL}"GRANT ALL ON ${DEPLOYMENT_DATABASE_NAME}.* TO '${DEPLOYMENT_DATABASE_USER}'@'localhost' IDENTIFIED BY '${DEPLOYMENT_DATABASE_USER}';"
+      SQL=${SQL}"FLUSH PRIVILEGES;"
+      SQL=${SQL}"SHOW DATABASES;"
       mysql -e "$SQL"
       echo_info "Done."
     ;;
@@ -692,8 +692,8 @@ do_drop_database() {
        exit 1
       fi;
       SQL=""
-      SQL=$SQL"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
-      SQL=$SQL"SHOW DATABASES;"
+      SQL=${SQL}"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
+      SQL=${SQL}"SHOW DATABASES;"
       mysql -e "$SQL"
       echo_info "Done."
     ;;
@@ -736,16 +736,16 @@ do_create_data() {
 
 do_configure_apache() {
   echo_info "Configure and update AWStats ..."
-  mkdir -p $AWSTATS_CONF_DIR
+  mkdir -p ${AWSTATS_CONF_DIR}
   # Regenerates stats for this Vhosts
   export DOMAIN=${DEPLOYMENT_EXT_HOST}
-  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
-  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
+  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
   unset DOMAIN
   # Regenerates stats for root vhosts
   export DOMAIN=${ACCEPTANCE_HOST}
-  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template $AWSTATS_CONF_DIR/awstats.${ACCEPTANCE_HOST}.conf
-  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} $ADT_DEV_MODE
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template ${AWSTATS_CONF_DIR}/awstats.${ACCEPTANCE_HOST}.conf
+  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
   unset DOMAIN
   echo_info "Done."
   echo_info "Creating Apache Virtual Host ..."
@@ -768,14 +768,14 @@ do_configure_apache() {
   echo_info "Rotate Apache logs ..."
 
   evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
-  do_logrotate "${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}" $ADT_DEV_MODE
+  do_logrotate "${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}" ${ADT_DEV_MODE}
   rm ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
 
   evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
-  do_logrotate "${TMP_DIR}/logrotate-acceptance" $ADT_DEV_MODE
+  do_logrotate "${TMP_DIR}/logrotate-acceptance" ${ADT_DEV_MODE}
   rm ${TMP_DIR}/logrotate-acceptance
 
-  do_reload_apache $ADT_DEV_MODE
+  do_reload_apache ${ADT_DEV_MODE}
 
   echo_info "Done."
 }
@@ -828,7 +828,7 @@ do_deploy() {
   env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
   env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
-  if $ADT_DEV_MODE; then
+  if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
   else
@@ -1073,17 +1073,17 @@ do_undeploy() {
     fi
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
     # Delete Awstat config
-    rm -f $AWSTATS_CONF_DIR/awstats.${DEPLOYMENT_EXT_HOST}.conf
+    rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
     # Delete the vhost
     rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
     # Reload Apache to deactivate the config
-    do_reload_apache $ADT_DEV_MODE
+    do_reload_apache ${ADT_DEV_MODE}
     # Delete the server
     rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
     # Close firewall ports
-    do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" $ADT_DEV_MODE
-    do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" $ADT_DEV_MODE
-    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" $ADT_DEV_MODE
+    do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
+    do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
+    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
     echo_info "Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
@@ -1109,7 +1109,7 @@ do_list() {
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
-      source $f
+      source ${f}
       if [ -f ${DEPLOYMENT_PID_FILE} ]; then
         set +e
         kill -0 `cat ${DEPLOYMENT_PID_FILE}` > /dev/null 2>&1
@@ -1140,7 +1140,7 @@ do_start_all() {
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
-      source $f
+      source ${f}
       do_start
       )
     done
@@ -1160,7 +1160,7 @@ do_restart_all() {
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
-      source $f
+      source ${f}
       do_stop
       do_start
       )
@@ -1181,7 +1181,7 @@ do_stop_all() {
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
-      source $f
+      source ${f}
       do_stop
       )
     done
@@ -1201,7 +1201,7 @@ do_undeploy_all() {
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
-      source $f
+      source ${f}
       do_undeploy
       )
     done
@@ -1227,9 +1227,9 @@ do_load_php_server() {
   fi
   set -e
   echo_info "Starting the web server (PHP 5.4+ is required)"
-  $_php_exe -r \@phpinfo\(\)\; | grep 'PHP Version' -m 1
+  ${_php_exe} -r \@phpinfo\(\)\; | grep 'PHP Version' -m 1
   set +e
-  $_php_exe -S $ACCEPTANCE_HOST:$ACCEPTANCE_PORT -c $_php_ini_file -t $_doc_root $_php_router_file
+  ${_php_exe} -S ${ACCEPTANCE_HOST}:${ACCEPTANCE_PORT} -c ${_php_ini_file} -t ${_doc_root} ${_php_router_file}
   if [ $? != 0 ]; then
     echo_error "Unable to start PHP Web Server"
     exit 1

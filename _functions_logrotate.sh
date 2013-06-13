@@ -18,7 +18,7 @@ do_logrotate(){
   shift
   local _dev_mode=$1
   shift
-  if ! $_dev_mode; then
+  if ! ${_dev_mode}; then
     if [ -e /usr/sbin/logrotate ]; then
       echo_info "Rotate logs using configuration ${_config_file} ..."
       sudo /usr/sbin/logrotate -s ${_config_file}.status -f ${_config_file}

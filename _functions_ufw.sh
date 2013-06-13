@@ -22,7 +22,7 @@ do_ufw_open_port(){
   local _dev_mode=$1
   shift
   # Open firewall ports
-  if ! $_dev_mode; then
+  if ! ${_dev_mode}; then
     if [ -e /usr/sbin/ufw ]; then
       echo_info "Opening firewall port ${_description} (${_port}) ..."
       sudo /usr/sbin/ufw allow ${_port}
@@ -47,7 +47,7 @@ do_ufw_close_port(){
   local _dev_mode=$1
   shift
   # Close firewall ports
-  if ! $_dev_mode; then
+  if ! ${_dev_mode}; then
     if [ -e /usr/sbin/ufw ]; then
       echo_info "Closing firewall port ${_description} (${_port}) ..."
       sudo /usr/sbin/ufw delete allow ${_port}

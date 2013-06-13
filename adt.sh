@@ -38,11 +38,11 @@ echo_info "# ===================================================================
 
 # Development mode ?
 configurable_env_var "ADT_DEV_MODE" false
-$ADT_DEV_MODE && echo_warn "Development Mode activated."
+${ADT_DEV_MODE} && echo_warn "Development Mode activated."
 
 # Offline mode ?
 configurable_env_var "ADT_OFFLINE" false
-$ADT_OFFLINE && echo_warn "Offline Mode activated !!!"
+${ADT_OFFLINE} && echo_warn "Offline Mode activated !!!"
 
 # Data directory (this script directory by default)
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
@@ -100,7 +100,7 @@ case "${ACTION}" in
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
     evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-    if ! $ADT_DEV_MODE; then
+    if ! ${ADT_DEV_MODE}; then
       if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
         echo_info "Reloading Apache server ..."
         sudo /usr/sbin/service apache2 reload

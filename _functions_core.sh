@@ -100,8 +100,8 @@ loadSystemInfo() {
       if [ -f /etc/UnitedLinux-release ]; then
         DIST="${DIST}[`cat/etc/UnitedLinux-release|tr"\n"' '|seds/VERSION.*//`]"
       fi
-      OS=`tolower $OS`
-      DistroBasedOn=`tolower $DistroBasedOn`
+      OS=`tolower ${OS}`
+      DistroBasedOn=`tolower ${DistroBasedOn}`
       readonly OS
       readonly OSSTR
       readonly KERNEL
@@ -151,14 +151,14 @@ loadSystemInfo() {
 # Display DEBUG message
 echo_debug() {
   set +u
-  $ADT_DEBUG && echo -e "\033[1;36m[DEBUG]\033[0m " $@
+  ${ADT_DEBUG} && echo -e "\033[1;36m[DEBUG]\033[0m " $@
   set -u
 }
 
 # Display DEBUG message without trailing newline character
 echo_n_debug() {
   set +u
-  $ADT_DEBUG && echo -n -e "\033[1;36m[DEBUG]\033[0m " $@
+  ${ADT_DEBUG} && echo -n -e "\033[1;36m[DEBUG]\033[0m " $@
   set -u
 }
 

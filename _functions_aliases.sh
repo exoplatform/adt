@@ -14,7 +14,7 @@ source "./_functions_core.sh"
 shopt -s expand_aliases
 
 # Various command aliases
-if $LINUX; then
+if ${LINUX}; then
   alias display_time='/usr/bin/time -f "[INFO] Return code : %x\n[INFO] Time report (sec) : \t%e real,\t%U user,\t%S system"'
 else
   alias display_time='/usr/bin/time'

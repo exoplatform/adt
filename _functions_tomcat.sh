@@ -19,7 +19,7 @@ do_configure_tomcat_jmx() {
   if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
     JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
-    if [ ! -e ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL` ]; then
+    if [ ! -e ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename ${JMX_JAR_URL}` ]; then
       if ${ADT_OFFLINE}; then
         echo_error "ADT is offine and the JMX remote lib isn't available locally"
         exit 1
@@ -27,10 +27,10 @@ do_configure_tomcat_jmx() {
         mkdir -p ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/
         echo_info "Downloading JMX remote lib from ${JMX_JAR_URL} ..."
         set +e
-        curl --fail --show-error --location-trusted ${JMX_JAR_URL} > ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL`
+        curl --fail --show-error --location-trusted ${JMX_JAR_URL} > ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename ${JMX_JAR_URL}`
         if [ "$?" -ne "0" ]; then
           echo_error "Cannot download ${JMX_JAR_URL}"
-          rm -f ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL` # Remove potential corrupted file
+          rm -f ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename ${JMX_JAR_URL}` # Remove potential corrupted file
           exit 1
         fi
         set -e
@@ -39,16 +39,16 @@ do_configure_tomcat_jmx() {
     fi
     echo_info "Validating JMX remote lib integrity ..."
     set +e
-    jar -tf "${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/"`basename $JMX_JAR_URL` > /dev/null
+    jar -tf "${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/"`basename ${JMX_JAR_URL}` > /dev/null
     if [ "$?" -ne "0" ]; then
-      echo_error "Sorry, "`basename $JMX_JAR_URL`" integrity failed. Local copy is deleted."
-      rm -f "${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/"`basename $JMX_JAR_URL`
+      echo_error "Sorry, "`basename ${JMX_JAR_URL}`" integrity failed. Local copy is deleted."
+      rm -f "${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/"`basename ${JMX_JAR_URL}`
       exit 1
     fi
     set -e
     echo_info "JMX remote lib integrity validated."
     echo_info "Installing JMX remote lib ..."
-    cp -f ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename $JMX_JAR_URL` ${DEPLOYMENT_DIR}/lib/
+    cp -f ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename ${JMX_JAR_URL}` ${DEPLOYMENT_DIR}/lib/
     echo_info "Done."
   fi
   # JMX settings
@@ -58,8 +58,8 @@ do_configure_tomcat_jmx() {
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo_info "Done."
   # Open firewall ports
-  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" $ADT_DEV_MODE
-  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" $ADT_DEV_MODE
+  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
+  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
   DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
 
   # Patch to reconfigure server.xml for JMX
@@ -68,7 +68,7 @@ do_configure_tomcat_jmx() {
   # Reconfigure server.xml for JMX
   if [ "${JMX_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
-    cp $JMX_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-jmx.xml.patch
+    cp ${JMX_SERVER_PATCH} ${DEPLOYMENT_DIR}/conf/server-jmx.xml.patch
     echo_info "Applying on server.xml the patch $JMX_SERVER_PATCH ..."
     cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-jmx
     patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-jmx.xml.patch
@@ -81,13 +81,13 @@ do_configure_tomcat_jmx() {
 }
 
 do_configure_tomcat_email() {
-  if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+  if [ -e ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ]; then
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
 
     # Ensure the configuration.properties doesn't have some windows end line characters
     # '\015' is Ctrl+V Ctrl+M = ^M
-    cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
-    tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+    cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig
+    tr -d '\015' < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig > ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}
 
     # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for email
     find_instance_file EMAIL_GATEIN_PATCH "${ETC_DIR}/gatein" "email-configuration.properties.patch" "${EMAIL_GATEIN_PATCH_PRODUCT_NAME}"
@@ -95,13 +95,13 @@ do_configure_tomcat_email() {
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
     if [ "${EMAIL_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
-      cp $EMAIL_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      cp ${EMAIL_GATEIN_PATCH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
       echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $EMAIL_GATEIN_PATCH ..."
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.email
-      patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.email
+      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.ori.email
+      patch -l -p0 ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
+      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patched.email
 
-      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_URL@" "${DEPLOYMENT_URL}"
+      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_URL@" "${DEPLOYMENT_URL}"
       echo_info "Done."
     fi
 
@@ -109,13 +109,13 @@ do_configure_tomcat_email() {
 }
 
 do_configure_tomcat_jod() {
-  if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+  if [ -e ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ]; then
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
 
     # Ensure the configuration.properties doesn't have some windows end line characters
     # '\015' is Ctrl+V Ctrl+M = ^M
-    cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
-    tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+    cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig
+    tr -d '\015' < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig > ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}
 
     # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for JOD
     find_instance_file JOD_GATEIN_PATCH "${ETC_DIR}/gatein" "jod-configuration.properties.patch" "${JOD_GATEIN_PATCH_PRODUCT_NAME}"
@@ -123,13 +123,13 @@ do_configure_tomcat_jod() {
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for JOD Converter
     if [ "${JOD_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
-      cp $JOD_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      cp ${JOD_GATEIN_PATCH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
       echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $JOD_GATEIN_PATCH ..."
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.jod
-      patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.jod
+      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.ori.jod
+      patch -l -p0 ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
+      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patched.jod
 
-      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_JOD_CONVERTER_PORTS@" "${DEPLOYMENT_JOD_CONVERTER_PORTS}"
+      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_JOD_CONVERTER_PORTS@" "${DEPLOYMENT_JOD_CONVERTER_PORTS}"
       echo_info "Done."
     fi
 
@@ -137,13 +137,13 @@ do_configure_tomcat_jod() {
 }
 
 do_configure_tomcat_ldap() {
-  if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+  if [ -e ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ]; then
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
 
     # Ensure the configuration.properties doesn't have some windows end line characters
     # '\015' is Ctrl+V Ctrl+M = ^M
-    cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
-    tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+    cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig
+    tr -d '\015' < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig > ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}
 
     # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
     find_instance_file LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties.patch" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
@@ -151,15 +151,15 @@ do_configure_tomcat_ldap() {
     # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for LDAP
     if [ "${LDAP_GATEIN_PATCH}" != "UNSET" ]; then
       # Prepare the patch
-      cp $LDAP_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+      cp ${LDAP_GATEIN_PATCH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
       echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $LDAP_GATEIN_PATCH ..."
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.ldap
-      patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-      cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.ldap
+      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.ori.ldap
+      patch -l -p0 ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
+      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patched.ldap
 
-      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_URL@" "${DEPLOYMENT_LDAP_URL}"
-      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_ADMIN_DN@" "${DEPLOYMENT_LDAP_ADMIN_DN}"
-      replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DEPLOYMENT_LDAP_ADMIN_PWD@" "${DEPLOYMENT_LDAP_ADMIN_PWD}"
+      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_LDAP_URL@" "${DEPLOYMENT_LDAP_URL}"
+      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_LDAP_ADMIN_DN@" "${DEPLOYMENT_LDAP_ADMIN_DN}"
+      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_LDAP_ADMIN_PWD@" "${DEPLOYMENT_LDAP_ADMIN_PWD}"
       echo_info "Done."
     fi
 
@@ -174,7 +174,7 @@ do_configure_tomcat_datasources() {
     MYSQL)
       if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector*.jar ]; then
         MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
-        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL` ]; then
+        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}` ]; then
           if ${ADT_OFFLINE}; then
             echo_error "ADT is offine and the MySQL JDBC Driver isn't available locally"
             exit 1
@@ -182,10 +182,10 @@ do_configure_tomcat_datasources() {
             mkdir -p ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/
             echo_info "Downloading MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
             set +e
-            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename $MYSQL_JAR_URL`
+            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}`
             if [ "$?" -ne "0" ]; then
               echo_error "Cannot download ${MYSQL_JAR_URL}"
-              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` # Remove potential corrupted file
+              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` # Remove potential corrupted file
               exit 1
             fi
             set -e
@@ -194,25 +194,25 @@ do_configure_tomcat_datasources() {
         fi
         echo_info "Validating MySQL JDBC Driver integrity ..."
         set +e
-        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` > /dev/null
+        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` > /dev/null
         if [ "$?" -ne "0" ]; then
-          echo_error "Sorry, "`basename $MYSQL_JAR_URL`" integrity failed. Local copy is deleted."
-          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL`
+          echo_error "Sorry, "`basename ${MYSQL_JAR_URL}`" integrity failed. Local copy is deleted."
+          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}`
           exit 1
         fi
         set -e
         echo_info "MySQL JDBC Driver integrity validated."
         echo_info "Installing MySQL JDBC Driver ..."
-        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename $MYSQL_JAR_URL` ${DEPLOYMENT_DIR}/lib/
+        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` ${DEPLOYMENT_DIR}/lib/
         echo_info "Done."
       fi
-      if [ -e ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ]; then
+      if [ -e ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ]; then
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
 
         # Ensure the configuration.properties doesn't have some windows end line characters
         # '\015' is Ctrl+V Ctrl+M = ^M
-        cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig
-        tr -d '\015' < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.orig > ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH
+        cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig
+        tr -d '\015' < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig > ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}
 
         # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
         find_instance_file DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties.patch" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
@@ -220,18 +220,18 @@ do_configure_tomcat_datasources() {
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for MySQL
         if [ "${DB_GATEIN_PATCH}" != "UNSET" ]; then
           # Prepare the patch
-          cp $DB_GATEIN_PATCH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
+          cp ${DB_GATEIN_PATCH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
           echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $DB_GATEIN_PATCH ..."
-          cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.ori.db
-          patch -l -p0 ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH < ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patch
-          cp ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH.patched.db
+          cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.ori.db
+          patch -l -p0 ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
+          cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patched.db
 
-          replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-          replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-          replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-          replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-          replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-          replace_in_file ${DEPLOYMENT_DIR}/$DEPLOYMENT_GATEIN_CONF_PATH "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
           echo_info "Done."
         fi
 
@@ -240,7 +240,7 @@ do_configure_tomcat_datasources() {
       # Reconfigure server.xml for MySQL
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
-        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
@@ -259,7 +259,7 @@ do_configure_tomcat_datasources() {
       # Reconfigure server.xml for HSQLDB
       if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
         # Prepare the patch
-        cp $DB_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
         echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
         cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
         patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
@@ -295,7 +295,7 @@ do_configure_tomcat_ports() {
   # Reconfigure server.xml to change ports
   if [ "${PORTS_SERVER_PATCH}" != "UNSET" ]; then
     # Prepare the patch
-    cp $PORTS_SERVER_PATCH ${DEPLOYMENT_DIR}/conf/server-ports.xml.patch
+    cp ${PORTS_SERVER_PATCH} ${DEPLOYMENT_DIR}/conf/server-ports.xml.patch
     echo_info "Applying on server.xml the patch $PORTS_SERVER_PATCH ..."
     cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-ports
     patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-ports.xml.patch
@@ -363,7 +363,7 @@ do_configure_tomcat_server() {
 	if [ -f ${DEPLOYMENT_DIR}/webapps/crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
     # Open firewall port for CRaSH
-    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" $ADT_DEV_MODE
+    do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
   fi
 
 }

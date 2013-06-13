@@ -74,8 +74,8 @@ loadSystemInfo() {
       if [ -f /etc/UnitedLinux-release ]; then
         DIST="${DIST}[`cat/etc/UnitedLinux-release|tr"\n"' '|seds/VERSION.*//`]"
       fi
-      OS=`tolower $OS`
-      DistroBasedOn=`tolower $DistroBasedOn`
+      OS=`tolower ${OS}`
+      DistroBasedOn=`tolower ${DistroBasedOn}`
       readonly OS
       readonly OSSTR
       readonly KERNEL
