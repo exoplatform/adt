@@ -57,7 +57,7 @@ checkCaches();
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">
-                    <p>This page summarizes all Git feature branches (<code>feature/*</code>) and their status compared to each project <code>master</code> branch.</p>
+                    <p>This page summarizes all Git feature branches (<code>feature/????</code>) and their status compared to each project <code>master</code> branch.</p>
 
                     <h3>Branches deployed on acceptance</h3>
                     <?php
@@ -68,7 +68,7 @@ checkCaches();
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
-                            <th class="col-center">Branch feature/*</th>
+                            <th class="col-center">Branch feature/????</th>
                             <?php foreach ($projects as $project) { ?>
                                 <th class="col-center"><?=$project?></th>
                             <?php } ?>
@@ -84,7 +84,7 @@ checkCaches();
                                     <?php foreach ($projects as $project) { ?>
                                         <td class="col-center">
                                             <?php if (array_key_exists($project, $FBProjects)) { ?>
-                                                <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="Repository URL"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> behind</span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $FBProjects[$project]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $FBProjects[$project]['ahead_commits'] ?> ahead<?php }?></a>
+                                                <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="GitHub" ><span rel="tooltip" title="<?=$FBProjects[$project]['behind_commits']?> commits on the base branch that do not exist on this branch [behind]"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down icon-white"></i></span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down"></i><?php }?></span>&nbsp;<span rel="tooltip" title="<?=$FBProjects[$project]['ahead_commits']?> commits on this branch that do not exist on the base branch [ahead]"><?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><i class="icon-arrow-up icon-white"></i> <?= $FBProjects[$project]['ahead_commits'] ?></span><?php } else { ?><i class="icon-arrow-up"></i> <?= $FBProjects[$project]['ahead_commits'] ?><?php }?></span></a>
                                             <?php }?>
                                         </td>
                                     <?php } ?>
@@ -98,7 +98,7 @@ checkCaches();
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
-                            <th class="col-center">Branch feature/*</th>
+                            <th class="col-center">Branch feature/????</th>
                             <?php foreach ($projects as $project) { ?>
                                 <th class="col-center"><?=$project?></th>
                             <?php } ?>
@@ -114,7 +114,7 @@ checkCaches();
                                     <?php foreach ($projects as $project) { ?>
                                         <td class="col-center">
                                             <?php if (array_key_exists($project, $FBProjects)) { ?>
-                                                <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="Repository URL"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> behind</span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> behind<?php }?>&nbsp;<?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><?= $FBProjects[$project]['ahead_commits'] ?> ahead</span><?php } else { ?><?= $FBProjects[$project]['ahead_commits'] ?> ahead<?php }?></a>
+                                                <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="GitHub" ><span rel="tooltip" title="<?=$FBProjects[$project]['behind_commits']?> commits on the base branch that do not exist on this branch [behind]"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down icon-white"></i></span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down"></i><?php }?></span>&nbsp;<span rel="tooltip" title="<?=$FBProjects[$project]['ahead_commits']?> commits on this branch that do not exist on the base branch [ahead]"><?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><i class="icon-arrow-up icon-white"></i> <?= $FBProjects[$project]['ahead_commits'] ?></span><?php } else { ?><i class="icon-arrow-up"></i> <?= $FBProjects[$project]['ahead_commits'] ?><?php }?></span></a>
                                             <?php }?>
                                         </td>
                                     <?php } ?>
@@ -132,5 +132,10 @@ checkCaches();
 </div>
 <!-- Footer ================================================== -->
 <div id="footer">Copyright © 2000-2013. All rights Reserved, eXo Platform SAS.</div>
+<script type="text/javascript">
+    $(document).ready(function () {
+        $('body').tooltip({ selector: '[rel=tooltip]'});
+    });
+</script>
 </body>
 </html>
