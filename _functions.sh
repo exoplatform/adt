@@ -461,9 +461,7 @@ initialize_product_settings() {
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION" 
-      if ${DEPLOYMENT_CHAT_ENABLED}; then
-        validate_env_var "DEPLOYMENT_CHAT_WEEMO_KEY"
-      fi ;;
+    ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
     ;;
@@ -869,6 +867,9 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
   configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
+  if ${DEPLOYMENT_CHAT_ENABLED}; then
+    validate_env_var "DEPLOYMENT_CHAT_WEEMO_KEY"
+  fi
 
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
