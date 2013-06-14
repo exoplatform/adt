@@ -806,6 +806,7 @@ do_configure_apache() {
   echo_info "Done."
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
+  evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
       evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
@@ -1143,6 +1144,7 @@ do_undeploy() {
     # Delete Awstat config
     rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
     # Delete the vhost
+    rm -f ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
     rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
     # Reload Apache to deactivate the config
     do_reload_apache ${ADT_DEV_MODE}

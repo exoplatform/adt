@@ -1,72 +1,7 @@
 <VirtualHost *:80>
     ServerName  ${DEPLOYMENT_EXT_HOST}
     ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
-    ServerAdmin exo-swf@exoplatform.com
 
-    ErrorLog        ${ADT_DATA}/var/log/apache2/${DEPLOYMENT_EXT_HOST}-error.log
-    LogLevel        warn
-    CustomLog       ${ADT_DATA}/var/log/apache2/${DEPLOYMENT_EXT_HOST}-access.log combined
-
-    # Error pages
-    ErrorDocument 404 /404.html
-    ErrorDocument 500 /500.html
-    ErrorDocument 502 /502.html
-    ErrorDocument 503 /503.html
-
-    # don't loose time with IP address lookups
-    HostnameLookups Off
-
-    # needed for named virtual hosts
-    UseCanonicalName Off
-
-    # configures the footer on server-generated documents
-    ServerSignature Off
-
-    <Directory />
-        Options FollowSymLinks
-        AllowOverride None
-    </Directory>
-
-    DocumentRoot ${ADT_DATA}/var/www/
-    <Directory ${ADT_DATA}/var/www/>
-        Options Indexes FollowSymLinks MultiViews
-        AllowOverride None
-        Order allow,deny
-        allow from all
-    </Directory>
-
-    Alias /icons/ "/usr/share/apache2/icons/"
-    <Directory "/usr/share/apache2/icons">
-        Options Indexes MultiViews
-        AllowOverride None
-        Order allow,deny
-        Allow from all
-    </Directory>
-
-    Alias /logs/ "${DEPLOYMENT_DIR}/logs/"
-    <Directory "${DEPLOYMENT_DIR}/logs/">
-        Options Indexes MultiViews
-        AllowOverride None
-        Order allow,deny
-        Allow from all
-    </Directory>
-
-    ProxyRequests           Off
-    ProxyPreserveHost       On
-    ProxyPass               /404.html            !
-    ProxyPass               /500.html            !
-    ProxyPass               /502.html            !
-    ProxyPass               /503.html            !
-    ProxyPass               /style.css           !
-    ProxyPass               /logs/               !
-    ProxyPass               /icons/              !
-    ProxyPass               /images/favicon.ico  !
-    ProxyPass               /images/Arrow.gif    !
-    ProxyPass               /images/BgBlock.jpg  !
-    ProxyPass               /images/Header.png   !
-    ProxyPass               /images/Footer.png   !
-    ProxyPass               /images/Logo.png     !
-    ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30
-    ProxyPassReverse        /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/
+    Include ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
 
 </VirtualHost>
