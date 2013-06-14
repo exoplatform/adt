@@ -1,6 +1,6 @@
 <VirtualHost *:80>
 
-    ServerName  ${ACCEPTANCE_HOST}
+    ServerName  http://${ACCEPTANCE_HOST}
 
     Include ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
 
