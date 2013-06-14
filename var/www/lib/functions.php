@@ -253,10 +253,10 @@ function getGlobalAcceptanceInstances()
             // TBD : Cleanup JSON decode/encode and array/objects
             $instances = json_decode(json_encode(getLocalAcceptanceInstances()));
         } else {
-            $instances = append_data('http://acceptance.exoplatform.org/rest/list.php', $instances);
-            $instances = append_data('http://acceptance2.exoplatform.org/rest/list.php', $instances);
-            $instances = append_data('http://acceptance3.exoplatform.org/rest/list.php', $instances);
-            $instances = append_data('http://acceptance4.exoplatform.org/rest/list.php', $instances);
+            $instances = append_data('https://acceptance.exoplatform.org/rest/list.php', $instances);
+            $instances = append_data('https://acceptance2.exoplatform.org/rest/list.php', $instances);
+            $instances = append_data('https://acceptance3.exoplatform.org/rest/list.php', $instances);
+            $instances = append_data('https://acceptance4.exoplatform.org/rest/list.php', $instances);
         }
         // Instances will be cached for 2 min
         apc_store('all_instances', $instances, 120);
