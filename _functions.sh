@@ -1143,7 +1143,7 @@ do_undeploy() {
     # Delete Awstat config
     rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
     # Delete the vhost
-    rm -f ${APACHE_CONF_DIR}/${DEPLOYMENT_EXT_HOST}
+    rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
     # Reload Apache to deactivate the config
     do_reload_apache ${ADT_DEV_MODE}
     # Delete the server
