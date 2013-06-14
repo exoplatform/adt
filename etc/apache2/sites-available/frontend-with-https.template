@@ -10,7 +10,7 @@
 
     ServerName  ${ACCEPTANCE_HOST}
 
-    Include ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org.include
+    Include ${APACHE_CONF_DIR}/sites-available/acceptance-frontend.include
 
     #####################
     # SSL configuration
