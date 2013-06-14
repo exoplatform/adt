@@ -111,7 +111,7 @@ case "${ACTION}" in
         echo_info "Done."
       ;;
       https)
-        if [ ! -e "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ ! -e "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ ! -e "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+        if [ ! -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ ! -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ ! -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
           echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
           evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-with-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
           echo_info "Done."
