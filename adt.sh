@@ -115,7 +115,7 @@ case "${ACTION}" in
       https)
         if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
           echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-with-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+          evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-full-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
           echo_info "Done."
         else
           echo_error "Deploying Front End with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
