@@ -131,6 +131,7 @@ init() {
   mkdir -p ${CONF_DIR}
   mkdir -p ${APACHE_CONF_DIR}/conf.d
   mkdir -p ${APACHE_CONF_DIR}/sites-available
+  mkdir -p ${APACHE_CONF_DIR}/includes
   mkdir -p ${ADT_CONF_DIR}
   mkdir -p ${FEATURES_CONF_DIR}
   chmod 777 ${FEATURES_CONF_DIR} # apache needs to write here

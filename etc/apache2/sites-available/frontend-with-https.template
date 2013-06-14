@@ -2,7 +2,7 @@
 
     ServerName  ${ACCEPTANCE_HOST}
 
-    Include ${APACHE_CONF_DIR}/sites-available/acceptance-frontend.include
+    Include ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
 
 </VirtualHost>
 
@@ -10,7 +10,7 @@
 
     ServerName  ${ACCEPTANCE_HOST}
 
-    Include ${APACHE_CONF_DIR}/sites-available/acceptance-frontend.include
+    Include ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
 
     #####################
     # SSL configuration
