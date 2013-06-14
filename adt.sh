@@ -104,6 +104,8 @@ case "${ACTION}" in
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
     evaluate_file_content ${ETC_DIR}/apache2/includes/frontend.include.template ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
+    # Fix : Remove any include in the wrong directory
+    rm ${APACHE_CONF_DIR}/sites-available/*.include
     case "${ACCEPTANCE_SCHEME}" in
       http)
         echo_info "Deploying Apache FrontEnd configuration for HTTP"
