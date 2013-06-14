@@ -1,3 +1,5 @@
+    ServerAdmin exo-swf@exoplatform.com
+
     RewriteEngine           On
     
     DirectoryIndex index.php

@@ -1,7 +1,6 @@
 <VirtualHost *:80>
 
     ServerName  ${ACCEPTANCE_HOST}
-    ServerAdmin exo-swf@exoplatform.com
 
     Include ${APACHE_CONF_DIR}/sites-available/acceptance-frontend.include
 
@@ -10,7 +9,6 @@
 <VirtualHost *:443>
 
     ServerName  ${ACCEPTANCE_HOST}
-    ServerAdmin exo-swf@exoplatform.com
 
     Include ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org.include
 

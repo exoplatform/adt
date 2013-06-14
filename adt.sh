@@ -105,7 +105,7 @@ case "${ACTION}" in
     evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.include.template ${APACHE_CONF_DIR}/sites-available/acceptance-frontend.include
     if [ ! -z "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ ! -z "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ ! -z "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
       echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
-      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-with-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
       echo_info "Done."
     else
       echo_info "Deploying Apache FrontEnd configuration for HTTP"
