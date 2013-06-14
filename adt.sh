@@ -92,6 +92,7 @@ case "${ACTION}" in
     init
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     validate_env_var "ADT_DATA"
+    validate_env_var "ACCEPTANCE_SCHEME"
     validate_env_var "ACCEPTANCE_HOST"
     # Create the main vhost from the template
     configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
@@ -103,15 +104,29 @@ case "${ACTION}" in
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
     evaluate_file_content ${ETC_DIR}/apache2/includes/frontend.include.template ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
-    if [ ! -z "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ ! -z "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ ! -z "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
-      echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
-      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-with-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-      echo_info "Done."
-    else
-      echo_info "Deploying Apache FrontEnd configuration for HTTP"
-      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-      echo_info "Done."
-    fi
+    case "${ACCEPTANCE_SCHEME}" in
+      http)
+        echo_info "Deploying Apache FrontEnd configuration for HTTP"
+        evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+        echo_info "Done."
+      ;;
+      https)
+        if [ ! -e "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ ! -e "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ ! -e "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+          echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
+          evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-with-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+          echo_info "Done."
+        else
+          echo_error "Deploying Front End with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
+          print_usage
+          exit 1
+        fi
+      ;;
+      *)
+        echo_error "Invalid scheme \"${ACCEPTANCE_SCHEME}\""
+        print_usage
+        exit 1
+      ;;
+    esac
     if ! ${ADT_DEV_MODE}; then
       if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
         echo_info "Reloading Apache server ..."

@@ -80,6 +80,7 @@ Environment Variables :
 
   DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy, values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
 
+  ACCEPTANCE_SCHEME                 : The scheme to use to deploy the acceptance server (default: http, values : http | https)
   ACCEPTANCE_HOST                   : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
   CROWD_ACCEPTANCE_APP_NAME         : The crowd application used to authenticate the front-end (default: none)
   CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application''s password used to authenticate the front-end (default: none)
@@ -104,11 +105,13 @@ EOF
 
 init() {
   if ${ADT_DEV_MODE}; then
-    configurable_env_var "ACCEPTANCE_HOST" "localhost"
-    configurable_env_var "ACCEPTANCE_PORT" "8080"
+    configurable_env_var "ACCEPTANCE_SCHEME" "http"
+    configurable_env_var "ACCEPTANCE_HOST"   "localhost"
+    configurable_env_var "ACCEPTANCE_PORT"   "8080"
   else
-    configurable_env_var "ACCEPTANCE_HOST" "acceptance.exoplatform.org"
-    configurable_env_var "ACCEPTANCE_PORT" "80"
+    configurable_env_var "ACCEPTANCE_SCHEME" "https"
+    configurable_env_var "ACCEPTANCE_HOST"   "acceptance.exoplatform.org"
+    configurable_env_var "ACCEPTANCE_PORT"   "80"
   fi
   loadSystemInfo
   validate_env_var "SCRIPT_DIR"
@@ -504,7 +507,7 @@ do_download_server() {
   env_var ARTIFACT_DATE ${PRODUCT_ARTIFACT_DATE}
   env_var ARTIFACT_REPO_URL ${PRODUCT_ARTIFACT_URL}
   env_var ARTIFACT_LOCAL_PATH ${PRODUCT_ARTIFACT_LOCAL_PATH}
-  env_var ARTIFACT_DL_URL $(do_build_url "http" "${ACCEPTANCE_HOST}" "${ACCEPTANCE_PORT}" "/downloads/${PRODUCT_NAME}-${ARTIFACT_TIMESTAMP}.${ARTIFACT_PACKAGING}")
+  env_var ARTIFACT_DL_URL $(do_build_url "${ACCEPTANCE_SCHEME}" "${ACCEPTANCE_HOST}" "${ACCEPTANCE_PORT}" "/downloads/${PRODUCT_NAME}-${ARTIFACT_TIMESTAMP}.${ARTIFACT_PACKAGING}")
 }
 
 do_download_dataset() {
