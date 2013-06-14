@@ -91,15 +91,27 @@ case "${ACTION}" in
   init)
     init
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
+    validate_env_var "ADT_DATA"
+    validate_env_var "ACCEPTANCE_HOST"
     # Create the main vhost from the template
     configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
     configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
-    validate_env_var "ADT_DATA"
-    validate_env_var "ACCEPTANCE_HOST"
+    configurable_env_var "APACHE_SSL_CERTIFICATE_FILE" ""
+    configurable_env_var "APACHE_SSL_CERTIFICATE_KEY_FILE" ""
+    configurable_env_var "APACHE_SSL_CERTIFICATE_CHAIN_FILE" ""
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
-    evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+    evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.include.template ${APACHE_CONF_DIR}/sites-available/acceptance-frontend.include
+    if [ ! -z "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ ! -z "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ ! -z "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+      echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
+      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+      echo_info "Done."
+    else
+      echo_info "Deploying Apache FrontEnd configuration for HTTP"
+      evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+      echo_info "Done."
+    fi
     if ! ${ADT_DEV_MODE}; then
       if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
         echo_info "Reloading Apache server ..."

@@ -53,7 +53,7 @@ Environment Variables :
 
   They may be configured in the current shell environment or /etc/default/adt or \$HOME/.adtrc
 
-  PRODUCT_NAME                   : The product you want to manage. Possible values are :
+  PRODUCT_NAME                      : The product you want to manage. Possible values are :
     gatein         GateIn Community edition                - Apache Tomcat bundle
     exogtn         GateIn eXo edition                      - Apache Tomcat bundle
     plf            eXo Platform Standard Edition           - Apache Tomcat bundle
@@ -65,35 +65,38 @@ Environment Variables :
     addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
     compint        eXo Company Intranet                    - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
-  PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+  PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
-  ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
-  DEPLOYMENT_APACHE_SECURITY     : Do you want to have a public or a private deployment (default: private, values : private | public)
-  DEPLOYMENT_APACHE_VHOST_ALIAS  : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
-  DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
+  ADT_DATA                          : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
+  DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private, values : private | public)
+  DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
+  DEPLOYMENT_PORT_PREFIX            : Default prefix for all ports (2 digits will be added after it for each required port)
 
-  DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 2g)
-  DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
-  DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
+  DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
+  DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
+  DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
 
-  DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
+  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
 
-  DEPLOYMENT_MODE                : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy, values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
+  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy, values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
 
-  ACCEPTANCE_HOST                : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
-  CROWD_ACCEPTANCE_APP_NAME      : The crowd application used to authenticate the front-end (default: none)
-  CROWD_ACCEPTANCE_APP_PASSWORD  : The crowd application''s password used to authenticate the front-end (default: none)
+  ACCEPTANCE_HOST                   : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
+  CROWD_ACCEPTANCE_APP_NAME         : The crowd application used to authenticate the front-end (default: none)
+  CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application''s password used to authenticate the front-end (default: none)
+  APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup
+  APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
+  APACHE_SSL_CERTIFICATE_CHAIN_FILE : Apache SSLCertificateChainFile for HTTPS setup
 
-  DEPLOYMENT_LDAP_URL            : LDAP URL to use if the server is using one (default: none)
-  DEPLOYMENT_LDAP_ADMIN_DN       : LDAP DN to use to logon into the LDAP server
-  DEPLOYMENT_LDAP_ADMIN_PWD      : LDAP password to use to logon into the LDAP server
+  DEPLOYMENT_LDAP_URL               : LDAP URL to use if the server is using one (default: none)
+  DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
+  DEPLOYMENT_LDAP_ADMIN_PWD         : LDAP password to use to logon into the LDAP server
 
-  REPOSITORY_SERVER_BASE_URL     : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
-  REPOSITORY_USERNAME            : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
-  REPOSITORY_PASSWORD            : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+  REPOSITORY_SERVER_BASE_URL        : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
+  REPOSITORY_USERNAME               : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+  REPOSITORY_PASSWORD               : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
 
-  ADT_DEBUG                      : Display debug details (default: false)
-  ADT_DEV_MODE                   : Development mode. Apache server, awstats and ufw are deactivated. (default: false)
+  ADT_DEBUG                         : Display debug details (default: false)
+  ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false)
 
 EOF
 
