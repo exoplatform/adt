@@ -186,6 +186,10 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.23" #Default version used to download additional mysql driver
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
+      configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
+      env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
+      env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
+
       env_var "ARTIFACT_GROUPID" ""
       env_var "ARTIFACT_ARTIFACTID" ""
       env_var "ARTIFACT_TIMESTAMP" ""
@@ -385,6 +389,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
+          env_var DEPLOYMENT_CHAT_ENABLED true
         ;;
         compint)
           env_var PRODUCT_DESCRIPTION           "eXo Company Intranet"
@@ -438,11 +443,20 @@ initialize_product_settings() {
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
       fi
+      if ${DEPLOYMENT_CHAT_ENABLED}; then
+        # Build a database name without dot, minus ...
+        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${PRODUCT_NAME}_${PRODUCT_VERSION}"
+        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//./_}"
+        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//-/_}"
+      fi
     ;;
     start | stop | restart | undeploy )
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
-      validate_env_var "PRODUCT_VERSION" ;;
+      validate_env_var "PRODUCT_VERSION" 
+      if ${DEPLOYMENT_CHAT_ENABLED}; then
+        validate_env_var "DEPLOYMENT_CHAT_WEEMO_KEY"
+      fi ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
     ;;
@@ -521,6 +535,10 @@ do_restore_dataset(){
       do_drop_data
       do_drop_database
       do_create_database
+      if ${DEPLOYMENT_CHAT_ENABLED}; then
+        do_drop_chat_mongo_database
+        do_create_chat_mongo_database
+      fi
       mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
       echo_info "Loading values ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
@@ -569,6 +587,10 @@ do_init_empty_data(){
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     do_drop_database
     do_create_database
+  fi
+  if ${DEPLOYMENT_CHAT_ENABLED}; then
+    do_drop_chat_mongo_database
+    do_create_chat_mongo_database
   fi
   do_drop_data
   do_create_data
@@ -651,7 +673,7 @@ do_unpack_server() {
 }
 
 #
-# Creates a database for the instance. Drops it if it already exists.
+# Creates a database for the instance. Don't drop it if it already exists.
 #
 do_create_database() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
@@ -719,6 +741,35 @@ do_drop_data() {
   echo_info "Done."
   echo_info "Drops instance values ..."
   rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+  echo_info "Done."
+}
+
+#
+# Creates a MongoDB database for the instance. Don't drop it if it already exists.
+#
+do_create_chat_mongo_database() {
+  echo_info "Creating MongoDB database ${DEPLOYMENT_CHAT_MONGODB_NAME} ..."
+  if [ ! command -v mongo &>/dev/null ]; then
+   echo_error "mongo binary doesn't exist on the system. Please install MongoDB client to be able to manage the MongoDB Server"
+   exit 1
+  fi;
+  # Database are automatically created the first time we access it
+  mongo ${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.getCollectionNames()" > /dev/null
+  echo 'show dbs' | mongo --quiet
+  echo_info "Done."
+}
+
+#
+# Drops the MongoDB database used by the instance.
+#
+do_drop_chat_mongo_database() {
+  echo_info "Drops MongoDB database ${DEPLOYMENT_CHAT_MONGODB_NAME} ..."
+  if [ ! command -v mongo &>/dev/null ]; then
+   echo_error "mongo binary doesn't exist on the system. Please install MongoDB client to be able to manage the MongoDB Server"
+   exit 1
+  fi;
+  mongo ${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.dropDatabase()" > /dev/null
+  echo 'show dbs' | mongo --quiet
   echo_info "Done."
 }
 
@@ -846,6 +897,9 @@ do_deploy() {
       echo_warn "This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/data
       do_create_database
+      if ${DEPLOYMENT_CHAT_ENABLED}; then
+        do_create_chat_mongo_database
+      fi
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -857,6 +911,9 @@ do_deploy() {
       else
         mkdir -p ${_tmpdir}/data
         do_create_database
+        if ${DEPLOYMENT_CHAT_ENABLED}; then
+          do_create_chat_mongo_database
+        fi
       fi
       )
     fi
@@ -1070,6 +1127,9 @@ do_undeploy() {
     do_stop
     if ${DEPLOYMENT_DATABASE_ENABLED}; then
       do_drop_database
+    fi
+    if ${DEPLOYMENT_CHAT_ENABLED}; then
+      do_drop_chat_mongo_database
     fi
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
     # Delete Awstat config
