@@ -1,6 +1,6 @@
 <VirtualHost *:80>
 
-    ServerName  http://${ACCEPTANCE_HOST}
+    ServerName  ${ACCEPTANCE_HOST}
 
     # Allow only HTTPS
     RewriteEngine On
@@ -11,7 +11,7 @@
 
 <VirtualHost *:443>
 
-    ServerName  https://${ACCEPTANCE_HOST}
+    ServerName  ${ACCEPTANCE_HOST}
 
     Include ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
 
