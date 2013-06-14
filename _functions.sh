@@ -70,6 +70,7 @@ Environment Variables :
   ADT_DATA                          : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
   DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private, values : private | public)
   DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
+  DEPLOYMENT_APACHE_HTTPS_ENABLED   : Do you want to add an HTTPs VirtualHost (default: false, values : true | false)
   DEPLOYMENT_PORT_PREFIX            : Default prefix for all ports (2 digits will be added after it for each required port)
 
   DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
@@ -96,8 +97,8 @@ Environment Variables :
   REPOSITORY_USERNAME               : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
   REPOSITORY_PASSWORD               : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
 
-  ADT_DEBUG                         : Display debug details (default: false)
-  ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false)
+  ADT_DEBUG                         : Display debug details (default: false, values : true | false)
+  ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false, values : true | false)
 
 EOF
 
@@ -191,7 +192,10 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
       env_var "DEPLOYMENT_APPSRV_VERSION" "6.0.35" #Default version used to download additional resources like JMX lib
       env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
+
       env_var "DEPLOYMENT_CRASH_ENABLED" false
+
+      env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
       env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
@@ -809,10 +813,38 @@ do_configure_apache() {
   evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
-      evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+      if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
+        if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+          echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
+          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          echo "OK."
+        else
+          echo_error "Deploying instance with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
+          print_usage
+          exit 1
+        fi
+      else
+          echo_n_info "Deploying Apache instance configuration for HTTP only..."
+          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          echo "OK."
+      fi
     ;;
     private)
-      evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+      if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
+        if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+          echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
+          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          echo "OK."
+        else
+          echo_error "Deploying instance with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
+          print_usage
+          exit 1
+        fi
+      else
+          echo_n_info "Deploying Apache instance configuration for HTTP only..."
+          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          echo "OK."
+      fi
     ;;
     *)
       echo_error "Invalid apache security type \"${DEPLOYMENT_DATABASE_TYPE}\""
