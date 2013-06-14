@@ -2,7 +2,10 @@
 
     ServerName  http://${ACCEPTANCE_HOST}
 
-    Include ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
+    # Allow only HTTPS
+    RewriteEngine On
+    RewriteCond %{HTTPS} off
+    RewriteRule (.*) https://%{HTTP_HOST}%{REQUEST_URI}
 
 </VirtualHost>
 
