@@ -194,7 +194,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                                     <label class="control-label" for="description"><strong>Description</strong></label>
 
                                     <div class="controls">
-                                        <input class="input-xxlarge" type="text" id="description" name="description" placeholder="Description" value="<?= $descriptor_array->BRANCH_DESC ?>">
+                                        <input class="input-large" type="text" id="description" name="description" placeholder="Description" value="<?= $descriptor_array->BRANCH_DESC ?>">
                                         <span class="help-block">Short description of the feature branch</span>
                                     </div>
                                 </div>
