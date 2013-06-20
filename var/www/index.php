@@ -176,7 +176,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             <td class="col-center"><?php if (property_exists($descriptor_array,'DEPLOYMENT_CRASH_ENABLED') && $descriptor_array->DEPLOYMENT_CRASH_ENABLED) {?><a href="ssh://root@<?=$descriptor_array->DEPLOYMENT_EXT_HOST.":".$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT ?>" rel="tooltip" title="CRaSH SSH Access"><i class="icon-laptop"></i></a><?php } ?></td>
         </tr>
         <?php if (!empty($feature_branch)) { ?>
-            <form class="form" action="http://<?= $descriptor_array->ACCEPTANCE_SERVER ?>/editFeature.php" method="POST">
+            <form class="form" action="<?= getenv('ACCEPTANCE_SCHEME') ?>://<?= $descriptor_array->ACCEPTANCE_SERVER ?>/editFeature.php" method="POST">
                 <div class="modal bigModal hide fade" id="edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
