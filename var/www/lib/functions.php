@@ -172,6 +172,17 @@ function getLocalAcceptanceInstances()
         foreach ($vhosts as $vhost) {
             // Parse deployment descriptor
             $descriptor_array = parse_ini_file(getenv('ADT_DATA') . "/conf/adt/" . $vhost);
+            $matches = array();
+            if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array['PRODUCT_VERSION'], $matches)) {
+                $descriptor_array['BASE_VERSION'] = $matches[1];
+                $descriptor_array['BRANCH_NAME'] = $matches[2];
+            } elseif (preg_match("/(.*)\-SNAPSHOT/", $descriptor_array['PRODUCT_VERSION'], $matches)) {
+                $descriptor_array['BASE_VERSION'] = $matches[1];
+                $descriptor_array['BRANCH_NAME'] = "";
+            } else {
+                $descriptor_array['BASE_VERSION'] = $descriptor_array['PRODUCT_VERSION'];
+                $descriptor_array['BRANCH_NAME'] = "";
+            }
             if ($descriptor_array['ARTIFACT_DATE']) {
                 $artifact_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['ARTIFACT_DATE'])->diff($now, true);
                 if ($artifact_age->days)
@@ -228,6 +239,11 @@ function getLocalAcceptanceInstances()
                 $descriptor_array['SCM_BRANCH'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".branch");
             else
                 $descriptor_array['SCM_BRANCH'] = "";
+            // Branch name
+            if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".desc"))
+                $descriptor_array['BRANCH_DESC'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".desc");
+            else
+                $descriptor_array['BRANCH_DESC'] = $descriptor_array['BRANCH_NAME'];
             // Server scheme where is deployed the instance
             $descriptor_array['ACCEPTANCE_SCHEME'] = $scheme;
             // Server hostname where is deployed the instance

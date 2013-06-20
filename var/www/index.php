@@ -96,17 +96,6 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             $status = "<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left icon\"/>&nbsp;Up";
         else
             $status = "<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left icon\"/>&nbsp;Down !";
-        $matches = array();
-        if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
-            $base_version = $matches[1];
-            $feature_branch = $matches[2];
-        } elseif (preg_match("/(.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
-            $base_version = $matches[1];
-            $feature_branch = "";
-        } else {
-            $base_version = $descriptor_array->PRODUCT_VERSION;
-            $feature_branch = "";
-        }
         ?>
         <tr>
             <td><?=$status ?></td>
@@ -118,8 +107,8 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 } else {
                     $product_html_label = $descriptor_array->PRODUCT_DESCRIPTION;
                 }
-                if (!empty($feature_branch)) {
-                    $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $feature_branch;
+                if (!empty($descriptor_array->BRANCH_DESC)) {
+                    $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $descriptor_array->BRANCH_DESC;
                 }
                 $product_html_popover = "<strong>Product:</strong> " . $product_html_label . "<br/>";
                 $product_html_popover = $product_html_popover . "<strong>Version:</strong> " . $descriptor_array->PRODUCT_VERSION . "<br/>";
@@ -139,8 +128,8 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
             </td>
-            <td class="col-left"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i></a>&nbsp;<?= $base_version ?><span style="font-size: small" class="muted"><?= substr_replace($descriptor_array->ARTIFACT_TIMESTAMP,"",0,strlen($base_version))?></span></td>
-            <?php if (empty($feature_branch)) { ?>
+            <td class="col-left"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i></a>&nbsp;<?= $descriptor_array->BASE_VERSION ?><span style="font-size: small" class="muted"><?= substr_replace($descriptor_array->ARTIFACT_TIMESTAMP,"",0,strlen($descriptor_array->BASE_VERSION))?></span></td>
+            <?php if (empty($descriptor_array->BRANCH_NAME)) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>
                 <td class="col-center">
@@ -173,7 +162,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="Usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a></td>
             <td class="col-center"><?php if (property_exists($descriptor_array,'DEPLOYMENT_CRASH_ENABLED') && $descriptor_array->DEPLOYMENT_CRASH_ENABLED) {?><a href="ssh://root@<?=$descriptor_array->DEPLOYMENT_EXT_HOST.":".$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT ?>" rel="tooltip" title="CRaSH SSH Access"><i class="icon-laptop"></i></a><?php } ?></td>
         </tr>
-        <?php if (!empty($feature_branch)) { ?>
+        <?php if (!empty($descriptor_array->BRANCH_NAME)) { ?>
             <form class="form" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editFeature.php" method="POST">
                 <div class="modal bigModal hide fade" id="edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>" aria-hidden="true">
                     <div class="modal-header">
@@ -192,13 +181,25 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                         </div>
                         <div class="row-fluid">
                             <div class="span4"><strong>Version</strong></div>
-                            <div class="span8"><?=$base_version?></div>
+                            <div class="span8"><?=$descriptor_array->BASE_VERSION?></div>
                         </div>
                         <div class="row-fluid">
                             <div class="span4"><strong>Feature Branch</strong></div>
-                            <div class="span8"><?=$feature_branch?></div>
+                            <div class="span8"><?=$descriptor_array->BRANCH_NAME?></div>
                         </div>
                         <hr/>
+                        <div class="row-fluid">
+                            <div class="span12">
+                                <div class="control-group">
+                                    <label class="control-label" for="description"><strong>Description</strong></label>
+
+                                    <div class="controls">
+                                        <input class="input-xxlarge" type="text" id="description" name="description" placeholder="Description" value="<?= $descriptor_array->BRANCH_DESC ?>">
+                                        <span class="help-block">Short description of the feature branch</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row-fluid">
                             <div class="span12">
                                 <div class="control-group">
