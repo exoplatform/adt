@@ -130,7 +130,7 @@ function getFeatureBranches($projects)
 {
     $features = apc_fetch('features');
 
-    if (empty($features) || getenv('ADT_DEV_MODE')) {
+    if (empty($features)) {
         $features = array();
         foreach ($projects as $project) {
             $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");

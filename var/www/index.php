@@ -61,7 +61,6 @@ checkCaches();
     <th class="col-center" colspan="4">Feature Branch</th>
     <th class="col-center">Built</th>
     <th class="col-center">Deployed</th>
-    <th class="col-center">Artifact</th>
     <th class="col-center" colspan="5">&nbsp;</th>
 </tr>
 </thead>
@@ -71,7 +70,7 @@ $all_instances = getGlobalAcceptanceInstances();
 foreach ($all_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
-        <td colspan="16" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
+        <td colspan="15" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
             <?php
             if ($plf_branch === "4.0.x") {
                 echo "Platform " . $plf_branch . " based build (Maintenance)";
@@ -140,7 +139,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
             </td>
-            <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true"><?= $descriptor_array->PRODUCT_VERSION ?></a></td>
+            <td class="col-left"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i></a>&nbsp;<?= $base_version ?><span style="font-size: small" class="muted"><?= substr_replace($descriptor_array->ARTIFACT_TIMESTAMP,"",0,strlen($base_version))?></span></td>
             <?php if (empty($feature_branch)) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>
@@ -168,7 +167,6 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             <?php } ?>
             <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
             <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-            <td class="col-left" style="font-size: small"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i>&nbsp;<?= $descriptor_array->ARTIFACT_TIMESTAMP?></a></td>
             <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_LOG_APPSRV_URL ?>" rel="tooltip" title="Instance logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="instance logs" class="icon"/><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="instance logs" class="icon"/></a></td>
             <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_LOG_APACHE_URL ?>" rel="tooltip" title="apache logs" target="_blank"><img src="/images/terminal.gif" width="16" height="16" alt="apache logs" class="icon"/><img src="/images/apache.png" width="16" height="16" alt="apache logs" class="icon"/></a></td>
             <td class="col-center"><?php if (! empty($descriptor_array->DEPLOYMENT_JMX_URL)) {?><a href="<?= $descriptor_array->DEPLOYMENT_JMX_URL ?>" rel="tooltip" title="jmx monitoring" target="_blank"><img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a><?php } ?></td>
