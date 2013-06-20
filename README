@@ -63,7 +63,8 @@ Usage
 
     This script manages automated deployment of eXo products for testing purpose.
 
-    Action :
+    Action
+    ------
       deploy           Deploys (Download+Configure) the server
       download-dataset Downloads the dataset required by the server
       start            Starts the server
@@ -79,47 +80,65 @@ Usage
 
       init             Initializes the environment
       update-repos     Update Git repositories used by the web front-end
-      web-server       Starts a local PHP web server to test the front-end (requires PHP >= 5.4)
+      web-server       Starts a local PHP web server to test the front-end (requires PHP >= 5.4). It automatically activates the development mode.
 
-    Environment Variables :
+    Environment Variables
+    ---------------------
 
       They may be configured in the current shell environment or /etc/default/adt or $HOME/.adtrc
 
-      PRODUCT_NAME                   : The product you want to manage. Possible values are :
-        gatein         GateIn Community edition
-        exogtn         GateIn eXo edition
-        plf            eXo Platform Standard Edition
-        plfcom         eXo Platform Community Edition
-        plfent         eXo Platform Express/Enterprise Edition
-        plftrial       eXo Platform Trial Edition
-        compint        eXo Company Intranet
-        docs           eXo Platform Documentations Website
-      PRODUCT_VERSION                : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+      Global Settings
+      ===============
 
-      ADT_DATA                       : The path where data have to be stored (default: under the script path - ${SCRIPT_DIR})
-      DEPLOYMENT_PORT_PREFIX         : Default prefix for all ports (2 digits will be added after it for each required port)
+      ADT_DATA                          : The path where data have to be stored (default: under the script path - /Users/arnaud/Code/eXo/adt)
 
-      DEPLOYMENT_JVM_SIZE_MAX        : Maximum heap memory size (default: 2g)
-      DEPLOYMENT_JVM_SIZE_MIN        : Minimum heap memory size (default: 512m)
-      DEPLOYMENT_JVM_PERMSIZE_MAX    : Maximum permgem memory size (default: 256m)
+      ACCEPTANCE_SCHEME                 : The scheme to use to deploy the acceptance server (default: 'http' if ADT_DEV_MODE=true, 'https' otherwise; values : http | https)
+      ACCEPTANCE_HOST                   : The hostname (vhost) where is deployed the acceptance server (default: 'localhost' if ADT_DEV_MODE=true, 'acceptance.exoplatform.org' otherwise)
+      ACCEPTANCE_PORT                   : The server port on which the acceptance front-end is listening (default: '8080' if ADT_DEV_MODE=true, '80' otherwise)
+      CROWD_ACCEPTANCE_APP_NAME         : The crowd application used to authenticate the front-end (default: none)
+      CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application''s password used to authenticate the front-end (default: none)
+      APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup
+      APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
+      APACHE_SSL_CERTIFICATE_CHAIN_FILE : Apache SSLCertificateChainFile for HTTPS setup
 
-      DEPLOYMENT_DATABASE_TYPE       : Which database do you want to use for your deployment ? (default: HSQLDB, values : HSQLDB | MYSQL)
+      REPOSITORY_SERVER_BASE_URL        : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
+      REPOSITORY_USERNAME               : The username to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+      REPOSITORY_PASSWORD               : The password to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
 
-      DEPLOYMENT_MODE                : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy, values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
+      ADT_DEBUG                         : Display debug details (default: false; values : true | false)
+      ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false; values : true | false)
+      ADT_OFFLINE                       : Use only local resources, don't do any remote operations. (default: false; values : true | false)
 
-      ACCEPTANCE_HOST                : The hostname (vhost) where is deployed the acceptance server (default: acceptance.exoplatform.org)
-      CROWD_ACCEPTANCE_APP_NAME      : The crowd application used to authenticate the front-end (default: none)
-      CROWD_ACCEPTANCE_APP_PASSWORD  : The crowd application''s password used to authenticate the front-end (default: none)
+      Instance Settings
+      =================
 
-      DEPLOYMENT_LDAP_URL            : LDAP URL to use if the server is using one (default: none)
-      DEPLOYMENT_LDAP_ADMIN_DN       : LDAP DN to use to logon into the LDAP server
-      DEPLOYMENT_LDAP_ADMIN_PWD      : LDAP password to use to logon into the LDAP server
+      PRODUCT_NAME                      : The product you want to manage. Possible values are :
+        gatein         GateIn Community edition                - Apache Tomcat bundle
+        exogtn         GateIn eXo edition                      - Apache Tomcat bundle
+        plf            eXo Platform Standard Edition           - Apache Tomcat bundle
+        plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
+        plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
+        plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
+        plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
+        plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
+        addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
+        compint        eXo Company Intranet                    - Apache Tomcat bundle
+        docs           eXo Platform Documentations Website     - Apache Tomcat bundle
+      PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
-      REPOSITORY_SERVER_BASE_URL     : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
-      REPOSITORY_USERNAME            : The username to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
-      REPOSITORY_PASSWORD            : The password to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+      DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private; values : private | public)
+      DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
+      DEPLOYMENT_APACHE_HTTPS_ENABLED   : Do you want to add an HTTPs VirtualHost (default: false; values : true | false)
+      DEPLOYMENT_PORT_PREFIX            : Default prefix for all ports (2 digits will be added after it for each required port)
 
-      ADT_DEBUG                      : Display debug details (default: false)
-      ADT_DEV_MODE                   : Development mode. Apache server, awstats and ufw are deactivated. (default: false)
+      DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
+      DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
+      DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
 
+      DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL)
 
+      DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
+
+      DEPLOYMENT_LDAP_URL               : LDAP URL to use if the server is using one (default: none)
+      DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
+      DEPLOYMENT_LDAP_ADMIN_PWD         : LDAP password to use to logon into the LDAP server
