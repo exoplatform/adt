@@ -488,6 +488,10 @@ do_download_dataset() {
 }
 
 do_restore_dataset(){
+  if ${DEPLOYMENT_CHAT_ENABLED}; then
+    do_drop_chat_mongo_database
+    do_create_chat_mongo_database
+  fi
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL)
       # System dependent settings
@@ -501,10 +505,6 @@ do_restore_dataset(){
       do_drop_data
       do_drop_database
       do_create_database
-      if ${DEPLOYMENT_CHAT_ENABLED}; then
-        do_drop_chat_mongo_database
-        do_create_chat_mongo_database
-      fi
       mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
       echo_info "Loading values ..."
       display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
