@@ -71,13 +71,15 @@ env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
 env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions exoplatform:platform-private-distributions"
 
 if ${ADT_DEV_MODE}; then
-  configurable_env_var "ACCEPTANCE_SCHEME" "http"
-  configurable_env_var "ACCEPTANCE_HOST"   "localhost"
-  configurable_env_var "ACCEPTANCE_PORT"   "8080"
+  configurable_env_var "ACCEPTANCE_SCHEME"  "http"
+  configurable_env_var "ACCEPTANCE_HOST"    "localhost"
+  configurable_env_var "ACCEPTANCE_PORT"    "8080"
+  configurable_env_var "ACCEPTANCE_SERVERS" "localhost"
 else
-  configurable_env_var "ACCEPTANCE_SCHEME" "https"
-  configurable_env_var "ACCEPTANCE_HOST"   "acceptance.exoplatform.org"
-  configurable_env_var "ACCEPTANCE_PORT"   "80"
+  configurable_env_var "ACCEPTANCE_SCHEME"  "https"
+  configurable_env_var "ACCEPTANCE_HOST"    "acceptance.exoplatform.org"
+  configurable_env_var "ACCEPTANCE_PORT"    "443"
+  configurable_env_var "ACCEPTANCE_SERVERS" "https://acceptance.exoplatform.org"
 fi
 loadSystemInfo
 validate_env_var "SCRIPT_DIR"

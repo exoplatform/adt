@@ -228,8 +228,12 @@ function getLocalAcceptanceInstances()
                 $descriptor_array['SCM_BRANCH'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".branch");
             else
                 $descriptor_array['SCM_BRANCH'] = "";
+            // Server scheme where is deployed the instance
+            $descriptor_array['ACCEPTANCE_SCHEME'] = $scheme;
             // Server hostname where is deployed the instance
-            $descriptor_array['ACCEPTANCE_SERVER'] = $_SERVER['SERVER_NAME'];
+            $descriptor_array['ACCEPTANCE_HOST'] = $_SERVER['SERVER_NAME'];
+            // Server port where is deployed the instance
+            $descriptor_array['ACCEPTANCE_PORT'] = $_SERVER['SERVER_PORT'];
             // Add it in the list
             if (empty($descriptor_array['PLF_BRANCH']))
                 $instances['UNKNOWN'][] = $descriptor_array;
@@ -253,10 +257,10 @@ function getGlobalAcceptanceInstances()
             // TBD : Cleanup JSON decode/encode and array/objects
             $instances = json_decode(json_encode(getLocalAcceptanceInstances()));
         } else {
-            $instances = append_data(getenv('ACCEPTANCE_SCHEME').'://acceptance.exoplatform.org/rest/list.php', $instances);
-            $instances = append_data(getenv('ACCEPTANCE_SCHEME').'://acceptance2.exoplatform.org/rest/list.php', $instances);
-            $instances = append_data(getenv('ACCEPTANCE_SCHEME').'://acceptance3.exoplatform.org/rest/list.php', $instances);
-            $instances = append_data(getenv('ACCEPTANCE_SCHEME').'://acceptance4.exoplatform.org/rest/list.php', $instances);
+            $servers = explode(",", getenv('ACCEPTANCE_SERVERS'));
+            foreach ($servers as $server) {
+                $instances = append_data($server.'/rest/list.php', $instances);
+            }
         }
         // Instances will be cached for 2 min
         apc_store('all_instances', $instances, 120);

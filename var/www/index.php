@@ -176,7 +176,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             <td class="col-center"><?php if (property_exists($descriptor_array,'DEPLOYMENT_CRASH_ENABLED') && $descriptor_array->DEPLOYMENT_CRASH_ENABLED) {?><a href="ssh://root@<?=$descriptor_array->DEPLOYMENT_EXT_HOST.":".$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT ?>" rel="tooltip" title="CRaSH SSH Access"><i class="icon-laptop"></i></a><?php } ?></td>
         </tr>
         <?php if (!empty($feature_branch)) { ?>
-            <form class="form" action="<?= getenv('ACCEPTANCE_SCHEME') ?>://<?= $descriptor_array->ACCEPTANCE_SERVER ?>/editFeature.php" method="POST">
+            <form class="form" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editFeature.php" method="POST">
                 <div class="modal bigModal hide fade" id="edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
@@ -186,7 +186,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                         <input type="hidden" name="from" value="<?= currentPageURL() ?>">
                         <input type="hidden" name="product" value="<?= $descriptor_array->PRODUCT_NAME ?>">
                         <input type="hidden" name="version" value="<?= $descriptor_array->PRODUCT_VERSION ?>">
-                        <input type="hidden" name="server" value="<?= $descriptor_array->ACCEPTANCE_SERVER ?>">
+                        <input type="hidden" name="server" value="<?= $descriptor_array->ACCEPTANCE_HOST ?>">
 
                         <div class="row-fluid">
                             <div class="span4"><strong>Product</strong></div>

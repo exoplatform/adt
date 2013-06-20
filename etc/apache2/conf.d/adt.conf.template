@@ -1,4 +1,4 @@
 SetEnv ADT_DATA "${ADT_DATA}"
-SetEnv ACCEPTANCE_SCHEME "${ACCEPTANCE_SCHEME}"
+SetEnv ACCEPTANCE_SERVERS "${ACCEPTANCE_SERVERS}"
 
 Include ${ADT_DATA}/conf/apache/sites-available/

@@ -110,17 +110,17 @@ checkCaches();
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_DATABASE_TYPE?></td>
                                 <?php
-                                if ($descriptor_array->ACCEPTANCE_SERVER === "acceptance.exoplatform.org") {
+                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance.exoplatform.org") {
                                     $host_html_color = "blue";
-                                } else if ($descriptor_array->ACCEPTANCE_SERVER === "acceptance2.exoplatform.org") {
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance2.exoplatform.org") {
                                     $host_html_color = "green";
-                                } else if ($descriptor_array->ACCEPTANCE_SERVER === "acceptance3.exoplatform.org") {
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance3.exoplatform.org") {
                                     $host_html_color = "orange";
                                 } else {
                                     $host_html_color = "purple";
                                 }
                                 ?>
-                                <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_SERVER?></td>
+                                <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_HOST?></td>
                                 <td class="col-left"><?= $status ?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
