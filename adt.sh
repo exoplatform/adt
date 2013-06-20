@@ -70,6 +70,47 @@ env_var "ETC_DIR" "${ADT_DATA}/etc"
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
 env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions exoplatform:platform-private-distributions"
 
+if ${ADT_DEV_MODE}; then
+  configurable_env_var "ACCEPTANCE_SCHEME" "http"
+  configurable_env_var "ACCEPTANCE_HOST"   "localhost"
+  configurable_env_var "ACCEPTANCE_PORT"   "8080"
+else
+  configurable_env_var "ACCEPTANCE_SCHEME" "https"
+  configurable_env_var "ACCEPTANCE_HOST"   "acceptance.exoplatform.org"
+  configurable_env_var "ACCEPTANCE_PORT"   "80"
+fi
+loadSystemInfo
+validate_env_var "SCRIPT_DIR"
+validate_env_var "ADT_DATA"
+validate_env_var "ETC_DIR"
+validate_env_var "TMP_DIR"
+validate_env_var "DL_DIR"
+validate_env_var "DS_DIR"
+validate_env_var "SRV_DIR"
+validate_env_var "CONF_DIR"
+validate_env_var "APACHE_CONF_DIR"
+validate_env_var "ADT_CONF_DIR"
+validate_env_var "FEATURES_CONF_DIR"
+mkdir -p ${ETC_DIR}
+mkdir -p ${TMP_DIR}
+mkdir -p ${DL_DIR}
+mkdir -p ${DS_DIR}
+mkdir -p ${SRV_DIR}
+mkdir -p ${SRC_DIR}
+mkdir -p ${CONF_DIR}
+mkdir -p ${APACHE_CONF_DIR}/conf.d
+mkdir -p ${APACHE_CONF_DIR}/sites-available
+mkdir -p ${APACHE_CONF_DIR}/includes
+mkdir -p ${ADT_CONF_DIR}
+mkdir -p ${FEATURES_CONF_DIR}
+chmod 777 ${FEATURES_CONF_DIR} # apache needs to write here
+# Recopy default data
+# Copy everything in it
+if [[ "${SCRIPT_DIR}" != "${ADT_DATA}" ]]; then
+  rm -rf ${ETC_DIR}/*
+  cp -rf ${SCRIPT_DIR}/* ${ADT_DATA}
+fi
+
 # no action ? provide help
 if [ $# -lt 1 ]; then
   echo_error "No action defined !"
@@ -89,7 +130,6 @@ shift
 
 case "${ACTION}" in
   init)
-    init
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     validate_env_var "ADT_DATA"
     validate_env_var "ACCEPTANCE_SCHEME"
@@ -143,28 +183,23 @@ case "${ACTION}" in
   ;;
   deploy)
     configurable_env_var "DEPLOYMENT_MODE" "NO_DATA"
-    init
     initialize_product_settings
     do_deploy
   ;;
   download-dataset)
-    init
     initialize_product_settings
     do_download_dataset
   ;;
   start)
-    init
     initialize_product_settings
     do_start
   ;;
   stop)
-    init
     initialize_product_settings
     do_stop
   ;;
   restart)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
-    init
     initialize_product_settings
     do_stop
     case "${DEPLOYMENT_MODE}" in
@@ -186,38 +221,30 @@ case "${ACTION}" in
     do_start
   ;;
   undeploy)
-    init
     initialize_product_settings
     do_undeploy
   ;;
   list)
-    init
     do_list
   ;;
   start-all)
-    init
     do_start_all
   ;;
   stop-all)
-    init
     do_stop_all
   ;;
   restart-all)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
-    init
     do_restart_all
   ;;
   undeploy-all)
-    init
     do_undeploy_all
   ;;
   update-repos)
-    init
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
   ;;
   web-server)
     env_var "ADT_DEV_MODE" "true"
-    init
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     do_load_php_server
   ;;

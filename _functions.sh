@@ -104,49 +104,6 @@ EOF
 
 }
 
-init() {
-  if ${ADT_DEV_MODE}; then
-    configurable_env_var "ACCEPTANCE_SCHEME" "http"
-    configurable_env_var "ACCEPTANCE_HOST"   "localhost"
-    configurable_env_var "ACCEPTANCE_PORT"   "8080"
-  else
-    configurable_env_var "ACCEPTANCE_SCHEME" "https"
-    configurable_env_var "ACCEPTANCE_HOST"   "acceptance.exoplatform.org"
-    configurable_env_var "ACCEPTANCE_PORT"   "80"
-  fi
-  loadSystemInfo
-  validate_env_var "SCRIPT_DIR"
-  validate_env_var "ADT_DATA"
-  validate_env_var "ETC_DIR"
-  validate_env_var "TMP_DIR"
-  validate_env_var "DL_DIR"
-  validate_env_var "DS_DIR"
-  validate_env_var "SRV_DIR"
-  validate_env_var "CONF_DIR"
-  validate_env_var "APACHE_CONF_DIR"
-  validate_env_var "ADT_CONF_DIR"
-  validate_env_var "FEATURES_CONF_DIR"
-  mkdir -p ${ETC_DIR}
-  mkdir -p ${TMP_DIR}
-  mkdir -p ${DL_DIR}
-  mkdir -p ${DS_DIR}
-  mkdir -p ${SRV_DIR}
-  mkdir -p ${SRC_DIR}
-  mkdir -p ${CONF_DIR}
-  mkdir -p ${APACHE_CONF_DIR}/conf.d
-  mkdir -p ${APACHE_CONF_DIR}/sites-available
-  mkdir -p ${APACHE_CONF_DIR}/includes
-  mkdir -p ${ADT_CONF_DIR}
-  mkdir -p ${FEATURES_CONF_DIR}
-  chmod 777 ${FEATURES_CONF_DIR} # apache needs to write here
-  # Recopy default data
-  # Copy everything in it
-  if [[ "${SCRIPT_DIR}" != "${ADT_DATA}" ]]; then
-    rm -rf ${ETC_DIR}/*
-    cp -rf ${SCRIPT_DIR}/* ${ADT_DATA}
-  fi
-}
-
 # find_instance_file <VAR> <DIR> <BASENAME> <PRODUCT_NAME>
 # Finds which file to use and store its path in <VAR>
 # We'll try to find it in the directory <DIR> and we'll select it in this order :
