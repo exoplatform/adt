@@ -5,11 +5,21 @@ set +u
 ${_FUNCTIONS_SYSTEM_LOADED:-false} && return
 set -u
 
+# if the script was started from the base directory, then the
+# expansion returns a period
+if test "${SCRIPT_DIR}" == "."; then
+  SCRIPT_DIR="$PWD"
+# if the script was not called with an absolute path, then we need to add the
+# current working directory to the relative path of the script
+elif test "${SCRIPT_DIR:0:1}" != "/"; then
+  SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
+fi
+
 # #############################################################################
 # Load shared functions
 # #############################################################################
-source "./_functions_core.sh"
-source "./_functions_string.sh"
+source "${SCRIPT_DIR}/_functions_core.sh"
+source "${SCRIPT_DIR}/_functions_string.sh"
 
 # #################
 # System functions
