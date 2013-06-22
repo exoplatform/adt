@@ -65,7 +65,7 @@ Environment Variables
   ACCEPTANCE_PORT                   : The server port on which the acceptance front-end is listening (default: '8080' if ADT_DEV_MODE=true, '80' otherwise)
   ACCEPTANCE_SERVERS                : A comma separated list of all acceptance front-end URLs to aggregate (default: 'http://localhost:8080' if ADT_DEV_MODE=true, 'https://acceptance.exoplatform.org' otherwise)
   CROWD_ACCEPTANCE_APP_NAME         : The crowd application used to authenticate the front-end (default: none)
-  CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application''s password used to authenticate the front-end (default: none)
+  CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application's password used to authenticate the front-end (default: none)
   APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup
   APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
   APACHE_SSL_CERTIFICATE_CHAIN_FILE : Apache SSLCertificateChainFile for HTTPS setup
