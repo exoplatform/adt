@@ -69,8 +69,8 @@ class PHPGit_Repository
      */
     public function getDifferenceBetweenBranches($targetBranch, $sourceBranch)
     {
-    	$output = $this->git(sprintf('log %s..%s --date=%s --format=format:%s', $targetBranch, $sourceBranch, $this->dateFormat, $this->logFormat));
-    	return $this->parseLogsIntoArray($output);
+      $output = $this->git(sprintf('log %s..%s --date=%s --format=format:%s', $targetBranch, $sourceBranch, $this->dateFormat, $this->logFormat));
+      return $this->parseLogsIntoArray($output);
     }
 
     /**
@@ -189,26 +189,26 @@ class PHPGit_Repository
      */
     private function parseLogsIntoArray($logOutput)
     {
-    	$commits = array();
-    	foreach(explode("\n", $logOutput) as $line) {
-    		$infos = explode('|', $line);
-    		$commits[] = array(
-    				'id' => $infos[0],
-    				'tree' => $infos[1],
-    				'author' => array(
-    						'name' => $infos[2],
-    						'email' => $infos[3]
-    				),
-    				'authored_date' => $infos[4],
-    				'commiter' => array(
-    						'name' => $infos[5],
-    						'email' => $infos[6]
-    				),
-    				'committed_date' => $infos[7],
-    				'message' => $infos[8]
-    		);
-    	}
-    	return $commits;
+      $commits = array();
+      foreach(explode("\n", $logOutput) as $line) {
+        $infos = explode('|', $line);
+        $commits[] = array(
+            'id' => $infos[0],
+            'tree' => $infos[1],
+            'author' => array(
+                'name' => $infos[2],
+                'email' => $infos[3]
+            ),
+            'authored_date' => $infos[4],
+            'commiter' => array(
+                'name' => $infos[5],
+                'email' => $infos[6]
+            ),
+            'committed_date' => $infos[7],
+            'message' => $infos[8]
+        );
+      }
+      return $commits;
     }
 
     /**

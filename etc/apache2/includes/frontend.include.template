@@ -147,7 +147,7 @@
         Deny from all
         Allow from exoplatform.org
         Satisfy any
-    </Location>		
+    </Location>
     <Location /info.php>
         Order deny,allow
         Deny from all
