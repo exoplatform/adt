@@ -366,7 +366,10 @@ do_configure_tomcat_server() {
 	# Install optional extension
 	if [ -f "${DEPLOYMENT_DIR}/extension.sh" ]; then
 		echo_info "Installing PLF extensions ..."
-		${DEPLOYMENT_DIR}/extension.sh --install all
+    _extensions=$(echo $DEPLOYMENT_EXTENSIONS | tr "," "\n")
+    for _extension in $_extensions; do
+      ${DEPLOYMENT_DIR}/extension.sh --install ${_extension}
+    done
 	  echo_info "Done."
 	fi
 

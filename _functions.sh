@@ -162,6 +162,8 @@ initialize_product_settings() {
 
       # Defaults values we can override by product/branch/version
       env_var "EXO_PROFILES" "-Dexo.profiles=all"
+      # Comma separated list of PLF extensions to install. all (by default) to install all extensions available. Empty string for none.
+      env_var "DEPLOYMENT_EXTENSIONS" "all"
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
