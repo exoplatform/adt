@@ -381,6 +381,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
+          env_var DEPLOYMENT_EXTENSIONS "crash,ide,chat"
           env_var DEPLOYMENT_CHAT_ENABLED true
         ;;
         compint)
@@ -393,6 +394,7 @@ initialize_product_settings() {
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var EXO_PROFILES                  "all"
+          env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
           env_var DEPLOYMENT_JVM_SIZE_MAX       "3g"
           env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
