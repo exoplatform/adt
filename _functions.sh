@@ -176,7 +176,7 @@ initialize_product_settings() {
 
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
-      env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
+      configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
       env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
