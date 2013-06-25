@@ -120,7 +120,7 @@
     ScriptAlias /stats/ /usr/lib/cgi-bin/
     #Redirect by default to our public projects repositories
     RedirectMatch "^stats/?$" "/stats/awstats.pl"    
-    Options ExecCGI -MultiViews +SymLinksIfOwnerMatch
+    Options -Indexes ExecCGI -MultiViews +SymLinksIfOwnerMatch
 
     # Security
     <Location />
