@@ -349,6 +349,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
+          env_var DEPLOYMENT_EXTENSIONS "acme,cmis,crash,ide,wai"
         ;;
         plfent)
           env_var PRODUCT_DESCRIPTION "Platform EE"
