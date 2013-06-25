@@ -914,6 +914,13 @@ do_deploy() {
   env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
 
   echo_info "Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+
+  do_download_server
+  if [ -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+    # Stop the server
+    do_stop
+  fi
+
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     echo_info "Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
     _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
@@ -944,11 +951,6 @@ do_deploy() {
     fi
     echo_info "Done."
   fi
-  if [ -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
-    # Stop the server
-    do_stop
-  fi
-  do_download_server
   do_unpack_server
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
