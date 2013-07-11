@@ -105,6 +105,8 @@ Environment Variables
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
   PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
+  DEPLOYMENT_SKIP_ACCOUNT_SETUP     : Do you want to skip the account creation form and use default accounts (default: false; values : true | false)
+
   DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private; values : private | public)
   DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
   DEPLOYMENT_APACHE_HTTPS_ENABLED   : Do you want to add an HTTPs VirtualHost (default: false; values : true | false)
@@ -181,6 +183,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
       env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
       env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
+
+      configurable_env_var "DEPLOYMENT_SKIP_ACCOUNT_SETUP" false
 
       env_var "ARTIFACT_GROUPID" ""
       env_var "ARTIFACT_ARTIFACTID" ""
@@ -350,6 +354,7 @@ initialize_product_settings() {
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_EXTENSIONS "acme,cmis,crash,ide,wai"
+          env_var DEPLOYMENT_SKIP_ACCOUNT_SETUP true
         ;;
         plfent)
           env_var PRODUCT_DESCRIPTION "Platform EE"
