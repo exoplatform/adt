@@ -410,6 +410,16 @@ initialize_product_settings() {
           env_var DATASET_DATA_INDEX_ARCHIVE     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
           env_var DATASET_DB_ARCHIVE             "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
         ;;
+        clouddash)
+          env_var ARTIFACT_REPO_GROUP           "private"
+          env_var PRODUCT_DESCRIPTION           "eXo Cloud Dashboard"
+          env_var ARTIFACT_GROUPID              "com.exoplatform.cloudworkspaces"
+          env_var ARTIFACT_ARTIFACTID           "cloud-management-demo-distribution"
+          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.40"
+          env_var PLF_BRANCH                    "CLOUD"
+          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
+          env_var DEPLOYMENT_DATABASE_ENABLED   false
+        ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
           env_var PRODUCT_DESCRIPTION "eXo Platform Documentations Website"

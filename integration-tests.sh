@@ -1,4 +1,4 @@
-#!/bin/bash -eu
+#!/bin/bash -e
 
 
 # Load local config from $HOME/.adtrc
@@ -37,6 +37,16 @@ function test-adt() {
   ./adt.sh stop
 }
 
+test-adt clouddash 1.0.0-SNAPSHOT     408
+
+./adt.sh list
+./adt.sh web-server &
+open -g http://${ACCEPTANCE_HOST}:${ACCEPTANCE_PORT}
+fg
+
+exit
+
+
 if [ -z "${REPOSITORY_USERNAME+xxx}" -o -z "${REPOSITORY_PASSWORD+xxx}"  ]; then
   echo_warn "Credentials not set !!!"
   echo_warn "You cannot test private distributions"
@@ -53,7 +63,6 @@ else
   # PLF Enterprise Edition - JBossEAP
   test-adt plfenteap 4.0.x-SNAPSHOT    404
 fi
-
 
 # PLF Community Edition - Tomcat
 test-adt plfcom    4.0.0             400

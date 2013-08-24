@@ -75,13 +75,15 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             if ($plf_branch === "4.0.x") {
                 echo "Platform " . $plf_branch . " based build (Maintenance)";
             } elseif ($plf_branch === "4.0.x Demo") {
-                echo "Platform " . $plf_branch . " based Demos";
+                echo "Platform " . $plf_branch . "s";
             } elseif ($plf_branch === "4.1.x") {
                 echo "Platform " . $plf_branch . " based build (R&D) - next ;-)";
             } elseif ($plf_branch === "4.1.x Demo") {
                 echo "Platform " . $plf_branch . " based Demos";
             } elseif ($plf_branch === "COMPANY") {
                 echo "Company internal projects";
+            } elseif ($plf_branch === "CLOUD") {
+                echo "eXo Cloud projects";
             } elseif ($plf_branch === "UNKNOWN") {
                 echo "Unclassified projects";
             } else {
