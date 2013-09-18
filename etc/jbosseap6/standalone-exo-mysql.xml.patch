@@ -94,10 +94,3 @@
                          <!-- PostgreSQL -->
                          <!--
                          <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter" />
-@@ -589,4 +589,4 @@
-             <remote-destination host="localhost" port="25"/>
-         </outbound-socket-binding>
-     </socket-binding-group>
--</server>
-\ No newline at end of file
-+</server>
