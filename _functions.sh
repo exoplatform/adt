@@ -400,7 +400,7 @@ initialize_product_settings() {
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var EXO_PROFILES                  "all"
-          env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat"
+          env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
           env_var DEPLOYMENT_JVM_SIZE_MAX       "3g"
           env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
