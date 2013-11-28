@@ -244,7 +244,7 @@ initialize_product_settings() {
             ;;
             "4.0.x")
               env_var ARTIFACT_GROUPID "org.gatein.portal"
-              env_var ARTIFACT_ARTIFACTID "portal.web"
+              env_var ARTIFACT_ARTIFACTID "portal.packaging"
               env_var ARTIFACT_CLASSIFIER "tomcat-distrib"
               env_var ARTIFACT_PACKAGING "tar.gz"
               env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
