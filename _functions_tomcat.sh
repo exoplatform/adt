@@ -319,6 +319,17 @@ do_configure_tomcat_ports() {
 }
 
 do_configure_tomcat_setenv() {
+  # setenv.xml
+  find_instance_file TOMCAT_SETENV_SCRIPT "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "setenv.sh" "${TOMCAT_SETENV_SCRIPT_PRODUCT_NAME}"
+  
+  # Use a specific setenv.sh
+  if [ "${TOMCAT_SETENV_SCRIPT}" != "UNSET" ]; then
+    echo_info "Installing custom setenv.sh script $TOMCAT_SETENV_SCRIPT ..."
+    cp ${TOMCAT_SETENV_SCRIPT} ${DEPLOYMENT_DIR}/bin/setenv.sh
+	chmod 755 ${DEPLOYMENT_DIR}/bin/setenv.sh
+    echo_info "Done."
+  fi
+	
   # PLF 4+ only
   if [ -e ${DEPLOYMENT_DIR}/bin/setenv-customize.sample.sh ]; then
     echo_info "Creating setenv resources ..."

@@ -217,6 +217,7 @@ initialize_product_settings() {
       env_var "DATASET_DB_ARCHIVE"             ""
 
       # To reuse patches between products
+      env_var "TOMCAT_SETENV_SCRIPT_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "PORTS_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "JMX_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "DB_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
@@ -247,7 +248,7 @@ initialize_product_settings() {
               env_var ARTIFACT_ARTIFACTID "portal.packaging"
               env_var ARTIFACT_CLASSIFIER "tomcat-distrib"
               env_var ARTIFACT_PACKAGING "tar.gz"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
               env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
               env_var DEPLOYMENT_DATABASE_ENABLED false
             ;;
