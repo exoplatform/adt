@@ -177,9 +177,7 @@ do_download_maven_artifact() {
   #
   local _sha1Url="${_artifactUrl}.sha1"
   local _sha1File="${_artifactFile}.sha1"
-  if [ ! -e "$_sha1File" ]; then
-    do_curl "$_curlOptions" "$_sha1Url" "$_sha1File" "Artifact SHA1"
-  fi
+  do_curl "$_curlOptions" "$_sha1Url" "$_sha1File" "Artifact SHA1"
 
   #
   # Download the artifact
@@ -324,9 +322,7 @@ do_http_download_with_sha1() {
   #
   local _sha1Url="${_fileURL}.sha1"
   local _sha1File="${_localPath}.sha1"
-  if [ ! -e "$_sha1File" ]; then
-    do_curl "$_curlOptions" "$_sha1Url" "$_sha1File" "File SHA1"
-  fi
+  do_curl "$_curlOptions" "$_sha1Url" "$_sha1File" "File SHA1"
 
   #
   # Download the file
