@@ -110,6 +110,8 @@ Usage
       ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false; values : true | false)
       ADT_OFFLINE                       : Use only local resources, don't do any remote operations. (default: false; values : true | false)
 
+      DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
+
       Instance Settings
       =================
 

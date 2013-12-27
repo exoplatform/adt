@@ -124,6 +124,8 @@ Environment Variables
   DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
   DEPLOYMENT_LDAP_ADMIN_PWD         : LDAP password to use to logon into the LDAP server
 
+  DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
+
 EOF
 
 }
@@ -165,7 +167,7 @@ initialize_product_settings() {
       # Defaults values we can override by product/branch/version
       env_var "EXO_PROFILES" "-Dexo.profiles=all"
       # Comma separated list of PLF extensions to install. all (by default) to install all extensions available. Empty string for none.
-      env_var "DEPLOYMENT_EXTENSIONS" "all"
+      configurable_env_var "DEPLOYMENT_EXTENSIONS" "all"
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
