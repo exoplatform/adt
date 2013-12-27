@@ -111,6 +111,7 @@ Usage
       ADT_OFFLINE                       : Use only local resources, don't do any remote operations. (default: false; values : true | false)
 
       DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
+      DEPLOYMENT_ADDONS                 : Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
 
       Instance Settings
       =================

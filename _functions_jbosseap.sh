@@ -217,6 +217,15 @@ do_configure_jbosseap_server() {
     done
     echo_info "Done."
   fi
+  # Install optional add-ons
+  if [ -f "${DEPLOYMENT_DIR}/addon.sh" ]; then
+    echo_info "Installing PLF add-ons ..."
+    _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
+    for _addon in $_addons; do
+      ${DEPLOYMENT_DIR}/addon.sh --install ${_addon} --force
+    done
+    echo_info "Done."
+  fi
 
   if [ -f ${DEPLOYMENT_DIR}/standalone/deployments/platform.ear/*crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
