@@ -20,6 +20,7 @@ fi
 # #############################################################################
 source "${SCRIPT_DIR}/_functions_core.sh"
 source "${SCRIPT_DIR}/_functions_ufw.sh"
+source "${SCRIPT_DIR}/_functions_plf.sh"
 
 # #############################################################################
 # TDB : Use functions that aren't using global vars
@@ -208,24 +209,14 @@ do_configure_jbosseap_server() {
   # Environment variables configuration
   do_configure_jbosseap_standalone
 
-  # Install optional extension
-  if [ -f "${DEPLOYMENT_DIR}/extension.sh" ]; then
-    echo_info "Installing PLF extensions ..."
-    _extensions=$(echo $DEPLOYMENT_EXTENSIONS | tr "," "\n")
-    for _extension in $_extensions; do
-      ${DEPLOYMENT_DIR}/extension.sh --install ${_extension}
-    done
-    echo_info "Done."
-  fi
-  # Install optional add-ons
-  if [ -f "${DEPLOYMENT_DIR}/addon.sh" ]; then
-    echo_info "Installing PLF add-ons ..."
-    _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
-    for _addon in $_addons; do
-      ${DEPLOYMENT_DIR}/addon.sh --install ${_addon} --force
-    done
-    echo_info "Done."
-  fi
+  # Install optional extensions
+  do_install_extensions
+
+  # Install the addons manager
+  do_install_addons_manager
+
+  # Install optional addons
+  do_install_addons
 
   if [ -f ${DEPLOYMENT_DIR}/standalone/deployments/platform.ear/*crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
