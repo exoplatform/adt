@@ -46,10 +46,12 @@ ${ADT_OFFLINE} && echo_warn "Offline Mode activated !!!"
 
 # Data directory (this script directory by default)
 configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
-# Convert to an absolute path
-pushd ${ADT_DATA} > /dev/null
-ADT_DATA=`pwd -P`
-popd > /dev/null
+if [ -d ${ADT_DATA} ]; then
+  # Convert to an absolute path
+  pushd ${ADT_DATA} > /dev/null
+  ADT_DATA=`pwd -P`
+  popd > /dev/null
+fi
 echo_info "ADT_DATA = ${ADT_DATA}"
 # Create ADT_DATA if required
 mkdir -p ${ADT_DATA}
