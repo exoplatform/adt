@@ -116,6 +116,7 @@ Environment Variables
   DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
   DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
   DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
+  DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape charters like \" (default: none)
 
   DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL)
 
@@ -171,6 +172,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_EXTENSIONS" "all"
       # Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
       configurable_env_var "DEPLOYMENT_ADDONS" ""
+      # Additional command line settings to pass to the startup
+      configurable_env_var "DEPLOYMENT_OPTS" ""
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
@@ -1065,11 +1068,15 @@ do_start() {
         export CATALINA_OPTS
         export EXO_PROFILES="${EXO_PROFILES}"
       fi
+      # Additional settings
+      export CATALINA_OPTS="${CATALINA_OPTS:""} ${DEPLOYMENT_OPTS}"
       # Startup the server
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
     ;;
     jbosseap)
       END_STARTUP_MSG="JBAS01587[45]"
+      # Additional settings
+      export JAVA_OPTS="${JAVA_OPTS:""} ${DEPLOYMENT_OPTS}"
       # Startup the server
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}  > /dev/null 2>&1 &
     ;;
