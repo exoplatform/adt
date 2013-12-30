@@ -1069,7 +1069,7 @@ do_start() {
         export EXO_PROFILES="${EXO_PROFILES}"
       fi
       # Additional settings
-      export CATALINA_OPTS="${CATALINA_OPTS:""} ${DEPLOYMENT_OPTS}"
+      export CATALINA_OPTS="${CATALINA_OPTS} ${DEPLOYMENT_OPTS}"
       # Startup the server
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
     ;;
