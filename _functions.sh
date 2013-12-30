@@ -1035,11 +1035,11 @@ do_start() {
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
       END_STARTUP_MSG="Server startup in"
+      CATALINA_OPTS=""
 
       if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
         export CATALINA_HOME=${DEPLOYMENT_DIR}
         export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-        CATALINA_OPTS=""
         # JVM
         CATALINA_OPTS="${CATALINA_OPTS} -XX:+HeapDumpOnOutOfMemoryError"
         CATALINA_OPTS="${CATALINA_OPTS} -XX:HeapDumpPath="$(dirname ${DEPLOYMENT_LOG_PATH})
@@ -1076,7 +1076,7 @@ do_start() {
     jbosseap)
       END_STARTUP_MSG="JBAS01587[45]"
       # Additional settings
-      export JAVA_OPTS="${JAVA_OPTS:""} ${DEPLOYMENT_OPTS}"
+      export JAVA_OPTS="${DEPLOYMENT_OPTS}"
       # Startup the server
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}  > /dev/null 2>&1 &
     ;;
