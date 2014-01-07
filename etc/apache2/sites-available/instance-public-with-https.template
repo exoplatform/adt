@@ -19,6 +19,7 @@
     SSLCertificateFile       ${APACHE_SSL_CERTIFICATE_FILE}
     SSLCertificateKeyFile    ${APACHE_SSL_CERTIFICATE_KEY_FILE}
     SSLCertificateChainFile  ${APACHE_SSL_CERTIFICATE_CHAIN_FILE}
+    SSLVerifyClient None
 
     # configuration du SSL
     # 40-bit mini
