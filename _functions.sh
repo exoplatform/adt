@@ -348,7 +348,7 @@ initialize_product_settings() {
             # 4.0.x and +
               env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
               env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
               env_var PLF_BRANCH "${PRODUCT_BRANCH}"
               env_var EXO_PROFILES "all"
             ;;
@@ -360,7 +360,7 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.demo"
           env_var ARTIFACT_ARTIFACTID "demo-login-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_EXTENSIONS "acme,cmis,crash,ide,wai"
@@ -372,7 +372,7 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
         ;;
@@ -394,7 +394,7 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.addons.chat.distribution"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-chat-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.40"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_EXTENSIONS "crash,ide,chat"
@@ -425,7 +425,7 @@ initialize_product_settings() {
           env_var PRODUCT_DESCRIPTION           "eXo Cloud Dashboard"
           env_var ARTIFACT_GROUPID              "com.exoplatform.cloudworkspaces"
           env_var ARTIFACT_ARTIFACTID           "cloud-management-demo-distribution"
-          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.40"
+          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.42"
           env_var PLF_BRANCH                    "CLOUD"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var DEPLOYMENT_DATABASE_ENABLED   false
