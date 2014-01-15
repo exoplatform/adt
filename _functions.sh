@@ -407,7 +407,7 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID              "com.exoplatform.intranet"
           # 4.0.x and +
           env_var ARTIFACT_ARTIFACTID           "company-intranet-package"
-          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.40"
+          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.42"
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var EXO_PROFILES                  "all"
