@@ -127,6 +127,7 @@ Usage
         plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
         addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
         compint        eXo Company Intranet                    - Apache Tomcat bundle
+        community      eXo Community Website                   - Apache Tomcat bundle
         docs           eXo Platform Documentations Website     - Apache Tomcat bundle
       PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 

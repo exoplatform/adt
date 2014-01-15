@@ -103,6 +103,7 @@ Environment Variables
     plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
     addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
     compint        eXo Company Intranet                    - Apache Tomcat bundle
+    community      eXo Community Website                   - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
   PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
@@ -419,6 +420,19 @@ initialize_product_settings() {
           env_var DATASET_DATA_VALUES_ARCHIVE    "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
           env_var DATASET_DATA_INDEX_ARCHIVE     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
           env_var DATASET_DB_ARCHIVE             "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
+        ;;
+        community)
+          env_var PRODUCT_DESCRIPTION           "eXo Community Website"
+          env_var ARTIFACT_REPO_GROUP           "cp"
+          env_var ARTIFACT_GROUPID              "org.exoplatform.community"
+          # 4.0.x and +
+          env_var ARTIFACT_ARTIFACTID           "exo-community-package"
+          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.42"
+          env_var PLF_BRANCH                    "COMPANY"
+          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
+          env_var EXO_PROFILES                  "all"
+          env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat"
+          env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
         ;;
         clouddash)
           env_var ARTIFACT_REPO_GROUP           "private"
