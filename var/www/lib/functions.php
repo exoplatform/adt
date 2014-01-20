@@ -122,6 +122,7 @@ function getRepositories()
         "calendar",
         "integration",
         "platform",
+        "ide",
         "platform-public-distributions",
         "platform-private-distributions");
 }
