@@ -127,6 +127,13 @@ Environment Variables
   DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
   DEPLOYMENT_LDAP_ADMIN_PWD         : LDAP password to use to logon into the LDAP server
 
+  DEPLOYMENT_OAUTH_FACEBOOK_CLIENT_ID     : Identifier for Facebook OAuth integration (used by community)
+  DEPLOYMENT_OAUTH_FACEBOOK_CLIENT_SECRET : Secret for Facebook OAuth integration (used by community)
+  DEPLOYMENT_OAUTH_GOOGLE_CLIENT_ID       : Identifier for Google OAuth integration (used by community)
+  DEPLOYMENT_OAUTH_GOOGLE_CLIENT_SECRET   : Secret for Facebook OAuth integration (used by community)
+  DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_ID     : Identifier for LinkedIn OAuth integration (used by community)
+  DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_SECRET : Secret for Facebook OAuth integration (used by community)
+
   DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
 
 EOF
