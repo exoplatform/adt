@@ -62,6 +62,7 @@ checkCaches();
                     <h3>Branches deployed on acceptance</h3>
                     <?php
                     //List all projects
+                    $projectsNames = getRepositories();
                     $projects = array_keys(getRepositories());
                     $features = getFeatureBranches($projects);
                     ?>
@@ -70,7 +71,7 @@ checkCaches();
                         <tr>
                             <th class="col-center">Branch feature/????</th>
                             <?php foreach ($projects as $project) { ?>
-                                <th class="col-center"><?=getRepositories()[$project]?></th>
+                                <th class="col-center"><?=$projectsNames[$project]?></th>
                             <?php } ?>
                         </tr>
                         </thead>
@@ -101,7 +102,7 @@ checkCaches();
                         <tr>
                             <th class="col-center">Branch feature/????</th>
                             <?php foreach ($projects as $project) { ?>
-                                <th class="col-center"><?=getRepositories()[$project]?></th>
+                                <th class="col-center"><?=$projectsNames[$project]?></th>
                             <?php } ?>
                         </tr>
                         </thead>
