@@ -112,19 +112,19 @@ function processIsRunning($pid)
  */
 function getRepositories()
 {
-    return array(
-        "platform-ui",
-        "commons",
-        "ecms",
-        "social",
-        "wiki",
-        "forum",
-        "calendar",
-        "integration",
-        "platform",
-        "ide",
-        "platform-public-distributions",
-        "platform-private-distributions");
+  return array(
+      "platform-ui" => "PLF UI",
+      "commons" => "Commons",
+      "ecms" => "ECMS",
+      "social" => "Social",
+      "wiki" => "Wiki",
+      "forum" => "Forum",
+      "calendar" => "Calendar",
+      "integration" => "Integration",
+      "platform" => "Platform",
+      "ide" => "IDE",
+      "platform-public-distributions" => "PLF Public Dist",
+      "platform-private-distributions" => "PLF Private Dist");
 }
 
 function getFeatureBranches($projects)
