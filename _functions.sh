@@ -424,9 +424,9 @@ initialize_product_settings() {
           env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
           env_var DEPLOYMENT_JVM_PERMSIZE_MAX   "512m"
           # Datasets remote location
-          env_var DATASET_DATA_VALUES_ARCHIVE    "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
-          env_var DATASET_DATA_INDEX_ARCHIVE     "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
-          env_var DATASET_DB_ARCHIVE             "bckintranet@storage.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
+          env_var DATASET_DATA_VALUES_ARCHIVE    "bckintranet@backup.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
+          env_var DATASET_DATA_INDEX_ARCHIVE     "bckintranet@backup.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
+          env_var DATASET_DB_ARCHIVE             "bckintranet@backup.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
         ;;
         community)
           env_var PRODUCT_DESCRIPTION           "eXo Community Website"
