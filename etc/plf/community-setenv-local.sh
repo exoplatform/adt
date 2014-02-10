@@ -33,6 +33,8 @@ export EXO_LOGS_COLORIZED_CONSOLE=true
 # JMX
 [ -z $EXO_JVM_JMX_REMOTE_HOSTNAME ] && EXO_JVM_JMX_REMOTE_HOSTNAME="${DEPLOYMENT_EXT_HOST}"
 # Email
+# mail Receiver GroupId: only user in this group can receive the notification emails
+[ -z $EXO_RECEIVER_GROUP_ID ] && EXO_RECEIVER_GROUP_ID="/community-email-receiver"
 # Domain name: Help for sending links from email notifications. The default domain name is http://localhost:8080.
 [ -z $EXO_DEPLOYMENT_URL ] && EXO_DEPLOYMENT_URL="${DEPLOYMENT_URL}"
 # Email display in "from" field of email notification.
