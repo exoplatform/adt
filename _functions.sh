@@ -438,15 +438,7 @@ initialize_product_settings() {
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var EXO_PROFILES                  "all"
-          case "${PRODUCT_BRANCH}" in
-            "4.0.x")
-              env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
-            ;;
-            *)
-              # 4.1.x and +
-              env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat"
-            ;;
-          esac		  
+          env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
           # Datasets remote location
           env_var DATASET_DATA_VALUES_ARCHIVE   "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-data-values-latest.tar.bz2"
