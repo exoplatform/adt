@@ -578,6 +578,8 @@ do_download_server() {
   find ${DL_DIR} -type f -mtime +30 -exec rm {} \;
   echo_info "Remove broken symlinks ..."
   find -L ${DL_DIR} -type l -exec rm {} \;
+  echo_info "Remove empty directories ..."
+  find ${DL_DIR} -depth -empty -delete
 }
 
 do_download_dataset() {
