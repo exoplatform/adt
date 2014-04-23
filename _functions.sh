@@ -288,12 +288,34 @@ initialize_product_settings() {
         ;;
         exogtn)
           env_var PRODUCT_DESCRIPTION "GateIn eXo edition"
-          env_var ARTIFACT_GROUPID "org.exoplatform.portal"
-          env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.assembly"
-          env_var ARTIFACT_CLASSIFIER "tomcat"
           case "${PRODUCT_BRANCH}" in
             "3.2.x")
               env_var PLF_BRANCH "3.5.x"
+              env_var ARTIFACT_GROUPID "org.exoplatform.portal"
+              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.assembly"
+              env_var ARTIFACT_CLASSIFIER "tomcat"
+            ;;
+            "3.5.x")
+              # for PLF 4.0.x and 4.1.x
+              env_var PLF_BRANCH "4.0.x"
+              env_var ARTIFACT_REPO_GROUP "private"
+              env_var ARTIFACT_GROUPID "org.gatein.portal"
+              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
+              env_var ARTIFACT_CLASSIFIER "bundle"
+            ;;
+            "3.7.x")
+              env_var PLF_BRANCH "4.x"
+              env_var ARTIFACT_REPO_GROUP "private"
+              env_var ARTIFACT_GROUPID "org.gatein.portal"
+              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
+              env_var ARTIFACT_CLASSIFIER "bundle"
+            ;;
+            *)
+              echo_error "Product 'exogtn' not supported for versions > 3.7.x Please create a SWF to modify acceptance."
+              print_usage
+              exit 1
             ;;
           esac
         ;;
