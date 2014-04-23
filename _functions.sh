@@ -488,8 +488,16 @@ initialize_product_settings() {
               env_var PLF_BRANCH "3.5.x"
               env_var ARTIFACT_ARTIFACTID "platform-documentation-website-packaging"
             ;;
-            *)
+            "4.0.x")
               env_var PLF_BRANCH "4.0.x"
+              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
+            ;;
+            "4.1.x")
+              env_var PLF_BRANCH "4.1.x"
+              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
+            ;;
+            *)
+              env_var PLF_BRANCH "4.x"
               env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
             ;;
           esac
