@@ -54,6 +54,7 @@
     ProxyPass               /500.html            !
     ProxyPass               /502.html            !
     ProxyPass               /503.html            !
+    ProxyPass               /robots.txt          !
     ProxyPass               /style.css           !
     ProxyPass               /logs/               !
     ProxyPass               /icons/              !
