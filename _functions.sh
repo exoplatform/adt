@@ -298,7 +298,6 @@ initialize_product_settings() {
             "3.5.x")
               # for PLF 4.0.x and 4.1.x
               env_var PLF_BRANCH "4.0.x"
-              env_var ARTIFACT_REPO_GROUP "private"
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
               env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
@@ -306,7 +305,6 @@ initialize_product_settings() {
             ;;
             "3.7.x")
               env_var PLF_BRANCH "4.x"
-              env_var ARTIFACT_REPO_GROUP "private"
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
               env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
