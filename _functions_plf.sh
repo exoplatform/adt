@@ -30,7 +30,7 @@ source "${SCRIPT_DIR}/_functions_download.sh"
 #
 do_install_addons_manager() {
   # Install add-ons manager
-  if [ -f "${DEPLOYMENT_DIR}/extension.sh" ] && [ ! -f "${DEPLOYMENT_DIR}/addon.sh" ]; then
+  if [ -f "${DEPLOYMENT_DIR}/extension.sh" ] && [ ! -f "${DEPLOYMENT_DIR}/addons.sh" ]; then
     ADDONS_MANAGER_ZIP_URL="http://repository.exoplatform.org/public/org/exoplatform/platform/addons-manager/${DEPLOYMENT_ADDONS_MANAGER_VERSION}/addons-manager-${DEPLOYMENT_ADDONS_MANAGER_VERSION}.zip"
     if [ ! -e ${DL_DIR}/addons-manager/${DEPLOYMENT_ADDONS_MANAGER_VERSION}/`basename ${ADDONS_MANAGER_ZIP_URL}` ]; then
       if ${ADT_OFFLINE}; then
@@ -86,11 +86,11 @@ do_install_extensions() {
 #
 do_install_addons() {
   # Install optional add-ons
-  if [ -f "${DEPLOYMENT_DIR}/addon.sh" ]; then
+  if [ -f "${DEPLOYMENT_DIR}/addons.sh" ]; then
     echo_info "Installing PLF add-ons ..."
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-      ${DEPLOYMENT_DIR}/addon.sh --install ${_addon} --force
+      ${DEPLOYMENT_DIR}/addons.sh --install ${_addon} --force
     done
     echo_info "Done."
   fi
