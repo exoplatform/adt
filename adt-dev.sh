@@ -16,7 +16,7 @@ echo "# ########################################################################
 print_usage_dev() {
   cat << EOF
 
-  usage: $0 <action> [ -n PRODUCT_NAME -v PRODUCT_VERSION ]
+  usage: $0 <action> [ -n PRODUCT_NAME -v PRODUCT_VERSION [ -a ADDONS ] ]
 
 This script manages automated deployment of eXo products for testing purpose.
 
@@ -71,10 +71,11 @@ shift
 # if 1st parameter start with "-" character : print help
 if [ "${ACTION:0:1}" = "-" ]; then echo "The first parameter must be an ACTION"; print_usage_dev; exit 1; fi
 
-while getopts "n:v:h" OPTION; do
+while getopts "n:v:a:h" OPTION; do
   case $OPTION in
-    n) export PRODUCT_NAME=$OPTARG;     echo "## NAME    = $OPTARG";;
-    v) export PRODUCT_VERSION=$OPTARG;  echo "## VERSION = $OPTARG";;
+    n) export PRODUCT_NAME=$OPTARG;       echo "## NAME    = $OPTARG";;
+    v) export PRODUCT_VERSION=$OPTARG;    echo "## VERSION = $OPTARG";;
+    a) export DEPLOYMENT_ADDONS=$OPTARG;  echo "## ADDONS  = $OPTARG";;
     h) print_usage_dev; exit 1;;
     *) echo "Wrong parameter !!"; print_usage_dev; exit 1;;
   esac
