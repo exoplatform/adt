@@ -260,3 +260,8 @@ a[name] {
 a {
   color: #558bc4;
 }
+
+h3 .subtitle {
+  font-size: 15px;
+  color: #666;
+}

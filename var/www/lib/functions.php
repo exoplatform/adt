@@ -44,6 +44,11 @@ function isFeature($branch)
   return strpos($branch, "origin/feature/");
 }
 
+function isTranslation($branch)
+{
+  return strpos($branch, "translation");
+}
+
 function cmpPLFBranches($a, $b)
 {
   // Branches are A.B.x or UNKNOWN
@@ -166,6 +171,42 @@ function getFeatureBranches($projects)
     uksort($features, 'strcasecmp');
     // Feature branches will be cached for 5 min
     apc_store('features', $features, 300);
+  }
+  return $features;
+}
+
+function getTranslationBranches($projects)
+{
+  $features = apc_fetch('translation');
+
+  if (empty($features)) {
+    $features = array();
+    foreach ($projects as $project) {
+      $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
+      $branches = array_filter(preg_replace('/.*\/feature\//', '',
+                                            array_filter(explode("\n", $repoObject->git('branch -r')), 'isTranslation')));
+      foreach ($branches as $branch) {
+        $fetch_url = $repoObject->git('config --get remote.origin.url');
+        if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
+          $github_org = $matches[1];
+          $github_repo = $matches[2];
+        }
+        $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
+        $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/master --oneline");
+        if (empty($behind_commits_logs))
+          $features[$branch][$project]['behind_commits'] = 0;
+        else
+          $features[$branch][$project]['behind_commits'] = count(explode("\n", $behind_commits_logs));
+        $ahead_commits_logs = $repoObject->git("log origin/master..origin/feature/" . $branch . " --oneline");
+        if (empty($ahead_commits_logs))
+          $features[$branch][$project]['ahead_commits'] = 0;
+        else
+          $features[$branch][$project]['ahead_commits'] = count(explode("\n", $ahead_commits_logs));
+      }
+    }
+    uksort($features, 'strcasecmp');
+    // Translation branches will be cached for 5 min
+    apc_store('translation', $features, 300);
   }
   return $features;
 }

@@ -57,19 +57,20 @@ checkCaches();
         <div class="container-fluid">
             <div class="row-fluid">
                 <div class="span12">
-                    <p>This page summarizes all Git feature branches (<code>feature/????</code>) and their status compared to each project <code>master</code> branch.</p>
+                    <p>This page summarizes all Git feature branches (<code>feature/.*</code>) and try to give an overview of branches health.</p>
 
-                    <h3>Branches deployed on acceptance</h3>
+                    <h3>Feature Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>master</code> branch.)</span></h3>
                     <?php
                     //List all projects
                     $projectsNames = getRepositories();
                     $projects = array_keys(getRepositories());
                     $features = getFeatureBranches($projects);
+                    $translations = getTranslationBranches($projects);
                     ?>
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
-                            <th class="col-center">Branch feature/????</th>
+                            <th class="col-center">Branch feature/.*</th>
                             <?php foreach ($projects as $project) { ?>
                                 <th class="col-center"><?=$projectsNames[$project]?></th>
                             <?php } ?>
@@ -78,7 +79,7 @@ checkCaches();
                         <tbody>
                         <?php
                         foreach ($features as $feature => $FBProjects) {
-                            if (in_array($feature, getAcceptanceBranches())) {
+                            if (in_array($feature, getAcceptanceBranches()) && ! isTranslation ($feature)) {
                                 ?>
                                 <tr>
                                     <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?></td>
@@ -96,7 +97,38 @@ checkCaches();
                         } ?>
                         </tbody>
                     </table>
-                    <h3>Others branches</h3>
+                    <h3>Translation Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>master</code> branch.)</span></h3>
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                        <tr>
+                            <th class="col-center">Branch feature/[^/]*translation.*</th>
+                            <?php foreach ($projects as $project) { ?>
+                                <th class="col-center"><?=$projectsNames[$project]?></th>
+                            <?php } ?>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        foreach ($translations as $translation => $FBProjects) {
+                            if (in_array($translation, getAcceptanceBranches())) {
+                                ?>
+                                <tr>
+                                    <td><a name="<?=str_replace(array("/", "."), "-", $translation)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $translation)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$translation?></td>
+                                    <?php foreach ($projects as $project) { ?>
+                                        <td class="col-center">
+                                            <?php if (array_key_exists($project, $FBProjects)) { ?>
+                                              <a href="<?=$FBProjects[$project]['http_url']?>" target="_blank" title="Sources"><span rel="tooltip" title="<?=$FBProjects[$project]['behind_commits']?> commits on the base branch that do not exist on this branch [behind]"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down icon-white"></i></span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down"></i><?php }?></span>&nbsp;<span rel="tooltip" title="<?=$FBProjects[$project]['ahead_commits']?> commits on this branch that do not exist on the base branch [ahead]"><?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><i class="icon-arrow-up icon-white"></i> <?= $FBProjects[$project]['ahead_commits'] ?></span><?php } else { ?><i class="icon-arrow-up"></i> <?= $FBProjects[$project]['ahead_commits'] ?><?php }?></span></a><br/>
+                                              <a href='https://ci.exoplatform.org/job/<?=$project?>-<?=$translation?>-fb-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=<?=$project?>-<?=$translation?>-fb-ci'></a>
+                                            <?php }?>
+                                        </td>
+                                    <?php } ?>
+                                </tr>
+                            <?php
+                            }
+                        } ?>
+                        </tbody>
+                    </table>
+                    <h3>Others branches ... <span class="subtitle">(status compared to each project <code>master</code> branch.)</span><br/>ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP ? </h3>
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
