@@ -16,7 +16,7 @@ echo "# ########################################################################
 print_usage_dev() {
   cat << EOF
 
-  usage: $0 <action> [ -n PRODUCT_NAME -p PRODUCT_VERSION ]
+  usage: $0 <action> [ -n PRODUCT_NAME -v PRODUCT_VERSION ]
 
 This script manages automated deployment of eXo products for testing purpose.
 
