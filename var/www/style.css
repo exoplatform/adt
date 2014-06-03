@@ -265,3 +265,8 @@ h3 .subtitle {
   font-size: 15px;
   color: #666;
 }
+
+/* Customize botstrap popover : allow wider popover */
+.popover {
+  max-width: 600px;
+}
