@@ -124,6 +124,10 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") {
                     $product_html_popover = $product_html_popover . " <i class=\"icon-lock\"></i>";
                 }
+                $product_html_popover = $product_html_popover . "<br/><strong>Virtual Host:</strong> " . $descriptor_array->DEPLOYMENT_URL;
+                if ($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS ) {
+                    $product_html_popover = $product_html_popover . "<br/><strong>Virtual Host Alias:</strong> " . $descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS;
+                }
                 $product_html_popover = $product_html_popover . "<br/>";
                 $product_html_popover = htmlentities($product_html_popover);
                 ?>
