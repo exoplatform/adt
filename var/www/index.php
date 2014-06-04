@@ -114,29 +114,43 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 if (!empty($descriptor_array->BRANCH_DESC)) {
                     $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $descriptor_array->BRANCH_DESC;
                 }
+
+                $product_deployment_url = "-UNSET-";
+                if ($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS ) {
+                    $product_deployment_url = "http://".$descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS;
+                    $product_deployment_url_icon_color = "green";
+                } else {
+                    $product_deployment_url = $descriptor_array->DEPLOYMENT_URL;
+                    $product_deployment_url_icon_color = "";
+                }
+
                 $product_html_popover = "<strong>Product:</strong> " . $product_html_label . "<br/>";
                 $product_html_popover = $product_html_popover . "<strong>Version:</strong> " . $descriptor_array->PRODUCT_VERSION . "<br/>";
                 $product_html_popover = $product_html_popover . "<strong>Packaging:</strong> " . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . " <img src=\"/images/" . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . ".png\" width=\"16\" height=\"16\" alt=\"" . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . " bundle\" class=\"icon\"/> <br/>";
                 $product_html_popover = $product_html_popover . "<strong>Visibility:</strong> " . $descriptor_array->DEPLOYMENT_APACHE_SECURITY;
                 if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "public") {
-                    $product_html_popover = $product_html_popover . " <i class=\"icon-globe\"></i>";
+                    $product_deployment_url_icon_type = "icon-globe";
+                } else if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") {
+                    $product_deployment_url_icon_type = "icon-lock";
+                } else {
+                    // should never occurs
+                    $product_deployment_url_icon_type = "icon-question-sign";
                 }
-                if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") {
-                    $product_html_popover = $product_html_popover . " <i class=\"icon-lock\"></i>";
-                }
+                $product_html_popover = $product_html_popover . " <i class=\"".$product_deployment_url_icon_type."\"></i>";
                 $product_html_popover = $product_html_popover . "<br/><strong>HTTPS available:</strong> " . ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED ? "yes" : "no");
                 $product_html_popover = $product_html_popover . "<br/><strong>Deployed extensions:</strong> " . $descriptor_array->DEPLOYMENT_EXTENSIONS;
                 $product_html_popover = $product_html_popover . "<br/><strong>Deployed add-ons:</strong> " . $descriptor_array->DEPLOYMENT_ADDONS;
-                $product_html_popover = $product_html_popover . "<br/><strong>Virtual Host:</strong> " . $descriptor_array->DEPLOYMENT_URL;
+                $product_html_popover = $product_html_popover . "<br/><strong>Virtual Host:</strong> " . preg_replace("/https?:\/\/(.*)/","$1",$descriptor_array->DEPLOYMENT_URL);
                 if ($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS ) {
                     $product_html_popover = $product_html_popover . "<br/><strong>Virtual Host Alias:</strong> " . $descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS;
                 }
                 $product_html_popover = $product_html_popover . "<br/>";
                 $product_html_popover = htmlentities($product_html_popover);
                 ?>
-                <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true"><?php if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "public") { ?><i class="icon-globe"></i> <?php } if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") { ?><i class="icon-lock"></i> <?php } ?><img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?= $product_html_label ?></a>
+                <a href="<?= $product_deployment_url ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true">
+                    <i class="<?= $product_deployment_url_icon_type." ".$product_deployment_url_icon_color ?>"></i> <img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?= $product_html_label ?></a>
                 <?php if ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED) { ?>
-                    &nbsp;(<a rel="tooltip" title="HTTPS link available" href="<?php echo preg_replace("/http:(.*)/","https:$1",$descriptor_array->DEPLOYMENT_URL) ?>" target="_blank">&nbsp;<img src="/images/ssl.png" width="16" height="16" alt="SSL" class="icon"/></a>)
+                    &nbsp;(<a rel="tooltip" title="HTTPS link available" href="<?= preg_replace("/http:(.*)/","https:$1",$product_deployment_url) ?>" target="_blank">&nbsp;<img src="/images/ssl.png" width="16" height="16" alt="SSL" class="icon"/></a>)
                 <?php } ?>
                 <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
