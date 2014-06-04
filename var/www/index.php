@@ -124,6 +124,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") {
                     $product_html_popover = $product_html_popover . " <i class=\"icon-lock\"></i>";
                 }
+                $product_html_popover = $product_html_popover . "<br/><strong>HTTPS available:</strong> " . ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED ? "yes" : "no");
                 $product_html_popover = $product_html_popover . "<br/><strong>Deployed extensions:</strong> " . $descriptor_array->DEPLOYMENT_EXTENSIONS;
                 $product_html_popover = $product_html_popover . "<br/><strong>Deployed add-ons:</strong> " . $descriptor_array->DEPLOYMENT_ADDONS;
                 $product_html_popover = $product_html_popover . "<br/><strong>Virtual Host:</strong> " . $descriptor_array->DEPLOYMENT_URL;
@@ -134,6 +135,9 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 $product_html_popover = htmlentities($product_html_popover);
                 ?>
                 <a href="<?= $descriptor_array->DEPLOYMENT_URL ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true"><?php if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "public") { ?><i class="icon-globe"></i> <?php } if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "private") { ?><i class="icon-lock"></i> <?php } ?><img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?= $product_html_label ?></a>
+                <?php if ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED) { ?>
+                    &nbsp;(<a rel="tooltip" title="HTTPS link available" href="<?php echo preg_replace("/http:(.*)/","https:$1",$descriptor_array->DEPLOYMENT_URL) ?>" target="_blank">&nbsp;<img src="/images/ssl.png" width="16" height="16" alt="SSL" class="icon"/></a>)
+                <?php } ?>
                 <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
