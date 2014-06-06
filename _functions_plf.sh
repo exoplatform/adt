@@ -90,7 +90,7 @@ do_install_addons() {
     echo_info "Installing PLF add-ons ..."
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-      ${DEPLOYMENT_DIR}/addons.sh --install ${_addon} --force
+      ${DEPLOYMENT_DIR}/addons.sh install ${_addon} --force
     done
     echo_info "Done."
   fi
