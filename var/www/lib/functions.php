@@ -325,7 +325,7 @@ function getGlobalAcceptanceInstances()
     } else {
       $servers = explode(",", getenv('ACCEPTANCE_SERVERS'));
       foreach ($servers as $server) {
-        $instances = append_data($server . '/rest/list.php', $instances);
+        $instances = append_data($server . '/rest/local-instances.php', $instances);
       }
     }
     // Instances will be cached for 2 min
