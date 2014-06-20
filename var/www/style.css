@@ -80,7 +80,7 @@ section>ul li {
   color       : #D00
 }
 
-.orange {
+.orange, .color-acceptance3 {
   font-weight : bold;
   color       : #F60
 }
@@ -93,6 +93,31 @@ section>ul li {
 .blue {
   font-weight : normal;
   color       : #006
+}
+
+.color-acceptance1 {
+  font-weight : normal;
+  color       : #0202FF
+}
+
+.gray, .color-acceptanceX {
+  font-weight : normal;
+  color       : gray
+}
+
+.color-acceptance2 {
+  font-weight : normal;
+  color       : #0ACE0A
+}
+
+.color-acceptance4 {
+  font-weight : normal;
+  color       : #B90CDA
+}
+
+.color-acceptance5 {
+  font-weight : normal;
+  color       : #14CECE
 }
 
 /* logs */
