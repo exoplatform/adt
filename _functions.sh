@@ -382,6 +382,15 @@ initialize_product_settings() {
             ;;
           esac
         ;;
+        codefest)
+          env_var PRODUCT_DESCRIPTION "Platform CE"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var PLF_BRANCH "CODEFEST"
+          env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
+          env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
+          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
+          env_var EXO_PROFILES "all"
+        ;;
         plfdemo)
           env_var PRODUCT_DESCRIPTION "Platform 4.0 EE Public Demo"
           env_var ARTIFACT_REPO_GROUP "private"
