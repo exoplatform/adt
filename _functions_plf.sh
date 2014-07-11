@@ -85,18 +85,19 @@ do_install_extensions() {
 # Function that installs required addons
 #
 do_install_addons() {
+  local _addons_manager_script=""
   # Install optional add-ons
   if [ -f "${DEPLOYMENT_DIR}/addons.sh" ]; then
-    ADDONS_MANAGER_SCRIPT=${DEPLOYMENT_DIR}/addons.sh
+    _addons_manager_script=${DEPLOYMENT_DIR}/addons.sh
   fi
   if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
-    ADDONS_MANAGER_SCRIPT=${DEPLOYMENT_DIR}/addon
+    _addons_manager_script=${DEPLOYMENT_DIR}/addon
   fi
-  if [ -f "${ADDONS_MANAGER_SCRIPT}" ]; then
+  if [ -n "${_addons_manager_script}" -a -f "${_addons_manager_script}" ]; then
     echo_info "Installing PLF add-ons ..."
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-      ${ADDONS_MANAGER_SCRIPT} install ${_addon} --force
+      ${_addons_manager_script} install ${_addon} --force
     done
     echo_info "Done."
   fi
