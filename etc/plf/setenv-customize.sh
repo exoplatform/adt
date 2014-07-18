@@ -35,17 +35,6 @@ CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.ssl=false"
 CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.password.file=${CATALINA_HOME}/conf/jmxremote.password"
 CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.access.file=${CATALINA_HOME}/conf/jmxremote.access"
 CATALINA_OPTS="${CATALINA_OPTS} -Djava.rmi.server.hostname=${EXO_JVM_JMX_REMOTE_HOSTNAME}"
-# Email
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.domain.url=${EXO_DEPLOYMENT_URL}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=${EXO_EMAIL_FROM}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.username=${EXO_EMAIL_SMTP_USERNAME}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.password=${EXO_EMAIL_SMTP_PASSWORD}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.host=${EXO_EMAIL_SMTP_HOST}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.port=${EXO_EMAIL_SMTP_PORT}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.starttls.enable=${EXO_EMAIL_SMTP_STARTTLS_ENABLE}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.auth=${EXO_EMAIL_SMTP_AUTH}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.port=${EXO_EMAIL_SMTP_SOCKET_FACTORY_PORT}"
-CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class=${EXO_EMAIL_SMTP_SOCKET_FACTORY_CLASS}"
 # CRaSH
 if ${DEPLOYMENT_CRASH_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${EXO_CRASH_TELNET_PORT}"
@@ -60,3 +49,19 @@ if ${DEPLOYMENT_CHAT_ENABLED}; then
 fi
 # Skip account creation form
 CATALINA_OPTS="${CATALINA_OPTS} -Daccountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP}"
+# PLF 4.1
+# Email
+[ ! -z ${EXO_DEPLOYMENT_URL} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.domain.url=${EXO_DEPLOYMENT_URL}"
+[ ! -z ${EXO_EMAIL_FROM} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=${EXO_EMAIL_FROM}"
+[ ! -z ${EXO_EMAIL_SMTP_HOST} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.host=${EXO_EMAIL_SMTP_HOST}"
+[ ! -z ${EXO_EMAIL_SMTP_PORT} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.port=${EXO_EMAIL_SMTP_PORT}"
+[ ! -z ${EXO_EMAIL_SMTP_USERNAME} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.username=${EXO_EMAIL_SMTP_USERNAME}"
+[ ! -z ${EXO_EMAIL_SMTP_PASSWORD} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.password=${EXO_EMAIL_SMTP_PASSWORD}"
+[ ! -z ${EXO_EMAIL_SMTP_STARTTLS_ENABLE} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.starttls.enable=${EXO_EMAIL_SMTP_STARTTLS_ENABLE}"
+[ ! -z ${EXO_EMAIL_SMTP_AUTH} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.auth=${EXO_EMAIL_SMTP_AUTH}"
+[ ! -z ${EXO_EMAIL_SMTP_SOCKET_FACTORY_PORT} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.port=${EXO_EMAIL_SMTP_SOCKET_FACTORY_PORT}"
+[ ! -z ${EXO_EMAIL_SMTP_SOCKET_FACTORY_CLASS} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class=${EXO_EMAIL_SMTP_SOCKET_FACTORY_CLASS}"
+# JOD
+[ ! -z ${EXO_JODCONVERTER_ENABLE} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.enable=${EXO_JODCONVERTER_ENABLE}"
+[ ! -z ${EXO_JODCONVERTER_PORTS} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${EXO_JODCONVERTER_PORTS}"
+[ ! -z ${EXO_JODCONVERTER_OFFICEHOME} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.officehome=\"${EXO_JODCONVERTER_OFFICEHOME}\""
