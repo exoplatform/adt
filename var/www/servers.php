@@ -110,9 +110,7 @@ checkCaches();
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_DATABASE_TYPE?></td>
                                 <?php
-                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance.exoplatform.org") {
-                                    $host_html_color = "color-acceptance1";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance2.exoplatform.org") {
+                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance2.exoplatform.org") {
                                     $host_html_color = "color-acceptance2";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance3.exoplatform.org") {
                                     $host_html_color = "color-acceptance3";
