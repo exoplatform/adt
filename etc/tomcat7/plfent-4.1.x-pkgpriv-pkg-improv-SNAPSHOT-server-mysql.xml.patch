@@ -1,0 +1,29 @@
+--- server.xml	2013-03-04 20:32:07.000000000 +0100
++++ server.xml	2013-03-04 20:33:32.000000000 +0100
+@@ -64,22 +64,22 @@
+     <!-- eXo IDM Datasource for portal -->
+     <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
+               initialSize="5" maxActive="20" minIdle="5" maxIdle="15" maxWait="10000"
+-              validationQuery="SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS" validationQueryTimeout="5"
++              validationQuery="SELECT 1" validationQueryTimeout="5"
+               testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;" />
++              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@?autoReconnect=true" />
+
+     <!-- eXo JCR Datasource for portal -->
+     <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
+               initialSize="5" maxActive="20" minIdle="5" maxIdle="15" maxWait="10000"
+-              validationQuery="SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS" validationQueryTimeout="5"
++              validationQuery="SELECT 1" validationQueryTimeout="5"
+               testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;" />
++              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true" />
+
+   </GlobalNamingResources>
+ 
