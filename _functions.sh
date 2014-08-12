@@ -117,7 +117,7 @@ Environment Variables
   DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
   DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
   DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
-  DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape charters like \" (default: none)
+  DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape characters like \" (default: none)
 
   DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL)
 
