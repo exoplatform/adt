@@ -94,6 +94,8 @@ do_install_addons() {
     _addons_manager_script=${DEPLOYMENT_DIR}/addon
   fi
   if [ -n "${_addons_manager_script}" -a -f "${_addons_manager_script}" ]; then
+    # Let's list them first (this will trigger an update of the installed version of the addons-manager if required)
+    ${_addons_manager_script} list --snapshots --unstable
     echo_info "Installing PLF add-ons ..."
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
