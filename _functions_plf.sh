@@ -97,7 +97,7 @@ do_install_addons() {
     echo_info "Installing PLF add-ons ..."
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-      ${_addons_manager_script} install ${_addon} --force
+      ${_addons_manager_script} install ${_addon} --force --batch-mode
     done
     echo_info "Done."
   fi

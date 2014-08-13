@@ -191,7 +191,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
       env_var "DEPLOYMENT_APPSRV_VERSION" "6.0.35" #Default version used to download additional resources like JMX lib
       env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
-      env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-alpha-4" #Add-ons Manager to use
+      env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-RC4" #Add-ons Manager to use
 
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
