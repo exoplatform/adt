@@ -30,7 +30,7 @@ source "${SCRIPT_DIR}/_functions_download.sh"
 #
 do_install_addons_manager() {
   # Install add-ons manager
-  if [ -f "${DEPLOYMENT_DIR}/extension.sh" ] && [ ! -d "${DEPLOYMENT_DIR}/addons" ]; then
+  if [ -f "${DEPLOYMENT_DIR}/extension.sh" -a ! -d "${DEPLOYMENT_DIR}/addons" ] || [ -f "${DEPLOYMENT_DIR}/addons.sh" ]; then
     ADDONS_MANAGER_ZIP_URL="http://repository.exoplatform.org/public/org/exoplatform/platform/addons-manager/${DEPLOYMENT_ADDONS_MANAGER_VERSION}/addons-manager-${DEPLOYMENT_ADDONS_MANAGER_VERSION}.zip"
     if [ ! -e ${DL_DIR}/addons-manager/${DEPLOYMENT_ADDONS_MANAGER_VERSION}/`basename ${ADDONS_MANAGER_ZIP_URL}` ]; then
       if ${ADT_OFFLINE}; then
@@ -61,7 +61,7 @@ do_install_addons_manager() {
     set -e
     echo_info "Add-ons Manager integrity validated."
     echo_info "Installing Add-ons Manager ..."
-    unzip -q "${DL_DIR}/addons-manager/${DEPLOYMENT_ADDONS_MANAGER_VERSION}/"`basename ${ADDONS_MANAGER_ZIP_URL}` -d ${DEPLOYMENT_DIR}
+    unzip -o -q "${DL_DIR}/addons-manager/${DEPLOYMENT_ADDONS_MANAGER_VERSION}/"`basename ${ADDONS_MANAGER_ZIP_URL}` -d ${DEPLOYMENT_DIR}
     echo_info "Done."
   fi
 }
@@ -87,9 +87,6 @@ do_install_extensions() {
 do_install_addons() {
   local _addons_manager_script=""
   # Install optional add-ons
-  if [ -f "${DEPLOYMENT_DIR}/addons.sh" ]; then
-    _addons_manager_script=${DEPLOYMENT_DIR}/addons.sh
-  fi
   if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
     _addons_manager_script=${DEPLOYMENT_DIR}/addon
   fi
