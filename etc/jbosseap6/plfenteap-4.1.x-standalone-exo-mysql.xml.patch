@@ -20,7 +20,7 @@
                      <!-- PostgreSQL -->
                      <!--
                      <driver>XXXX.jar</driver>
-@@ -213,22 +213,22 @@
+@@ -213,23 +213,23 @@
                          <flush-strategy>FailingConnectionOnly</flush-strategy>
                      </pool>
                      <security>
@@ -32,6 +32,7 @@
                      <validation>
                          <validate-on-match>false</validate-on-match>
                          <background-validation>true</background-validation>
+                         <background-validation-millis>60000</background-validation-millis>
                          <use-fast-fail>false</use-fast-fail>
                          <!-- Generic -->
 +                        <!--
@@ -67,7 +68,7 @@
                      <!-- PostgreSQL -->
                      <!--
                      <driver>XXXX.jar</driver>
-@@ -322,22 +322,22 @@
+@@ -322,23 +322,23 @@
                          <flush-strategy>FailingConnectionOnly</flush-strategy>
                      </pool>
                      <security>
@@ -79,6 +80,7 @@
                      <validation>
                          <validate-on-match>false</validate-on-match>
                          <background-validation>true</background-validation>
+                         <background-validation-millis>60000</background-validation-millis>
                          <use-fast-fail>false</use-fast-fail>
                          <!-- Generic -->
 +                        <!--
