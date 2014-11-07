@@ -86,8 +86,6 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 echo "Company internal projects";
             } elseif ($plf_branch === "CODEFEST") {
                 echo "eXo Codefest 2014";
-            } elseif ($plf_branch === "CLOUD") {
-                echo "eXo Cloud projects";
             } elseif ($plf_branch === "UNKNOWN") {
                 echo "Unclassified projects";
             } else {

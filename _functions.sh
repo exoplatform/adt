@@ -474,16 +474,6 @@ initialize_product_settings() {
           env_var DATASET_DATA_INDEX_ARCHIVE    "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-data-index-latest.tar.bz2"
           env_var DATASET_DB_ARCHIVE            "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-db-latest.tar.bz2"
         ;;
-        clouddash)
-          env_var ARTIFACT_REPO_GROUP           "private"
-          env_var PRODUCT_DESCRIPTION           "eXo Cloud Dashboard"
-          env_var ARTIFACT_GROUPID              "com.exoplatform.cloudworkspaces"
-          env_var ARTIFACT_ARTIFACTID           "cloud-management-demo-distribution"
-          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.42"
-          env_var PLF_BRANCH                    "CLOUD"
-          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
-          env_var DEPLOYMENT_DATABASE_ENABLED   false
-        ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
           env_var PRODUCT_DESCRIPTION "eXo Platform Documentations Website"
@@ -535,7 +525,7 @@ initialize_product_settings() {
     start | stop | restart | undeploy )
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
-      validate_env_var "PRODUCT_VERSION" 
+      validate_env_var "PRODUCT_VERSION"
     ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
