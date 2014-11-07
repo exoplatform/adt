@@ -59,7 +59,7 @@ checkCaches();
                 <div class="span12">
                     <p>This page summarizes all Git feature branches (<code>feature/.*</code>) and try to give an overview of branches health.</p>
 
-                    <h3>Feature Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>master</code> branch.)</span></h3>
+                    <h3>Feature Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span></h3>
                     <?php
                     //List all projects
                     $projectsNames = getRepositories();
@@ -97,7 +97,7 @@ checkCaches();
                         } ?>
                         </tbody>
                     </table>
-                    <h3>Translation Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>master</code> branch.)</span></h3>
+                    <h3>Translation Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span></h3>
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
@@ -128,7 +128,7 @@ checkCaches();
                         } ?>
                         </tbody>
                     </table>
-                    <h3>Others branches ... <span class="subtitle">(status compared to each project <code>master</code> branch.)</span><br/>ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP ? </h3>
+                    <h3>Others branches ... <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span><br/>ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP ? </h3>
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
