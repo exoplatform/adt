@@ -282,7 +282,7 @@ initialize_product_settings() {
               env_var PLF_BRANCH "4.0.x"
             ;;
             "3.6.x"|"3.7.x"|"4.0.x")
-              env_var PLF_BRANCH "4.1.x"
+              env_var PLF_BRANCH "4.x"
             ;;
           esac
         ;;
