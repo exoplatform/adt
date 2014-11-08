@@ -131,7 +131,6 @@ function getRepositories()
         "calendar" => "Calendar",
         "integration" => "Integration",
         "platform" => "Platform",
-        "ide" => "IDE",
         "platform-public-distributions" => "PLF Public Dist",
         "platform-private-distributions" => "PLF Private Dist");
     apc_store('repositories', $repositories);
