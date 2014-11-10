@@ -99,16 +99,18 @@ do_install_addons() {
     for _addon in $_addons; do
       ${_addons_manager_script} install ${_addon} --force --batch-mode
     done
-    # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
-    _addons_list="${DEPLOYMENT_DIR}/addons.list"
-    while read -r _addon; do
-      # Don't read empty lines
-      [[ "$_addon" =~ ^[[:blank:]]+$ ]] && continue
-      # Don't read comments
-      [[ "$_addon" =~ ^#.*$ ]] && continue
-      # Install addon
-      ${_addons_manager_script} install ${_addon} --force --batch-mode
-    done < "$_addons_list"
+    if [ -f "${DEPLOYMENT_DIR}/addons.list" ]; then
+      # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
+      _addons_list="${DEPLOYMENT_DIR}/addons.list"
+      while read -r _addon; do
+        # Don't read empty lines
+        [[ "$_addon" =~ ^[[:blank:]]+$ ]] && continue
+        # Don't read comments
+        [[ "$_addon" =~ ^#.*$ ]] && continue
+        # Install addon
+        ${_addons_manager_script} install ${_addon} --force --batch-mode
+      done < "$_addons_list"
+    fi
     echo_info "Done."
   fi
 }
