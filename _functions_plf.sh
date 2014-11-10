@@ -94,10 +94,21 @@ do_install_addons() {
     # Let's list them first (this will trigger an update of the installed version of the addons-manager if required)
     ${_addons_manager_script} list --snapshots --unstable
     echo_info "Installing PLF add-ons ..."
+    # Let's install them from $DEPLOYMENT_ADDONS env var
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
       ${_addons_manager_script} install ${_addon} --force --batch-mode
     done
+    # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
+    _addons_list="${DEPLOYMENT_DIR}/addons.list"
+    while read -r _addon; do
+      # Don't read empty lines
+      [[ "$_addon" =~ ^[[:blank:]]+$ ]] && continue
+      # Don't read comments
+      [[ "$_addon" =~ ^#.*$ ]] && continue
+      # Install addon
+      ${_addons_manager_script} install ${_addon} --force --batch-mode
+    done < "$_addons_list"
     echo_info "Done."
   fi
 }
