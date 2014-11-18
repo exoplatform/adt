@@ -310,8 +310,15 @@ initialize_product_settings() {
               env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
               env_var ARTIFACT_CLASSIFIER "bundle"
             ;;
+            "4.2.x")
+              env_var PLF_BRANCH "4.2.x"
+              env_var ARTIFACT_GROUPID "org.gatein.portal"
+              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
+              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
+              env_var ARTIFACT_CLASSIFIER "bundle"
+            ;;
             *)
-              echo_error "Product 'exogtn' not supported for versions > 3.7.x Please create a SWF to modify acceptance."
+              echo_error "Product 'exogtn' not supported for versions != 3.2.x / 3.5.x / 3.7.x / 4.2.x Please create a SWF to modify acceptance."
               print_usage
               exit 1
             ;;
