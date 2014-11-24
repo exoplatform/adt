@@ -46,7 +46,7 @@ function isFeature($branch)
 
 function isTranslation($branch)
 {
-  return strpos($branch, "translation");
+  return strpos($branch, "translation") && strpos($branch, "origin/integration");
 }
 
 function cmpPLFBranches($a, $b)
@@ -182,7 +182,7 @@ function getTranslationBranches($projects)
     $features = array();
     foreach ($projects as $project) {
       $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
-      $branches = array_filter(preg_replace('/.*\/feature\//', '',
+      $branches = array_filter(preg_replace('/.*\/integration\//', '',
                                             array_filter(explode("\n", $repoObject->git('branch -r')), 'isTranslation')));
       foreach ($branches as $branch) {
         $fetch_url = $repoObject->git('config --get remote.origin.url');
@@ -190,13 +190,13 @@ function getTranslationBranches($projects)
           $github_org = $matches[1];
           $github_repo = $matches[2];
         }
-        $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
-        $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/develop --oneline");
+        $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/integration/" . $branch;
+        $behind_commits_logs = $repoObject->git("log origin/integration/" . $branch . "..origin/develop --oneline");
         if (empty($behind_commits_logs))
           $features[$branch][$project]['behind_commits'] = 0;
         else
           $features[$branch][$project]['behind_commits'] = count(explode("\n", $behind_commits_logs));
-        $ahead_commits_logs = $repoObject->git("log origin/develop..origin/feature/" . $branch . " --oneline");
+        $ahead_commits_logs = $repoObject->git("log origin/develop..origin/integration/" . $branch . " --oneline");
         if (empty($ahead_commits_logs))
           $features[$branch][$project]['ahead_commits'] = 0;
         else

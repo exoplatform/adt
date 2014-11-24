@@ -101,7 +101,7 @@ checkCaches();
                     <table class="table table-bordered table-hover">
                         <thead>
                         <tr>
-                            <th class="col-center">Branch feature/[^/]*translation.*</th>
+                            <th class="col-center">Branch integration/[^/]*translation.*</th>
                             <?php foreach ($projects as $project) { ?>
                                 <th class="col-center"><?=$projectsNames[$project]?></th>
                             <?php } ?>
