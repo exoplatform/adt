@@ -139,8 +139,45 @@ checkCaches();
                 </div>
             </div>
         </div>
+        <div class="container-fluid">
+          <div class="row-fluid">
+            <div class="span12">
+              <table class="table table-striped table-bordered table-hover">
+                <thead>
+                  <tr>
+                    <th class="col-center">hostname</th>
+                    <th class="col-center">server name</th>
+                    <th class="col-center">characteristics</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>acceptance2.exoplatform.org</td>
+                    <td>prd01</td>
+                    <td>RAM = 24GB <br /> CPU = Xeon W3530 2.80GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = ST2000DM001-9YN164 / sdb = ST2000DM001-9YN164)</td>
+                  </tr>
+                  <tr>
+                    <td>acceptance3.exoplatform.org</td>
+                    <td>prj02</td>
+                    <td>RAM = 64GB <br /> CPU = Xeon E5-1620 0 3.60GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = ST2000DM001-9YN164 / sdb = ST2000DM001-9YN164)</td>
+                  </tr>
+                  <tr>
+                    <td>acceptance4.exoplatform.org</td>
+                    <td>prd02</td>
+                    <td>RAM = 24GB <br /> CPU = Xeon W3530 2.80GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = Hitachi HDS723020BLE640 / sdb = Hitachi HDS723020BLE640)</td>
+                  </tr>
+                  <tr>
+                    <td>acceptance5.exoplatform.org</td>
+                    <td>prj03</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon W3530 2.80GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 2TB (sda = HGST HUS724020ALA640 / sdb = HGST HUS724020ALA640)</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
         <!-- /container -->
-    </div>
+      </div>
 </div>
 <!-- Footer ================================================== -->
 <div id="footer">Copyright © 2000-2014. All rights Reserved, eXo Platform SAS.</div>
