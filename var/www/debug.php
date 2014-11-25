@@ -59,7 +59,14 @@ checkCaches();
 function my_print_r($array) {
   echo "<pre>\n";
   print_r ($array);
-  echo "\n/pre>\n";
+  echo "\n</pre>\n";
+}
+
+function my_print_r_toggle($html_id, $array) {
+  echo"<button type=\"button\" class=\"btn btn-danger\" data-toggle=\"collapse\" data-target=\"#".$html_id."\">details</button>";
+  echo "<div id=\"".$html_id."\" class=\"collapse out\">";
+  my_print_r ($array);
+  echo "</div>\n";
 }
 
 function draw_sep($id) {
@@ -69,33 +76,58 @@ function draw_sep($id) {
 ?>
 
 <ul>
-  <li><a href="#GAI">Globale Acceptance Instances</a></li>
   <li><a href="#REPOS">Repositories</a></li>
   <li><a href="#FB">Feature Branches</a></li>
   <li><a href="#TB">Translation Branches</a></li>
-  <li></li>
+  <li><a href="#AB">Acceptance Branches</a></li>
+  <li><a href="#INST">Acceptance Instances (Globale)</a></li>
 </ul>
 
 <?php
-draw_sep("GAI");
-echo "## getGlobalAcceptanceInstances<br />\n";
-my_print_r (getGlobalAcceptanceInstances());
 
 draw_sep("REPOS");
 echo "## getRepositories<br />\n";
 $projectsNames = getRepositories();
-my_print_r ($projectsNames);
+my_print_r_toggle ("REPOS_toggle", $projectsNames);
 
 draw_sep("FB");
 echo "## getFeatureBranches(projects)<br />\n";
-$projects = array_keys($projectsNames);
-my_print_r (getFeatureBranches($projects));
 
+$projects = array_keys($projectsNames);
+$projects_FB=getFeatureBranches($projects);
+my_print_r_toggle ("FB_toggle",$projects_FB);
+
+// Translation Branches
 draw_sep("TB");
 echo "## getTranslationBranches(projects)<br />\n";
-$projects = array_keys($projectsNames);
-my_print_r (getTranslationBranches($projects));
+$projects_TB=getTranslationBranches($projects);
 
+foreach ($projects_TB as $project_key => $project_TB) {
+  echo "$project_key <br />\n";
+}
+my_print_r_toggle ("TB_toggle",$projects_TB);
+
+// Acceptance Branches
+draw_sep("TB");
+echo "## getAcceptanceBranches()<br />\n";
+$projects_AB=getAcceptanceBranches();
+
+foreach ($projects_AB as $project_AB) {
+  echo "$project_AB <br />\n";
+}
+my_print_r_toggle ("AB_toggle",$projects_AB);
+
+
+draw_sep("INST");
+echo "## getGlobalAcceptanceInstances()<br />\n";
+$instances=getGlobalAcceptanceInstances();
+foreach ($instances as $category => $instances_array) {
+  echo "$category : <br />\n";
+  foreach ($instances_array as $instance) {
+    echo "&nbsp;&nbsp;&nbsp; $instance->PRODUCT_DESCRIPTION - $instance->PRODUCT_VERSION <br />\n";
+  }
+}
+my_print_r_toggle ("INST_toggle",$instances);
 ?>
 </div>
 </div>
