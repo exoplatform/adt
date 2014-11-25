@@ -41,12 +41,13 @@ function getGitDirectoriesList($directory)
 function isFeature($branch)
 {
   // All feature branches must be on the origin (see bug: SWF-2520)
-  return strpos($branch, "origin/feature/");
+  return strpos($branch, "origin/feature/") !== false;
 }
 
 function isTranslation($branch)
 {
-  return strpos($branch, "translation") && strpos($branch, "origin/integration");
+  //echo "isTranslation: $branch : " . (strpos($branch, "translation")===false ? "FALSE":strpos($branch, "translation")) . " / " . (strpos($branch, "origin/integration") === false ? "FALSE" : strpos($branch, "origin/integration")). "<br />\n";
+  return strpos($branch, "translation") !== false && strpos($branch, "origin/integration") !== false;
 }
 
 function cmpPLFBranches($a, $b)
@@ -184,6 +185,9 @@ function getTranslationBranches($projects)
       $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
       $branches = array_filter(preg_replace('/.*\/integration\//', '',
                                             array_filter(explode("\n", $repoObject->git('branch -r')), 'isTranslation')));
+                                            //print "<pre>";
+                                            //print_r($branches);
+                                            //print "</pre>";
       foreach ($branches as $branch) {
         $fetch_url = $repoObject->git('config --get remote.origin.url');
         if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {

@@ -159,7 +159,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 <?php } ?>
             </td>
             <td class="col-left"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i></a>&nbsp;<?= $descriptor_array->BASE_VERSION ?><span style="font-size: small" class="muted"><?= substr_replace($descriptor_array->ARTIFACT_TIMESTAMP,"",0,strlen($descriptor_array->BASE_VERSION))?></span></td>
-            <?php if (empty($descriptor_array->BRANCH_NAME)) { ?>
+            <?php if (empty($descriptor_array->BRANCH_NAME) || strpos($descriptor_array->BRANCH_NAME, "translation") !== false) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>
                 <td class="col-center">
@@ -192,7 +192,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             <td class="col-center"><a href="<?= $descriptor_array->DEPLOYMENT_AWSTATS_URL ?>" rel="tooltip" title="Usage statistics" target="_blank"><img src="/images/server_chart.png" alt="<?= $descriptor_array->DEPLOYMENT_URL ?> usage statistics" width="16" height="16" class="icon"/></a></td>
             <td class="col-center"><?php if (property_exists($descriptor_array,'DEPLOYMENT_CRASH_ENABLED') && $descriptor_array->DEPLOYMENT_CRASH_ENABLED) {?><a href="ssh://root@<?=$descriptor_array->DEPLOYMENT_EXT_HOST.":".$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT ?>" rel="tooltip" title="CRaSH SSH Access"><i class="icon-laptop"></i></a><?php } ?></td>
         </tr>
-        <?php if (!empty($descriptor_array->BRANCH_NAME)) { ?>
+        <?php if (!empty($descriptor_array->BRANCH_NAME) || strpos($descriptor_array->BRANCH_NAME, "translation") !== false) { ?>
             <form class="form" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editFeature.php" method="POST">
                 <div class="modal bigModal hide fade" id="edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>" aria-hidden="true">
                     <div class="modal-header">
