@@ -86,7 +86,29 @@ checkCaches();
                             return strcmp($a->DEPLOYMENT_HTTP_PORT, $b->DEPLOYMENT_HTTP_PORT);
                         }
                         usort($descriptor_arrays, "cmp");
+
+                        $servers_counter = array();
                         foreach ($descriptor_arrays as $descriptor_array) {
+                            // Compute the number of deployed instances per acceptance server
+                            $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']+1;
+                            // Compute the minimum amount of JVM size allocated per acceptance server
+                            if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'g')) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN);
+                            } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'m')) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']+(str_replace('m','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN)/1000);
+                            } else {
+                              throw new Exception("The unit of the DEPLOYMENT_JVM_SIZE_MIN is not manage (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN.")");
+                            }
+
+                            // Compute the maximum amount of JVM size allocated per acceptance server
+                            if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'g')) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX);
+                            } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'m')) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']+(str_replace('m','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX)/1000);
+                            } else {
+                              throw new Exception("The unit of the DEPLOYMENT_JVM_SIZE_MAX is not manage (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX.")");
+                            }
+
                             if ($descriptor_array->DEPLOYMENT_STATUS == "Up")
                                 $status = "<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
                             else
@@ -147,28 +169,38 @@ checkCaches();
                   <tr>
                     <th class="col-center">hostname</th>
                     <th class="col-center">server name</th>
+                    <th class="col-center">deployment<br />count</th>
+                    <th class="col-center">JVM size<br />allocated</th>
                     <th class="col-center">characteristics</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>acceptance2.exoplatform.org</td>
-                    <td>prd01</td>
+                    <td class="col-center">acceptance2.exoplatform.org</td>
+                    <td class="col-center">prd01</td>
+                    <td class="col-center"><?=$servers_counter["acceptance2.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance2.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance2.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 24GB <br /> CPU = Xeon W3530 2.80GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = ST2000DM001-9YN164 / sdb = ST2000DM001-9YN164)</td>
                   </tr>
                   <tr>
-                    <td>acceptance3.exoplatform.org</td>
-                    <td>prj02</td>
+                    <td class="col-center">acceptance3.exoplatform.org</td>
+                    <td class="col-center">prj02</td>
+                    <td class="col-center"><?=$servers_counter["acceptance3.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance3.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance3.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 64GB <br /> CPU = Xeon E5-1620 0 3.60GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = ST2000DM001-9YN164 / sdb = ST2000DM001-9YN164)</td>
                   </tr>
                   <tr>
-                    <td>acceptance4.exoplatform.org</td>
-                    <td>prd02</td>
+                    <td class="col-center">acceptance4.exoplatform.org</td>
+                    <td class="col-center">prd02</td>
+                    <td class="col-center"><?=$servers_counter["acceptance4.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance4.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance4.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 24GB <br /> CPU = Xeon W3530 2.80GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = Hitachi HDS723020BLE640 / sdb = Hitachi HDS723020BLE640)</td>
                   </tr>
                   <tr>
-                    <td>acceptance5.exoplatform.org</td>
-                    <td>prj03</td>
+                    <td class="col-center">acceptance5.exoplatform.org</td>
+                    <td class="col-center">prj03</td>
+                    <td class="col-center"><?=$servers_counter["acceptance5.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance5.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance5.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon W3530 2.80GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 2TB (sda = HGST HUS724020ALA640 / sdb = HGST HUS724020ALA640)</td>
                   </tr>
                 </tbody>
