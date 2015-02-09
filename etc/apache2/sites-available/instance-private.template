@@ -21,22 +21,39 @@
 
     # Everything else is secured
     <Proxy *>
-        Order deny,allow
-        Allow from all
+        <IfModule authnz_crowd_module>
+            Order deny,allow
+            Allow from all
 
-        AuthName "eXo Employees only"
-        AuthType Basic
-        AuthBasicProvider crowd
+            AuthName "eXo Employees only"
+            AuthType Basic
+            AuthBasicProvider crowd
 
-        CrowdAppName ${CROWD_ACCEPTANCE_APP_NAME}
-        CrowdAppPassword ${CROWD_ACCEPTANCE_APP_PASSWORD}
-        CrowdURL https://identity.exoplatform.org/
+            CrowdAppName ${CROWD_ACCEPTANCE_APP_NAME}
+            CrowdAppPassword ${CROWD_ACCEPTANCE_APP_PASSWORD}
+            CrowdURL https://identity.exoplatform.org/
 
-        # Activate SSO
-        CrowdAcceptSSO On
-        CrowdCreateSSO On
+            # Activate SSO
+            CrowdAcceptSSO On
+            CrowdCreateSSO On
 
-        # Only exo-employees can access
-        Require group exo-employees
+            # Only exo-employees can access
+            Require group exo-employees
+        </IfModule>
+        <IfModule !authnz_crowd_module>
+            Require all denied
+
+            AuthName "eXo Employees only"
+            AuthType Basic
+            AuthBasicProvider ldap
+
+            AuthLDAPBindDN          "${LDAP_ACCEPTANCE_BIND_DN}"
+            AuthLDAPBindPassword    ${LDAP_ACCEPTANCE_BIND_PASSWORD}
+            AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn
+            <RequireAll>
+                Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
+                AuthLDAPMaxSubGroupDepth 1
+            </RequireAll>
+        </IfModule>
     </Proxy>
 </VirtualHost>
