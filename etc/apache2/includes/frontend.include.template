@@ -119,8 +119,8 @@
     Alias /awstatscss "/usr/share/doc/awstats/examples/css"
     ScriptAlias /stats/ /usr/lib/cgi-bin/
     #Redirect by default to our public projects repositories
-    Options -Indexes ExecCGI -MultiViews +SymLinksIfOwnerMatch
     RedirectMatch "^stats/?$" "/stats/awstats.pl"
+    Options -Indexes +ExecCGI -MultiViews +SymLinksIfOwnerMatch
 
     # Security
     <Location />
