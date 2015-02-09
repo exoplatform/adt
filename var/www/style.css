@@ -95,11 +95,6 @@ section>ul li {
   color       : #006
 }
 
-.color-acceptance1 {
-  font-weight : normal;
-  color       : #0202FF
-}
-
 .gray, .color-acceptanceX {
   font-weight : normal;
   color       : gray
@@ -118,6 +113,11 @@ section>ul li {
 .color-acceptance5 {
   font-weight : normal;
   color       : #14CECE
+}
+
+.color-acceptance6 {
+  font-weight : normal;
+  color       : #0202FF
 }
 
 /* logs */

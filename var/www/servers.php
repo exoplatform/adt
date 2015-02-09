@@ -140,6 +140,8 @@ checkCaches();
                                     $host_html_color = "color-acceptance4";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance5.exoplatform.org") {
                                     $host_html_color = "color-acceptance5";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance6.exoplatform.org") {
+                                    $host_html_color = "color-acceptance6";
                                 } else {
                                     $host_html_color = "color-acceptanceX";
                                 }
@@ -202,6 +204,13 @@ checkCaches();
                     <td class="col-center"><?=$servers_counter["acceptance5.exoplatform.org"]['nb']?></td>
                     <td class="col-center"><?=$servers_counter["acceptance5.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance5.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon W3530 2.80GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 2TB (sda = HGST HUS724020ALA640 / sdb = HGST HUS724020ALA640)</td>
+                  </tr>
+                  <tr>
+                    <td class="col-center">acceptance6.exoplatform.org</td>
+                    <td class="col-center">prd03</td>
+                    <td class="col-center"><?=$servers_counter["acceptance6.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance6.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance6.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 2TB (sda = HGST HUS724020ALA640 / sdb = HGST HUS724020ALA640)</td>
                   </tr>
                 </tbody>
               </table>
