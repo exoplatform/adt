@@ -1,10 +1,10 @@
     ServerAdmin exo-swf@exoplatform.com
 
     RewriteEngine           On
-    
+
     DirectoryIndex index.php
 
-    # Error pages    
+    # Error pages
     ErrorDocument 404 /404.html
     ErrorDocument 500 /500.html
     ErrorDocument 502 /502.html
@@ -12,7 +12,7 @@
 
     ErrorLog        ${ADT_DATA}/var/log/apache2/${ACCEPTANCE_HOST}-error.log
     LogLevel        warn
-    CustomLog       ${ADT_DATA}/var/log/apache2/${ACCEPTANCE_HOST}-access.log combined  
+    CustomLog       ${ADT_DATA}/var/log/apache2/${ACCEPTANCE_HOST}-access.log combined
 
     #
     # Compression using GZIP
@@ -32,7 +32,7 @@
     BrowserMatch ^Mozilla/4\.0[678] no-gzip
     # MSIE masquerades as Netscape, but it is fine
     BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
-    
+
     # Don't compress images
     SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png)$" no-gzip dont-vary
     # Make sure proxies don't deliver the wrong content
@@ -56,13 +56,13 @@
 
     # Set up 2 Hour caching on commonly updated files
     <FilesMatch "\.(xml|txt|html|js|css)$">
-      ExpiresDefault A7200 
+      ExpiresDefault A7200
       Header append Cache-Control "private, proxy-revalidate, must-revalidate"
     </FilesMatch>
 
     # Force no caching for dynamic files
     <FilesMatch "\.(php|cgi|pl|htm)$">
-      ExpiresDefault A0 
+      ExpiresDefault A0
       Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0, proxy-revalidate, no-transform"
       Header set Pragma "no-cache"
     </FilesMatch>
@@ -112,15 +112,15 @@
         Order allow,deny
         Allow from all
     </Directory>
-    
+
     #Awstats
     Alias /awstatsclasses "/usr/share/awstats/lib/"
     Alias /awstats-icon/ "/usr/share/awstats/icon/"
     Alias /awstatscss "/usr/share/doc/awstats/examples/css"
     ScriptAlias /stats/ /usr/lib/cgi-bin/
     #Redirect by default to our public projects repositories
-    RedirectMatch "^stats/?$" "/stats/awstats.pl"    
     Options -Indexes ExecCGI -MultiViews +SymLinksIfOwnerMatch
+    RedirectMatch "^stats/?$" "/stats/awstats.pl"
 
     # Security
     <Location />

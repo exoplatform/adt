@@ -22,22 +22,22 @@ Prepare your environment
 Fork this project :
 
     git clone git://github.com/exoplatform/adt.git
-    
+
 Define the environment variable ADT_DATA, which will be the path to a working directory used by ADT.
 
     export ADT_DATA=$HOME/adt_data
-    
+
 You can also define your settings in $HOME/.adtrc or in /etc/default/adt
-    
+
 You're ready to go
 ------------------
 
 Deploy a server : download and configure it
 
     # adt.sh deploy plfcom 4.0.0-SNAPSHOT
-    
+
 Start a server : start a deployed instance
-    
+
     # adt.sh start plfcom 4.0.0-SNAPSHOT
 
 Stop a server : stop a deployed instance

@@ -10,7 +10,7 @@
         Allow from all
         Satisfy any
     </ProxyMatch>
-    
+
     # No security for chat local access
     <ProxyMatch "^.*/chatServer/.*$">
         Order deny,allow
