@@ -483,6 +483,17 @@ initialize_product_settings() {
           env_var DATASET_DATA_INDEX_ARCHIVE    "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-data-index-latest.tar.bz2"
           env_var DATASET_DB_ARCHIVE            "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-db-latest.tar.bz2"
         ;;
+        buypage)
+          env_var PRODUCT_DESCRIPTION           "eXo Buy Page"
+          env_var PLF_BRANCH                    "COMPANY"
+          env_var ARTIFACT_REPO_GROUP           "private"
+          env_var ARTIFACT_GROUPID              "com.exoplatform.buypage"
+          env_var ARTIFACT_ARTIFACTID           "buy-page-package"
+          env_var ARTIFACT_CLASSIFIER           "tomcat"
+          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.57"
+          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
+          env_var DEPLOYMENT_DATABASE_ENABLED   false
+        ;;
         docs)
           env_var ARTIFACT_REPO_GROUP "private"
           env_var PRODUCT_DESCRIPTION "eXo Platform Documentations Website"
