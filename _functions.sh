@@ -89,7 +89,7 @@ Environment Variables
 
   ADT_DEBUG                         : Display debug details (default: false; values : true | false)
   ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false; values : true | false)
-  ADT_OFFLINE                       : Use only local resources, don't do any remote operations. (default: false; values : true | false)
+  ADT_OFFLINE                       : Use only local resources, don''t do any remote operations. (default: false; values : true | false)
 
   Instance Settings
   =================
