@@ -132,9 +132,7 @@ checkCaches();
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_DATABASE_TYPE?></td>
                                 <?php
-                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance2.exoplatform.org") {
-                                    $host_html_color = "color-acceptance2";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance3.exoplatform.org") {
+                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance3.exoplatform.org") {
                                     $host_html_color = "color-acceptance3";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance4.exoplatform.org") {
                                     $host_html_color = "color-acceptance4";
@@ -177,13 +175,6 @@ checkCaches();
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td class="col-center">acceptance2.exoplatform.org</td>
-                    <td class="col-center">prd01</td>
-                    <td class="col-center"><?=$servers_counter["acceptance2.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance2.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance2.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 24GB <br /> CPU = Xeon W3530 2.80GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = ST2000DM001-9YN164 / sdb = ST2000DM001-9YN164)</td>
-                  </tr>
                   <tr>
                     <td class="col-center">acceptance3.exoplatform.org</td>
                     <td class="col-center">prj02</td>
