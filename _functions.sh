@@ -283,7 +283,10 @@ initialize_product_settings() {
             "3.5.x")
               env_var PLF_BRANCH "4.1.x"
             ;;
-            "3.6.x"|"3.7.x"|"3.8.x"|"4.0.x")
+            "3.6.x"|"3.7.x")
+              env_var PLF_BRANCH "4.3.x"
+            ;;
+            "3.8.x"|"4.0.x")
               env_var PLF_BRANCH "4.x"
             ;;
           esac
@@ -511,6 +514,14 @@ initialize_product_settings() {
             ;;
             "4.1.x")
               env_var PLF_BRANCH "4.1.x"
+              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
+            ;;
+            "4.2.x")
+              env_var PLF_BRANCH "4.2.x"
+              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
+            ;;
+            "4.3.x")
+              env_var PLF_BRANCH "4.3.x"
               env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
             ;;
             *)

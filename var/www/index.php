@@ -79,15 +79,17 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             } elseif ($plf_branch === "4.1.x") {
                 echo "Platform " . $plf_branch . " based build (Maintenance)";
             } elseif ($plf_branch === "4.2.x") {
-                echo "Platform " . $plf_branch . " based builds (Productization) - next product release";
+                echo "Platform " . $plf_branch . " based builds (Productization) - next product release (June 2015)";
+            } elseif ($plf_branch === "4.3.x") {
+                echo "Platform " . $plf_branch . " based builds (R&D) - next product release (december 2015)";
             } elseif ($plf_branch === "4.1.x Demo") {
                 echo "Platform " . $plf_branch . "s";
             } elseif ($plf_branch === "4.x") {
-                echo "Platform " . $plf_branch . " based builds (R&D) - next features ;-)";
+                echo "Platform " . $plf_branch . " based builds (R&D) - perhaps next features ;-)";
             } elseif ($plf_branch === "COMPANY") {
                 echo "Company internal projects";
             } elseif ($plf_branch === "CODEFEST") {
-                echo "eXo Codefest 2014";
+                echo "eXo Codefest 2015";
             } elseif ($plf_branch === "UNKNOWN") {
                 echo "Unclassified projects";
             } else {
