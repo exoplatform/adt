@@ -135,7 +135,7 @@ my_print_r_toggle ("INST_toggle",$instances);
 </div>
 </div>
 <!-- Footer ================================================== -->
-<div id="footer">Copyright © 2000-2014. All rights Reserved, eXo Platform SAS.</div>
+<div id="footer">Copyright © 2000-2015. All rights Reserved, eXo Platform SAS.</div>
 <script type="text/javascript">
 $(document).ready(function () {
   $('body').tooltip({ selector: '[rel=tooltip]'});
