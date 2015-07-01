@@ -1,6 +1,6 @@
 --- server.xml	2013-03-04 20:32:07.000000000 +0100
 +++ server.xml	2013-03-04 20:33:32.000000000 +0100
-@@ -64,22 +64,22 @@
+@@ -61,22 +61,22 @@
      <!-- eXo IDM Datasource for portal -->
      <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
                initialSize="5" maxActive="20" minIdle="5" maxIdle="15" maxWait="10000"
