@@ -1,5 +1,5 @@
 --- conf/server.xml	2015-08-07 19:27:39.000000000 +0200
-+++ conf/server2.xml	2015-08-07 19:28:36.000000000 +0200
++++ conf/server.xml	2015-08-07 19:28:36.000000000 +0200
 @@ -23,7 +23,7 @@
       define subcomponents such as "Valves" at this level.
       Documentation at /docs/config/server.html
@@ -20,7 +20,7 @@
                 URIEncoding="UTF-8"
 @@ -127,7 +127,7 @@
      -->
- 
+
      <!-- Define an AJP 1.3 Connector on port 8009 -->
 -    <Connector address="0.0.0.0" port="8009" protocol="AJP/1.3"
 +    <Connector address="0.0.0.0" port="@AJP_PORT@" protocol="AJP/1.3"
