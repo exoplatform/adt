@@ -35,6 +35,6 @@
                removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;" />
-+              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_JPA_NAME@?autoReconnect=true&characterEncoding=utf8" />
++              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_JPA_NAME@?autoReconnect=true&amp;characterEncoding=utf8" />
 
    </GlobalNamingResources>
