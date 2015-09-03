@@ -243,6 +243,9 @@ do_configure_tomcat_datasources() {
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
           echo_info "Done."
         fi
 
@@ -263,6 +266,9 @@ do_configure_tomcat_datasources() {
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
         echo_info "Done."
       fi
     ;;
@@ -282,6 +288,9 @@ do_configure_tomcat_datasources() {
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
         echo_info "Done."
       fi
     ;;
@@ -322,7 +331,7 @@ do_configure_tomcat_ports() {
 do_configure_tomcat_setenv() {
   # setenv.xml
   find_instance_file TOMCAT_SETENV_SCRIPT "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "setenv.sh" "${TOMCAT_SETENV_SCRIPT_PRODUCT_NAME}"
-  
+
   # Use a specific setenv.sh
   if [ "${TOMCAT_SETENV_SCRIPT}" != "UNSET" ]; then
     echo_info "Installing custom setenv.sh script $TOMCAT_SETENV_SCRIPT ..."
@@ -330,7 +339,7 @@ do_configure_tomcat_setenv() {
 	chmod 755 ${DEPLOYMENT_DIR}/bin/setenv.sh
     echo_info "Done."
   fi
-	
+
   # PLF 4+ only
   if [ -e ${DEPLOYMENT_DIR}/bin/setenv-customize.sample.sh ]; then
     echo_info "Creating setenv resources ..."
