@@ -95,6 +95,9 @@ do_configure_jbosseap_datasources() {
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_DRIVER@" `basename ${MYSQL_JAR_URL}`
         echo_info "Done."
       fi
@@ -114,6 +117,9 @@ do_configure_jbosseap_datasources() {
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
+        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
         replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
         echo_info "Done."
       fi
@@ -153,7 +159,7 @@ do_configure_jbosseap_ports() {
 
     replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@HTTP_PORT@" "${DEPLOYMENT_HTTP_PORT}"
     replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@AJP_PORT@" "${DEPLOYMENT_AJP_PORT}"
-    
+
     replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@HTTPS_PORT@" "${DEPLOYMENT_HTTPS_PORT}"
     replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@REMOTING_PORT@" "${DEPLOYMENT_REMOTING_PORT}"
     replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@TXN_RECOVERY_ENV_PORT@" "${DEPLOYMENT_TXN_RECOVERY_ENV_PORT}"

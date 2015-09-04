@@ -1,0 +1,146 @@
+--- standalone.xml	2015-09-04 18:29:50.000000000 +0200
++++ standalone-mysql.xml	2015-09-04 18:39:06.000000000 +0200
+@@ -189,15 +189,15 @@
+                 <!-- eXo IDM Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-idm_portal" jta="false" pool-name="exo-idm_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;</connection-url>
++                    -->
+                     <!-- MySQL -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>com.mysql.jdbc.Driver</driver-class>
+-                    <connection-url>jdbc:mysql://localhost:3306/plf?autoReconnect=true</connection-url>
+-                    -->
++                    <connection-url>jdbc:mysql://localhost:3306/@DB_IDM_NAME@?autoReconnect=true</connection-url>
+                     <!-- PostgreSQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -243,8 +243,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_IDM_USR@</user-name>
++                        <password>@DB_IDM_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
+@@ -252,14 +252,14 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                          -->
+                         <!-- MySQL -->
+-                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker" />
+-                          -->
+                         <!-- PostgreSQL and Enterprise DB PostgreSQL Plus Advanced server -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter" />
+@@ -299,15 +299,15 @@
+                 <!-- eXo JCR Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-jcr_portal" jta="false" pool-name="exo-jcr_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;</connection-url>
++                    -->
+                     <!-- MySQL -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>com.mysql.jdbc.Driver</driver-class>
+-                    <connection-url>jdbc:mysql://localhost:3306/plf?autoReconnect=true</connection-url>
+-                    -->
++                    <connection-url>jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true</connection-url>
+                     <!-- PostgreSQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -353,8 +353,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_JCR_USR@</user-name>
++                        <password>@DB_JCR_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
+@@ -362,14 +362,14 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+-                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker" />
+-                          -->
+                         <!-- PostgreSQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter" />
+@@ -409,15 +409,15 @@
+                 <!-- eXo JPA Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-jpa_portal" jta="false" pool-name="exo-jpa_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;</connection-url>
++                    -->
+                     <!-- MySQL -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>com.mysql.jdbc.Driver</driver-class>
+-                    <connection-url>jdbc:mysql://localhost:3306/plf?autoReconnect=true&amp;characterEncoding=utf8</connection-url>
+-                    -->
++                    <connection-url>jdbc:mysql://localhost:3306/@DB_JPA_NAME@?autoReconnect=true&amp;characterEncoding=utf8</connection-url>
+                     <!-- PostgreSQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -463,8 +463,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_JPA_USR@</user-name>
++                        <password>@DB_JPA_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
+@@ -472,14 +472,14 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+-                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLValidConnectionChecker" />
+-                          -->
+                         <!-- PostgreSQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLExceptionSorter" />
