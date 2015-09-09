@@ -485,9 +485,9 @@ initialize_product_settings() {
           env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
           # Datasets remote location
-          env_var DATASET_DATA_VALUES_ARCHIVE   "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-data-values-latest.tar.bz2"
-          env_var DATASET_DATA_INDEX_ARCHIVE    "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-data-index-latest.tar.bz2"
-          env_var DATASET_DB_ARCHIVE            "bckcommunity@backup.exoplatform.org:/home/bckcommunity/community-db-latest.tar.bz2"
+          env_var DATASET_DATA_VALUES_ARCHIVE   "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-data-values-latest.tar.bz2"
+          env_var DATASET_DATA_INDEX_ARCHIVE    "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-data-index-latest.tar.bz2"
+          env_var DATASET_DB_ARCHIVE            "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-db-latest.tar.bz2"
         ;;
         buypage)
           env_var PRODUCT_DESCRIPTION           "eXo Buy Page"
