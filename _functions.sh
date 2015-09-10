@@ -198,6 +198,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_ES_EMBEDDED_ENABLED" false
+      env_var "DEPLOYMENT_ES_EMBEDDED_PATH_DATA" "gatein/data/"
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
 
@@ -862,7 +863,7 @@ do_drop_data() {
 #
 do_drop_es_data() {
   echo_info "Drops Elasticsearch instance datas ..."
-  rm -rf ${DEPLOYMENT_DIR}/gatein/data/exoplatform-es/
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_EMBEDDED_PATH_DATA}/exoplatform-es
   echo_info "Done."
 }
 
