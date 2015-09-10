@@ -1175,6 +1175,7 @@ do_start() {
         CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
         # Elasticsearch Embedded
         CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_EMBEDDED_HTTP_PORT}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_ES_EMBEDDED_PATH_DATA}"
         export CATALINA_OPTS
         export EXO_PROFILES="${EXO_PROFILES}"
       fi
