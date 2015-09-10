@@ -40,6 +40,10 @@ if ${DEPLOYMENT_CRASH_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${EXO_CRASH_TELNET_PORT}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${EXO_CRASH_SSH_PORT}"
 fi
+# Elasticsearch Embedded
+if ${DEPLOYMENT_ES_EMBEDDED_ENABLED}; then
+    CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${EXO_ES_EMBEDDED_HTTP_PORT}"
+fi
 # eXo Addon Chat
 if ${DEPLOYMENT_CHAT_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dchat.weemoKey=${EXO_CHAT_WEEMO_KEY}"

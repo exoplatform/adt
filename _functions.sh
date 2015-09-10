@@ -197,6 +197,8 @@ initialize_product_settings() {
 
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
+      env_var "DEPLOYMENT_ES_EMBEDDED_ENABLED" false
+
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
@@ -699,6 +701,9 @@ do_init_empty_data(){
     do_drop_chat_mongo_database
     do_create_chat_mongo_database
   fi
+  if ${DEPLOYMENT_ES_EMBEDDED_ENABLED}; then
+    do_drop_es_data
+  fi
   do_drop_data
   do_create_data
   echo_info "Done"
@@ -848,6 +853,16 @@ do_drop_data() {
   echo_info "Done."
   echo_info "Drops instance values ..."
   rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+  echo_info "Done."
+}
+
+
+#
+# Drops all Elasticsearch datas used by the instance.
+#
+do_drop_es_data() {
+  echo_info "Drops Elasticsearch instance datas ..."
+  rm -rf ${DEPLOYMENT_DIR}/gatein/data/exoplatform-es/
   echo_info "Done."
 }
 
@@ -1018,6 +1033,9 @@ do_deploy() {
   env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
   env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
+  # Elasticsearch (ES) ports
+  env_var "DEPLOYMENT_ES_EMBEDDED_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
+
   if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
@@ -1154,6 +1172,8 @@ do_start() {
         # CRaSH
         CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
         CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
+        # Elasticsearch Embedded
+        CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_EMBEDDED_HTTP_PORT}"
         export CATALINA_OPTS
         export EXO_PROFILES="${EXO_PROFILES}"
       fi
