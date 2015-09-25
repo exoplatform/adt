@@ -68,6 +68,7 @@ checkCaches();
                             <th class="col-center">Status</th>
                             <th class="col-center">Prefix</th>
                             <th class="col-center">HTTP</th>
+                            <th class="col-center">ES</th>
                             <th class="col-center">AJP</th>
                             <th class="col-center">JMX RMI Registration</th>
                             <th class="col-center">JMX RMI Server</th>
@@ -148,6 +149,7 @@ checkCaches();
                                 <td class="col-left"><?= $status ?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
+                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_ES_EMBEDDED_HTTP_PORT?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
