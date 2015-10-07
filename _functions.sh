@@ -418,7 +418,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_EXTENSIONS "acme,cmis,crash,ide,wai"
           env_var DEPLOYMENT_SKIP_ACCOUNT_SETUP true
         ;;
-        plfent)
+        plfent|plfentdemo)
           env_var PRODUCT_DESCRIPTION "Platform EE"
           env_var ARTIFACT_REPO_GROUP "private"
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
