@@ -256,6 +256,7 @@ initialize_product_settings() {
       env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
 
       # Validate product and load artifact details
+      # Be careful, this id should be no longer than 10 (because of mysql user name limit)
       case "${PRODUCT_NAME}" in
         gatein)
           env_var PRODUCT_DESCRIPTION "GateIn Community edition"
@@ -444,7 +445,8 @@ initialize_product_settings() {
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
         ;;
-        plfenttrial)
+        # ID should be no longer than 10 (plfenttrial is too long)
+        plfentrial)
           # Platform EE + chat, remote-edit, site-template, task, video
           env_var PRODUCT_DESCRIPTION "Platform EE Trial"
           env_var ARTIFACT_REPO_GROUP "private"
