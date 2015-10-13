@@ -197,8 +197,8 @@ initialize_product_settings() {
 
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
-      configurable_env_var "DEPLOYMENT_ES_EMBEDDED_ENABLED" true
-      env_var "DEPLOYMENT_ES_EMBEDDED_PATH_DATA" "gatein/data/"
+      configurable_env_var "DEPLOYMENT_ES_ENABLED" false
+      env_var "DEPLOYMENT_ES_PATH_DATA" "gatein/data/"
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
 
@@ -721,7 +721,7 @@ do_init_empty_data(){
     do_drop_chat_mongo_database
     do_create_chat_mongo_database
   fi
-  if ${DEPLOYMENT_ES_EMBEDDED_ENABLED}; then
+  if ${DEPLOYMENT_ES_ENABLED}; then
     do_drop_es_data
   fi
   do_drop_data
@@ -882,7 +882,7 @@ do_drop_data() {
 #
 do_drop_es_data() {
   echo_info "Drops Elasticsearch instance datas ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_EMBEDDED_PATH_DATA}/exoplatform-es
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}/exoplatform-es
   echo_info "Done."
 }
 
@@ -1054,7 +1054,7 @@ do_deploy() {
   env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
   # Elasticsearch (ES) ports
-  env_var "DEPLOYMENT_ES_EMBEDDED_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
+  env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
 
   if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
@@ -1192,9 +1192,9 @@ do_start() {
         # CRaSH
         CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
         CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
-        # Elasticsearch Embedded
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_EMBEDDED_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_ES_EMBEDDED_PATH_DATA}"
+        # Elasticsearch
+        CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_HTTP_PORT} -Dexo.es.index.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT} -Dexo.es.search.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_ES_PATH_DATA}"
         export CATALINA_OPTS
         export EXO_PROFILES="${EXO_PROFILES}"
       fi
