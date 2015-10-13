@@ -1193,7 +1193,9 @@ do_start() {
         CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
         CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
         # Elasticsearch
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_HTTP_PORT} -Dexo.es.index.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT} -Dexo.es.search.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_HTTP_PORT}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.index.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.search.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
         CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_ES_PATH_DATA}"
         export CATALINA_OPTS
         export EXO_PROFILES="${EXO_PROFILES}"
