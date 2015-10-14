@@ -236,6 +236,10 @@ function getLocalAcceptanceInstances()
         $descriptor_array['BASE_VERSION'] = $descriptor_array['PRODUCT_VERSION'];
         $descriptor_array['BRANCH_NAME'] = "";
       }
+      // Instance note
+      if (file_exists(getenv('ADT_DATA') . "/conf/instances/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".note"))
+        $descriptor_array['INSTANCE_NOTE'] = file_get_contents(getenv('ADT_DATA') . "/conf/instances/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".note");
+
       if ($descriptor_array['ARTIFACT_DATE']) {
         $artifact_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['ARTIFACT_DATE'])->diff($now, true);
         if ($artifact_age->days)

@@ -122,6 +122,9 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 if (!empty($descriptor_array->BRANCH_DESC)) {
                     $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $descriptor_array->BRANCH_DESC;
                 }
+                if (!empty($descriptor_array->INSTANCE_NOTE)) {
+                    $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $descriptor_array->INSTANCE_NOTE;
+                }
 
                 $product_deployment_url = "-UNSET-";
                 if ($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS ) {
@@ -165,6 +168,10 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 <?php } ?>
                 <?php if (!empty($descriptor_array->SPECIFICATIONS_LINK)) { ?>
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
+                <?php } ?>
+                <?php if (empty($descriptor_array->BRANCH_NAME)) { ?>
+                    <a rel="tooltip" style="float:right" title="Add/Edit Instance Note" href="#edit-note-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" data-toggle="modal"><i class="icon-pencil"></i></a>
+                    <?php include("editInstanceForm.php") ?>
                 <?php } ?>
             </td>
             <td class="col-left"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i></a>&nbsp;<?= $descriptor_array->BASE_VERSION ?><span style="font-size: small" class="muted"><?= substr_replace($descriptor_array->ARTIFACT_TIMESTAMP,"",0,strlen($descriptor_array->BASE_VERSION))?></span></td>

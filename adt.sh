@@ -67,6 +67,7 @@ env_var "APACHE_CONF_DIR" "${ADT_DATA}/conf/apache"
 env_var "AWSTATS_CONF_DIR" "${ADT_DATA}/conf/awstats"
 env_var "ADT_CONF_DIR" "${ADT_DATA}/conf/adt"
 env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
+env_var "INSTANCES_CONF_DIR" "${ADT_DATA}/conf/instances"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
@@ -95,6 +96,7 @@ validate_env_var "CONF_DIR"
 validate_env_var "APACHE_CONF_DIR"
 validate_env_var "ADT_CONF_DIR"
 validate_env_var "FEATURES_CONF_DIR"
+validate_env_var "INSTANCES_CONF_DIR"
 mkdir -p ${ETC_DIR}
 mkdir -p ${TMP_DIR}
 mkdir -p ${DL_DIR}
@@ -108,6 +110,8 @@ mkdir -p ${APACHE_CONF_DIR}/includes
 mkdir -p ${ADT_CONF_DIR}
 mkdir -p ${FEATURES_CONF_DIR}
 chmod 777 ${FEATURES_CONF_DIR} # apache needs to write here
+mkdir -p ${INSTANCES_CONF_DIR}
+chmod 777 ${INSTANCES_CONF_DIR} # apache needs to write here
 # Recopy default data
 # Copy everything in it
 if [[ "${SCRIPT_DIR}" != "${ADT_DATA}" ]]; then
