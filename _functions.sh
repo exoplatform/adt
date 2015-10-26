@@ -201,6 +201,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_ES_PATH_DATA" "gatein/data/"
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
+      configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
 
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
       env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
@@ -943,7 +944,11 @@ do_configure_apache() {
   echo_info "Done."
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
-  evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  if ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
+    evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  else
+    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  fi
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
