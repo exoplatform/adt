@@ -149,6 +149,8 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 }
                 $product_html_popover = $product_html_popover . " <i class=\"".$product_deployment_url_icon_type."\"></i>";
                 $product_html_popover = $product_html_popover . "<br/><strong>HTTPS available:</strong> " . ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED ? "yes" : "no");
+                //SWF-3125: Use Apache version to know if WebSocket can be enabled.
+                $product_html_popover = $product_html_popover . "<br/><strong>WebSocket available:</strong> " . ((stripos($descriptor_array->DEPLOYMENT_SERVER_CONF, "2.4.") && $descriptor_array->DEPLOYMENT_APACHE_WEBSOCKET_ENABLED)? "yes" : "no");
                 $product_html_popover = $product_html_popover . "<br/><strong>Deployed extensions:</strong> " . $descriptor_array->DEPLOYMENT_EXTENSIONS;
                 $product_html_popover = $product_html_popover . "<br/><strong>Deployed add-ons:</strong> " . $descriptor_array->DEPLOYMENT_ADDONS;
                 $product_html_popover = $product_html_popover . "<br/><strong>Virtual Host:</strong> " . preg_replace("/https?:\/\/(.*)/","$1",$descriptor_array->DEPLOYMENT_URL);
