@@ -67,14 +67,12 @@ function cmpInstances($a, $b)
 }
 
 
-function append_data($url, $data, $headers)
+function append_data($url, $data)
 {
   $result = $data;
   $values = (array)json_decode(file_get_contents($url));
   while ($entry = current($values)) {
     $key = key($values);
-    //SWF-3125: Use Server configuration to know if WebSocket can be enabled.
-    $entry[0]->DEPLOYMENT_SERVER_CONF = ($headers["Server"]);
     if (!array_key_exists($key, $data)) {
       $result[$key] = $entry;
     } else {
@@ -309,6 +307,9 @@ function getLocalAcceptanceInstances()
       $descriptor_array['ACCEPTANCE_HOST'] = $_SERVER['SERVER_NAME'];
       // Server port where is deployed the instance
       $descriptor_array['ACCEPTANCE_PORT'] = $_SERVER['SERVER_PORT'];
+      // Apache version where is deployed the instance
+      $descriptor_array['ACCEPTANCE_APACHE_VERSION'] = getenv('ADT_APACHE_VERSION');
+      $descriptor_array['ACCEPTANCE_APACHE_VERSION_MINOR'] = getenv('ADT_APACHE_VERSION_MINOR');
       // Add it in the list
       if (empty($descriptor_array['PLF_BRANCH']))
         $instances['UNKNOWN'][] = $descriptor_array;
@@ -334,9 +335,7 @@ function getGlobalAcceptanceInstances()
     } else {
       $servers = explode(",", getenv('ACCEPTANCE_SERVERS'));
       foreach ($servers as $server) {
-        $url = $server . '/rest/local-instances.php';
-        $headers = get_headers($url, 1);
-        $instances = append_data($url, $instances, $headers);
+        $instances = append_data($server . '/rest/local-instances.php', $instances);
       }
     }
     // Instances will be cached for 2 min
