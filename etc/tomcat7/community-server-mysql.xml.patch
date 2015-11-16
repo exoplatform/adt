@@ -1,6 +1,6 @@
---- server.xml	2013-03-15 19:14:41.000000000 +0100
-+++ server.xml	2013-03-15 19:16:58.000000000 +0100
-@@ -69,7 +69,7 @@
+--- server.xml	2015-11-14 19:44:00.000000000 +0100
++++ server.xml	2015-11-16 12:39:26.000000000 +0100
+@@ -66,17 +66,17 @@
                timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
                removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
@@ -9,12 +9,24 @@
  
      <!-- eXo JCR Datasource for portal -->
      <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
-@@ -79,7 +79,7 @@
+               initialSize="5" maxActive="20" minIdle="5" maxIdle="15" maxWait="10000"
+-              validationQuery="SELECT 1" validationQueryTimeout="5" 
++              validationQuery="SELECT 1" validationQueryTimeout="5"
+               testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
                timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
                removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="root" password="root" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/plf?autoReconnect=true" />
 +              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true" />
+ 
+     <!-- eXo JPA Datasource for portal -->
+     <Resource name="exo-jpa_portal" auth="Container" type="javax.sql.DataSource"
+@@ -86,7 +86,7 @@
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="root" password="root" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/plf?autoReconnect=true&amp;characterEncoding=utf8"/>
++              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_JPA_NAME@?autoReconnect=true&amp;characterEncoding=utf8"/>
  
    </GlobalNamingResources>
  
