@@ -11,6 +11,14 @@
         Satisfy any
     </ProxyMatch>
 
+    # No security for chat local access
+    <ProxyMatch "^.*/chatServer/.*$">
+        Order deny,allow
+        Deny from all
+        Allow from exoplatform.org
+        Satisfy any
+    </ProxyMatch>
+
     # Everything else is secured
     <Proxy *>
         <IfModule authnz_crowd_module>
