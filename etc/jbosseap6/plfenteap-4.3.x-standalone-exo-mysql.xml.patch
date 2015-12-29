@@ -7,7 +7,7 @@
 +                    <!--
                      <driver>hsqldb-driver.jar</driver>
                      <driver-class>org.hsqldb.jdbcDriver</driver-class>
-                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;</connection-url>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
 +                    -->
                      <!-- MySQL -->
 -                    <!--
@@ -55,7 +55,7 @@
 +                    <!--
                      <driver>hsqldb-driver.jar</driver>
                      <driver-class>org.hsqldb.jdbcDriver</driver-class>
-                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;</connection-url>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
 +                    -->
                      <!-- MySQL -->
 -                    <!--
@@ -103,7 +103,7 @@
 +                    <!--
                      <driver>hsqldb-driver.jar</driver>
                      <driver-class>org.hsqldb.jdbcDriver</driver-class>
-                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;</connection-url>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
 +                    -->
                      <!-- MySQL -->
 -                    <!--
