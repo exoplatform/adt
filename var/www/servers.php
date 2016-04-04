@@ -178,20 +178,6 @@ checkCaches();
                 </thead>
                 <tbody>
                   <tr>
-                    <td class="col-center">acceptance3.exoplatform.org</td>
-                    <td class="col-center">prj02</td>
-                    <td class="col-center"><?=$servers_counter["acceptance3.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance3.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance3.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 64GB <br /> CPU = Xeon E5-1620 0 3.60GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = ST2000DM001-9YN164 / sdb = ST2000DM001-9YN164)</td>
-                  </tr>
-                  <tr>
-                    <td class="col-center">acceptance4.exoplatform.org</td>
-                    <td class="col-center">prd02</td>
-                    <td class="col-center"><?=$servers_counter["acceptance4.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance4.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance4.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 24GB <br /> CPU = Xeon W3530 2.80GHz (4 cores + hyperthreading = 8 threads) <br /> Disks = 2 x 2TB (sda = Hitachi HDS723020BLE640 / sdb = Hitachi HDS723020BLE640)</td>
-                  </tr>
-                  <tr>
                     <td class="col-center">acceptance5.exoplatform.org</td>
                     <td class="col-center">prj03</td>
                     <td class="col-center"><?=$servers_counter["acceptance5.exoplatform.org"]['nb']?></td>
