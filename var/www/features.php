@@ -161,7 +161,7 @@ checkCaches();
     </div>
 </div>
 <!-- Footer ================================================== -->
-<div id="footer">Copyright © 2000-2015. All rights Reserved, eXo Platform SAS.</div>
+<div id="footer">Copyright © 2000-2016. All rights Reserved, eXo Platform SAS.</div>
 <script type="text/javascript">
     $(document).ready(function () {
         $('body').tooltip({ selector: '[rel=tooltip]'});

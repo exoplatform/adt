@@ -175,6 +175,6 @@ $num_latest = 30; //the number of errors to show in the "Last Few Errors" sectio
     </div>
 </div>
 <!-- Footer ================================================== -->
-<div id="footer">Copyright © 2000-2015. All rights Reserved, eXo Platform SAS.</div>
+<div id="footer">Copyright © 2000-2016. All rights Reserved, eXo Platform SAS.</div>
 </body>
 </html>
