@@ -178,11 +178,13 @@ do_configure_tomcat_ldap() {
 }
 
 do_configure_tomcat_datasources() {
-  # Patch to reconfigure server.xml for database
-  find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
   case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL)
+    MYSQL|DOCKER_MYSQL)
+      # Patch to reconfigure server.xml for database
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
+      # Deploy the Mysql driver
       if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector*.jar ]; then
         MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
         if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}` ]; then
@@ -217,6 +219,7 @@ do_configure_tomcat_datasources() {
         cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` ${DEPLOYMENT_DIR}/lib/
         echo_info "Done."
       fi
+      # Patch the configuration files
       if [ -e ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ]; then
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
 
@@ -240,59 +243,25 @@ do_configure_tomcat_datasources() {
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_HOST@" "${DEPLOYMENT_DATABASE_HOST}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JCR_PORT@" "${DEPLOYMENT_DATABASE_PORT}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_HOST@" "${DEPLOYMENT_DATABASE_HOST}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_IDM_PORT@" "${DEPLOYMENT_DATABASE_PORT}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
           replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_HOST@" "${DEPLOYMENT_DATABASE_HOST}"
+          replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DB_JPA_PORT@" "${DEPLOYMENT_DATABASE_PORT}"
           echo_info "Done."
         fi
-
-      fi
-
-      # Reconfigure server.xml for MySQL
-      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
-        # Prepare the patch
-        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
-        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-        patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        echo_info "Done."
       fi
     ;;
     HSQLDB)
-      # Reconfigure server.xml for HSQLDB
-      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
-        # Prepare the patch
-        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
-        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-        patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        echo_info "Done."
-      fi
+            # Patch to reconfigure server.xml for database
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
@@ -300,6 +269,34 @@ do_configure_tomcat_datasources() {
       exit 1
     ;;
   esac
+
+  # Reconfigure server.xml for Database
+  if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
+    # Prepare the patch
+    cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+    echo_info "Applying on server.xml the patch $DB_SERVER_PATCH ..."
+    cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+    patch -l -p0 ${DEPLOYMENT_DIR}/conf/server.xml < ${DEPLOYMENT_DIR}/conf/server-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
+    cp ${DEPLOYMENT_DIR}/conf/server.xml ${DEPLOYMENT_DIR}/conf/server.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_HOST@" "${DEPLOYMENT_DATABASE_HOST}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JCR_PORT@" "${DEPLOYMENT_DATABASE_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_HOST@" "${DEPLOYMENT_DATABASE_HOST}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_IDM_PORT@" "${DEPLOYMENT_DATABASE_PORT}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_HOST@" "${DEPLOYMENT_DATABASE_HOST}"
+    replace_in_file ${DEPLOYMENT_DIR}/conf/server.xml "@DB_JPA_PORT@" "${DEPLOYMENT_DATABASE_PORT}"
+    echo_info "Done."
+  fi
+
 }
 
 #

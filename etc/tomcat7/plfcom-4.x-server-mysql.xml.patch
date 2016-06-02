@@ -11,7 +11,7 @@
                removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;" />
-+              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_IDM_NAME@?autoReconnect=true" />
++              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_IDM_HOST@:@DB_IDM_PORT@/@DB_IDM_NAME@?autoReconnect=true" />
 
      <!-- eXo JCR Datasource for portal -->
      <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
@@ -23,7 +23,7 @@
                removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;" />
-+              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true" />
++              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_JCR_HOST@:@DB_JCR_PORT@/@DB_JCR_NAME@?autoReconnect=true" />
 
    </GlobalNamingResources>
  

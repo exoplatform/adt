@@ -25,6 +25,8 @@ source "${SCRIPT_DIR}/_functions_awstats.sh"
 source "${SCRIPT_DIR}/_functions_plf.sh"
 source "${SCRIPT_DIR}/_functions_tomcat.sh"
 source "${SCRIPT_DIR}/_functions_jbosseap.sh"
+source "${SCRIPT_DIR}/_functions_docker.sh"
+source "${SCRIPT_DIR}/_functions_database.sh"
 
 # #################################################################################
 #
@@ -120,8 +122,10 @@ Environment Variables
   DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
   DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
   DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape characters like \" (default: none)
+  
+  DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
 
-  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL)
+  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL)
 
   DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
 
@@ -168,6 +172,23 @@ find_instance_file() {
 #
 initialize_product_settings() {
   validate_env_var "ACTION"
+
+  # Docker properties
+  configurable_env_var "DEPLOYMENT_DOCKER_HOST"     "unix://"
+  env_var DOCKER_CMD                                "docker -H ${DEPLOYMENT_DOCKER_HOST}"
+
+  if ${DEPLOYMENT_DATABASE_ENABLED}; then
+    env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
+    case "${DEPLOYMENT_DATABASE_TYPE}" in
+      MYSQL)
+        env_var "DEPLOYMENT_DATABASE_PORT" "3306"
+      ;;
+      DOCKER_MYSQL)
+        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+      ;;
+    esac
+  fi
 
   # validate additional parameters
   case "${ACTION}" in
@@ -250,7 +271,7 @@ initialize_product_settings() {
       env_var "LDAP_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "STANDALONE_PRODUCT_NAME" "${PRODUCT_NAME}"
-
+      
       # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
       # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
       env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
@@ -652,64 +673,31 @@ do_download_dataset() {
 }
 
 do_restore_dataset(){
+  # System dependent settings
+  if ${LINUX}; then
+    env_var "TAR_BZIP2_COMPRESS_PRG" "--use-compress-prog=pbzip2"
+    env_var "NICE_CMD" "nice -n 20 ionice -c2 -n7"
+  else
+    env_var "TAR_BZIP2_COMPRESS_PRG" ""
+    env_var "NICE_CMD" "nice -n 20"
+  fi
+
+  do_drop_data
+
+  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
+  echo_info "Loading values ..."
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
+  echo_info "Done"
+  echo_info "Loading indexes ..."
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
+  echo_info "Done"
+
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     do_drop_chat_mongo_database
     do_create_chat_mongo_database
   fi
-  case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL)
-      # System dependent settings
-      if ${LINUX}; then
-        TAR_BZIP2_COMPRESS_PRG=--use-compress-prog=pbzip2
-        NICE_CMD="nice -n 20 ionice -c2 -n7"
-      else
-        TAR_BZIP2_COMPRESS_PRG=
-        NICE_CMD="nice -n 20"
-      fi
-      do_drop_data
-      do_drop_database
-      do_create_database
-      mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
-      echo_info "Loading values ..."
-      display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
-      echo_info "Done"
-      echo_info "Loading indexes ..."
-      display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
-      echo_info "Done"
-      _tmpdir=`mktemp -d -t db-export.XXXXXXXXXX` || exit 1
-      echo_info "Using temporary directory ${_tmpdir}"
-      _restorescript="${_tmpdir}/__restoreAllData.sql"
-      echo_info "Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
-      display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
-      echo_info "Done"
-      if [ ! -e ${_restorescript} ]; then
-       echo_error "SQL file (${_restorescript}) doesn't exist."
-       exit 1
-      fi;
-      echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
-      pushd ${_tmpdir} > /dev/null 2>&1
-      if [ ! -e ${HOME}/.my.cnf ]; then
-       echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
-       exit 1
-      fi;
-      pv -p -t -e -a -r -b ${_restorescript} | mysql ${DEPLOYMENT_DATABASE_NAME}
-      popd > /dev/null 2>&1
-      echo_info "Done"
-      echo_info "Drop if it exists the JCR_CONFIG table from ${DEPLOYMENT_DATABASE_NAME} ..."
-      mysql ${DEPLOYMENT_DATABASE_NAME} -e "DROP TABLE IF EXISTS JCR_CONFIG;"
-      echo_info "Done"
-      rm -rf ${_tmpdir}
-    ;;
-    HSQLDB)
-      echo_error "Dataset restoration isn't supported for database type \"${DEPLOYMENT_DATABASE_TYPE}\""
-      exit 1
-    ;;
-    *)
-      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
-      print_usage
-      exit 1
-    ;;
-  esac
+
+  do_restore_database_dataset
 }
 
 do_init_empty_data(){
@@ -728,6 +716,18 @@ do_init_empty_data(){
   do_drop_data
   do_create_data
   echo_info "Done"
+}
+
+#
+# Drops all data used by the instance.
+#
+do_drop_data() {
+  echo_info "Drops instance indexes ..."
+  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
+  echo_info "Done."
+  echo_info "Drops instance values ..."
+  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+  echo_info "Done."
 }
 
 #
@@ -806,113 +806,11 @@ do_unpack_server() {
 }
 
 #
-# Creates a database for the instance. Don't drop it if it already exists.
-#
-do_create_database() {
-  case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL)
-      echo_info "Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
-      if [ ! -e ${HOME}/.my.cnf ]; then
-       echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
-       exit 1
-      fi;
-      SQL=""
-      SQL=${SQL}"CREATE DATABASE IF NOT EXISTS ${DEPLOYMENT_DATABASE_NAME};"
-      SQL=${SQL}"GRANT ALL ON ${DEPLOYMENT_DATABASE_NAME}.* TO '${DEPLOYMENT_DATABASE_USER}'@'localhost' IDENTIFIED BY '${DEPLOYMENT_DATABASE_USER}';"
-      SQL=${SQL}"FLUSH PRIVILEGES;"
-      SQL=${SQL}"SHOW DATABASES;"
-      mysql -e "$SQL"
-      echo_info "Done."
-    ;;
-    HSQLDB)
-      echo_info "Using default HSQLDB database. Nothing to do to create the Database."
-    ;;
-    *)
-      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-}
-
-#
-# Drops the database used by the instance.
-#
-do_drop_database() {
-  case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL)
-      echo_info "Drops MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
-      if [ ! -e ${HOME}/.my.cnf ]; then
-       echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
-       exit 1
-      fi;
-      SQL=""
-      SQL=${SQL}"DROP DATABASE IF EXISTS ${DEPLOYMENT_DATABASE_NAME};"
-      SQL=${SQL}"SHOW DATABASES;"
-      mysql -e "$SQL"
-      echo_info "Done."
-    ;;
-    HSQLDB)
-      echo_info "Drops HSQLDB database ..."
-      rm -rf ${DEPLOYMENT_DIR}/gatein/data/hsqldb
-      echo_info "Done."
-    ;;
-    *)
-      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-}
-
-#
-# Drops all data used by the instance.
-#
-do_drop_data() {
-  echo_info "Drops instance indexes ..."
-  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
-  echo_info "Done."
-  echo_info "Drops instance values ..."
-  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
-  echo_info "Done."
-}
-
-
-#
 # Drops all Elasticsearch datas used by the instance.
 #
 do_drop_es_data() {
   echo_info "Drops Elasticsearch instance datas ..."
   rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}/exoplatform-es
-  echo_info "Done."
-}
-
-#
-# Creates a MongoDB database for the instance. Don't drop it if it already exists.
-#
-do_create_chat_mongo_database() {
-  echo_info "Creating MongoDB database ${DEPLOYMENT_CHAT_MONGODB_NAME} ..."
-  if [ ! command -v mongo &>/dev/null ]; then
-   echo_error "mongo binary doesn't exist on the system. Please install MongoDB client to be able to manage the MongoDB Server"
-   exit 1
-  fi;
-  # Database are automatically created the first time we access it
-  mongo ${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.getCollectionNames()" > /dev/null
-  echo 'show dbs' | mongo --quiet
-  echo_info "Done."
-}
-
-#
-# Drops the MongoDB database used by the instance.
-#
-do_drop_chat_mongo_database() {
-  echo_info "Drops MongoDB database ${DEPLOYMENT_CHAT_MONGODB_NAME} ..."
-  if [ ! command -v mongo &>/dev/null ]; then
-   echo_error "mongo binary doesn't exist on the system. Please install MongoDB client to be able to manage the MongoDB Server"
-   exit 1
-  fi;
-  mongo ${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.dropDatabase()" > /dev/null
-  echo 'show dbs' | mongo --quiet
   echo_info "Done."
 }
 
@@ -1060,7 +958,7 @@ do_deploy() {
 
   # Elasticsearch (ES) ports
   env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
-
+  
   if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
@@ -1114,21 +1012,11 @@ do_deploy() {
     fi
     echo_info "Done."
   fi
+
   do_unpack_server
-  case ${DEPLOYMENT_APPSRV_TYPE} in
-    tomcat)
-      do_configure_tomcat_server
-    ;;
-    jbosseap)
-      do_configure_jbosseap_server
-    ;;
-    *)
-      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-  do_configure_apache
+
+  # Initialize database before configuratation
+  # before with docker the datase must be started before to retreive the port number
   case "${DEPLOYMENT_MODE}" in
     NO_DATA)
       do_init_empty_data
@@ -1149,6 +1037,21 @@ do_deploy() {
       exit 1
     ;;
   esac
+
+  case ${DEPLOYMENT_APPSRV_TYPE} in
+    tomcat)
+      do_configure_tomcat_server
+    ;;
+    jbosseap)
+      do_configure_jbosseap_server
+    ;;
+    *)
+      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+  do_configure_apache
   do_create_deployment_descriptor
   echo_info "Server deployed"
 }
@@ -1169,6 +1072,8 @@ do_start() {
 
   # We need to backup existing logs if they already exist
   backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
+
+  do_start_database
 
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
@@ -1302,6 +1207,9 @@ do_stop() {
         ;;
       esac
       echo_info "Server stopped."
+
+      do_stop_database
+
     else
       echo_warn "No server directory to stop it"
     fi
