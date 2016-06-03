@@ -1250,6 +1250,7 @@ do_start() {
       wait ${_tailPID} 2> /dev/null
       break
     fi
+    sleep 1
   done
   set -e
   cd -
