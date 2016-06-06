@@ -85,6 +85,7 @@ else
   configurable_env_var "ACCEPTANCE_SERVERS" "https://acceptance.exoplatform.org"
 fi
 loadSystemInfo
+initAliases
 validate_env_var "SCRIPT_DIR"
 validate_env_var "ADT_DATA"
 validate_env_var "ETC_DIR"
