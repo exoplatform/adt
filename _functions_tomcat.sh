@@ -232,6 +232,12 @@ do_configure_tomcat_datasources() {
         find_instance_file DB_GATEIN_PATCH "${ETC_DIR}/gatein" "db-configuration.properties.patch" "${DB_GATEIN_PATCH_PRODUCT_NAME}"
       fi
     ;;
+    DOCKER_POSTGRES)
+      # Patch to reconfigure server.xml for database
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-postgres.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
+      env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},exo-jdbc-driver-postgresql:1.0.0"
+    ;;
     HSQLDB)
             # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
@@ -362,6 +368,10 @@ do_configure_tomcat_server() {
   do_configure_tomcat_jod
   do_configure_tomcat_ldap
 
+  # Install the addons manager
+  # Addon manager is needed to install jdbc driver
+  do_install_addons_manager
+
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     # Reconfigure the server to use a database
     do_configure_tomcat_datasources
@@ -373,9 +383,6 @@ do_configure_tomcat_server() {
 
   # Install optional extensions
   do_install_extensions
-
-  # Install the addons manager
-  do_install_addons_manager
 
   # Install optional addons
   do_install_addons

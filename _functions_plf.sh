@@ -25,6 +25,23 @@ source "${SCRIPT_DIR}/_functions_download.sh"
 # TDB : Use functions that aren't using global vars
 # #############################################################################
 
+do_download_postgresql_driver() {
+  env_var "PSQL_DL_DIR" "${DL_DIR}/postgresql-jdbc-driver/${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}"
+  mkdir -p ${PSQL_DL_DIR}
+  do_download_maven_artifact "${REPOSITORY_SERVER_BASE_URL}/content/groups/public" "" "" "org.postgresql" "postgresql" "${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}" "jar" "" "${PSQL_DL_DIR}" "postgresql" ""
+} 
+
+do_install_postgresql_driver() {
+  local _installDir=$1
+  
+  do_download_postgresql_driver
+
+  cp ${PSQL_DL_DIR}/postgresql-${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}.jar $1
+
+  # TODO Find a way to determine the driver name from the add version
+  env_var "DB_DRIVER" "postgresql-${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}.jar"
+}
+
 #
 # Function that installs the addons manager
 #

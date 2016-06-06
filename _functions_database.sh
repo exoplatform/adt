@@ -58,6 +58,50 @@ do_configure_datasource_file() {
   fi
 }
 
+do_get_database_settings() {
+  if ${DEPLOYMENT_DATABASE_ENABLED}; then
+    # Build a database name without dot, minus ...
+    env_var DEPLOYMENT_DATABASE_NAME "${PRODUCT_NAME}_${PRODUCT_VERSION}"
+    env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//./_}"
+    env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
+    # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
+    env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
+    env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
+    env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
+
+    env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
+    case "${DEPLOYMENT_DATABASE_TYPE}" in
+      MYSQL)
+        env_var "DEPLOYMENT_DATABASE_PORT" "3306"
+
+        if [ ! -e ${HOME}/.my.cnf ]; then
+        echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
+        exit 1
+        fi;
+      
+        env_var "DATABASE_CMD" "mysql ${DEPLOYMENT_DATABASE_NAME}"
+      ;;
+      DOCKER_MYSQL)
+        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+
+        env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_DATABASE_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
+
+      ;;
+      DOCKER_POSTGRES)
+        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+
+        env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_DATABASE_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} psql -h db -U ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
+      ;;
+      *)
+        echo_error "Database type not supported ${DEPLOYMENT_DATABASE_TYPE}"
+        exit 1
+      ;;
+    esac
+  fi
+}
+
 #
 # Creates a database for the instance. Don't drop it if it already exists.
 #
@@ -80,7 +124,7 @@ do_create_database() {
     HSQLDB)
       echo_info "Using default HSQLDB database. Nothing to do to create the Database."
     ;;
-    DOCKER_MYSQL)
+    DOCKER_*)
       echo_info "Using a docker database ${DEPLOYMENT_DATABASE_IMAGE}"
       ${DOCKER_CMD} volume create --name ${DEPLOYMENT_DATABASE_NAME}
       do_start_database
@@ -115,7 +159,7 @@ do_drop_database() {
       rm -rf ${DEPLOYMENT_DIR}/gatein/data/hsqldb
       echo_info "Done."
     ;;
-    DOCKER_MYSQL)
+    DOCKER_*)
       echo_info "Drops docker volumes ..."
       delete_docker_container ${DEPLOYMENT_DATABASE_NAME}
       delete_docker_volume ${DEPLOYMENT_DATABASE_NAME}
@@ -178,7 +222,7 @@ do_start_database() {
   echo_info "Starting database instance..."
   case ${DEPLOYMENT_DATABASE_TYPE} in
     DOCKER_MYSQL)
-      echo_info "Starting database container ${DEPLOYMENT_DATABASE_NAME} based on image mysql:${DEPLOYMENT_DATABASE_VERSION}"
+      echo_info "Starting database container ${DEPLOYMENT_DATABASE_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
       delete_docker_container ${DEPLOYMENT_DATABASE_NAME}
       
       ${DOCKER_CMD} run \
@@ -188,6 +232,18 @@ do_start_database() {
         -e MYSQL_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
         -e MYSQL_USER=${DEPLOYMENT_DATABASE_USER} \
         -e MYSQL_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
+        --name ${DEPLOYMENT_DATABASE_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
+    ;;
+    DOCKER_POSTGRES)
+      echo_info "Starting database container ${DEPLOYMENT_DATABASE_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
+      delete_docker_container ${DEPLOYMENT_DATABASE_NAME}
+    
+      ${DOCKER_CMD} run \
+        -p ${DEPLOYMENT_DATABASE_PORT}:5432 -d \
+        -v ${DEPLOYMENT_DATABASE_NAME}:/var/lib/postgresql/data \
+        -e POSTGRES_DB=${DEPLOYMENT_DATABASE_NAME} \
+        -e POSTGRES_USER=${DEPLOYMENT_DATABASE_USER} \
+        -e POSTGRES_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
         --name ${DEPLOYMENT_DATABASE_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
     ;;
     DOCKER*)
@@ -206,8 +262,6 @@ do_restore_database_dataset() {
 
   do_drop_database
   do_create_database
-
-  get_database_cmd
 
   case ${DEPLOYMENT_DATABASE_TYPE} in
     DOCKER_*)
@@ -249,27 +303,6 @@ do_restore_database_dataset() {
     ;;
   esac
   rm -rf ${_tmpdir}
-}
-
-get_database_cmd() {
-  case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL)
-      if [ ! -e ${HOME}/.my.cnf ]; then
-       echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
-       exit 1
-      fi;
-    
-      env_var "DATABASE_CMD" "mysql ${DEPLOYMENT_DATABASE_NAME}"
-    ;;
-    DOCKER_MYSQL)
-      env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_DATABASE_NAME}:mysql ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h mysql -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
-      sleep 3
-    ;;
-    *)
-      echo_error "Database connection command not supported for ${DEPLOYMENT_DATABASE_TYPE}"
-      exit 1
-    ;;
-  esac
 }
 
 #

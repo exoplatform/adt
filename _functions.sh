@@ -126,7 +126,7 @@ Environment Variables
   DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
   DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
 
-  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL)
+  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES)
 
   DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
 
@@ -179,6 +179,11 @@ initialize_product_settings() {
   configurable_env_var "DEPLOYMENT_DOCKER_CMD"      "docker"
   configurable_env_var DOCKER_CMD                   "${DEPLOYMENT_DOCKER_CMD} -H ${DEPLOYMENT_DOCKER_HOST}"
 
+  # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
+  # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
+  env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
+  env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
+
   # validate additional parameters
   case "${ACTION}" in
     start | stop | restart | undeploy | deploy | download-dataset)
@@ -203,7 +208,12 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
       env_var "DEPLOYMENT_APPSRV_VERSION" "6.0.35" #Default version used to download additional resources like JMX lib
       env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
+      env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "9.4.1208" #Default version used to download additional postgresql driver
       env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-RC4" #Add-ons Manager to use
+
+      configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
+      configurable_env_var "REPOSITORY_USERNAME" ""
+      configurable_env_var "REPOSITORY_PASSWORD" ""
 
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
@@ -261,11 +271,6 @@ initialize_product_settings() {
       env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "STANDALONE_PRODUCT_NAME" "${PRODUCT_NAME}"
       
-      # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
-      # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
-      env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
-      env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
-
       # Validate product and load artifact details
       # Be careful, this id should be no longer than 10 (because of mysql user name limit)
       case "${PRODUCT_NAME}" in
@@ -569,27 +574,6 @@ initialize_product_settings() {
           exit 1
         ;;
       esac
-      if ${DEPLOYMENT_DATABASE_ENABLED}; then
-        # Build a database name without dot, minus ...
-        env_var DEPLOYMENT_DATABASE_NAME "${PRODUCT_NAME}_${PRODUCT_VERSION}"
-        env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//./_}"
-        env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
-        # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
-        env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
-        env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
-        env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
-
-        env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
-        case "${DEPLOYMENT_DATABASE_TYPE}" in
-          MYSQL)
-            env_var "DEPLOYMENT_DATABASE_PORT" "3306"
-          ;;
-          DOCKER_MYSQL)
-            configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
-            env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
-          ;;
-        esac
-      fi
       if ${DEPLOYMENT_CHAT_ENABLED}; then
         # Build a database name without dot, minus ...
         env_var DEPLOYMENT_CHAT_MONGODB_NAME "${PRODUCT_NAME}_${PRODUCT_VERSION}"
@@ -606,6 +590,8 @@ initialize_product_settings() {
       exit 1
     ;;
   esac
+
+   do_get_database_settings
 }
 
 #
@@ -620,11 +606,6 @@ do_download_server() {
   validate_env_var "ARTIFACT_ARTIFACTID"
   validate_env_var "ARTIFACT_PACKAGING"
   validate_env_var "ARTIFACT_CLASSIFIER"
-
-  configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
-  configurable_env_var "REPOSITORY_USERNAME" ""
-  configurable_env_var "REPOSITORY_PASSWORD" ""
-
 
   if ! ${ADT_OFFLINE}; then
     # Downloads the product from Nexus
@@ -1137,6 +1118,7 @@ do_start() {
     if [ -e "${DEPLOYMENT_LOG_PATH}" ]; then
       break
     fi
+    sleep 1
   done
   # Display logs
   tail -f "${DEPLOYMENT_LOG_PATH}" &

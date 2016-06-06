@@ -84,6 +84,11 @@ do_configure_jbosseap_datasources() {
         echo_info "Done."
       fi
     ;;
+    DOCKER_POSTGRES)
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-postgres.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
+      do_install_postgresql_driver ${DEPLOYMENT_DIR}/standalone/deployments
+    ;;
     HSQLDB)
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;
