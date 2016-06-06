@@ -179,7 +179,7 @@ initialize_product_settings() {
 
   # validate additional parameters
   case "${ACTION}" in
-    deploy | download-dataset)
+    start | stop | restart | undeploy | deploy | download-dataset)
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION"
@@ -576,6 +576,17 @@ initialize_product_settings() {
         env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
         env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
+
+        env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
+        case "${DEPLOYMENT_DATABASE_TYPE}" in
+          MYSQL)
+            env_var "DEPLOYMENT_DATABASE_PORT" "3306"
+          ;;
+          DOCKER_MYSQL)
+            configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
+            env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+          ;;
+        esac
       fi
       if ${DEPLOYMENT_CHAT_ENABLED}; then
         # Build a database name without dot, minus ...
@@ -583,11 +594,6 @@ initialize_product_settings() {
         env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//./_}"
         env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//-/_}"
       fi
-    ;;
-    start | stop | restart | undeploy )
-    # Mandatory env vars. They need to be defined before launching the script
-      validate_env_var "PRODUCT_NAME"
-      validate_env_var "PRODUCT_VERSION"
     ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
@@ -598,19 +604,6 @@ initialize_product_settings() {
       exit 1
     ;;
   esac
-  
-  if ${DEPLOYMENT_DATABASE_ENABLED}; then
-    env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
-    case "${DEPLOYMENT_DATABASE_TYPE}" in
-      MYSQL)
-        env_var "DEPLOYMENT_DATABASE_PORT" "3306"
-      ;;
-      DOCKER_MYSQL)
-        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
-        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
-      ;;
-    esac
-  fi 
 }
 
 #
