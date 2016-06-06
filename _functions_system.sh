@@ -128,6 +128,9 @@ loadSystemInfo() {
   echo_info "========"
 }
 
+# init system informations as soon this lib is loaded
+loadSystemInfo
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_SYSTEM_LOADED=true

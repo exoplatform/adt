@@ -21,18 +21,16 @@ fi
 source "${SCRIPT_DIR}/_functions_core.sh"
 source "${SCRIPT_DIR}/_functions_system.sh"
 
-initAliases() {
-  #Activate aliases usage in scripts
-  shopt -s expand_aliases
+#Activate aliases usage in scripts
+shopt -s expand_aliases
 
-  # Various command aliases
-  echo_debug "Linux environment detected :${LINUX}"
-  if ${LINUX}; then
-    alias display_time='/usr/bin/time -f "[INFO] Return code : %x\n[INFO] Time report (sec) : \t%e real,\t%U user,\t%S system"'
-  else
-    alias display_time='/usr/bin/time'
-  fi
-}
+# Various command aliases
+echo_info "*****LINUX:${LINUX}"
+if ${LINUX}; then
+  alias display_time='/usr/bin/time -f "[INFO] Return code : %x\n[INFO] Time report (sec) : \t%e real,\t%U user,\t%S system"'
+else
+  alias display_time='/usr/bin/time'
+fi
 
 # #############################################################################
 # Env var to not load it several times
