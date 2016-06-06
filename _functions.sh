@@ -177,19 +177,6 @@ initialize_product_settings() {
   configurable_env_var "DEPLOYMENT_DOCKER_HOST"     "unix://"
   env_var DOCKER_CMD                                "docker -H ${DEPLOYMENT_DOCKER_HOST}"
 
-  if ${DEPLOYMENT_DATABASE_ENABLED}; then
-    env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
-    case "${DEPLOYMENT_DATABASE_TYPE}" in
-      MYSQL)
-        env_var "DEPLOYMENT_DATABASE_PORT" "3306"
-      ;;
-      DOCKER_MYSQL)
-        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
-        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
-      ;;
-    esac
-  fi
-
   # validate additional parameters
   case "${ACTION}" in
     deploy | download-dataset)
@@ -611,6 +598,19 @@ initialize_product_settings() {
       exit 1
     ;;
   esac
+  
+  if ${DEPLOYMENT_DATABASE_ENABLED}; then
+    env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
+    case "${DEPLOYMENT_DATABASE_TYPE}" in
+      MYSQL)
+        env_var "DEPLOYMENT_DATABASE_PORT" "3306"
+      ;;
+      DOCKER_MYSQL)
+        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+      ;;
+    esac
+  fi 
 }
 
 #
