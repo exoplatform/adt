@@ -30,7 +30,7 @@ ensure_docker_container_stopped() {
   set -e
   
   if [ "${running}" == "true" ]; then
-    docker stop ${container}
+    ${DOCKER_CMD} stop ${container}
   fi
 }
 
@@ -43,7 +43,7 @@ delete_docker_container() {
   ensure_docker_container_stopped ${container}
   
   set +e
-  docker rm -v ${container} 2>/dev/null
+  ${DOCKER_CMD} rm -v ${container} 2>/dev/null
   set -e
 }
 
@@ -57,7 +57,7 @@ delete_docker_volume() {
   then 
     echo_info "Volume ${volume} does not exist."
   else
-    docker volume rm ${volume}
+    ${DOCKER_CMD} volume rm ${volume}
     if [ $? -ne 0 ]
     then
       echo_error "Error removing volume ${volume}"

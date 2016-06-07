@@ -124,7 +124,7 @@ Environment Variables
   DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape characters like \" (default: none)
   
   DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
-  DEPLOYMENT_DOCKER_HOST            : The docker command to execute (default: docker)
+  DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
 
   DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL)
 
@@ -176,7 +176,8 @@ initialize_product_settings() {
 
   # Docker properties
   configurable_env_var "DEPLOYMENT_DOCKER_HOST"     "unix://"
-  configurable_env_var DOCKER_CMD                   "docker -H ${DEPLOYMENT_DOCKER_HOST}"
+  configurable_env_var "DEPLOYMENT_DOCKER_CMD"      "docker"
+  configurable_env_var DOCKER_CMD                   "${DEPLOYMENT_DOCKER_CMD} -H ${DEPLOYMENT_DOCKER_HOST}"
 
   # validate additional parameters
   case "${ACTION}" in
