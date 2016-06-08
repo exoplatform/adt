@@ -878,7 +878,7 @@ do_configure_apache() {
       fi
     ;;
     *)
-      echo_error "Invalid apache security type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid apache security type \"${DEPLOYMENT_APACHE_SECURITY}\""
       print_usage
       exit 1
     ;;
