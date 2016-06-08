@@ -138,6 +138,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 $product_html_popover = "<strong>Product:</strong> " . $product_html_label . "<br/>";
                 $product_html_popover = $product_html_popover . "<strong>Version:</strong> " . $descriptor_array->PRODUCT_VERSION . "<br/>";
                 $product_html_popover = $product_html_popover . "<strong>Packaging:</strong> " . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . " <img src=\"/images/" . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . ".png\" width=\"16\" height=\"16\" alt=\"" . $descriptor_array->DEPLOYMENT_APPSRV_TYPE . " bundle\" class=\"icon\"/> <br/>";
+                $product_html_popover = $product_html_popover . "<strong>Database:</strong> " . $descriptor_array->DATABASE . "<br/>";
                 $product_html_popover = $product_html_popover . "<strong>Visibility:</strong> " . $descriptor_array->DEPLOYMENT_APACHE_SECURITY;
                 if ($descriptor_array->DEPLOYMENT_APACHE_SECURITY === "public") {
                     $product_deployment_url_icon_type = "icon-globe";
