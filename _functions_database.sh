@@ -21,6 +21,43 @@ fi
 source "${SCRIPT_DIR}/_functions_core.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
 
+do_configure_datasource_file() {
+  local FILE_TO_PATCH=$1
+  local DB_SERVER_PATCH=$2
+  local WORKING_FILE_PREFIX=${FILE_TO_PATCH}-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+  configurable_env_var "DB_DRIVER" ""
+
+    # Reconfigure server.xml for Database
+  if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
+    # Prepare the patch
+    cp ${DB_SERVER_PATCH} ${WORKING_FILE_PREFIX}.patch
+    echo_info "Applying on ${FILE_TO_PATCH} the patch $DB_SERVER_PATCH ..."
+    cp ${FILE_TO_PATCH} ${WORKING_FILE_PREFIX}.ori
+    patch -l -p0 ${FILE_TO_PATCH} < ${WORKING_FILE_PREFIX}.patch
+    cp ${FILE_TO_PATCH} ${WORKING_FILE_PREFIX}.patched
+
+    replace_in_file ${FILE_TO_PATCH} "@DB_JCR_USR@"   "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JCR_PWD@"   "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JCR_NAME@"  "${DEPLOYMENT_DATABASE_NAME}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JCR_HOST@"  "${DEPLOYMENT_DATABASE_HOST}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JCR_PORT@"  "${DEPLOYMENT_DATABASE_PORT}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_IDM_USR@"   "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_IDM_PWD@"   "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_IDM_NAME@"  "${DEPLOYMENT_DATABASE_NAME}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_IDM_HOST@"  "${DEPLOYMENT_DATABASE_HOST}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_IDM_PORT@"  "${DEPLOYMENT_DATABASE_PORT}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JPA_USR@"   "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JPA_PWD@"   "${DEPLOYMENT_DATABASE_USER}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JPA_NAME@"  "${DEPLOYMENT_DATABASE_NAME}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JPA_HOST@"  "${DEPLOYMENT_DATABASE_HOST}"
+    replace_in_file ${FILE_TO_PATCH} "@DB_JPA_PORT@"  "${DEPLOYMENT_DATABASE_PORT}"
+
+    replace_in_file ${FILE_TO_PATCH} "@DB_DRIVER@"  "${DB_DRIVER}"
+
+    echo_info "Done."
+  fi
+}
+
 #
 # Creates a database for the instance. Don't drop it if it already exists.
 #

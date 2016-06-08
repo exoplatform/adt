@@ -16,7 +16,7 @@
                      <driver-class>com.mysql.jdbc.Driver</driver-class>
 -                    <connection-url>jdbc:mysql://localhost:3306/plf?autoReconnect=true</connection-url>
 -                    -->
-+                    <connection-url>jdbc:mysql://localhost:3306/@DB_IDM_NAME@?autoReconnect=true</connection-url>
++                    <connection-url>jdbc:mysql://@DB_IDM_HOST@:@DB_IDM_PORT@/@DB_IDM_NAME@?autoReconnect=true</connection-url>
                      <!-- PostgreSQL -->
                      <!--
                      <driver>XXXX.jar</driver>
@@ -64,7 +64,7 @@
                      <driver-class>com.mysql.jdbc.Driver</driver-class>
 -                    <connection-url>jdbc:mysql://localhost:3306/plf?autoReconnect=true</connection-url>
 -                    -->
-+                    <connection-url>jdbc:mysql://localhost:3306/@DB_JCR_NAME@?autoReconnect=true</connection-url>
++                    <connection-url>jdbc:mysql://@DB_JCR_HOST@:@DB_JCR_PORT@/@DB_JCR_NAME@?autoReconnect=true</connection-url>
                      <!-- PostgreSQL -->
                      <!--
                      <driver>XXXX.jar</driver>

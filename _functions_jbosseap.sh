@@ -41,10 +41,11 @@ do_configure_jbosseap_jmx() {
 
 do_configure_jbosseap_datasources() {
   # Patch to reconfigure standalone-exo.xml for database
-  find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
   case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL)
+    MYSQL | DOCKER_MYSQL)
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
       if [ ! -f ${DEPLOYMENT_DIR}/standalone/deployments/mysql-connector*.jar ]; then
         MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
         if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}` ]; then
@@ -77,52 +78,14 @@ do_configure_jbosseap_datasources() {
         echo_info "MySQL JDBC Driver integrity validated."
         echo_info "Installing MySQL JDBC Driver ..."
         cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` ${DEPLOYMENT_DIR}/standalone/deployments/
-        echo_info "Done."
-      fi
 
-      # Reconfigure standalone-exo.xml for MySQL
-      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
-        # Prepare the patch
-        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on standalone-exo.xml the patch $DB_SERVER_PATCH ..."
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+        env_var "DB_DRIVER" "$(basename ${MYSQL_JAR_URL})"
 
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_DRIVER@" `basename ${MYSQL_JAR_URL}`
         echo_info "Done."
       fi
     ;;
     HSQLDB)
-      # Reconfigure standalone-exo.xml for HSQLDB
-      if [ "${DB_SERVER_PATCH}" != "UNSET" ]; then
-        # Prepare the patch
-        cp ${DB_SERVER_PATCH} ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        echo_info "Applying on standalone-exo.xml the patch $DB_SERVER_PATCH ..."
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.ori-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-        patch -l -p0 ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml < ${DEPLOYMENT_DIR}/standalone/configuration/standalone-$(tolower "${DEPLOYMENT_DATABASE_TYPE}").xml.patch
-        cp ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml.patched-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
-
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JCR_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_USR@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_JPA_PWD@" "${DEPLOYMENT_DATABASE_USER}"
-        replace_in_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml "@DB_IDM_NAME@" "${DEPLOYMENT_DATABASE_NAME}"
-        echo_info "Done."
-      fi
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
@@ -130,6 +93,8 @@ do_configure_jbosseap_datasources() {
       exit 1
     ;;
   esac
+
+  do_configure_datasource_file ${DEPLOYMENT_DIR}/standalone/configuration/standalone-exo.xml ${DB_SERVER_PATCH}
 }
 
 #
