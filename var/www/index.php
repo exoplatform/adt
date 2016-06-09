@@ -165,7 +165,15 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 $product_html_popover = htmlentities($product_html_popover);
                 ?>
                 <a href="<?= $product_deployment_url ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true">
-                    <i class="<?= $product_deployment_url_icon_type." ".$product_deployment_url_icon_color ?>"></i> <img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?= $product_html_label ?></a>
+                    <i class="<?= $product_deployment_url_icon_type." ".$product_deployment_url_icon_color ?>"></i> <img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?php if (stripos($descriptor_array->DATABASE, 'mysql') !== false) {
+                        $database_icon = "mysql";
+                    } else if (stripos($descriptor_array->DATABASE, 'postgres') !== false ) {
+                        $database_icon = "postgresql";
+                    } else {
+                        $database_icon = "none";
+                    }
+                    if ( $database_icon != "none" ) {
+                    ?> <img src="/images/<?= $database_icon ?>.png" witdh="16" height="16" alt="<?= $database_icon ?>"> <?php } ?> <?= $product_html_label ?></a>
                 <?php if ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED) { ?>
                     &nbsp;(<a rel="tooltip" title="HTTPS link available" href="<?= preg_replace("/http:(.*)/","https:$1",$product_deployment_url) ?>" target="_blank">&nbsp;<img src="/images/ssl.png" width="16" height="16" alt="SSL" class="icon"/></a>)
                 <?php } ?>
