@@ -272,7 +272,7 @@ function getLocalAcceptanceInstances()
       $descriptor_array['DEPLOYMENT_LOG_APACHE_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . ":" . $_SERVER['SERVER_PORT'] . "/logs.php?file=" . getenv('ADT_DATA') . "/var/log/apache2/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . "-access.log";
       $descriptor_array['DEPLOYMENT_AWSTATS_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . ":" . $_SERVER['SERVER_PORT'] . "/stats/awstats.pl?config=" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'];
       // database informations
-      if ( empty($descriptor_array['DEPLOYMENT_DATABASE_TYPE']) ) {
+      if ( $descriptor_array['DEPLOYMENT_DATABASE_ENABLED'] == false || empty($descriptor_array['DEPLOYMENT_DATABASE_TYPE']) ) {
         $descriptor_array['DATABASE'] = "none";
       } elseif ( $descriptor_array['DEPLOYMENT_DATABASE_TYPE'] = 'MYSQL' ) {
         $descriptor_array['DATABASE'] = "mysql:5.5";
