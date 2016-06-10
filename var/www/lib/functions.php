@@ -274,7 +274,7 @@ function getLocalAcceptanceInstances()
       // database informations
       if ( $descriptor_array['DEPLOYMENT_DATABASE_ENABLED'] == false || empty($descriptor_array['DEPLOYMENT_DATABASE_TYPE']) ) {
         $descriptor_array['DATABASE'] = "none";
-      } elseif ( $descriptor_array['DEPLOYMENT_DATABASE_TYPE'] = 'MYSQL' ) {
+      } elseif ( $descriptor_array['DEPLOYMENT_DATABASE_TYPE'] == 'MYSQL' ) {
         $descriptor_array['DATABASE'] = "mysql:5.5";
       } elseif ( stripos($descriptor_array['DEPLOYMENT_DATABASE_TYPE'], "docker") !== false ) {
         $descriptor_array['DATABASE'] = strtolower($descriptor_array['DEPLOYMENT_DATABASE_TYPE']) . ":" . $descriptor_array['DEPLOYMENT_DATABASE_VERSION'];
