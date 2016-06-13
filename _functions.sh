@@ -1159,6 +1159,18 @@ do_stop() {
     do_load_deployment_descriptor
     if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
       echo_info "Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ... "
+
+      if [ -e ${DEPLOYMENT_PID_FILE} ]; then
+        # Testing if pid file is valid
+        set +e
+        ps $(cat ${DEPLOYMENT_PID_FILE}) > /dev/null
+        if [ $? -ne 0 ]; then
+          echo_warn "PID file detected but process is not running, removing it..."
+          rm ${DEPLOYMENT_PID_FILE}
+        fi
+        set -e
+      fi
+
       case ${DEPLOYMENT_APPSRV_TYPE} in
         tomcat)
           if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
