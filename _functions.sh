@@ -127,6 +127,7 @@ Environment Variables
   DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
 
   DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES)
+  DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (no default)
 
   DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
 
