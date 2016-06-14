@@ -127,11 +127,11 @@ checkCaches();
                             }
                             ?>
                             <tr>
-                                <td><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></td>
+                                <td><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?><?php if (!empty($descriptor_array->INSTANCE_ID)) echo " (" .$descriptor_array->INSTANCE_ID.")"; ?></td>
                                 <td class="col-left"><?=$descriptor_array->PRODUCT_VERSION?></td>
                                 <td class="col-right"><?=$feature_branch?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_DATABASE_TYPE?></td>
+                                <td class="col-right"><?=$descriptor_array->DATABASE?></td>
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_HOST === "acceptance3.exoplatform.org") {
                                     $host_html_color = "color-acceptance3";
