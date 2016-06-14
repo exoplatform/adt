@@ -58,6 +58,7 @@ checkCaches();
     <th class="col-center">Status</th>
     <th class="col-center">Name</th>
     <th class="col-center">Version</th>
+    <th class="col-center">Database</th>
     <th class="col-center" colspan="4">Feature Branch</th>
     <th class="col-center">Built</th>
     <th class="col-center">Deployed</th>
@@ -165,15 +166,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 $product_html_popover = htmlentities($product_html_popover);
                 ?>
                 <a href="<?= $product_deployment_url ?>" target="_blank" rel="popover" title="Open the instance in a new window" data-content="<?= $product_html_popover ?>" data-html="true">
-                    <i class="<?= $product_deployment_url_icon_type." ".$product_deployment_url_icon_color ?>"></i> <img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?php if (stripos($descriptor_array->DATABASE, 'mysql') !== false) {
-                        $database_icon = "mysql";
-                    } else if (stripos($descriptor_array->DATABASE, 'postgres') !== false ) {
-                        $database_icon = "postgresql";
-                    } else {
-                        $database_icon = "none";
-                    }
-                    if ( $database_icon != "none" ) {
-                    ?> <img src="/images/<?= $database_icon ?>.png" witdh="16" height="16" alt="<?= $database_icon ?>"> <?php } ?> <?= $product_html_label ?></a>
+                    <i class="<?= $product_deployment_url_icon_type." ".$product_deployment_url_icon_color ?>"></i> <img src="/images/<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?>.png" width="16" height="16" alt="<?= $descriptor_array->DEPLOYMENT_APPSRV_TYPE ?> bundle" class="icon"/> <?= $product_html_label ?></a>
                 <?php if ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED) { ?>
                     &nbsp;(<a rel="tooltip" title="HTTPS link available" href="<?= preg_replace("/http:(.*)/","https:$1",$product_deployment_url) ?>" target="_blank">&nbsp;<img src="/images/ssl.png" width="16" height="16" alt="SSL" class="icon"/></a>)
                 <?php } ?>
@@ -186,6 +179,17 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 <?php } ?>
             </td>
             <td class="col-left"><a href="<?= $descriptor_array->ARTIFACT_DL_URL ?>" rel="popover" title="Download artifact from Acceptance" data-content="<strong>GroupId:</strong> <?= $descriptor_array->ARTIFACT_GROUPID ?><br/><strong>ArtifactId:</strong> <?= $descriptor_array->ARTIFACT_ARTIFACTID ?><br/><strong>Version/Timestamp:</strong> <?= $descriptor_array->ARTIFACT_TIMESTAMP ?>" data-html="true"><i class="icon-download-alt"></i></a>&nbsp;<?= $descriptor_array->BASE_VERSION ?><span style="font-size: small" class="muted"><?= substr_replace($descriptor_array->ARTIFACT_TIMESTAMP,"",0,strlen($descriptor_array->BASE_VERSION))?></span></td>
+            <td>
+            <?php if (stripos($descriptor_array->DATABASE, 'mysql') !== false) {
+                        $database_icon = "mysql";
+                    } else if (stripos($descriptor_array->DATABASE, 'postgres') !== false ) {
+                        $database_icon = "postgresql";
+                    } else {
+                        $database_icon = "none";
+                    }
+                    if ( $database_icon != "none" ) {
+                    ?> <img src="/images/<?= $database_icon ?>.png" witdh="8" height="8" alt="<?= $database_icon ?>"> <?php } ?> <?= $descriptor_array->DEPLOYMENT_DATABASE_VERSION ?>
+            </td>            
             <?php if (empty($descriptor_array->BRANCH_NAME) || strpos($descriptor_array->BRANCH_NAME, "translation") !== false) { ?>
                 <td class="col-center" colspan="4"></td>
             <?php } else { ?>
