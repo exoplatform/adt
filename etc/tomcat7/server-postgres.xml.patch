@@ -35,7 +35,7 @@
                removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
-+              username="@DB_JTA_USR@" password="@DB_JPA_PWD@" driverClassName="org.postgresql.Driver" url="jdbc:postgresql://@DB_JPA_HOST@:@DB_JPA_PORT@/@DB_JPA_NAME@" />
++              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="org.postgresql.Driver" url="jdbc:postgresql://@DB_JPA_HOST@:@DB_JPA_PORT@/@DB_JPA_NAME@" />
  
    </GlobalNamingResources>
  
