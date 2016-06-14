@@ -120,6 +120,9 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 } else {
                     $product_html_label = $descriptor_array->PRODUCT_DESCRIPTION;
                 }
+                if ( !empty($descriptor_array->INSTANCE_ID)) {
+                    $product_html_label = $product_html_label . " (" . $descriptor_array->INSTANCE_ID . ")";
+                }
                 if (!empty($descriptor_array->BRANCH_DESC)) {
                     $product_html_label = "<span class=\"muted\">" . $product_html_label . "</span>&nbsp;&nbsp;-&nbsp&nbsp&nbsp" . $descriptor_array->BRANCH_DESC;
                 }
@@ -174,7 +177,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     <a rel="tooltip" title="Specifications" href="<?= $descriptor_array->SPECIFICATIONS_LINK ?>" target="_blank" class="pull-right">&nbsp;<i class="icon-book"></i></a>
                 <?php } ?>
                 <?php if (empty($descriptor_array->BRANCH_NAME)) { ?>
-                    <a rel="tooltip" style="float:right" title="Add/Edit Instance Note" href="#edit-note-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" data-toggle="modal"><i class="icon-pencil"></i></a>
+                    <a rel="tooltip" style="float:right" title="Add/Edit Instance Note" href="#edit-note-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" data-toggle="modal"><i class="icon-pencil"></i></a>
                     <?php include("editInstanceForm.php") ?>
                 <?php } ?>
             </td>
@@ -213,7 +216,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                     <span class="label <?= $acceptance_state_class ?>"><?=$descriptor_array->ACCEPTANCE_STATE?></span></td>
                 <td class="col-center"><?php if (!empty($descriptor_array->SCM_BRANCH)) { ?><a href="features.php#<?= str_replace(array("/", "."), "-", $descriptor_array->SCM_BRANCH) ?>" rel="tooltip" title="SCM Branch used to host this FB development"><img src="images/fork_icon.png" alt="SCM Branch" title="SCM Branch" class="icon"/>&nbsp;<?= $descriptor_array->SCM_BRANCH ?><?php } ?></a></td>
                 <td class="col-center"><?php if (!empty($descriptor_array->ISSUE_NUM)) { ?><a href="https://jira.exoplatform.org/browse/<?= $descriptor_array->ISSUE_NUM ?>" target="_blank" rel="tooltip" title="Open the issue where to put your feedbacks on this new feature">&nbsp;<?= $descriptor_array->ISSUE_NUM ?></a><?php } ?></td>
-                <td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>
+                <td class="col-center"><a rel="tooltip" title="Edit feature branch details" href="#edit-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" data-toggle="modal"><i class="icon-pencil"></i></a></td>
             <?php } ?>
             <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?=$descriptor_array->ARTIFACT_AGE_STRING?></td>
             <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
@@ -225,20 +228,18 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
         </tr>
         <?php if (!empty($descriptor_array->BRANCH_NAME) || strpos($descriptor_array->BRANCH_NAME, "translation") !== false) { ?>
             <form class="form" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editFeature.php" method="POST">
-                <div class="modal bigModal hide fade" id="edit-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>" aria-hidden="true">
+                <div class="modal bigModal hide fade" id="edit-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->INSTANCE_KEY ?>" aria-hidden="true">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-                        <h3 id="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>">Edit Feature Branch</h3>
+                        <h3 id="label-<?= $descriptor_array->INSTANCE_KEY ?>">Edit Feature Branch</h3>
                     </div>
                     <div class="modal-body">
                         <input type="hidden" name="from" value="<?= currentPageURL() ?>">
-                        <input type="hidden" name="product" value="<?= $descriptor_array->PRODUCT_NAME ?>">
-                        <input type="hidden" name="version" value="<?= $descriptor_array->PRODUCT_VERSION ?>">
-                        <input type="hidden" name="server" value="<?= $descriptor_array->ACCEPTANCE_HOST ?>">
+                        <input type="hidden" name="key" value="<?= $descriptor_array->INSTANCE_KEY ?>">
 
                         <div class="row-fluid">
                             <div class="span4"><strong>Product</strong></div>
-                            <div class="span8"><?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
+                            <div class="span8"><?php if (empty($descriptor_array->INSTANCE_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?><?php if (!empty($descriptor_array->INSTANCE_ID)) echo " (" .$descriptor_array->INSTANCE_ID.")"; ?></div>
                         </div>
                         <div class="row-fluid">
                             <div class="span4"><strong>Version</strong></div>

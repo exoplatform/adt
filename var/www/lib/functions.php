@@ -236,9 +236,14 @@ function getLocalAcceptanceInstances()
         $descriptor_array['BASE_VERSION'] = $descriptor_array['PRODUCT_VERSION'];
         $descriptor_array['BRANCH_NAME'] = "";
       }
+
+      if ( empty($descriptor_array['INSTANCE_KEY']) ) {
+        $descriptor_array['INSTANCE_KEY'] = $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'];
+      }
+
       // Instance note
-      if (file_exists(getenv('ADT_DATA') . "/conf/instances/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".note"))
-        $descriptor_array['INSTANCE_NOTE'] = file_get_contents(getenv('ADT_DATA') . "/conf/instances/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".note");
+      if (file_exists(getenv('ADT_DATA') . "/conf/instances/" . $descriptor_array['INSTANCE_KEY'] . ".note"))
+        $descriptor_array['INSTANCE_NOTE'] = file_get_contents(getenv('ADT_DATA') . "/conf/instances/" . $descriptor_array['INSTANCE_KEY'] . ".note");
 
       if ($descriptor_array['ARTIFACT_DATE']) {
         $artifact_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['ARTIFACT_DATE'])->diff($now, true);
@@ -284,29 +289,37 @@ function getLocalAcceptanceInstances()
         $descriptor_array['DEPLOYMENT_STATUS'] = "Up";
       else
         $descriptor_array['DEPLOYMENT_STATUS'] = "Down";
+
+      $file_base = getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['INSTANCE_KEY'];
+      $file_spec = $file_base  . ".spec";
+      $file_status = $file_base . ".status";
+      $file_issue = $file_base . ".issue";
+      $file_desc = $file_base . ".desc";
+      $file_branch = $file_base . ".branch";
+
       // Acceptance process state
-      if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".status"))
-        $descriptor_array['ACCEPTANCE_STATE'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".status");
+      if (file_exists($file_status))
+        $descriptor_array['ACCEPTANCE_STATE'] = file_get_contents($file_status);
       else
         $descriptor_array['ACCEPTANCE_STATE'] = "Implementing";
       // Specification Link
-      if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".spec"))
-        $descriptor_array['SPECIFICATIONS_LINK'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".spec");
+      if (file_exists($file_spec))
+        $descriptor_array['SPECIFICATIONS_LINK'] = file_get_contents($file_spec);
       else
         $descriptor_array['SPECIFICATIONS_LINK'] = "";
       // Issue Link
-      if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".issue"))
-        $descriptor_array['ISSUE_NUM'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".issue");
+      if (file_exists($file_issue))
+        $descriptor_array['ISSUE_NUM'] = file_get_contents($file_issue);
       else
         $descriptor_array['ISSUE_NUM'] = "";
       // SCM BRANCH
-      if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".branch"))
-        $descriptor_array['SCM_BRANCH'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".branch");
+      if (file_exists($file_branch))
+        $descriptor_array['SCM_BRANCH'] = file_get_contents($file_branch);
       else
         $descriptor_array['SCM_BRANCH'] = "";
       // Branch name
-      if (file_exists(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".desc"))
-        $descriptor_array['BRANCH_DESC'] = file_get_contents(getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . ".desc");
+      if (file_exists($file_desc))
+        $descriptor_array['BRANCH_DESC'] = file_get_contents($file_desc);
       else
         $descriptor_array['BRANCH_DESC'] = $descriptor_array['BRANCH_NAME'];
       // Server scheme where is deployed the instance

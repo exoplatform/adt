@@ -1,18 +1,16 @@
 <form class="form" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editInstance.php" method="POST">
-    <div class="modal bigModal hide fade" id="edit-note-<?= $descriptor_array->PRODUCT_NAME ?>-<?= str_replace(".", "_", $descriptor_array->PRODUCT_VERSION) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>" aria-hidden="true">
+    <div class="modal bigModal hide fade" id="edit-note-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" aria-hidden="true">
         <div class="modal-header">
             <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-            <h3 id="label-<?= $descriptor_array->PRODUCT_NAME ?>-<?= $descriptor_array->PRODUCT_VERSION ?>">Edit Instance Note</h3>
+            <h3 id="label-<?= $descriptor_array->INSTANCE_KEY ?>">Edit Instance Note</h3>
         </div>
         <div class="modal-body">
             <input type="hidden" name="from" value="<?= currentPageURL() ?>">
-            <input type="hidden" name="product" value="<?= $descriptor_array->PRODUCT_NAME ?>">
-            <input type="hidden" name="version" value="<?= $descriptor_array->PRODUCT_VERSION ?>">
-            <input type="hidden" name="server" value="<?= $descriptor_array->ACCEPTANCE_HOST ?>">
+            <input type="hidden" name="key" value="<?= $descriptor_array->INSTANCE_KEY ?>">
 
             <div class="row-fluid">
                 <div class="span4"><strong>Product</strong></div>
-                <div class="span8"><?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?></div>
+                <div class="span8"><?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?><?php if (!empty($descriptor_array->INSTANCE_ID)) echo " (" .$descriptor_array->INSTANCE_ID.")"; ?></div>
             </div>
             <div class="row-fluid">
                 <div class="span4"><strong>Version</strong></div>

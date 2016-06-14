@@ -124,7 +124,7 @@ $instances=getGlobalAcceptanceInstances();
 foreach ($instances as $category => $instances_array) {
   echo "$category : <br />\n";
   foreach ($instances_array as $instance) {
-    echo "&nbsp;&nbsp;&nbsp; $instance->PRODUCT_DESCRIPTION - $instance->PRODUCT_VERSION <br />\n";
+    echo "&nbsp;&nbsp;&nbsp; $instance->INSTANCE_DESCRIPTION<br />\n";
   }
 }
 my_print_r_toggle ("INST_toggle",$instances);

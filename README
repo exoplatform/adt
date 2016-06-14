@@ -132,6 +132,7 @@ Usage
         community      eXo Community Website                   - Apache Tomcat bundle
         docs           eXo Platform Documentations Website     - Apache Tomcat bundle
       PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+      INSTANCE_ID                       : The id of the instance. Use this property to deploy several time the same PRODUCT_NAME and PRODUCT_VERSION couple (default: none)
 
       DEPLOYMENT_SKIP_ACCOUNT_SETUP     : Do you want to skip the account creation form and use default accounts (default: false; values : true | false)
 

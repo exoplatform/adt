@@ -110,6 +110,7 @@ Environment Variables
     community      eXo Community Website                   - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
   PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+  INSTANCE_ID                       : The id of the instance. Use this property to deploy several time the same PRODUCT_NAME and PRODUCT_VERSION couple (default: none)
 
   DEPLOYMENT_SKIP_ACCOUNT_SETUP     : Do you want to skip the account creation form and use default accounts (default: false; values : true | false)
 
@@ -184,6 +185,13 @@ initialize_product_settings() {
   # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
   env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
   env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
+  configurable_env_var "INSTANCE_ID" ""
+
+  if [ -z "${INSTANCE_ID}"]; then
+    env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}"
+  else
+    env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}-${INSTANCE_ID}"
+  fi
 
   # validate additional parameters
   case "${ACTION}" in
@@ -191,6 +199,7 @@ initialize_product_settings() {
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION"
+      configurable_env_var "INSTANCE_ID" ""
 
       # Defaults values we can override by product/branch/version
       env_var "EXO_PROFILES" "-Dexo.profiles=all"
@@ -577,10 +586,17 @@ initialize_product_settings() {
       esac
       if ${DEPLOYMENT_CHAT_ENABLED}; then
         # Build a database name without dot, minus ...
-        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${PRODUCT_NAME}_${PRODUCT_VERSION}"
+        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${INSTANCE_KEY}"
         env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//./_}"
         env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//-/_}"
       fi
+
+      if [ -z "${INSTANCE_ID}"]; then
+        env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION}"
+      else
+        env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
+      fi
+      
     ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
@@ -635,8 +651,8 @@ do_download_dataset() {
   validate_env_var "DS_DIR"
   validate_env_var "PRODUCT_NAME"
   validate_env_var "PRODUCT_BRANCH"
-  validate_env_var "PRODUCT_DESCRIPTION"
-  echo_info "Updating local dataset for ${PRODUCT_DESCRIPTION} ${PRODUCT_BRANCH} from the storage server ..."
+  validate_env_var "INSTANCE_DESCRIPTION"
+  echo_info "Updating local dataset for ${INSTANCE_DESCRIPTION} ${PRODUCT_BRANCH} from the storage server ..."
   if [ ! -z "${DATASET_DATA_VALUES_ARCHIVE}" ] && [ ! -z "${DATASET_DATA_INDEX_ARCHIVE}" ] && [ ! -z "${DATASET_DB_ARCHIVE}" ]; then
     mkdir -p ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}
     display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DB_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
@@ -678,7 +694,7 @@ do_restore_dataset(){
 }
 
 do_init_empty_data(){
-  echo_info "Deleting all existing data for ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  echo_info "Deleting all existing data for ${INSTANCE_DESCRIPTION} ..."
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     do_drop_database
     do_create_database
@@ -711,19 +727,19 @@ do_drop_data() {
 # Function that unpacks the app server archive
 #
 do_unpack_server() {
-  rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+  rm -rf ${TMP_DIR}/${INSTANCE_KEY}
   echo_info "Unpacking server ..."
-  mkdir -p ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+  mkdir -p ${TMP_DIR}/${INSTANCE_KEY}
   set +e
   case ${ARTIFACT_PACKAGING} in
     zip)
-      unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+      unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${INSTANCE_KEY}
       if [ "$?" -ne "0" ]; then
         # If unpack fails we try to redownload the archive
         echo_warn "unpack of the server failed. We will try to download it a second time."
         rm ${ARTIFACT_LOCAL_PATH}
         do_download_server
-        unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+        unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${INSTANCE_KEY}
         if [ "$?" -ne "0" ]; then
           echo_error "Unable to unpack the server."
           exit 1
@@ -731,7 +747,7 @@ do_unpack_server() {
       fi
     ;;
     tar.gz)
-      cd ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+      cd ${TMP_DIR}/${INSTANCE_KEY}
       tar -xzf ${ARTIFACT_LOCAL_PATH}
       if [ "$?" -ne "0" ]; then
         # If unpack fails we try to redownload the archive
@@ -753,16 +769,16 @@ do_unpack_server() {
     ;;
   esac
   set -e
-  DEPLOYMENT_PID_FILE=${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.pid
+  DEPLOYMENT_PID_FILE=${SRV_DIR}/${INSTANCE_KEY}.pid
   mkdir -p ${SRV_DIR}
   echo_info "Deleting existing server ..."
-  rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+  rm -rf ${SRV_DIR}/${INSTANCE_KEY}
   echo_info "Done"
-  cp -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
-  rm -rf ${TMP_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+  cp -rf ${TMP_DIR}/${INSTANCE_KEY} ${SRV_DIR}/${INSTANCE_KEY}
+  rm -rf ${TMP_DIR}/${INSTANCE_KEY}
 
   # We search the server directory
-  pushd `find ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION} -maxdepth 4 -mindepth 1 -name bin -type d`/.. > /dev/null
+  pushd `find ${SRV_DIR}/${INSTANCE_KEY} -maxdepth 4 -mindepth 1 -name bin -type d`/.. > /dev/null
   DEPLOYMENT_DIR=`pwd -P`
   popd > /dev/null
 
@@ -869,9 +885,9 @@ do_configure_apache() {
   echo_info "Done."
   echo_info "Rotate Apache logs ..."
 
-  evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
-  do_logrotate "${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}" ${ADT_DEV_MODE}
-  rm ${TMP_DIR}/logrotate-${PRODUCT_NAME}-${PRODUCT_VERSION}
+  evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${INSTANCE_KEY}
+  do_logrotate "${TMP_DIR}/logrotate-${INSTANCE_KEY}" ${ADT_DEV_MODE}
+  rm ${TMP_DIR}/logrotate-${INSTANCE_KEY}
 
   evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
   do_logrotate "${TMP_DIR}/logrotate-acceptance" ${ADT_DEV_MODE}
@@ -885,17 +901,17 @@ do_configure_apache() {
 do_create_deployment_descriptor() {
   echo_info "Creating deployment descriptor ..."
   mkdir -p ${ADT_CONF_DIR}
-  evaluate_file_content ${ETC_DIR}/adt/config.template ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+  evaluate_file_content ${ETC_DIR}/adt/config.template ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
   echo_info "Done."
 }
 
 do_load_deployment_descriptor() {
-  if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+  if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo_warn "You need to deploy it first."
     exit 1
   else
-    source ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+    source ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
   fi
 }
 
@@ -940,7 +956,7 @@ do_deploy() {
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
   else
-    env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}"
+    env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
     env_var "DEPLOYMENT_EXT_PORT" "80"
   fi
 
@@ -951,19 +967,19 @@ do_deploy() {
   fi
 
 
-  echo_info "Deploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
 
   do_download_server
-  if [ -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+  if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
     do_stop
   fi
 
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
-    echo_info "Archiving existing data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
     _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
     echo_info "Using temporary directory ${_tmpdir}"
-    if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+    if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
       echo_warn "This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/data
       do_create_database
@@ -999,7 +1015,7 @@ do_deploy() {
       do_init_empty_data
     ;;
     KEEP_DATA)
-      echo_info "Restoring previous data ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+      echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} ..."
       rm -rf ${DEPLOYMENT_DIR}/gatein/data
       mv ${_tmpdir}/data ${DEPLOYMENT_DIR}/gatein
       rm -rf ${_tmpdir}
@@ -1042,7 +1058,7 @@ do_start() {
   # The server is supposed to be already deployed.
   # We load its settings from the configuration
   do_load_deployment_descriptor
-  echo_info "Starting server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
   chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
   mkdir -p $(dirname ${DEPLOYMENT_LOG_PATH})
   cd `dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}`
@@ -1148,7 +1164,7 @@ do_start() {
 # Function that stops the app server
 #
 do_stop() {
-  if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+  if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo_warn "The product cannot be stopped"
     exit 0
@@ -1159,7 +1175,7 @@ do_stop() {
     # We load its settings from the configuration
     do_load_deployment_descriptor
     if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
-      echo_info "Stopping server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ... "
+      echo_info "Stopping server ${INSTANCE_DESCRIPTION} ... "
 
       if [ -e ${DEPLOYMENT_PID_FILE} ]; then
         # Testing if pid file is valid
@@ -1211,7 +1227,7 @@ do_stop() {
 # Function that undeploys (delete) the app server
 #
 do_undeploy() {
-  if [ ! -e "${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}" ]; then
+  if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo_warn "The product cannot be undeployed"
     exit 0
@@ -1238,14 +1254,14 @@ do_undeploy() {
     # Reload Apache to deactivate the config
     do_reload_apache ${ADT_DEV_MODE}
     # Delete the server
-    rm -rf ${SRV_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}
+    rm -rf ${SRV_DIR}/${INSTANCE_KEY}
     # Close firewall ports
     do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
     echo_info "Server undeployed"
     # Delete the deployment descriptor
-    rm ${ADT_CONF_DIR}/${PRODUCT_NAME}-${PRODUCT_VERSION}.${ACCEPTANCE_HOST}
+    rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
     )
   fi
 }
@@ -1281,7 +1297,7 @@ do_list() {
       else
         STATUS="${TXT_RED}false${TXT_RESET}"
       fi
-      printf "%-40s %-25s %-10s %-10s %10s %10s %10s %10s %10s %10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${DEPLOYMENT_APPSRV_TYPE}" "${DEPLOYMENT_DATABASE_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
+      printf "%-40s %-25s %-25s %-10s %-10s %10s %10s %10s %10s %10s %10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${INSTANCE_ID}" "${DEPLOYMENT_APPSRV_TYPE}" "${DEPLOYMENT_DATABASE_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
       )
     done
   else

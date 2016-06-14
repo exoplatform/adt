@@ -61,7 +61,7 @@ do_configure_datasource_file() {
 do_get_database_settings() {
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     # Build a database name without dot, minus ...
-    env_var DEPLOYMENT_DATABASE_NAME "${PRODUCT_NAME}_${PRODUCT_VERSION}"
+    env_var DEPLOYMENT_DATABASE_NAME "${INSTANCE_KEY}"
     env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//./_}"
     env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
     # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
