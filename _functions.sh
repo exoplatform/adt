@@ -179,7 +179,7 @@ initialize_product_settings() {
   # Docker properties
   configurable_env_var "DEPLOYMENT_DOCKER_HOST"     "unix://"
   configurable_env_var "DEPLOYMENT_DOCKER_CMD"      "docker"
-  configurable_env_var DOCKER_CMD                   "${DEPLOYMENT_DOCKER_CMD} -H ${DEPLOYMENT_DOCKER_HOST}"
+  configurable_env_var "DOCKER_CMD"                 "${DEPLOYMENT_DOCKER_CMD} -H ${DEPLOYMENT_DOCKER_HOST}"
 
   # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
   # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
@@ -187,7 +187,7 @@ initialize_product_settings() {
   env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
   configurable_env_var "INSTANCE_ID" ""
 
-  if [ -z "${INSTANCE_ID}"]; then
+  if [ -z "${INSTANCE_ID}" ]; then
     env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}"
   else
     env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}-${INSTANCE_ID}"
@@ -591,7 +591,7 @@ initialize_product_settings() {
         env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//-/_}"
       fi
 
-      if [ -z "${INSTANCE_ID}"]; then
+      if [ -z "${INSTANCE_ID}" ]; then
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION}"
       else
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
