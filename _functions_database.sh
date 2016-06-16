@@ -92,7 +92,7 @@ do_get_database_settings() {
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
-        env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_DATABASE_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} psql -h db -U ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
+        env_var "DATABASE_CMD" "${DOCKER_CMD} exec -u postgres -i ${DEPLOYMENT_DATABASE_NAME} psql"
       ;;
       *)
         echo_error "Database type not supported ${DEPLOYMENT_DATABASE_TYPE}"
@@ -254,6 +254,8 @@ do_start_database() {
       echo_info "Database is not using docker, nothing to start"
     ;;
   esac
+  check_database_availability
+
   echo_info "Done."
 }
 
@@ -311,7 +313,7 @@ do_restore_database_dataset() {
 check_database_availability() {
   local CHECK_CMD=""
   case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL|DOCKER_MYSQL)
+    MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES)
       CHECK_CMD="select 1"
     ;;
     *)
@@ -319,7 +321,9 @@ check_database_availability() {
       exit 1
     ;;
   esac
-  
+
+  echo_info "Waiting for database availability"
+
   local count=0
   local try=10
   local wait_time=1
@@ -327,10 +331,10 @@ check_database_availability() {
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
-    echo "$CHCMD" | ${DATABASE_CMD} &> /dev/null
+    echo "$CHECK_CMD" | ${DATABASE_CMD} &> /dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
-      echo_debug "${CHECK_CMD} failed (${RET})"
+      echo -n "."
       sleep $wait_time
     fi
     set -e
