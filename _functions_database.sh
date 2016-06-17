@@ -212,13 +212,18 @@ do_stop_database() {
       ensure_docker_container_stopped ${DEPLOYMENT_DATABASE_NAME}
     ;;
     *)
-      echo_info "Database is not using docker, doing nothing"
+      echo_info "Database is not using docker, nothing to do"
     ;;
   esac
   echo_info "Done."
 }
 
 do_start_database() {
+  if [ ${DEPLOYMENT_DATABASE_ENABLED} ]; then
+    echo_debug "Database disabled, nothing to start"
+    return
+  fi 
+  
   echo_info "Starting database instance..."
   case ${DEPLOYMENT_DATABASE_TYPE} in
     DOCKER_MYSQL)
