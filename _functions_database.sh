@@ -219,7 +219,7 @@ do_stop_database() {
 }
 
 do_start_database() {
-  if [ ${DEPLOYMENT_DATABASE_ENABLED} ]; then
+  if [ ! ${DEPLOYMENT_DATABASE_ENABLED} ]; then
     echo_debug "Database disabled, nothing to start"
     return
   fi 
