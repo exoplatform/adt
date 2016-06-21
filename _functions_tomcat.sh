@@ -238,8 +238,14 @@ do_configure_tomcat_datasources() {
 
       env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},exo-jdbc-driver-postgresql:1.0.0"
     ;;
+    DOCKER_ORACLE)
+      # Patch to reconfigure server.xml for database
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-oracle.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
+      do_install_oracle_driver ${DEPLOYMENT_DIR}/lib/
+    ;;
     HSQLDB)
-            # Patch to reconfigure server.xml for database
+      # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;
     *)

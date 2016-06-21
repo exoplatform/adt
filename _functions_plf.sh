@@ -31,6 +31,12 @@ do_download_postgresql_driver() {
   do_download_maven_artifact "${REPOSITORY_SERVER_BASE_URL}/content/groups/public" "" "" "org.postgresql" "postgresql" "${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}" "jar" "" "${PSQL_DL_DIR}" "postgresql" ""
 } 
 
+do_download_oracle_driver() {
+  env_var "ORACLE_DL_DIR" "${DL_DIR}/oracle-jdbc-driver/${DEPLOYMENT_ORACLE_DRIVER_VERSION}"
+  mkdir -p ${ORACLE_DL_DIR}
+  do_download_maven_artifact "${REPOSITORY_SERVER_BASE_URL}/content/groups/private" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}" "ojdbc" "ojdbc" "${DEPLOYMENT_ORACLE_DRIVER_VERSION}" "jar" "" "${ORACLE_DL_DIR}" "ojdbc" ""
+}
+
 do_install_postgresql_driver() {
   local _installDir=$1
   
@@ -38,8 +44,20 @@ do_install_postgresql_driver() {
 
   cp ${PSQL_DL_DIR}/postgresql-${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}.jar $1
 
-  # TODO Find a way to determine the driver name from the add version
+  # TODO Find a way to determine the driver name from the addon version
   env_var "DB_DRIVER" "postgresql-${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}.jar"
+}
+
+do_install_oracle_driver() {
+  local _installDir=$1
+  
+  do_download_oracle_driver
+
+  cp ${ORACLE_DL_DIR}/ojdbc-${DEPLOYMENT_ORACLE_DRIVER_VERSION}.jar $1
+
+  # TODO Find a way to determine the driver name from the addon version
+  env_var "DB_DRIVER" "ojdbc-${DEPLOYMENT_ORACLE_DRIVER_VERSION}.jar"
+  
 }
 
 #

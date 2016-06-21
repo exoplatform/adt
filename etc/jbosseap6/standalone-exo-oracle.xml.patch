@@ -1,0 +1,185 @@
+--- standalone-exo.xml-docker_oracle.ori	2016-06-21 23:21:24.000000000 +0200
++++ standalone-exo.xml-docker_oracle	2016-06-21 23:38:27.000000000 +0200
+@@ -195,9 +195,11 @@
+                 <!-- eXo IDM Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-idm_portal" jta="false" pool-name="exo-idm_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
++                    -->
+                     <!-- MySQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -217,11 +219,9 @@
+                     <connection-url>jdbc:edb://localhost:5432/plf</connection-url>
+                     -->
+                     <!-- Oracle -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>oracle.jdbc.OracleDriver</driver-class>
+-                    <connection-url>jdbc:oracle:thin:@localhost:1521:plf</connection-url>
+-                    -->
++                    <connection-url>jdbc:oracle:thin:@@DB_IDM_HOST@:@DB_IDM_PORT@:@DB_IDM_NAME@</connection-url>
+                     <!-- Sybase -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -249,8 +249,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_IDM_USR@</user-name>
++                        <password>@DB_IDM_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
+@@ -258,9 +258,11 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+@@ -272,11 +274,9 @@
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker" />
+                           -->
+                         <!-- Oracle -->
+-                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter" />
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker" />
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker" />
+-                          -->
+                         <!-- Sybase -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.sybase.SybaseExceptionSorter" />
+@@ -305,9 +305,11 @@
+                 <!-- eXo JCR Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-jcr_portal" jta="false" pool-name="exo-jcr_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
++                    -->
+                     <!-- MySQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -327,11 +329,9 @@
+                     <connection-url>jdbc:edb://localhost:5432/plf</connection-url>
+                     -->
+                     <!-- Oracle -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>oracle.jdbc.OracleDriver</driver-class>
+-                    <connection-url>jdbc:oracle:thin:@localhost:1521:plf</connection-url>
+-                    -->
++                    <connection-url>jdbc:oracle:thin:@@DB_JCR_HOST@:@DB_JCR_PORT@:@DB_JCR_NAME@</connection-url>
+                     <!-- Sybase -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -359,8 +359,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_JCR_USR@</user-name>
++                        <password>@DB_JCR_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
+@@ -368,9 +368,11 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+@@ -382,11 +384,9 @@
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker" />
+                           -->
+                         <!-- Oracle -->
+-                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter" />
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker" />
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker" />
+-                          -->
+                         <!-- Sybase -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.sybase.SybaseExceptionSorter" />
+@@ -415,9 +415,11 @@
+                 <!-- eXo JPA Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-jpa_portal" jta="false" pool-name="exo-jpa_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
++                    -->
+                     <!-- MySQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -437,11 +439,9 @@
+                     <connection-url>jdbc:edb://localhost:5432/plf</connection-url>
+                     -->
+                     <!-- Oracle -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>oracle.jdbc.OracleDriver</driver-class>
+-                    <connection-url>jdbc:oracle:thin:@localhost:1521:plf</connection-url>
+-                    -->
++                    <connection-url>jdbc:oracle:thin:@@DB_JPA_HOST@:@DB_JPA_PORT@:@DB_IDM_NAME@</connection-url>
+                     <!-- Sybase -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -469,8 +469,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_JPA_USR@</user-name>
++                        <password>@DB_JPA_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
+@@ -478,9 +478,11 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+@@ -492,11 +494,9 @@
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.postgres.PostgreSQLValidConnectionChecker" />
+                           -->
+                         <!-- Oracle -->
+-                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleExceptionSorter" />
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleStaleConnectionChecker" />
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.oracle.OracleValidConnectionChecker" />
+-                          -->
+                         <!-- Sybase -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.sybase.SybaseExceptionSorter" />

@@ -64,6 +64,7 @@ do_get_database_settings() {
     env_var DEPLOYMENT_DATABASE_NAME "${INSTANCE_KEY}"
     env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//./_}"
     env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
+    env_var DEPLOYMENT_CONTAINER_NAME "${DEPLOYMENT_DATABASE_NAME}"
     # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
     env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
     env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
@@ -85,14 +86,24 @@ do_get_database_settings() {
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
-        env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_DATABASE_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
+        env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
 
       ;;
       DOCKER_POSTGRES)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
-        env_var "DATABASE_CMD" "${DOCKER_CMD} exec -u postgres -i ${DEPLOYMENT_DATABASE_NAME} psql"
+        env_var "DATABASE_CMD" "${DOCKER_CMD} exec -u postgres -i ${DEPLOYMENT_CONTAINER_NAME} psql"
+      ;;
+      DOCKER_ORACLE)
+        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/oracle"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+
+        env_var "DATABASE_CMD" "${DOCKER_CMD} exec -i ${DEPLOYMENT_CONTAINER_NAME}"
+
+        # due to oracle limitation on SID
+        env_var DEPLOYMENT_DATABASE_NAME "plf"
+        env_var DEPLOYMENT_DATABASE_USER "plf" 
       ;;
       *)
         echo_error "Database type not supported ${DEPLOYMENT_DATABASE_TYPE}"
@@ -124,9 +135,13 @@ do_create_database() {
     HSQLDB)
       echo_info "Using default HSQLDB database. Nothing to do to create the Database."
     ;;
-    DOCKER_*)
+    DOCKER_MYSQL | DOCKER_POSTGRES)
       echo_info "Using a docker database ${DEPLOYMENT_DATABASE_IMAGE}"
-      ${DOCKER_CMD} volume create --name ${DEPLOYMENT_DATABASE_NAME}
+      ${DOCKER_CMD} volume create --name ${DEPLOYMENT_CONTAINER_NAME}
+      do_start_database
+    ;;
+    DOCKER_ORACLE)
+      echo_info "Oracle image is not yet supporting volume"
       do_start_database
     ;;
     *)
@@ -161,8 +176,8 @@ do_drop_database() {
     ;;
     DOCKER_*)
       echo_info "Drops docker volumes ..."
-      delete_docker_container ${DEPLOYMENT_DATABASE_NAME}
-      delete_docker_volume ${DEPLOYMENT_DATABASE_NAME}
+      delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
+      delete_docker_volume ${DEPLOYMENT_CONTAINER_NAME}
     ;;
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
@@ -208,8 +223,8 @@ do_stop_database() {
   echo_info "Stopping database instance..."
   case ${DEPLOYMENT_DATABASE_TYPE} in
     DOCKER_*)
-      echo_info "Stopping docker container ${DEPLOYMENT_DATABASE_NAME}"
-      ensure_docker_container_stopped ${DEPLOYMENT_DATABASE_NAME}
+      echo_info "Stopping docker container ${DEPLOYMENT_CONTAINER_NAME}"
+      ensure_docker_container_stopped ${DEPLOYMENT_CONTAINER_NAME}
     ;;
     *)
       echo_info "Database is not using docker, nothing to do"
@@ -227,29 +242,43 @@ do_start_database() {
   echo_info "Starting database instance..."
   case ${DEPLOYMENT_DATABASE_TYPE} in
     DOCKER_MYSQL)
-      echo_info "Starting database container ${DEPLOYMENT_DATABASE_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
-      delete_docker_container ${DEPLOYMENT_DATABASE_NAME}
+      echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
+      delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
       
       ${DOCKER_CMD} run \
         -p ${DEPLOYMENT_DATABASE_PORT}:3306 -d \
-        -v ${DEPLOYMENT_DATABASE_NAME}:/var/lib/mysql \
+        -v ${DEPLOYMENT_CONTAINER_NAME}:/var/lib/mysql \
         -e MYSQL_ROOT_PASSWORD=${DEPLOYMENT_DATABASE_NAME}@root \
         -e MYSQL_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
         -e MYSQL_USER=${DEPLOYMENT_DATABASE_USER} \
         -e MYSQL_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
-        --name ${DEPLOYMENT_DATABASE_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
+        --name ${DEPLOYMENT_CONTAINER_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
     ;;
     DOCKER_POSTGRES)
-      echo_info "Starting database container ${DEPLOYMENT_DATABASE_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
-      delete_docker_container ${DEPLOYMENT_DATABASE_NAME}
+      echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
+      delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
     
       ${DOCKER_CMD} run \
         -p ${DEPLOYMENT_DATABASE_PORT}:5432 -d \
-        -v ${DEPLOYMENT_DATABASE_NAME}:/var/lib/postgresql/data \
+        -v ${DEPLOYMENT_CONTAINER_NAME}:/var/lib/postgresql/data \
         -e POSTGRES_DB=${DEPLOYMENT_DATABASE_NAME} \
         -e POSTGRES_USER=${DEPLOYMENT_DATABASE_USER} \
         -e POSTGRES_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
-        --name ${DEPLOYMENT_DATABASE_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
+        --name ${DEPLODEPLOYMENT_CONTAINER_NAMEYMENT_DATABASE_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
+    ;;
+    DOCKER_ORACLE)
+      echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
+      delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
+
+      ${DOCKER_CMD} run \
+        -p ${DEPLOYMENT_DATABASE_PORT}:1521 \
+        -d \
+        -e ORACLE_SID=${DEPLOYMENT_DATABASE_NAME} \
+        -e ORACLE_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
+        -e ORACLE_USER=${DEPLOYMENT_DATABASE_USER} \
+        -e ORACLE_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
+        -e ORACLE_DBA_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
+        --name ${DEPLOYMENT_CONTAINER_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
     ;;
     DOCKER*)
       echo_error "Docker database of type ${DEPLOYMENT_DATABASE_TYPE} not yet supported"
@@ -321,6 +350,9 @@ check_database_availability() {
     MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES)
       CHECK_CMD="select 1"
     ;;
+    DOCKER_ORACLE)
+      CHECK_CMD="bin/tnsping localhost"
+    ;;
     *)
       echo_error "Database availability check not supported for ${DEPLOYMENT_DATABASE_TYPE}"
       exit 1
@@ -330,14 +362,22 @@ check_database_availability() {
   echo_info "Waiting for database availability"
 
   local count=0
-  local try=10
+  local try=600
   local wait_time=1
   local RET=1
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
-    echo "$CHECK_CMD" | ${DATABASE_CMD} &> /dev/null
-    RET=$?
+    case ${DEPLOYMENT_DATABASE_TYPE} in
+      MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES)
+        echo "$CHECK_CMD" | ${DATABASE_CMD} &> /dev/null
+        RET=$?
+      ;;
+      DOCKER_ORACLE)
+        ${DATABASE_CMD} ${CHECK_CMD}
+        RET=$?
+      ;;
+    esac
     if [ $RET -ne 0 ]; then
       echo -n "."
       sleep $wait_time
