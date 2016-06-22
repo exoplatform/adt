@@ -374,7 +374,7 @@ check_database_availability() {
         RET=$?
       ;;
       DOCKER_ORACLE)
-        ${DATABASE_CMD} ${CHECK_CMD}
+        ${DATABASE_CMD} ${CHECK_CMD} &> /dev/null
         RET=$?
       ;;
     esac
