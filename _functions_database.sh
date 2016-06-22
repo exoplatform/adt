@@ -99,11 +99,11 @@ do_get_database_settings() {
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/oracle"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
-        env_var "DATABASE_CMD" "${DOCKER_CMD} exec -i ${DEPLOYMENT_CONTAINER_NAME}"
-
         # due to oracle limitation on SID
         env_var DEPLOYMENT_DATABASE_NAME "plf"
         env_var DEPLOYMENT_DATABASE_USER "plf" 
+
+        env_var "DATABASE_CMD" "${DOCKER_CMD} exec -i ${DEPLOYMENT_CONTAINER_NAME} bin/sqlplus ${DEPLOYMENT_DATABASE_USER}/${DEPLOYMENT_DATABASE_USER}"
       ;;
       *)
         echo_error "Database type not supported ${DEPLOYMENT_DATABASE_TYPE}"
@@ -346,12 +346,14 @@ do_restore_database_dataset() {
 #
 check_database_availability() {
   local CHECK_CMD=""
+  local valid_result=0
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES)
       CHECK_CMD="select 1"
     ;;
     DOCKER_ORACLE)
-      CHECK_CMD="bin/tnsping localhost"
+      CHECK_CMD="select 1 from dual"
+      valid_result=1
     ;;
     *)
       echo_error "Database availability check not supported for ${DEPLOYMENT_DATABASE_TYPE}"
@@ -364,8 +366,8 @@ check_database_availability() {
   local count=0
   local try=600
   local wait_time=1
-  local RET=1
-  while [ $count -lt $try -a $RET -ne 0 ]; do
+  local RET=-1
+  while [ $count -lt $try -a $RET -ne $valid_result ]; do
     count=$(( $count + 1 ))
     set +e
     case ${DEPLOYMENT_DATABASE_TYPE} in
@@ -374,11 +376,11 @@ check_database_availability() {
         RET=$?
       ;;
       DOCKER_ORACLE)
-        ${DATABASE_CMD} ${CHECK_CMD} &> /dev/null
+        echo "$CHECK_CMD" | ${DATABASE_CMD} | grep -q ERROR &> /dev/null
         RET=$?
       ;;
     esac
-    if [ $RET -ne 0 ]; then
+    if [ $RET -ne $valid_result ]; then
       echo -n "."
       sleep $wait_time
     fi
