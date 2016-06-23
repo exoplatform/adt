@@ -21,6 +21,28 @@ fi
 source "${SCRIPT_DIR}/_functions_core.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
 
+# To remove after PLF-6666 resolution
+# $1 base configuration directory
+do_configure_for_oracle() {
+  echo_info "Configuring instance for oracle database (hack PLF-6666)..."
+
+  local CONF_DIR=$1
+  local EXO_PROP=${CONF_DIR}/exo.properties
+  local EXO_PROP_SAMPLE=${CONF_DIR}/exo-sample.properties
+  local EXO_PROP_ORACLE_PATCH=${ETC_DIR}/oracle/exo.properties.patch
+  local ORACLE_CONF=${ETC_DIR}/oracle/configuration.xml
+
+  if [ ! -z ${EXO_PROP} ]; then
+    cp ${EXO_PROP_SAMPLE} ${EXO_PROP}
+  fi
+  patch -l -p0 ${EXO_PROP} < ${EXO_PROP_ORACLE_PATCH}
+
+  mkdir -p ${CONF_DIR}/portal/portal
+  cp ${ORACLE_CONF} ${CONF_DIR}/portal/portal
+
+  echo_info "Done"
+}
+
 do_configure_datasource_file() {
   local FILE_TO_PATCH=$1
   local DB_SERVER_PATCH=$2

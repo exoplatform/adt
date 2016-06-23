@@ -243,6 +243,12 @@ do_configure_tomcat_datasources() {
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-oracle.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       do_install_oracle_driver ${DEPLOYMENT_DIR}/lib/
+
+      # Waiting for PLF-6666 resolution
+      if [ "${DEPLOYMENT_DATABASE_TYPE}" == "DOCKER_ORACLE" ]; then
+        do_configure_for_oracle ${DEPLOYMENT_DIR}/gatein/conf
+      fi
+      
     ;;
     HSQLDB)
       # Patch to reconfigure server.xml for database
