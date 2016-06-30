@@ -374,8 +374,7 @@ check_database_availability() {
       CHECK_CMD="select 1"
     ;;
     DOCKER_ORACLE)
-      CHECK_CMD="select 1 from dual"
-      valid_result=1
+      CHECK_CMD="select 1 as AVAILABLE from dual;"
     ;;
     *)
       echo_error "Database availability check not supported for ${DEPLOYMENT_DATABASE_TYPE}"
@@ -398,7 +397,7 @@ check_database_availability() {
         RET=$?
       ;;
       DOCKER_ORACLE)
-        echo "$CHECK_CMD" | ${DATABASE_CMD} | grep -q ERROR &> /dev/null
+        echo "$CHECK_CMD" | ${DATABASE_CMD} | grep -q AVAILABLE &> /dev/null
         RET=$?
       ;;
     esac
