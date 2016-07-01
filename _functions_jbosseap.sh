@@ -94,11 +94,6 @@ do_configure_jbosseap_datasources() {
 
       do_install_oracle_driver ${DEPLOYMENT_DIR}/standalone/deployments
 
-      # Waiting for PLF-6666 resolution
-      if [ "${DEPLOYMENT_DATABASE_TYPE}" == "DOCKER_ORACLE" ]; then
-        do_configure_for_oracle ${DEPLOYMENT_DIR}/standalone/configuration/gatein
-      fi
-      
     ;;
     HSQLDB)
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"

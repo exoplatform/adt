@@ -244,11 +244,6 @@ do_configure_tomcat_datasources() {
 
       do_install_oracle_driver ${DEPLOYMENT_DIR}/lib/
 
-      # Waiting for PLF-6666 resolution
-      if [ "${DEPLOYMENT_DATABASE_TYPE}" == "DOCKER_ORACLE" ]; then
-        do_configure_for_oracle ${DEPLOYMENT_DIR}/gatein/conf
-      fi
-      
     ;;
     HSQLDB)
       # Patch to reconfigure server.xml for database
