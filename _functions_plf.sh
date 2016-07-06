@@ -37,6 +37,12 @@ do_download_oracle_driver() {
   do_download_maven_artifact "${REPOSITORY_SERVER_BASE_URL}/content/groups/private" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}" "ojdbc" "ojdbc" "${DEPLOYMENT_ORACLE_DRIVER_VERSION}" "jar" "" "${ORACLE_DL_DIR}" "ojdbc" ""
 }
 
+do_download_sqlserver_driver() {
+  env_var "SQLSERVER_DL_DIR" "${DL_DIR}/sqlserver-jdbc-driver/${DEPLOYMENT_SQLSERVER_DRIVER_VERSION}"
+  mkdir -p ${SQLSERVER_DL_DIR}
+  do_download_maven_artifact "${REPOSITORY_SERVER_BASE_URL}/content/groups/private" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}" "com.microsoft" "sqljdbc" "${DEPLOYMENT_SQLSERVER_DRIVER_VERSION}" "jar" "" "${SQLSERVER_DL_DIR}" "sqljdbc" ""
+}
+
 do_install_postgresql_driver() {
   local _installDir=$1
   
@@ -59,6 +65,18 @@ do_install_oracle_driver() {
   env_var "DB_DRIVER" "ojdbc-${DEPLOYMENT_ORACLE_DRIVER_VERSION}.jar"
   
 }
+
+do_install_sqlserver_driver() {
+  local _installDir=$1
+  
+  do_download_sqlserver_driver
+
+  cp ${SQLSERVER_DL_DIR}/sqljdbc-${DEPLOYMENT_SQLSERVER_DRIVER_VERSION}.jar $1
+
+  # TODO Find a way to determine the driver name from the addon version
+  env_var "DB_DRIVER" "sqljdbc-${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}.jar"
+}
+
 
 #
 # Function that installs the addons manager

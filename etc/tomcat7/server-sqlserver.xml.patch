@@ -1,0 +1,41 @@
+--- server.xml.orig	2016-07-07 22:08:31.000000000 +0200
++++ server.xml	2016-07-07 22:09:22.000000000 +0200
+@@ -64,32 +64,32 @@
+     <!-- eXo IDM Datasource for portal -->
+     <Resource name="exo-idm_portal" auth="Container" type="javax.sql.DataSource"
+               initialSize="5" maxActive="20" minIdle="5" maxIdle="15" maxWait="10000"
+-              validationQuery="SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS" validationQueryTimeout="5"
++              validationQuery="SELECT 1" validationQueryTimeout="5"
+               testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
++              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" url="jdbc:sqlserver://@DB_IDM_HOST@:@DB_IDM_PORT@;databaseName=@DB_IDM_NAME@;sendStringParametersAsUnicode=false" />
+ 
+     <!-- eXo JCR Datasource for portal -->
+     <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
+               initialSize="5" maxActive="20" minIdle="5" maxIdle="15" maxWait="10000"
+-              validationQuery="SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS" validationQueryTimeout="5" 
++              validationQuery="SELECT 1" validationQueryTimeout="5" 
+               testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
++              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" url="jdbc:sqlserver://@DB_JCR_HOST@:@DB_JCR_PORT@;databaseName=@DB_JCR_NAME@;sendStringParametersAsUnicode=false" />
+ 
+     <!-- eXo JPA Datasource for portal -->
+     <Resource name="exo-jpa_portal" auth="Container" type="javax.sql.DataSource"
+               initialSize="5" maxActive="20" minIdle="5" maxIdle="15" maxWait="10000"
+-              validationQuery="SELECT 1 FROM INFORMATION_SCHEMA.SYSTEM_USERS" validationQueryTimeout="5"
++              validationQuery="SELECT 1" validationQueryTimeout="5"
+               testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
+               timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
+               removeAbandoned="true" removeAbandonedTimeout="300" logAbandoned="false"
+               poolPreparedStatements="true"
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
++              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="com.microsoft.sqlserver.jdbc.SQLServerDriver" url="jdbc:sqlserver://@DB_JPA_HOST@:@DB_JPA_PORT@;databaseName=@DB_JPA_NAME@;sendStringParametersAsUnicode=false" />
+ 
+   </GlobalNamingResources>
+ 

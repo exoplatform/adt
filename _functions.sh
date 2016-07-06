@@ -127,7 +127,7 @@ Environment Variables
   DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
   DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
 
-  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_ORACLE)
+  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_ORACLE | DOCKER_SQLSERVER)
   DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (no default)
 
   DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
@@ -220,6 +220,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
       env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "9.4.1208" #Default version used to download additional postgresql driver
       env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.1.0.1"
+      env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
       env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-RC4" #Add-ons Manager to use
 
       configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"

@@ -105,6 +105,13 @@ do_get_database_settings() {
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} exec -i ${DEPLOYMENT_CONTAINER_NAME} bin/sqlplus ${DEPLOYMENT_DATABASE_USER}/${DEPLOYMENT_DATABASE_USER}"
       ;;
+      DOCKER_SQLSERVER)
+        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/sqlserver"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT" "${DEPLOYMENT_PORT_PREFIX}21"
+
+        env_var "DATABASE_CMD" "${DOCKER_CMD} logs ${DEPLOYMENT_CONTAINER_NAME}"
+      ;;
       *)
         echo_error "Database type not supported ${DEPLOYMENT_DATABASE_TYPE}"
         exit 1
@@ -138,11 +145,14 @@ do_create_database() {
     DOCKER_MYSQL | DOCKER_POSTGRES)
       echo_info "Using a docker database ${DEPLOYMENT_DATABASE_IMAGE}"
       ${DOCKER_CMD} volume create --name ${DEPLOYMENT_CONTAINER_NAME}
-      do_start_database
+      # do_start_database
     ;;
     DOCKER_ORACLE)
       echo_info "Oracle image is not yet supporting volume"
-      do_start_database
+      # do_start_database
+    ;;
+    DOCKER_SQLSERVER)
+      echo_info "SQL Server image is not yet supporting volume"
     ;;
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
@@ -280,6 +290,19 @@ do_start_database() {
         -e ORACLE_DBA_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
         --name ${DEPLOYMENT_CONTAINER_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
     ;;
+    DOCKER_SQLSERVER)
+      echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
+      delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
+
+      ${DOCKER_CMD} run \
+        -p ${DEPLOYMENT_DATABASE_PORT}:1433 \
+        -p ${DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT}:3389
+        -d \
+        -e SQLSERVER_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
+        -e SQLSERVER_USER=${DEPLOYMENT_DATABASE_USER} \
+        -e SQLSERVER_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
+        --name ${DEPLOYMENT_CONTAINER_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
+    ;;
     DOCKER*)
       echo_error "Docker database of type ${DEPLOYMENT_DATABASE_TYPE} not yet supported"
       exit 1
@@ -354,6 +377,9 @@ check_database_availability() {
     DOCKER_ORACLE)
       CHECK_CMD="select 1 as AVAILABLE from dual;"
     ;;
+    DOCKER_SQLSERVER)
+      echo "Using docker container logs to check availability"
+    ;;
     *)
       echo_error "Database availability check not supported for ${DEPLOYMENT_DATABASE_TYPE}"
       exit 1
@@ -376,6 +402,10 @@ check_database_availability() {
       ;;
       DOCKER_ORACLE)
         echo "$CHECK_CMD" | ${DATABASE_CMD} | grep -q AVAILABLE &> /dev/null
+        RET=$?
+      ;;
+      DOCKER_SQLSERVER)
+        ${DATABASE_CMD} | grep -q "Database started"
         RET=$?
       ;;
     esac
