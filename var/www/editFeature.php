@@ -5,7 +5,7 @@ if( !empty($_POST['key']) ){
     $file_spec = $file_base  . ".spec";
     $file_status = $file_base . ".status";
     $file_issue = $file_base . ".issue";
-    $file_desc = $file_base . ".desc";
+    $file_description = $file_base . ".desc";
     $file_branch = $file_base . ".branch";
 
     if( !empty($_POST['specifications']) ) {
