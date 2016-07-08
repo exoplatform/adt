@@ -295,8 +295,9 @@ do_start_database() {
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
 
       ${DOCKER_CMD} run \
+        --privileged \
         -p ${DEPLOYMENT_DATABASE_PORT}:1433 \
-        -p ${DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT}:3389
+        -p ${DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT}:3389 \
         -d \
         -e SQLSERVER_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
         -e SQLSERVER_USER=${DEPLOYMENT_DATABASE_USER} \
