@@ -189,6 +189,8 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                         $database_icon = "postgresql";
                     } else if (stripos($descriptor_array->DATABASE, 'oracle') !== false ) {
                         $database_icon = "oracle";
+                    } else if (stripos($descriptor_array->DATABASE, 'sqlserver') !== false ) {
+                        $database_icon = "sqlserver";
                     } else {
                         $database_icon = "none";
                     }
