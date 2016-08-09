@@ -1,5 +1,5 @@
---- standalone-exo.xml.orig	2016-08-09 15:43:25.000000000 +0200
-+++ standalone-exo.xml	2016-08-09 15:51:12.000000000 +0200
+--- standalone-exo.xml.orig	2016-08-09 15:52:14.000000000 +0200
++++ standalone-exo.xml	2016-08-09 16:32:12.000000000 +0200
 @@ -195,9 +195,11 @@
                  <!-- eXo IDM Datasource for PLF -->
                  <datasource enabled="true" jndi-name="java:/comp/env/exo-idm_portal" jta="false" pool-name="exo-idm_portal" spy="false" use-ccm="true" use-java-context="true">
@@ -26,6 +26,17 @@
                      <!-- IBM DB2 -->
                      <!--
                      <driver>XXXX.jar</driver>
+@@ -249,8 +249,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_IDM_USR@</user-name>
++                        <password>@DB_IDM_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
 @@ -258,9 +258,11 @@
                          <background-validation-millis>60000</background-validation-millis>
                          <use-fast-fail>false</use-fast-fail>
@@ -74,6 +85,17 @@
                      <!-- IBM DB2 -->
                      <!--
                      <driver>XXXX.jar</driver>
+@@ -359,8 +359,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_JCR_USR@</user-name>
++                        <password>@DB_JCR_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
 @@ -368,9 +368,11 @@
                          <background-validation-millis>60000</background-validation-millis>
                          <use-fast-fail>false</use-fast-fail>
@@ -122,6 +144,17 @@
                      <!-- IBM DB2 -->
                      <!--
                      <driver>XXXX.jar</driver>
+@@ -469,8 +469,8 @@
+                         <flush-strategy>FailingConnectionOnly</flush-strategy>
+                     </pool>
+                     <security>
+-                        <user-name>sa</user-name>
+-                        <password/>
++                        <user-name>@DB_JPA_USR@</user-name>
++                        <password>@DB_JPA_PWD@</password>
+                     </security>
+                     <validation>
+                         <validate-on-match>false</validate-on-match>
 @@ -478,9 +478,11 @@
                          <background-validation-millis>60000</background-validation-millis>
                          <use-fast-fail>false</use-fast-fail>
