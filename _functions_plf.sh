@@ -74,7 +74,7 @@ do_install_sqlserver_driver() {
   cp ${SQLSERVER_DL_DIR}/sqljdbc-${DEPLOYMENT_SQLSERVER_DRIVER_VERSION}.jar $1
 
   # TODO Find a way to determine the driver name from the addon version
-  env_var "DB_DRIVER" "sqljdbc-${DEPLOYMENT_POSTGRESQL_DRIVER_VERSION}.jar"
+  env_var "DB_DRIVER" "sqljdbc-${DEPLOYMENT_SQLSERVER_DRIVER_VERSION}.jar"
 }
 
 
