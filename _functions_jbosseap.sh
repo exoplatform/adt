@@ -95,6 +95,12 @@ do_configure_jbosseap_datasources() {
       do_install_oracle_driver ${DEPLOYMENT_DIR}/standalone/deployments
 
     ;;
+    DOCKER_SQLSERVER)
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-sqlserver.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+
+      do_install_oracle_driver ${DEPLOYMENT_DIR}/standalone/deployments
+
+    ;;
     HSQLDB)
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;

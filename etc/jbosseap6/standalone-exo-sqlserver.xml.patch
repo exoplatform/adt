@@ -1,0 +1,146 @@
+--- standalone-exo.xml.orig	2016-08-09 15:43:25.000000000 +0200
++++ standalone-exo.xml	2016-08-09 15:51:12.000000000 +0200
+@@ -195,9 +195,11 @@
+                 <!-- eXo IDM Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-idm_portal" jta="false" pool-name="exo-idm_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
++                    -->
+                     <!-- MySQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -229,11 +231,9 @@
+                     <connection-url>jdbc:sybase:Tds:localhost:5000</connection-url>
+                     -->
+                     <!-- Microsoft SQLServer -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>com.microsoft.sqlserver.jdbc.SQLServerDriver</driver-class>
+-                    <connection-url>jdbc:sqlserver://localhost:1433;databaseName=plf;sendStringParametersAsUnicode=false</connection-url>
+-                    -->
++                    <connection-url>jdbc:sqlserver://@DB_IDM_HOST@:@DB_IDM_PORT@;databaseName=@DB_IDM_NAME@;sendStringParametersAsUnicode=false</connection-url>
+                     <!-- IBM DB2 -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -258,9 +258,11 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+@@ -283,9 +285,7 @@
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.sybase.SybaseValidConnectionChecker" />
+                           -->
+                         <!-- Microsoft SQLServer -->
+-                        <!--
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mssql.MSSQLValidConnectionChecker" />
+-                          -->
+                         <!-- IBM DB2 -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.db2.DB2ExceptionSorter" />
+@@ -305,9 +305,11 @@
+                 <!-- eXo JCR Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-jcr_portal" jta="false" pool-name="exo-jcr_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
++                    -->
+                     <!-- MySQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -339,11 +341,9 @@
+                     <connection-url>jdbc:sybase:Tds:localhost:5000</connection-url>
+                     -->
+                     <!-- Microsoft SQLServer -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>com.microsoft.sqlserver.jdbc.SQLServerDriver</driver-class>
+-                    <connection-url>jdbc:sqlserver://localhost:1433;databaseName=plf;sendStringParametersAsUnicode=false</connection-url>
+-                    -->
++                    <connection-url>jdbc:sqlserver://@DB_JCR_HOST@:@DB_JCR_PORT@;databaseName=@DB_JCR_NAME@;sendStringParametersAsUnicode=false</connection-url>
+                     <!-- IBM DB2 -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -368,9 +368,11 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+@@ -393,9 +395,7 @@
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.sybase.SybaseValidConnectionChecker" />
+                           -->
+                         <!-- Microsoft SQLServer -->
+-                        <!--
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mssql.MSSQLValidConnectionChecker" />
+-                          -->
+                         <!-- IBM DB2 -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.db2.DB2ExceptionSorter" />
+@@ -415,9 +415,11 @@
+                 <!-- eXo JPA Datasource for PLF -->
+                 <datasource enabled="true" jndi-name="java:/comp/env/exo-jpa_portal" jta="false" pool-name="exo-jpa_portal" spy="false" use-ccm="true" use-java-context="true">
+                     <!-- HSQLDB -->
++                    <!--
+                     <driver>hsqldb-driver.jar</driver>
+                     <driver-class>org.hsqldb.jdbcDriver</driver-class>
+                     <connection-url>jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;</connection-url>
++                    -->
+                     <!-- MySQL -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -449,11 +451,9 @@
+                     <connection-url>jdbc:sybase:Tds:localhost:5000</connection-url>
+                     -->
+                     <!-- Microsoft SQLServer -->
+-                    <!--
+-                    <driver>XXXX.jar</driver>
++                    <driver>@DB_DRIVER@</driver>
+                     <driver-class>com.microsoft.sqlserver.jdbc.SQLServerDriver</driver-class>
+-                    <connection-url>jdbc:sqlserver://localhost:1433;databaseName=plf;sendStringParametersAsUnicode=true</connection-url>
+-                    -->
++                    <connection-url>jdbc:sqlserver://@DB_JPA_HOST@:@DB_JPA_PORT@;databaseName=@DB_JPA_NAME@;sendStringParametersAsUnicode=false</connection-url>
+                     <!-- IBM DB2 -->
+                     <!--
+                     <driver>XXXX.jar</driver>
+@@ -478,9 +478,11 @@
+                         <background-validation-millis>60000</background-validation-millis>
+                         <use-fast-fail>false</use-fast-fail>
+                         <!-- Generic -->
++                        <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullExceptionSorter"/>
+                         <stale-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.NullStaleConnectionChecker"/>
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.novendor.JDBC4ValidConnectionChecker"/>
++                        -->
+                         <!-- MySQL -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.mysql.MySQLExceptionSorter" />
+@@ -503,9 +505,7 @@
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.sybase.SybaseValidConnectionChecker" />
+                           -->
+                         <!-- Microsoft SQLServer -->
+-                        <!--
+                         <valid-connection-checker class-name="org.jboss.jca.adapters.jdbc.extensions.mssql.MSSQLValidConnectionChecker" />
+-                          -->
+                         <!-- IBM DB2 -->
+                         <!--
+                         <exception-sorter class-name="org.jboss.jca.adapters.jdbc.extensions.db2.DB2ExceptionSorter" />
