@@ -230,7 +230,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_ES_ENABLED" false
-      env_var "DEPLOYMENT_ES_PATH_DATA" "gatein/data/"
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
@@ -610,6 +609,7 @@ initialize_product_settings() {
     ;;
   esac
 
+   do_get_plf_settings
    do_get_database_settings
 }
 
@@ -679,12 +679,12 @@ do_restore_dataset(){
 
   do_drop_data
 
-  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/
+  mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/
   echo_info "Loading values ..."
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
   echo_info "Done"
   echo_info "Loading indexes ..."
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/gatein/data/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
   echo_info "Done"
 
   if ${DEPLOYMENT_CHAT_ENABLED}; then
@@ -718,10 +718,10 @@ do_init_empty_data(){
 #
 do_drop_data() {
   echo_info "Drops instance indexes ..."
-  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/index/
   echo_info "Done."
   echo_info "Drops instance values ..."
-  rm -rf ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/values/
   echo_info "Done."
 }
 
@@ -805,7 +805,7 @@ do_unpack_server() {
 #
 do_drop_es_data() {
   echo_info "Drops Elasticsearch instance datas ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}/exoplatform-es
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}
   echo_info "Done."
 }
 
@@ -983,7 +983,7 @@ do_deploy() {
     echo_info "Using temporary directory ${_tmpdir}"
     if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
       echo_warn "This instance wasn't deployed before. Nothing to keep."
-      mkdir -p ${_tmpdir}/data
+      mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
       do_create_database
       if ${DEPLOYMENT_CHAT_ENABLED}; then
         do_create_chat_mongo_database
@@ -994,10 +994,10 @@ do_deploy() {
       # The server have been already deployed.
       # We load its settings from the configuration
       do_load_deployment_descriptor
-      if [ -d "${DEPLOYMENT_DIR}/gatein/data" ]; then
-        mv ${DEPLOYMENT_DIR}/gatein/data ${_tmpdir}
+      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ]; then
+        mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
       else
-        mkdir -p ${_tmpdir}/data
+        mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
         do_create_database
         if ${DEPLOYMENT_CHAT_ENABLED}; then
           do_create_chat_mongo_database
@@ -1018,8 +1018,9 @@ do_deploy() {
     ;;
     KEEP_DATA)
       echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} ..."
-      rm -rf ${DEPLOYMENT_DIR}/gatein/data
-      mv ${_tmpdir}/data ${DEPLOYMENT_DIR}/gatein
+      rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
       rm -rf ${_tmpdir}
       echo_info "Done."
     ;;
@@ -1107,7 +1108,7 @@ do_start() {
         CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_HTTP_PORT}"
         CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.index.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
         CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.search.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_ES_PATH_DATA}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}"
         export CATALINA_OPTS
         export EXO_PROFILES="${EXO_PROFILES}"
       fi

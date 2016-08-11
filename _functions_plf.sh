@@ -168,6 +168,27 @@ do_install_addons() {
   fi
 }
 
+#
+# Function that get plf properties
+#
+do_get_plf_settings() {
+  case "${DEPLOYMENT_APPSRV_TYPE}" in
+    "tomcat")
+      env_var DEPLOYMENT_DATA_DIR "/gatein/data"
+    ;;
+    "jbosseap")
+      env_var DEPLOYMENT_DATA_DIR "/standalone/data/gatein"
+    ;;
+    *)
+      echo_error "Server type ${DEPLOYMENT_APPSRV_TYPE} not supported"
+      exit 1
+    ;;
+  esac
+  env_var DEPLOYMENT_ES_PATH_DATA "${DEPLOYMENT_DATA_DIR}/exoplatform-es"
+  env_var DEPLOYMENT_JCR_PATH_DATA "${DEPLOYMENT_DATA_DIR}/jcr"
+
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_PLF_LOADED=true
