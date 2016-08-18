@@ -273,8 +273,8 @@ function getLocalAcceptanceInstances()
       // Logs URLs
       $scheme = ((!empty($_SERVER['HTTPS'])) && ($_SERVER['HTTPS'] != 'off')) ? "https" : "http";
 
-      $descriptor_array['DEPLOYMENT_LOG_APPSRV_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . ":" . $_SERVER['SERVER_PORT'] . "/logs.php?file=" . $descriptor_array['DEPLOYMENT_LOG_PATH'];
-      $descriptor_array['DEPLOYMENT_LOG_APACHE_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . ":" . $_SERVER['SERVER_PORT'] . "/logs.php?file=" . getenv('ADT_DATA') . "/var/log/apache2/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . "-access.log";
+      $descriptor_array['DEPLOYMENT_LOG_APPSRV_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . ":" . $_SERVER['SERVER_PORT'] . "/logs.php?type=instance&file=" . $descriptor_array['DEPLOYMENT_LOG_PATH'];
+      $descriptor_array['DEPLOYMENT_LOG_APACHE_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . ":" . $_SERVER['SERVER_PORT'] . "/logs.php?type=apache&file=" . getenv('ADT_DATA') . "/var/log/apache2/" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'] . "-access.log";
       $descriptor_array['DEPLOYMENT_AWSTATS_URL'] = $scheme . "://" . $_SERVER['SERVER_NAME'] . ":" . $_SERVER['SERVER_PORT'] . "/stats/awstats.pl?config=" . $descriptor_array['PRODUCT_NAME'] . "-" . $descriptor_array['PRODUCT_VERSION'] . "." . $_SERVER['SERVER_NAME'];
       // database informations
       if ( $descriptor_array['DEPLOYMENT_DATABASE_ENABLED'] == false || empty($descriptor_array['DEPLOYMENT_DATABASE_TYPE']) ) {
@@ -401,6 +401,47 @@ function checkCaches()
     /* Make sure that code below does not get executed when we redirect. */
     exit;
   }
+}
+
+/*
+* Check if the user is authorized to read and download the file.
+* Only Apache, Tomcat and JBoss logs can be viewed and downloaded.
+*/
+function isAuthorizedToReadFile($log_type, $file_path)
+{
+  if (!empty($log_type) && !is_null($log_type)){
+      if ($log_type == "instance" && (strpos($file_path, 'catalina.out') !== false
+            || strpos($file_path, 'standalone.log') !== false)){
+        return true;
+      }
+      if ($log_type == "apache" && strpos($file_path, 'access.log') !== false){
+        return true;
+      }
+      return false;
+  }
+  return false;
+}
+
+/*
+* Check if a log file can be viewed in HTML page
+*/
+function isFileTooLargeToBeViewed($file_path)
+{
+  $limit = 10485760; // 10Mo (in bytes)
+  if (file_exists($file_path) && filesize($file_path) < $limit) {
+    return false;
+  }
+  return true;
+}
+
+/*
+* Display file size more readable for human.
+*/
+function human_filesize($bytes, $decimals = 2)
+{
+  $sz = 'BKMGTP';
+  $factor = floor((strlen($bytes) - 1) / 3);
+  return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
 }
 
 ?>
