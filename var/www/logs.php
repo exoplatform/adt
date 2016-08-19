@@ -65,14 +65,10 @@ checkCaches();
                             if (isFileTooLargeToBeViewed($file_path)){
                                 printf("<span style=\"color:red\"><strong>This file is too large to be viewed. Please download it.</strong></span>");
                             } else {
-                                set_time_limit(0);
-                                $file = @fopen($file_path,"rb");
-                                while(!feof($file))
-                                {
-                                  print(@fread($file, 1024*8));
-                                  ob_flush();
-                                  flush();
-                                }
+                                printf("<pre>");
+                                $data = file_get_contents($file_path);
+                                echo htmlspecialchars($data, ENT_NOQUOTES, 'UTF-8');
+                                printf("</pre>");
                             }
                         } else {
                             printf("<span style=\"color:red\"><strong>Not authorized to read this file.</strong></span>");
