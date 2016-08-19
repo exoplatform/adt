@@ -641,8 +641,8 @@ do_download_server() {
   env_var ARTIFACT_REPO_URL ${PRODUCT_ARTIFACT_URL}
   env_var ARTIFACT_LOCAL_PATH ${PRODUCT_ARTIFACT_LOCAL_PATH}
   env_var ARTIFACT_DL_URL $(do_build_url "${ACCEPTANCE_SCHEME}" "${ACCEPTANCE_HOST}" "${ACCEPTANCE_PORT}" "/downloads/${PRODUCT_NAME}-${ARTIFACT_TIMESTAMP}.${ARTIFACT_PACKAGING}")
-  echo_info "Remove downloads older than 30 days ..."
-  find ${DL_DIR} -type f -mtime +30 -exec rm {} \;
+  echo_info "Remove downloads older than 15 days ..."
+  find ${DL_DIR} -type f -mtime +15 -exec rm {} \;
   echo_info "Remove broken symlinks ..."
   find -L ${DL_DIR} -type l -exec rm {} \;
   echo_info "Remove empty directories ..."
