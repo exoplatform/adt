@@ -427,7 +427,7 @@ function isAuthorizedToReadFile($log_type, $file_path)
 */
 function isFileTooLargeToBeViewed($file_path)
 {
-  $limit = 10485760; // 10Mo (in bytes)
+  $limit = 3145728; // 3Mo (in bytes)
   if (file_exists($file_path) && filesize($file_path) < $limit) {
     return false;
   }

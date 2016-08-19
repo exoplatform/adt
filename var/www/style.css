@@ -295,3 +295,7 @@ h3 .subtitle {
 .popover {
   max-width: 600px;
 }
+
+pre {
+  font-size: 12px;
+}
