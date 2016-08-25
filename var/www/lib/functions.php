@@ -123,6 +123,7 @@ function getRepositories()
 
   if (empty($features)) {
     $repositories = array(
+        "gatein-portal" => "GateIn",
         "platform-ui" => "PLF UI",
         "commons" => "Commons",
         "ecms" => "ECMS",

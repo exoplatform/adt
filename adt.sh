@@ -2,7 +2,7 @@
 
 # #############################################################################
 # Initialize
-# #############################################################################                                              
+# #############################################################################
 SCRIPT_NAME="${0##*/}"
 SCRIPT_DIR="$( cd -P "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -71,7 +71,7 @@ env_var "INSTANCES_CONF_DIR" "${ADT_DATA}/conf/instances"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
-env_var "REPOS_LIST" "exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exodev:ide exoplatform:platform-public-distributions exoplatform:platform-private-distributions"
+env_var "REPOS_LIST" "exodev:gatein-portal exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exodev:ide exoplatform:platform-public-distributions exoplatform:platform-private-distributions"
 
 if ${ADT_DEV_MODE}; then
   configurable_env_var "ACCEPTANCE_SCHEME"  "http"
