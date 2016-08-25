@@ -157,6 +157,9 @@ function getFeatureBranches($projects)
           $github_repo = $matches[2];
         }
         $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
+        // Add link to GitHub diff URL
+        $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/feature/" . $branch."...develop";
+        $features[$branch][$project]['http_url_ahead'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/develop" ."...feature/".$branch;
         $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/develop --oneline");
         if (empty($behind_commits_logs))
           $features[$branch][$project]['behind_commits'] = 0;
@@ -196,6 +199,9 @@ function getTranslationBranches($projects)
           $github_repo = $matches[2];
         }
         $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/integration/" . $branch;
+        // Add link to GitHub diff URL
+        $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/integration/" . $branch."...develop";
+        $features[$branch][$project]['http_url_ahead'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/develop" ."...integration/".$branch;
         $behind_commits_logs = $repoObject->git("log origin/integration/" . $branch . "..origin/develop --oneline");
         if (empty($behind_commits_logs))
           $features[$branch][$project]['behind_commits'] = 0;
