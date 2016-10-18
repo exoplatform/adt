@@ -90,7 +90,7 @@ checkCaches();
                                               </span><a>
                                               &nbsp;
                                               <a href="<?=$FBProjects[$project]['http_url_ahead']?>" target="_blank" title="[ahead]"><span rel="tooltip" title="<?=$FBProjects[$project]['ahead_commits']?> commits on this branch that do not exist on the base branch [ahead]"><?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><i class="icon-arrow-up icon-white"></i> <?= $FBProjects[$project]['ahead_commits'] ?></span><?php } else { ?><i class="icon-arrow-up"></i> <?= $FBProjects[$project]['ahead_commits'] ?><?php }?></span></a><br/>
-                                              <a href='https://ci.exoplatform.org/job/<?=$project?>-<?=$feature?>-fb-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=<?=$project?>-<?=$feature?>-fb-ci'></a>
+                                              <a href='https://ci.exoplatform.org/job/FB/job/<?=$project?>-<?=$feature?>-fb-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=fb/<?=$project?>-<?=$feature?>-fb-ci'></a>
                                             <?php }?>
                                         </td>
                                     <?php } ?>
