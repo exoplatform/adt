@@ -473,7 +473,7 @@ initialize_product_settings() {
           env_var EXO_PROFILES "all"
         ;;
         # ID should be no longer than 10 (plfenttrial is too long)
-        plfentrial)
+        plfentrial|plfsales)
           # Platform EE + chat, remote-edit, site-template, task, video
           env_var PRODUCT_DESCRIPTION "Platform EE Trial"
           env_var ARTIFACT_REPO_GROUP "private"
