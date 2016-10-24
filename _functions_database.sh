@@ -326,7 +326,7 @@ do_restore_database_dataset() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     DOCKER_*)
       # add the tmp directory as a volume
-      CMD=$(echo "${DATABASE_CMD}" | sed "s|${DOCKER_CMD} run|${DOCKER_CMD} run  -v ${_tmpdir}:/tmpdir -w /tmpdir|g")
+      CMD=$(echo "${DATABASE_CMD}" | ${SED} "s|${DOCKER_CMD} run|${DOCKER_CMD} run  -v ${_tmpdir}:/tmpdir -w /tmpdir|g")
     ;;
     *)
       CMD="${DATABASE_CMD}"

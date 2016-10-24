@@ -38,6 +38,7 @@ checkCaches();
             <a class="brand" href="/"><?=$_SERVER['SERVER_NAME'] ?></a>
             <ul class="nav">
                 <li><a href="/">Home</a></li>
+                <li><a href="/sales.php">Sales</a></li>
                 <li><a href="/features.php">Features</a></li>
                 <li class="active"><a href="/servers.php">Servers</a></li>
             </ul>

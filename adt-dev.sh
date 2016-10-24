@@ -49,6 +49,7 @@ Action
     plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
     plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
     plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
+    plfsales       eXo Platform Enterprise Edition         - Apache Tomcat bundle for Sales
     plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
     plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
     addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle

@@ -270,13 +270,17 @@ function getLocalAcceptanceInstances()
         $descriptor_array['ARTIFACT_AGE_STRING'] = "Unknown";
         $descriptor_array['ARTIFACT_AGE_CLASS'] = "black";
       }
-      $deployment_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['DEPLOYMENT_DATE'])->diff($now, true);
-      if ($deployment_age->days)
-        $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%a day(s) ago');
-      else if ($deployment_age->h > 0)
-        $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%h hour(s) ago');
-      else
-        $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%i minute(s) ago');
+      if (!empty($descriptor_array['DEPLOYMENT_DATE'])) {
+          $deployment_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['DEPLOYMENT_DATE'])->diff($now, true);
+          if ($deployment_age->days)
+              $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%a day(s) ago');
+          else if ($deployment_age->h > 0)
+              $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%h hour(s) ago');
+          else
+              $descriptor_array['DEPLOYMENT_AGE_STRING'] = $deployment_age->format('%i minute(s) ago');
+      } else {
+          $descriptor_array['DEPLOYMENT_AGE_STRING'] = "-NC-";
+      }
       // Logs URLs
       $scheme = ((!empty($_SERVER['HTTPS'])) && ($_SERVER['HTTPS'] != 'off')) ? "https" : "http";
 
@@ -370,6 +374,26 @@ function getGlobalAcceptanceInstances()
     apc_store('all_instances', $instances, 120);
   }
   return $instances;
+}
+
+function getGlobalSalesInstances()
+{
+  $instances = apc_fetch('sales_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $instances = array();
+    $all_instances = getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      foreach ($descriptor_arrays as $descriptor_array) {
+        if ($descriptor_array->PRODUCT_NAME == "plfsales") {
+          $instances["$plf_branch"][]=$descriptor_array;
+        }
+      }
+    }
+    // Instances will be cached for 2 min
+    apc_store('sales_instances', $instances, 120);
+  }
+  return $instances;
+
 }
 
 function getAcceptanceBranches()
