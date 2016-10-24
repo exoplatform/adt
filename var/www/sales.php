@@ -145,6 +145,9 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
                 <?php if ($descriptor_array->DEPLOYMENT_APACHE_HTTPS_ENABLED) { ?>
                     &nbsp;(<a rel="tooltip" title="HTTPS link available" href="<?= preg_replace("/http:(.*)/", "https:$1", $product_deployment_url) ?>" target="_blank">&nbsp;<img src="/images/ssl.png" width="16" height="16" alt="SSL" class="icon"/></a>)
                 <?php } ?>
+                <a class="pull-right" href="https://ci.exoplatform.org/job/platform-enterprise-trial-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank">
+                    <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
+                </a>
             </td>
             <td class="col-center">
                 <a rel="popover" data-content="<?= $product_html_popover ?>" data-html="true"><i class="icon-info-sign"></i></a>
