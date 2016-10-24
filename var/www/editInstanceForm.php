@@ -22,7 +22,7 @@
                     <div class="control-group">
                         <label class="control-label" for="description"><strong>Note</strong></label>
                         <div class="controls">
-                            <input class="input-xxlarge" type="text" id="note" name="note" placeholder="Add a note" value="<?= $descriptor_array->INSTANCE_NOTE ?>">
+                            <input class="input-xxlarge" type="text" id="note" name="note" placeholder="Add a note" value="<?= ( empty($descriptor_array->INSTANCE_NOTE) ? "" : $descriptor_array->INSTANCE_NOTE ) ?>">
                             <span class="help-block">Short note about this instance</span>
                         </div>
                     </div>
