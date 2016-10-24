@@ -188,7 +188,7 @@ checkCaches();
                     <td class="col-center">acceptance7.exoplatform.org</td> 
                     <td class="col-center">prd05</td> 
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['nb']?></td> 
-                    <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance6.exoplatform.org"]['jvm-max']?>GB</td> 
+                    <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance7.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)</td> 
                   </tr>                 </tbody>
               </table>
