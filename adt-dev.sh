@@ -16,7 +16,7 @@ echo "# ########################################################################
 print_usage_dev() {
   cat << EOF
 
-  usage: $0 <action> [ -n PRODUCT_NAME -v PRODUCT_VERSION [ -a ADDONS ] ]
+  usage: $0 <action> [ -n PRODUCT_NAME -v PRODUCT_VERSION [ -a ADDONS ] -d DATABASE_TYPE:VERSION -p PORT_PREFIX [ -c ] [ -i INSTANCE_ID ] ]
 
 This script manages automated deployment of eXo products for testing purpose.
 
@@ -42,7 +42,7 @@ Action
   Instance Settings
   =================
 
-  PRODUCT_NAME                      : The product you want to manage. Possible values are :
+  -n PRODUCT_NAME           : The product you want to manage. Possible values are :
     gatein         GateIn Community edition                - Apache Tomcat bundle
     exogtn         GateIn eXo edition                      - Apache Tomcat bundle
     plf            eXo Platform Standard Edition           - Apache Tomcat bundle
@@ -57,8 +57,22 @@ Action
     community      eXo Community Website                   - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
 
-  PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+  -v PRODUCT_VERSION        : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
 
+  -p PORT_PREFIX            : The prefix for all the ports used. Must be unique for all deployments on a server (ex: 400)
+
+  -a ADDONS                 : The comma separated list of add-ons to deploy (ex: exo-site-templates:1.0.0,exo-sdp-demo:1.0.x-SNAPSHOT)
+
+  -d DATABASE_TYPE:VERSION  : The database type + his version separated with a : char. Possible values are :
+    HSQLDB
+    DOCKER_MYSQL:5.7 / DOCKER_MYSQL:5.6 / DOCKER_MYSQL:5.5
+    DOCKER_POSTGRES:9.6 / DOCKER_POSTGRES:9.5 / DOCKER_POSTGRES:9.4
+    DOCKER_ORACLE:12cR1_plf (pre initialized database)
+    DOCKER_SQLSERVER:2014express
+
+  -c                        : Configure mongodb for the Chat
+
+  -i INSTANCE_ID            : Add an ID to the instance to be able to deploy several time the same version
 EOF
 
 }
@@ -72,11 +86,16 @@ shift
 # if 1st parameter start with "-" character : print help
 if [ "${ACTION:0:1}" = "-" ]; then echo "The first parameter must be an ACTION"; print_usage_dev; exit 1; fi
 
-while getopts "n:v:a:h" OPTION; do
+while getopts "n:v:a:d:p:ci:h" OPTION; do
   case $OPTION in
     n) export PRODUCT_NAME=$OPTARG;       echo "## NAME    = $OPTARG";;
     v) export PRODUCT_VERSION=$OPTARG;    echo "## VERSION = $OPTARG";;
     a) export DEPLOYMENT_ADDONS=$OPTARG;  echo "## ADDONS  = $OPTARG";;
+    d) export DEPLOYMENT_DATABASE_TYPE=$(echo "${OPTARG}" | sed 's/\([a-zA-Z0-9_\-]*\):[0-9\.]*/\1/'); echo "## DATABASE TYPE  = ${DEPLOYMENT_DATABASE_TYPE}"
+       export DEPLOYMENT_DATABASE_VERSION=$(echo "${OPTARG}" | sed 's/[a-zA-Z0-9_\-]*:\([0-9\.]*\)/\1/'); echo "## DATABASE VERSION  = ${DEPLOYMENT_DATABASE_VERSION}" ;;
+    p) export DEPLOYMENT_PORT_PREFIX=$OPTARG;  echo "## PORT PREFIX  = $OPTARG";;
+    c) export DEPLOYMENT_CHAT_ENABLED=true; export DEPLOYMENT_CHAT_WEEMO_KEY=xxx ;;
+    i) export INSTANCE_ID=$OPTARG;  echo "## INSTANCE ID  = $OPTARG";;
     h) print_usage_dev; exit 1;;
     *) echo "Wrong parameter !!"; print_usage_dev; exit 1;;
   esac
