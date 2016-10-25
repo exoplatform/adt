@@ -354,6 +354,11 @@ function getLocalAcceptanceInstances()
   return $instances;
 }
 
+/**
+ * Get all the deployment regardless of the usage
+ *
+ * @return array
+ */
 function getGlobalAcceptanceInstances()
 {
   $instances = apc_fetch('all_instances');
@@ -400,6 +405,11 @@ function getGlobalDevInstances()
   return $instances;
 }
 
+/**
+ * Get all the deployment for Sales Team only
+ *
+ * @return array
+ */
 function getGlobalSalesInstances()
 {
   $instances = apc_fetch('sales_instances');
@@ -417,7 +427,6 @@ function getGlobalSalesInstances()
     apc_store('sales_instances', $instances, 120);
   }
   return $instances;
-
 }
 
 function getAcceptanceBranches()
