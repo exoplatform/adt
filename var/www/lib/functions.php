@@ -376,6 +376,30 @@ function getGlobalAcceptanceInstances()
   return $instances;
 }
 
+/**
+ * Get all the deployment for developer usage only (remove sales environment)
+ *
+ * @return array
+ */
+function getGlobalDevInstances()
+{
+  $instances = apc_fetch('dev_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $instances = array();
+    $all_instances = getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      foreach ($descriptor_arrays as $descriptor_array) {
+        if ($descriptor_array->PRODUCT_NAME != "plfsales") {
+          $instances["$plf_branch"][]=$descriptor_array;
+        }
+      }
+    }
+    // Instances will be cached for 2 min
+    apc_store('dev_instances', $instances, 120);
+  }
+  return $instances;
+}
+
 function getGlobalSalesInstances()
 {
   $instances = apc_fetch('sales_instances');

@@ -68,8 +68,8 @@ checkCaches();
 </thead>
 <tbody>
 <?php
-$all_instances = getGlobalAcceptanceInstances();
-foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+$dev_instances = getGlobalDevInstances();
+foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
         <td colspan="15" style="background-color: #363636; color: #FBAD18; letter-spacing:2px">
@@ -432,7 +432,7 @@ foreach ($all_instances as $plf_branch => $descriptor_arrays) {
             }
         }
     }
-    next($all_instances);
+    next($dev_instances);
 }
 ?>
 </tbody>
