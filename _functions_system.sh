@@ -64,17 +64,17 @@ loadSystemInfo() {
     elif [ "${OS}" = "Linux" ]; then
       if [ -f /etc/redhat-release ]; then
         DistroBasedOn='RedHat'
-        DIST=`cat /etc/redhat-release | ${SED} s/\ release.*//`
-        PSEUDONAME=`cat /etc/redhat-release | ${SED} s/.*\(// | ${SED} s/\)//`
-        REV=`cat /etc/redhat-release | ${SED} s/.*release\ // | ${SED} s/\ .*//`
+        DIST=`cat /etc/redhat-release | ${CMD_SED} s/\ release.*//`
+        PSEUDONAME=`cat /etc/redhat-release | ${CMD_SED} s/.*\(// | ${CMD_SED} s/\)//`
+        REV=`cat /etc/redhat-release | ${CMD_SED} s/.*release\ // | ${CMD_SED} s/\ .*//`
       elif [ -f /etc/SuSE-release ]; then
         DistroBasedOn='SuSe'
-        PSEUDONAME=`cat /etc/SuSE-release | tr "\n" ' ' | ${SED} s/VERSION.*//`
-        REV=`cat /etc/SuSE-release | tr "\n" ' ' | ${SED} s/.*=\ //`
+        PSEUDONAME=`cat /etc/SuSE-release | tr "\n" ' ' | ${CMD_SED} s/VERSION.*//`
+        REV=`cat /etc/SuSE-release | tr "\n" ' ' | ${CMD_SED} s/.*=\ //`
       elif [ -f /etc/mandrake-release ]; then
         DistroBasedOn='Mandrake'
-        PSEUDONAME=`cat /etc/mandrake-release | ${SED} s/.*\(// | ${SED} s/\)//`
-        REV=`cat /etc/mandrake-release | ${SED} s/.*release\ // | ${SED} s/\ .*//`
+        PSEUDONAME=`cat /etc/mandrake-release | ${CMD_SED} s/.*\(// | ${CMD_SED} s/\)//`
+        REV=`cat /etc/mandrake-release | ${CMD_SED} s/.*release\ // | ${CMD_SED} s/\ .*//`
       elif [ -f /etc/debian_version ]; then
         DistroBasedOn='Debian'
         DIST=`cat /etc/lsb-release | grep '^DISTRIB_ID' | awk -F= '{ print $2 }'`
@@ -139,7 +139,9 @@ echo_debug "_functions_system.sh Loaded"
 # #############################################################################
 if [ "${OS}" == "mac" ]; then
     # to point to the OS X original binary
-    export SED="/usr/bin/sed"
+    export CMD_SED="/usr/bin/sed"
+    export CMD_LS="/bin/ls"
 else
-    export SED="sed"
+    export CMD_SED="sed"
+    export CMD_LS="ls"
 fi

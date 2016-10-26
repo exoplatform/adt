@@ -109,8 +109,11 @@ Environment Variables
     compint        eXo Company Intranet                    - Apache Tomcat bundle
     community      eXo Community Website                   - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
+
   PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
   INSTANCE_ID                       : The id of the instance. Use this property to deploy several time the same PRODUCT_NAME and PRODUCT_VERSION couple (default: none)
+
+  DEPLOYMENT_LABELS                 : Comma separated labels for a deployment \" (default: none)
 
   DEPLOYMENT_SKIP_ACCOUNT_SETUP     : Do you want to skip the account creation form and use default accounts (default: false; values : true | false)
 
@@ -239,6 +242,8 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
 
       configurable_env_var "DEPLOYMENT_SKIP_ACCOUNT_SETUP" false
+
+      configurable_env_var "DEPLOYMENT_LABELS" ""
 
       env_var "ARTIFACT_GROUPID" ""
       env_var "ARTIFACT_ARTIFACTID" ""
@@ -1273,7 +1278,7 @@ do_undeploy() {
 # Function that lists all deployed servers
 #
 do_list() {
-  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
+  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
     TXT_GREEN=$(tput -Txterm-256color setaf 2)
     TXT_RED=$(tput -Txterm-256color setaf 1)
     TXT_CYAN=$(tput -Txterm-256color setaf 6)
@@ -1312,7 +1317,7 @@ do_list() {
 # Function that starts all deployed servers
 #
 do_start_all() {
-  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
+  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
     echo_info "Starting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
@@ -1332,7 +1337,7 @@ do_start_all() {
 # Function that restarts all deployed servers
 #
 do_restart_all() {
-  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
+  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
     echo_info "Restarting all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
@@ -1353,7 +1358,7 @@ do_restart_all() {
 # Function that stops all deployed servers
 #
 do_stop_all() {
-  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
+  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
     echo_info "Stopping all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do
@@ -1373,7 +1378,7 @@ do_stop_all() {
 # Function that undeploys all deployed servers
 #
 do_undeploy_all() {
-  if [ "$(ls -A ${ADT_CONF_DIR})" ]; then
+  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
     echo_info "Undeploying all servers ..."
     for f in ${ADT_CONF_DIR}/*
     do

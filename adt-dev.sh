@@ -73,6 +73,15 @@ Action
   -c                        : Configure mongodb for the Chat
 
   -i INSTANCE_ID            : Add an ID to the instance to be able to deploy several time the same version
+
+  -l LABELS                 : Comma separated list of labels for the deployment. Known values are :
+    company         All the company deployement like Tribe / Blog / Website / Buy page / ...
+    translation     Translation deployment
+    doc             Documentation deployment
+    fb              Feature Branch deployment
+    maintenance     Maintenance deployment
+    sales           eXo Sales deployment for each Sales Team guy
+    sales-demo      Demo for lead evaluation requested by eXo Sales Team
 EOF
 
 }
@@ -86,7 +95,7 @@ shift
 # if 1st parameter start with "-" character : print help
 if [ "${ACTION:0:1}" = "-" ]; then echo "The first parameter must be an ACTION"; print_usage_dev; exit 1; fi
 
-while getopts "n:v:a:d:p:ci:h" OPTION; do
+while getopts "n:v:a:d:p:ci:l:h" OPTION; do
   case $OPTION in
     n) export PRODUCT_NAME=$OPTARG;       echo "## NAME    = $OPTARG";;
     v) export PRODUCT_VERSION=$OPTARG;    echo "## VERSION = $OPTARG";;
@@ -96,6 +105,7 @@ while getopts "n:v:a:d:p:ci:h" OPTION; do
     p) export DEPLOYMENT_PORT_PREFIX=$OPTARG;  echo "## PORT PREFIX  = $OPTARG";;
     c) export DEPLOYMENT_CHAT_ENABLED=true; export DEPLOYMENT_CHAT_WEEMO_KEY=xxx ;;
     i) export INSTANCE_ID=$OPTARG;  echo "## INSTANCE ID  = $OPTARG";;
+    l) export DEPLOYMENT_LABELS=$OPTARG;  echo "## LABELS  = $OPTARG";;
     h) print_usage_dev; exit 1;;
     *) echo "Wrong parameter !!"; print_usage_dev; exit 1;;
   esac

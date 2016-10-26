@@ -1,51 +1,16 @@
 <!DOCTYPE html>
 <?php
 require_once(dirname(__FILE__) . '/lib/functions.php');
+require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
 <html>
 <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
-    <meta http-equiv="refresh" content="120">
-    <title>Acceptance Live Instances</title>
-    <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"/>
-    <link href="//netdna.bootstrapcdn.com/bootswatch/2.3.0/spacelab/bootstrap.min.css" rel="stylesheet">
-    <link href="//netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
-    <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
-    <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/js/bootstrap.min.js" type="text/javascript"></script>
-    <script type="text/javascript">
-        var _gaq = _gaq || [];
-        _gaq.push(['_setAccount', 'UA-1292368-28']);
-        _gaq.push(['_trackPageview']);
-
-        (function () {
-            var ga = document.createElement('script');
-            ga.type = 'text/javascript';
-            ga.async = true;
-            ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-            var s = document.getElementsByTagName('script')[0];
-            s.parentNode.insertBefore(ga, s);
-        })();
-
-    </script>
+    <?= pageHeader(); ?>
 </head>
 <body>
-<!-- navbar ================================================== -->
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="brand" href="/"><?=$_SERVER['SERVER_NAME'] ?></a>
-            <ul class="nav">
-                <li><a href="/">Home</a></li>
-                <li><a href="/sales.php">Sales</a></li>
-                <li><a href="/features.php">Features</a></li>
-                <li class="active"><a href="/servers.php">Servers</a></li>
-            </ul>
-        </div>
-    </div>
-</div>
-<!-- /navbar -->
+<?php pageTracker(); ?>
+<?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
     <div id="main">
@@ -111,10 +76,6 @@ checkCaches();
                               throw new Exception("The unit of the DEPLOYMENT_JVM_SIZE_MAX is not manage (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX.")");
                             }
 
-                            if ($descriptor_array->DEPLOYMENT_STATUS == "Up")
-                                $status = "<img width=\"16\" height=\"16\" src=\"/images/green_ball.png\" alt=\"Up\"  class=\"left\"/>&nbsp;Up";
-                            else
-                                $status = "<img width=\"16\" height=\"16\" src=\"/images/red_ball.png\" alt=\"Down\"  class=\"left\"/>&nbsp;Down !";
                             $matches = array();
                             if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
                                 $base_version = $matches[1];
@@ -128,7 +89,11 @@ checkCaches();
                             }
                             ?>
                             <tr>
-                                <td><img src="/images/<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?>.png" width="16" height="16" alt="<?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?> bundle" class="icon"/> <?php if (empty($descriptor_array->PRODUCT_DESCRIPTION)) echo $descriptor_array->PRODUCT_NAME; else echo $descriptor_array->PRODUCT_DESCRIPTION;?><?php if (!empty($descriptor_array->INSTANCE_ID)) echo " (" .$descriptor_array->INSTANCE_ID.")"; ?></td>
+                                <td>
+                                  <?= componentAppServerIcon($descriptor_array); ?>
+                                  <?= componentProductHtmlLabel($descriptor_array); ?>
+                                  <br/><?= componentLabels($descriptor_array); ?>
+                                </td>
                                 <td class="col-left"><?=$descriptor_array->PRODUCT_VERSION?></td>
                                 <td class="col-right"><?=$feature_branch?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
@@ -147,7 +112,7 @@ checkCaches();
                                 }
                                 ?>
                                 <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_HOST?></td>
-                                <td class="col-left"><?= $status ?></td>
+                                <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_ES_HTTP_PORT?></td>
@@ -206,7 +171,6 @@ checkCaches();
         <!-- /container -->
       </div>
 </div>
-<!-- Footer ================================================== -->
-<div id="footer">Copyright © 2000-2016. All rights Reserved, eXo Platform SAS.</div>
+<?php pageFooter(); ?>
 </body>
 </html>

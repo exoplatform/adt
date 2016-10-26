@@ -29,7 +29,7 @@ source "${SCRIPT_DIR}/_functions_core.sh"
 #
 replace_in_file() {
   mv $1 $1.orig
-  ${SED} "s|$2|$3|g" $1.orig > $1
+  ${CMD_SED} "s|$2|$3|g" $1.orig > $1
   rm $1.orig
 }
 

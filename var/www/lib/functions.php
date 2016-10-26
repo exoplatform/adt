@@ -301,6 +301,13 @@ function getLocalAcceptanceInstances()
       else
         $descriptor_array['DEPLOYMENT_STATUS'] = "Down";
 
+      // Deployment Labels
+      if (empty($descriptor_array['DEPLOYMENT_LABELS'])) {
+        $descriptor_array['DEPLOYMENT_LABELS']=array();
+      } else {
+        $descriptor_array['DEPLOYMENT_LABELS']=explode(',',$descriptor_array['DEPLOYMENT_LABELS']);
+      }
+
       $file_base = getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['INSTANCE_KEY'];
       $file_spec = $file_base  . ".spec";
       $file_status = $file_base . ".status";
@@ -386,18 +393,18 @@ function getGlobalAcceptanceInstances()
  *
  * @return array
  */
-function getGlobalDevInstances()
-{
+function getGlobalDevInstances() {
   $instances = apc_fetch('dev_instances');
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
-    $instances = array();
-    $all_instances = getGlobalAcceptanceInstances();
+    $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      foreach ($descriptor_arrays as $descriptor_array) {
-        if ($descriptor_array->PRODUCT_NAME != "plfsales") {
-          $instances["$plf_branch"][]=$descriptor_array;
-        }
+      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, ['sales','qa', 'company']);
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
       }
+    }
+    if (count($instances)==0) {
+      $instances[]=array();
     }
     // Instances will be cached for 2 min
     apc_store('dev_instances', $instances, 120);
@@ -406,25 +413,269 @@ function getGlobalDevInstances()
 }
 
 /**
- * Get all the deployment for Sales Team only
+ * Get all the personnal deployments for Sales Team only
  *
  * @return array
  */
-function getGlobalSalesInstances()
+function getGlobalSalesUserInstances()
 {
-  $instances = apc_fetch('sales_instances');
+  $instances = apc_fetch('sales_user_instances');
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
-    $instances = array();
-    $all_instances = getGlobalAcceptanceInstances();
+    $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      foreach ($descriptor_arrays as $descriptor_array) {
-        if ($descriptor_array->PRODUCT_NAME == "plfsales") {
-          $instances["$plf_branch"][]=$descriptor_array;
-        }
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["sales","user"], true);
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
       }
     }
+    if (count($instances)==0) {
+      $instances[]=array();
+    }
     // Instances will be cached for 2 min
-    apc_store('sales_instances', $instances, 120);
+    apc_store('sales_user_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the demo / evaluation deployments for Sales Team only
+ *
+ * @return array
+ */
+function getGlobalSalesDemoInstances()
+{
+  $instances = apc_fetch('sales_demo_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["sales","demo"], true);
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (count($instances)==0) {
+      $instances[]=array();
+    }
+    // Instances will be cached for 2 min
+    apc_store('sales_demo_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the deployments related to QA
+ *
+ * @return array
+ */
+function getGlobalQAInstances() {
+  $instances = apc_fetch('qa_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["qa"]);
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (count($instances)==0) {
+      $instances=array();
+    }
+    // Instances will be cached for 2 min
+    apc_store('qa_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the deployments related to Company
+ *
+ * @return array
+ */
+function getGlobalCompanyInstances() {
+  $instances = apc_fetch('company_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["company"]);
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (count($instances)==0) {
+      $instances=array(array());
+    }
+    // Instances will be cached for 2 min
+    apc_store('company_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the deployments related to documentation
+ *
+ * @return array
+ */
+function getGlobalDocInstances() {
+  $instances = apc_fetch('doc_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["doc"]);
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (count($instances)==0) {
+      $instances=array();
+    }
+    // Instances will be cached for 2 min
+    apc_store('doc_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Test if the instance is a feature branch deployment
+ *
+ * @param $descriptor_arrays
+ *
+ * @return bool
+ */
+function isInstanceFeatureBranch($descriptor_arrays) {
+  if ( !empty($descriptor_arrays->BRANCH_NAME) && strpos($descriptor_arrays->BRANCH_NAME, "translation") === false ) {
+    return true;
+  } elseif (isInstanceWithLabels($descriptor_arrays, ['fb']) ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Test if the instance is a translation deployment
+ *
+ * @param $descriptor_arrays
+ *
+ * @return bool
+ */
+function isInstanceTranslation($descriptor_arrays) {
+  if ( !empty($descriptor_arrays->BRANCH_NAME) && strpos($descriptor_arrays->BRANCH_NAME, "translation") === true ) {
+    return true;
+  } elseif (isInstanceWithLabels($descriptor_arrays, ['translation']) ) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+/**
+ * Test if the instance is a Documentation deployment
+ *
+ * @param $descriptor_arrays
+ *
+ * @return bool
+ */
+function isInstanceDoc($descriptor_arrays) {
+  return isInstanceWithLabels($descriptor_arrays, ['doc']);
+}
+
+/**
+ * Test if the instance is a QA deployment
+ *
+ * @param $descriptor_arrays
+ *
+ * @return bool
+ */
+function isInstanceQA($descriptor_arrays) {
+  return isInstanceWithLabels($descriptor_arrays, ['qa']);
+}
+
+/**
+ * Test if the instance is a Company deployment
+ *
+ * @param $descriptor_arrays
+ *
+ * @return bool
+ */
+function isInstanceCompany($descriptor_arrays) {
+  return isInstanceWithLabels($descriptor_arrays, ['company']);
+}
+
+/**
+ * Test if an instance has at least 1 or all labels.
+ *
+ * @param      $instance   the instance to test
+ * @param      $labels     the labels to search
+ * @param bool $all_labels do we check if the instance has all labels or at least one ?
+ *
+ * @return bool
+ */
+function isInstanceWithLabels($instance, $labels, $all_labels = false) {
+  if (!property_exists($instance, 'DEPLOYMENT_LABELS')) {
+    return false;
+  }
+  if (is_array($instance->DEPLOYMENT_LABELS)) {
+    $instance_labels = $instance->DEPLOYMENT_LABELS;
+  } else {
+    $instance_labels[] = $instance->DEPLOYMENT_LABELS;
+  }
+  if (count($instance_labels) == 0) {
+    return false;
+  }
+  if (is_array($labels)) {
+    $result = false;
+    foreach ($labels as $label) {
+      $label_present = in_array($label, $instance_labels);
+      if ($all_labels && $label_present == false) {
+        return false;
+      } elseif ($all_labels && $label_present) {
+        $result = $label_present;
+      } elseif ($all_labels == false && $label_present) {
+        return true;
+      } elseif ($all_labels == false && $label_present == false) {
+        $result = $label_present;
+      }
+    }
+    return $result;
+  } else {
+    return in_array($labels, $instance_labels);
+  }
+}
+
+/**
+ * Filter a deployment descriptor array and keep all the deployments matching a particular set of labels
+ *
+ * @param      $descriptor_arrays     an array of deployment descriptors
+ * @param      $labels                one or more labels
+ * @param bool $all_labels            filtered deployment must match all labels or not
+ *
+ * @return array
+ */
+function filterInstancesWithLabels($descriptor_arrays, $labels, $all_labels = false) {
+  $instances = array();
+  foreach ($descriptor_arrays as $descriptor_array) {
+    if (isInstanceWithLabels($descriptor_array, $labels, $all_labels)) {
+      $instances[] = $descriptor_array;
+    }
+  }
+  return $instances;
+}
+
+/**
+ * Filter a deployment descriptor array and remove all the deployments matching a particular set of labels
+ *
+ * @param      $descriptor_arrays     an array of deployment descriptors
+ * @param      $labels                one or more labels
+ * @param bool $all_labels            filtered deployment must match all labels or not
+ *
+ * @return array
+ */
+function filterInstancesWithoutLabels($descriptor_arrays, $labels, $all_labels = false) {
+  $instances = array();
+  foreach ($descriptor_arrays as $descriptor_array) {
+    if (!isInstanceWithLabels($descriptor_array, $labels, $all_labels)) {
+      $instances[] = $descriptor_array;
+    }
   }
   return $instances;
 }

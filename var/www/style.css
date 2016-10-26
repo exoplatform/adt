@@ -299,3 +299,9 @@ h3 .subtitle {
 pre {
   font-size: 12px;
 }
+
+td.category-row {
+  background-color: #363636;
+  color: #FBAD18;
+  letter-spacing: 2px;
+}
