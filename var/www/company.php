@@ -17,7 +17,10 @@ checkCaches();
 <div class="container-fluid">
 <div class="row-fluid">
 <div class="span12">
-<p></p>
+<ul>
+  <li>eXo Website development : <a href="https://www-dev.exoplatform.com/" target="_blank">https://www-dev.exoplatform.com/</a></li>
+  <li>eXo Blog development : <a href="https://blog-dev.exoplatform.com/" target="_blank">https://blog-dev.exoplatform.com/</a></li>
+</ul>
 <?php
 $company_instances=getGlobalCompanyInstances();
 if (is_array($company_instances) && count($company_instances)>0) {
