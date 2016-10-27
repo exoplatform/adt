@@ -398,7 +398,7 @@ function getGlobalDevInstances() {
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, ['sales','qa', 'company']);
+      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, array('sales','qa', 'company'));
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -423,7 +423,7 @@ function getGlobalSalesUserInstances()
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["sales","user"], true);
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("sales","user"), true);
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -448,7 +448,7 @@ function getGlobalSalesDemoInstances()
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["sales","demo"], true);
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("sales","demo"), true);
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -472,7 +472,7 @@ function getGlobalQAInstances() {
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["qa"]);
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("qa"));
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -496,7 +496,7 @@ function getGlobalCompanyInstances() {
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["company"]);
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("company"));
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -520,7 +520,7 @@ function getGlobalDocInstances() {
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, ["doc"]);
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("doc"));
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -544,7 +544,7 @@ function getGlobalDocInstances() {
 function isInstanceFeatureBranch($descriptor_arrays) {
   if ( !empty($descriptor_arrays->BRANCH_NAME) && strpos($descriptor_arrays->BRANCH_NAME, "translation") === false ) {
     return true;
-  } elseif (isInstanceWithLabels($descriptor_arrays, ['fb']) ) {
+  } elseif (isInstanceWithLabels($descriptor_arrays, array('fb')) ) {
     return true;
   } else {
     return false;
@@ -561,7 +561,7 @@ function isInstanceFeatureBranch($descriptor_arrays) {
 function isInstanceTranslation($descriptor_arrays) {
   if ( !empty($descriptor_arrays->BRANCH_NAME) && strpos($descriptor_arrays->BRANCH_NAME, "translation") === true ) {
     return true;
-  } elseif (isInstanceWithLabels($descriptor_arrays, ['translation']) ) {
+  } elseif (isInstanceWithLabels($descriptor_arrays, array('translation')) ) {
     return true;
   } else {
     return false;
@@ -576,7 +576,7 @@ function isInstanceTranslation($descriptor_arrays) {
  * @return bool
  */
 function isInstanceDoc($descriptor_arrays) {
-  return isInstanceWithLabels($descriptor_arrays, ['doc']);
+  return isInstanceWithLabels($descriptor_arrays, array('doc'));
 }
 
 /**
@@ -587,7 +587,7 @@ function isInstanceDoc($descriptor_arrays) {
  * @return bool
  */
 function isInstanceQA($descriptor_arrays) {
-  return isInstanceWithLabels($descriptor_arrays, ['qa']);
+  return isInstanceWithLabels($descriptor_arrays, array('qa'));
 }
 
 /**
@@ -598,7 +598,7 @@ function isInstanceQA($descriptor_arrays) {
  * @return bool
  */
 function isInstanceCompany($descriptor_arrays) {
-  return isInstanceWithLabels($descriptor_arrays, ['company']);
+  return isInstanceWithLabels($descriptor_arrays, array('company'));
 }
 
 /**
