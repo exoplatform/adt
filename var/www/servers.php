@@ -31,14 +31,13 @@ checkCaches();
                             <th class="col-center">Bundle</th>
                             <th class="col-center">Database</th>
                             <th class="col-center">Server</th>
-                            <th class="col-center">Status</th>
+                            <th class="col-center">S</th>
                             <th class="col-center">Prefix</th>
                             <th class="col-center">HTTP</th>
                             <th class="col-center">ES</th>
                             <th class="col-center">AJP</th>
-                            <th class="col-center">JMX RMI Registration</th>
-                            <th class="col-center">JMX RMI Server</th>
-                            <th class="col-center">CRaSH SSH</th>
+                            <th class="col-center"><span rel="tooltip" title="JMX RMI Registration port / JMX RMI Server port">JMX RMI</span></th>
+                            <th class="col-center"><span rel="tooltip" title="CRaSH ssh port">CRaSH</span></th>
                         </tr>
                         </thead>
                         <tbody>
@@ -94,7 +93,7 @@ checkCaches();
                                   <?= componentProductHtmlLabel($descriptor_array); ?>
                                   <br/><?= componentLabels($descriptor_array); ?>
                                 </td>
-                                <td class="col-left"><?=$descriptor_array->PRODUCT_VERSION?></td>
+                                <td class="col-left"><?= componentProductVersion($descriptor_array); ?></td>
                                 <td class="col-right"><?=$feature_branch?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
                                 <td class="col-right"><?=$descriptor_array->DATABASE?></td>
@@ -111,13 +110,12 @@ checkCaches();
                                 ?>
                                 <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_HOST?></td>
                                 <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_ES_HTTP_PORT?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT?></td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_ES_HTTP_PORT?></td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?> / <?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT?></td>
                             </tr>
                         <?php
                         }
