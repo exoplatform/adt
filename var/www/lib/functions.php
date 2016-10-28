@@ -46,7 +46,6 @@ function isFeature($branch)
 
 function isTranslation($branch)
 {
-  //echo "isTranslation: $branch : " . (strpos($branch, "translation")===false ? "FALSE":strpos($branch, "translation")) . " / " . (strpos($branch, "origin/integration") === false ? "FALSE" : strpos($branch, "origin/integration")). "<br />\n";
   return strpos($branch, "translation") !== false && strpos($branch, "origin/integration") !== false;
 }
 
@@ -398,7 +397,7 @@ function getGlobalDevInstances() {
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, array('sales','qa', 'company'));
+      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, array('sales','qa', 'company', 'doc', 'translation'));
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -530,6 +529,30 @@ function getGlobalDocInstances() {
     }
     // Instances will be cached for 2 min
     apc_store('doc_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the deployments related to translation
+ *
+ * @return array
+ */
+function getGlobalTranslationInstances() {
+  $instances = apc_fetch('translation_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("translation"));
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (count($instances)==0) {
+      $instances=array();
+    }
+    // Instances will be cached for 2 min
+    apc_store('translation_instances', $instances, 120);
   }
   return $instances;
 }

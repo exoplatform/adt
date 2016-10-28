@@ -32,6 +32,72 @@ checkCaches();
 </tr>
 </thead>
 <tbody>
+<tr>
+  <td colspan="15" class="category-row">Translation deployments</td>
+</tr>
+<?php
+$translation_instances = getGlobalTranslationInstances();
+if (count($translation_instances)>0) {
+  foreach ($translation_instances as $plf_branch => $descriptor_arrays) {
+    foreach ($descriptor_arrays as $descriptor_array) {?>
+      <tr>
+        <td class="col-center"><?= componentStatusIcon($descriptor_array) ?></td>
+        <td>
+          <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
+          <?php
+          $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'green');
+          $product_deployment_url_label.='&nbsp;'.componentAppServerIcon($descriptor_array);
+          $product_deployment_url_label.='&nbsp;'.componentProductHtmlLabel($descriptor_array);
+          print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
+          ?>
+          <span class="pull-right">
+          <?= componentEditNoteIcon($descriptor_array) ?>
+      </span>
+        </td>
+        <td class="col-left"><?= componentDownloadIcon($descriptor_array); ?>&nbsp;<?= componentProductVersion($descriptor_array); ?></td>
+        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+        <td class="col-center" colspan="4"></td>
+        <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+        <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
+      </tr>
+    <?php }
+  }
+}
+?>
+<tr>
+  <td colspan="15" class="category-row">Documentation deployments</td>
+</tr>
+<?php
+$doc_instances = getGlobalDocInstances();
+if (count($doc_instances)>0) {
+  foreach ($doc_instances as $plf_branch => $descriptor_arrays) {
+    foreach ($descriptor_arrays as $descriptor_array) {?>
+      <tr>
+        <td class="col-center"><?= componentStatusIcon($descriptor_array) ?></td>
+        <td>
+          <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
+          <?php
+          $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'green');
+          $product_deployment_url_label.='&nbsp;'.componentAppServerIcon($descriptor_array);
+          $product_deployment_url_label.='&nbsp;'.componentProductHtmlLabel($descriptor_array);
+          print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
+          ?>
+          <span class="pull-right">
+          <?= componentEditNoteIcon($descriptor_array) ?>
+      </span>
+        </td>
+        <td class="col-left"><?= componentDownloadIcon($descriptor_array); ?>&nbsp;<?= componentProductVersion($descriptor_array); ?></td>
+        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+        <td class="col-center" colspan="4"></td>
+        <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+        <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
+      </tr>
+    <?php }
+  }
+}
+?>
 <?php
 $dev_instances = getGlobalDevInstances();
 foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
