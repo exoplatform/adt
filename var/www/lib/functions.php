@@ -764,11 +764,7 @@ function getAcceptanceBranches()
 
 function clearCaches()
 {
-  apc_delete("features");
-  apc_delete("repositories");
-  apc_delete("local_instances");
-  apc_delete("all_instances");
-  apc_delete("acceptance_branches");
+  apc_clear_cache('user');
 }
 
 function checkCaches()
