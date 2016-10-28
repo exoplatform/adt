@@ -20,8 +20,8 @@ checkCaches();
 <p>These instances are deployed for <strong>eXo Sales Team</strong> usage only.</p>
 <?php
 // List all Sales personal environments
-$sales_user_instance=getGlobalSalesUserInstances();
-if (is_array($sales_user_instance) && count($sales_user_instance)>0) {
+$sales_user_instances=getGlobalSalesUserInstances();
+if (isDeploymentInCategoryArray($sales_user_instances)) {
   ?>
   <table class="table table-bordered table-hover">
     <thead>
@@ -34,7 +34,7 @@ if (is_array($sales_user_instance) && count($sales_user_instance)>0) {
     </thead>
     <tbody>
   <?php
-  foreach ($sales_user_instance as $plf_branch => $descriptor_arrays) {
+  foreach ($sales_user_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
         <td colspan="15" class="category-row"><?= "Platform " . $plf_branch . " demo environments for Sales people"; ?></td>
@@ -72,8 +72,8 @@ if (is_array($sales_user_instance) && count($sales_user_instance)>0) {
     <p>These instances are deployed for <strong>Lead demo / evaluation</strong> purpose usage only.</p>
 <?php
 // List all Sales lead demo environments
-$sales_demo_instance=getGlobalSalesDemoInstances();
-if (is_array($sales_demo_instance) && count($sales_demo_instance)>0) {
+$sales_demo_instances=getGlobalSalesDemoInstances();
+if (isDeploymentInCategoryArray($sales_demo_instances)) {
   ?>
   <table class="table table-bordered table-hover">
     <thead>
@@ -86,7 +86,7 @@ if (is_array($sales_demo_instance) && count($sales_demo_instance)>0) {
     </thead>
     <tbody>
   <?php
-  foreach ($sales_demo_instance as $plf_branch => $descriptor_arrays) {
+  foreach ($sales_demo_instances as $plf_branch => $descriptor_arrays) {
   ?>
     <tr>
       <td colspan="15" class="category-row"><?= "Platform " . $plf_branch . " demo / evaluation environments for Leads"; ?></td>

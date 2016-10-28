@@ -33,7 +33,7 @@ checkCaches();
 </ul>
 <?php
 $company_instances=getGlobalCompanyInstances();
-if (is_array($company_instances) && count($company_instances)>0) {
+if (isDeploymentInCategoryArray($company_instances)) {
   ?>
   <table class="table table-bordered table-hover">
     <thead>

@@ -37,7 +37,7 @@ checkCaches();
 </tr>
 <?php
 $translation_instances = getGlobalTranslationInstances();
-if (count($translation_instances)>0) {
+if (isDeploymentInCategoryArray($translation_instances)) {
   foreach ($translation_instances as $plf_branch => $descriptor_arrays) {
     foreach ($descriptor_arrays as $descriptor_array) {?>
       <tr>
@@ -70,7 +70,7 @@ if (count($translation_instances)>0) {
 </tr>
 <?php
 $doc_instances = getGlobalDocInstances();
-if (count($doc_instances)>0) {
+if (isDeploymentInCategoryArray($doc_instances)) {
   foreach ($doc_instances as $plf_branch => $descriptor_arrays) {
     foreach ($descriptor_arrays as $descriptor_array) {?>
       <tr>

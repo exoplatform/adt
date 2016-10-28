@@ -19,8 +19,8 @@ checkCaches();
 <div class="span12">
 <p>These instances are deployed <strong>eXo QA Team</strong> usage only.</p>
 <?php
-$qa_instance=getGlobalQAInstances();
-if (is_array($qa_instance) && count($qa_instance)>0) {
+$qa_instances=getGlobalQAInstances();
+if (isDeploymentInCategoryArray($qa_instances)) {
 ?>
   <table class="table table-bordered table-hover">
     <thead>
@@ -33,7 +33,7 @@ if (is_array($qa_instance) && count($qa_instance)>0) {
     </thead>
     <tbody>
   <?php
-  foreach ($qa_instance as $plf_branch => $descriptor_arrays) {
+  foreach ($qa_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
         <td colspan="15" class="category-row"><?= "Platform " . $plf_branch . " QA environments"; ?></td>

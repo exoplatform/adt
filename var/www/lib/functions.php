@@ -402,8 +402,8 @@ function getGlobalDevInstances() {
         $instances[$plf_branch]=$filtered_instances;
       }
     }
-    if (count($instances)==0) {
-      $instances[]=array();
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
     }
     // Instances will be cached for 2 min
     apc_store('dev_instances', $instances, 120);
@@ -427,8 +427,8 @@ function getGlobalSalesUserInstances()
         $instances[$plf_branch]=$filtered_instances;
       }
     }
-    if (count($instances)==0) {
-      $instances[]=array();
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
     }
     // Instances will be cached for 2 min
     apc_store('sales_user_instances', $instances, 120);
@@ -452,8 +452,8 @@ function getGlobalSalesDemoInstances()
         $instances[$plf_branch]=$filtered_instances;
       }
     }
-    if (count($instances)==0) {
-      $instances[]=array();
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
     }
     // Instances will be cached for 2 min
     apc_store('sales_demo_instances', $instances, 120);
@@ -476,7 +476,7 @@ function getGlobalQAInstances() {
         $instances[$plf_branch]=$filtered_instances;
       }
     }
-    if (count($instances)==0) {
+    if (!is_array($instances) || empty($instances)) {
       $instances=array();
     }
     // Instances will be cached for 2 min
@@ -500,8 +500,8 @@ function getGlobalCompanyInstances() {
         $instances[$plf_branch]=$filtered_instances;
       }
     }
-    if (count($instances)==0) {
-      $instances=array(array());
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
     }
     // Instances will be cached for 2 min
     apc_store('company_instances', $instances, 120);
@@ -524,7 +524,7 @@ function getGlobalDocInstances() {
         $instances[$plf_branch]=$filtered_instances;
       }
     }
-    if (count($instances)==0) {
+    if (!is_array($instances) || empty($instances)) {
       $instances=array();
     }
     // Instances will be cached for 2 min
@@ -548,7 +548,7 @@ function getGlobalTranslationInstances() {
         $instances[$plf_branch]=$filtered_instances;
       }
     }
-    if (count($instances)==0) {
+    if (!is_array($instances) || empty($instances)) {
       $instances=array();
     }
     // Instances will be cached for 2 min
@@ -557,6 +557,34 @@ function getGlobalTranslationInstances() {
   return $instances;
 }
 
+/**
+ * Check if the given Deployment Category array contains at least one deployment
+ *
+ * @param $category_descriptor_arrays
+ *
+ * @return bool
+ */
+function isDeploymentInCategoryArray($category_descriptor_arrays) {
+  if (is_array($category_descriptor_arrays)===false) {
+    echo "NOT AN ARRAY<br/>";
+    return false;
+  }
+  if (empty($category_descriptor_arrays)) {
+    return false;
+  }
+  foreach ($category_descriptor_arrays as $category => $descriptor_arrays) {
+    foreach ($descriptor_arrays as $descriptor_array) {
+      if (is_object($descriptor_array)===false) {
+        echo "NOT AN OBJECT<br/>";
+        next($descriptor_arrays);
+      }
+      if (property_exists($descriptor_array, 'INSTANCE_KEY')) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
 /**
  * Test if the instance is a feature branch deployment
  *
