@@ -603,6 +603,17 @@ function isInstanceDoc($descriptor_arrays) {
 }
 
 /**
+ * Test if the instance is a Buy page deployment
+ *
+ * @param $descriptor_arrays
+ *
+ * @return bool
+ */
+function isInstanceBuyPage($descriptor_arrays) {
+  return isInstanceWithLabels($descriptor_arrays, array('buy'));
+}
+
+/**
  * Test if the instance is a QA deployment
  *
  * @param $descriptor_arrays
