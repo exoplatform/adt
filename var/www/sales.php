@@ -37,7 +37,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
   foreach ($sales_user_instances as $plf_branch => $descriptor_arrays) {
     ?>
     <tr>
-        <td colspan="15" class="category-row"><?= "Platform " . $plf_branch . " demo environments for Sales people"; ?></td>
+        <td colspan="15" class="category-row"><i class="icon-user"></i> - <?= "Platform " . $plf_branch . " demo environments for Sales people"; ?></td>
     </tr>
     <?php
     foreach ($descriptor_arrays as $descriptor_array) {
@@ -89,7 +89,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
   foreach ($sales_demo_instances as $plf_branch => $descriptor_arrays) {
   ?>
     <tr>
-      <td colspan="15" class="category-row"><?= "Platform " . $plf_branch . " demo / evaluation environments for Leads"; ?></td>
+      <td colspan="15" class="category-row"><i class="icon-briefcase"></i> - <?= "Platform " . $plf_branch . " demo / evaluation environments for Leads"; ?></td>
     </tr>
     <?php
     foreach ($descriptor_arrays as $descriptor_array) {
