@@ -33,7 +33,7 @@ checkCaches();
 </thead>
 <tbody>
 <tr>
-  <td colspan="15" class="category-row">Translation deployments</td>
+  <td colspan="15" class="category-row"><i class="icon-globe"></i> - Translation deployments</td>
 </tr>
 <?php
 $translation_instances = getGlobalTranslationInstances();
@@ -66,7 +66,7 @@ if (count($translation_instances)>0) {
 }
 ?>
 <tr>
-  <td colspan="15" class="category-row">Documentation deployments</td>
+  <td colspan="15" class="category-row"><i class="icon-book"></i> - Documentation deployments</td>
 </tr>
 <?php
 $doc_instances = getGlobalDocInstances();
