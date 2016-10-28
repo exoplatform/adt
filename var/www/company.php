@@ -18,8 +18,14 @@ checkCaches();
 <div class="row-fluid">
 <div class="span12">
 <ul>
-  <li>eXo Website development : <a href="https://www-dev.exoplatform.com/" target="_blank">https://www-dev.exoplatform.com/</a></li>
-  <li>eXo Blog development : <a href="https://blog-dev.exoplatform.com/" target="_blank">https://blog-dev.exoplatform.com/</a></li>
+  <li>eXo Website :
+    <a href="https://www-dev.exoplatform.com/" target="_blank">(development) www-dev.exoplatform.com/</a>
+    - <a href="https://www-preprod.exoplatform.com/" target="_blank">(pre-production) www-preprod.exoplatform.com/</a>
+  </li>
+  <li>eXo Blog :
+    <a href="https://blog-dev.exoplatform.com/" target="_blank">(development) blog-dev.exoplatform.com/</a>
+    - <a href="https://blog-preprod.exoplatform.com/" target="_blank">(pre-production) www-preprod.exoplatform.com/blog/</a>
+  </li>
 </ul>
 <?php
 $company_instances=getGlobalCompanyInstances();
