@@ -238,8 +238,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
 
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
-      env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
-      env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
+      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
+      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
 
       configurable_env_var "DEPLOYMENT_SKIP_ACCOUNT_SETUP" false
 
