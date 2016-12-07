@@ -1,14 +1,14 @@
 --- standalone.xml	2013-05-28 12:57:13.000000000 +0200
 +++ standalone.xml	2013-05-28 14:17:44.000000000 +0200
-@@ -696,6 +696,7 @@
+@@ -545,6 +545,7 @@
      </subsystem>
-     <subsystem xmlns="urn:jboss:domain:web:2.2" default-virtual-server="default-host" native="false">
-       <connector name="http" protocol="org.apache.coyote.http11.Http11NioProtocol" scheme="http" socket-binding="http"/>
+     <subsystem xmlns="urn:jboss:domain:web:1.4" default-virtual-server="default-host" native="false">
+       <connector name="http" protocol="HTTP/1.1" scheme="http" socket-binding="http"/>
 +      <connector name="ajp" protocol="AJP/1.3" scheme="http" socket-binding="ajp"/>
        <virtual-server name="default-host" enable-welcome-root="false">
          <alias name="localhost"/>
          <alias name="example.com"/>
-@@ -732,15 +732,15 @@
+@@ -580,15 +581,15 @@
      </interface>
    </interfaces>
    <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
