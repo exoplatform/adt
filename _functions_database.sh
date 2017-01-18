@@ -87,7 +87,12 @@ do_get_database_settings() {
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
+      ;;
+      DOCKER_MARIADB)
+        configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mariadb"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
+        env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_POSTGRES)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
@@ -142,7 +147,7 @@ do_create_database() {
     HSQLDB)
       echo_info "Using default HSQLDB database. Nothing to do to create the Database."
     ;;
-    DOCKER_MYSQL | DOCKER_POSTGRES)
+    DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB)
       echo_info "Using a docker database ${DEPLOYMENT_DATABASE_IMAGE}"
       ${DOCKER_CMD} volume create --name ${DEPLOYMENT_CONTAINER_NAME}
       # do_start_database
@@ -251,7 +256,7 @@ do_start_database() {
   
   echo_info "Starting database instance..."
   case ${DEPLOYMENT_DATABASE_TYPE} in
-    DOCKER_MYSQL)
+    DOCKER_MYSQL | DOCKER_MARIADB)
       echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
       
@@ -372,7 +377,7 @@ check_database_availability() {
   local CHECK_CMD=""
   local valid_result=0
   case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES)
+    MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES|DOCKER_MARIADB)
       CHECK_CMD="select 1"
     ;;
     DOCKER_ORACLE)
@@ -397,7 +402,7 @@ check_database_availability() {
     count=$(( $count + 1 ))
     set +e
     case ${DEPLOYMENT_DATABASE_TYPE} in
-      MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES)
+      MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES|DOCKER_MARIADB)
         echo "$CHECK_CMD" | ${DATABASE_CMD} &> /dev/null
         RET=$?
       ;;

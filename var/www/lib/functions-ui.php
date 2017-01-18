@@ -227,6 +227,8 @@ function componentSpecificationIcon ($deployment_descriptor) {
 function componentDatabaseIcon ($deployment_descriptor) {
   if (stripos($deployment_descriptor->DATABASE, 'mysql') !== false) {
     $database_icon = "mysql";
+  } else if (stripos($deployment_descriptor->DATABASE, 'mariadb') !== false) {
+    $database_icon = "mariadb";
   } else if (stripos($deployment_descriptor->DATABASE, 'postgres') !== false) {
     $database_icon = "postgresql";
   } else if (stripos($deployment_descriptor->DATABASE, 'oracle') !== false) {

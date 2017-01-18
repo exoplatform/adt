@@ -180,7 +180,7 @@ do_configure_tomcat_ldap() {
 do_configure_tomcat_datasources() {
 
   case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL|DOCKER_MYSQL)
+    MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
       # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 

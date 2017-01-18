@@ -67,6 +67,7 @@ Action
     HSQLDB
     DOCKER_MYSQL:5.7 / DOCKER_MYSQL:5.6 / DOCKER_MYSQL:5.5
     DOCKER_POSTGRES:9.6 / DOCKER_POSTGRES:9.5 / DOCKER_POSTGRES:9.4
+    DOCKER_MARIADB:5.5 / DOCKER_MARIADB:5 / DOCKER_MARIADB:10.0 / DOCKER_MARIADB:10.1 / DOCKER_MARIADB:10
     DOCKER_ORACLE:12cR1_plf (pre initialized database)
     DOCKER_SQLSERVER:2014express
 
@@ -82,6 +83,21 @@ Action
     maintenance     Maintenance deployment
     sales           eXo Sales deployment for each Sales Team guy
     sales-demo      Demo for lead evaluation requested by eXo Sales Team
+
+  examples
+  =================
+
+  # List deployed servers
+  ./adt-dev.sh list
+
+  # Deploy eXo Platform Enterprise 4.4.0 on MySQL 5.7
+  ./adt-dev.sh deploy -n plfent -v 4.4.0 -p 200 -d DOCKER_MYSQL:5.7
+
+  # Deploy eXo Platform Enterprise 4.4.0 on MariaDB 10
+  ./adt-dev.sh deploy -n plfent -v 4.4.0 -p 200 -d DOCKER_MARIADB:10
+
+  # Undeploy eXo Platform Enterprise 4.4.0 on MySQL 5.7
+  ./adt-dev.sh undeploy-all -n plfent -v 4.4.0 -p 200 -d DOCKER_MYSQL:5.7
 EOF
 
 }

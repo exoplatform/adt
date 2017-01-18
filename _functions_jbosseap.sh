@@ -43,7 +43,7 @@ do_configure_jbosseap_datasources() {
   # Patch to reconfigure standalone-exo.xml for database
 
   case ${DEPLOYMENT_DATABASE_TYPE} in
-    MYSQL | DOCKER_MYSQL)
+    MYSQL | DOCKER_MYSQL | DOCKER_MARIADB)
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       if [ ! -f ${DEPLOYMENT_DIR}/standalone/deployments/mysql-connector*.jar ]; then
