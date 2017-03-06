@@ -123,7 +123,17 @@ function getRepositories()
 
   if (empty($features)) {
     $repositories = array(
-        "gatein-portal" => "GateIn",
+        "gatein-wci" => "GateIn WCI",
+        "kernel" => "Kernel",
+        "core" => "Core",
+        "ws" => "WS",
+        "jcr" => "JCR",
+        "jcr-services" => "JCR S.",
+        "gatein-pc" => "GateIn PC",
+        "gatein-sso" => "GateIn SSO",
+        "gatein-portal" => "GateIn Portal",
+        "maven-depmgt-pom" => "DEPMGT POM",
+        "docs-style" => "Docs Style",
         "platform-ui" => "PLF UI",
         "commons" => "Commons",
         "ecms" => "ECMS",
@@ -134,7 +144,8 @@ function getRepositories()
         "integration" => "Integration",
         "platform" => "Platform",
         "platform-public-distributions" => "PLF Public Dist",
-        "platform-private-distributions" => "PLF Private Dist");
+        "platform-private-distributions" => "PLF Private Dist",
+        "platform-private-trial-distributions" => "PLF Private Trial Dist");
     apc_store('repositories', $repositories);
   }
   return $repositories;
