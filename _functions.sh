@@ -212,6 +212,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ADDONS" ""
       # Additional command line settings to pass to the startup
       configurable_env_var "DEPLOYMENT_OPTS" ""
+      configurable_env_var "DEPLOYMENT_APPSRV_VERSION" "7.0.75" #Default version used to download additional resources like JMX lib
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
@@ -219,7 +220,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
       env_var "DEPLOYMENT_SERVER_LOG_FILE" "catalina.out"
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
-      env_var "DEPLOYMENT_APPSRV_VERSION" "6.0.35" #Default version used to download additional resources like JMX lib
       env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
       env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "9.4.1208" #Default version used to download additional postgresql driver
       env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.1.0.1"
@@ -297,13 +297,13 @@ initialize_product_settings() {
               env_var ARTIFACT_GROUPID "org.exoplatform.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.pkg.tc6"
               env_var ARTIFACT_CLASSIFIER "bundle"
+              env_var DEPLOYMENT_APPSRV_VERSION "6.0.35"
             ;;
             "4.0.x")
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "portal.packaging"
               env_var ARTIFACT_CLASSIFIER "tomcat-distrib"
               env_var ARTIFACT_PACKAGING "tar.gz"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.37"
               env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
               env_var DEPLOYMENT_DATABASE_ENABLED false
             ;;
@@ -311,7 +311,6 @@ initialize_product_settings() {
             # 3.5.x and +
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
               env_var ARTIFACT_CLASSIFIER "bundle"
             ;;
           esac
@@ -341,21 +340,18 @@ initialize_product_settings() {
               env_var PLF_BRANCH "4.0.x"
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
               env_var ARTIFACT_CLASSIFIER "bundle"
             ;;
             "3.7.x")
               env_var PLF_BRANCH "4.x"
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
               env_var ARTIFACT_CLASSIFIER "bundle"
             ;;
             "4.2.x")
               env_var PLF_BRANCH "4.2.x"
               env_var ARTIFACT_GROUPID "org.gatein.portal"
               env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.30"
               env_var ARTIFACT_CLASSIFIER "bundle"
             ;;
             *)
@@ -419,12 +415,12 @@ initialize_product_settings() {
               env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
               env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
               env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
+              env_var DEPLOYMENT_APPSRV_VERSION "6.0.35"
             ;;
             *)
             # 4.0.x and +
               env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
               env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-              env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
               env_var PLF_BRANCH "${PRODUCT_BRANCH}"
               env_var EXO_PROFILES "all"
             ;;
@@ -436,7 +432,6 @@ initialize_product_settings() {
           env_var PLF_BRANCH "CODEFEST"
           env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
           env_var EXO_PROFILES "all"
         ;;
         plfdemo)
@@ -445,7 +440,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.demo"
           env_var ARTIFACT_ARTIFACTID "demo-login-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_EXTENSIONS "acme,cmis,crash,ide,wai"
@@ -457,7 +451,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
           if [ "${PRODUCT_NAME}" = "plfentdemo" ]; then
             env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           else
@@ -472,7 +465,6 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-jbosseap-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/standalone.sh"
           env_var DEPLOYMENT_APPSRV_TYPE "jbosseap"
-          env_var DEPLOYMENT_APPSRV_VERSION "6.0.1"
           env_var DEPLOYMENT_SERVER_LOG_FILE "server.log"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
@@ -486,7 +478,6 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
           env_var ARTIFACT_CLASSIFIER "trial"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.55"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_CHAT_ENABLED true
@@ -497,7 +488,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.addons.chat.distribution"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-chat-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_APPSRV_VERSION "7.0.42"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_EXTENSIONS "crash,ide,chat"
@@ -509,7 +499,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID              "com.exoplatform.intranet"
           # 4.0.x and +
           env_var ARTIFACT_ARTIFACTID           "company-intranet-package"
-          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.42"
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var EXO_PROFILES                  "all"
@@ -529,7 +518,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID              "org.exoplatform.community"
           # 4.0.x and +
           env_var ARTIFACT_ARTIFACTID           "exo-community-package"
-          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.42"
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var EXO_PROFILES                  "all"
@@ -547,7 +535,6 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID              "com.exoplatform.buypage"
           env_var ARTIFACT_ARTIFACTID           "buy-page-package"
           env_var ARTIFACT_CLASSIFIER           "tomcat"
-          env_var DEPLOYMENT_APPSRV_VERSION     "7.0.57"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var DEPLOYMENT_DATABASE_ENABLED   false
         ;;
