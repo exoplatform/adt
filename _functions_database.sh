@@ -79,7 +79,7 @@ do_get_database_settings() {
         echo_error "\${HOME}/.my.cnf doesn't exist. Please create it to define your credentials to manage your MySQL Server"
         exit 1
         fi;
-      
+
         env_var "DATABASE_CMD" "mysql ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_MYSQL)
@@ -106,7 +106,7 @@ do_get_database_settings() {
 
         # due to oracle limitation on SID
         env_var DEPLOYMENT_DATABASE_NAME "plf"
-        env_var DEPLOYMENT_DATABASE_USER "plf" 
+        env_var DEPLOYMENT_DATABASE_USER "plf"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} exec -i ${DEPLOYMENT_CONTAINER_NAME} bin/sqlplus ${DEPLOYMENT_DATABASE_USER}/${DEPLOYMENT_DATABASE_USER}"
       ;;
@@ -212,7 +212,7 @@ do_create_chat_mongo_database() {
    exit 1
   fi;
   # Database are automatically created the first time we access it
-  mongo ${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.getCollectionNames()" > /dev/null
+  mongo ${DEPLOYMENT_CHAT_MONGODB_HOSTNAME}:${DEPLOYMENT_CHAT_MONGODB_PORT}/${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.getCollectionNames()" > /dev/null
   echo 'show dbs' | mongo --quiet
   echo_info "Done."
 }
@@ -226,7 +226,7 @@ do_drop_chat_mongo_database() {
    echo_error "mongo binary doesn't exist on the system. Please install MongoDB client to be able to manage the MongoDB Server"
    exit 1
   fi;
-  mongo ${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.dropDatabase()" > /dev/null
+  mongo ${DEPLOYMENT_CHAT_MONGODB_HOSTNAME}:${DEPLOYMENT_CHAT_MONGODB_PORT}/${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.dropDatabase()" > /dev/null
   echo 'show dbs' | mongo --quiet
   echo_info "Done."
 }
@@ -252,14 +252,14 @@ do_start_database() {
   if ! ${DEPLOYMENT_DATABASE_ENABLED}; then
     echo_debug "Database disabled, nothing to start"
     return
-  fi 
-  
+  fi
+
   echo_info "Starting database instance..."
   case ${DEPLOYMENT_DATABASE_TYPE} in
     DOCKER_MYSQL | DOCKER_MARIADB)
       echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
-      
+
       ${DOCKER_CMD} run \
         -p ${DEPLOYMENT_DATABASE_PORT}:3306 -d \
         -v ${DEPLOYMENT_CONTAINER_NAME}:/var/lib/mysql \
@@ -272,7 +272,7 @@ do_start_database() {
     DOCKER_POSTGRES)
       echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
-    
+
       ${DOCKER_CMD} run \
         -p ${DEPLOYMENT_DATABASE_PORT}:5432 -d \
         -v ${DEPLOYMENT_CONTAINER_NAME}:/var/lib/postgresql/data \
@@ -349,9 +349,9 @@ do_restore_database_dataset() {
        echo_error "SQL file (${_restorescript}) doesn't exist."
        exit 1
       fi;
-      
+
       check_database_availability
-      
+
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
       pushd ${_tmpdir} > /dev/null 2>&1
       pv -p -t -e -a -r -b ${_restorescript} | ${CMD}
@@ -421,7 +421,7 @@ check_database_availability() {
     fi
     set -e
   done
-  if [ $count -eq $try ]; then 
+  if [ $count -eq $try ]; then
     echo_error "Database not available after $(( ${count} * ${wait_time}))s"
     exit 1
   fi
