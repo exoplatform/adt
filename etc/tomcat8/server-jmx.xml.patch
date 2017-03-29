@@ -1,0 +1,15 @@
+--- server.xml
++++ server.xml
+@@ -46,9 +46,9 @@
+   http://tomcat.apache.org/tomcat-7.0-doc/config/listeners.html#JMX_Remote_Lifecycle_Listener_-_org.apache.catalina.mbeans.JmxRemoteLifecycleListener
+   NOTE : eXo platform Standalone Tomcat distribution bundles the required catalina-jmx-remote.jar.
+   -->
+-  <!--
+-  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" rmiRegistryPortPlatform="10001" rmiServerPortPlatform="10002" useLocalPorts="false" />
+-  -->
++  
++  <Listener className="org.apache.catalina.mbeans.JmxRemoteLifecycleListener" rmiRegistryPortPlatform="@JMX_RMI_REGISTRY_PORT@" rmiServerPortPlatform="@JMX_RMI_SERVER_PORT@" useLocalPorts="false" />
++  
+ 
+   <!-- Global JNDI resources
+        Documentation at /docs/jndi-resources-howto.html
