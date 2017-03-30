@@ -1111,7 +1111,19 @@ do_start() {
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
     ;;
     jbosseap)
-      END_STARTUP_MSG="JBAS01587[45]"
+      case ${DEPLOYMENT_APPSRV_VERSION:0:1} in
+        6)
+          END_STARTUP_MSG="JBAS01587[45]"
+        ;;
+        7)
+          END_STARTUP_MSG="WFLYSRV0025"
+        ;;
+        *)
+          echo_error "Invalid JBoss EAP server version \"${DEPLOYMENT_APPSRV_VERSION}\""
+          print_usage
+          exit 1
+        ;;
+      esac
       # Additional settings
       export JAVA_OPTS="${DEPLOYMENT_OPTS}"
       # Startup the server
@@ -1193,7 +1205,19 @@ do_stop() {
           ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
         ;;
         jbosseap)
-          ${DEPLOYMENT_DIR}/bin/jboss-cli.sh --controller=localhost:${DEPLOYMENT_MGT_NATIVE_PORT} --connect command=:shutdown > /dev/null 2>&1 || true
+          case ${DEPLOYMENT_APPSRV_VERSION:0:1} in
+            6)
+              ${DEPLOYMENT_DIR}/bin/jboss-cli.sh --controller=localhost:${DEPLOYMENT_MGT_NATIVE_PORT} --connect command=:shutdown > /dev/null 2>&1 || true
+            ;;
+            7)
+              ${DEPLOYMENT_DIR}/bin/jboss-cli.sh --controller=localhost:${DEPLOYMENT_MGT_HTTP_PORT} --connect --command=shutdown > /dev/null 2>&1 || true
+            ;;
+            *)
+              echo_error "Invalid JBoss EAP server version \"${DEPLOYMENT_APPSRV_VERSION}\""
+              print_usage
+              exit 1
+            ;;
+          esac
           echo_n_info "Waiting for shutdown "
           while [ -e ${DEPLOYMENT_PID_FILE} ];
           do
