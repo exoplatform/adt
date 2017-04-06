@@ -23,6 +23,8 @@
 # -----------------------------------------------------------------------------
 CATALINA_HOME="${DEPLOYMENT_DIR}"
 CATALINA_PID="${DEPLOYMENT_PID_FILE}"
+# ACC-73: Tomcat 8.5 restricted file permissions by updating UMASK default value
+UMASK="${DEPLOYMENT_UMASK_VALUE}"
 # Logs
 export EXO_LOGS_DISPLAY_CONSOLE=true
 export EXO_LOGS_COLORIZED_CONSOLE=true

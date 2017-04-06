@@ -923,6 +923,7 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
   configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
+  configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     validate_env_var "DEPLOYMENT_CHAT_WEEMO_KEY"
   fi
