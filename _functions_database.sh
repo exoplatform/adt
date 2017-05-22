@@ -84,25 +84,25 @@ do_get_database_settings() {
       ;;
       DOCKER_MYSQL)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
-        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_MARIADB)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mariadb"
-        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_POSTGRES)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
-        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} exec -u postgres -i ${DEPLOYMENT_CONTAINER_NAME} psql"
       ;;
       DOCKER_ORACLE)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/oracle"
-        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
 
         # due to oracle limitation on SID
         env_var DEPLOYMENT_DATABASE_NAME "plf"
@@ -112,7 +112,7 @@ do_get_database_settings() {
       ;;
       DOCKER_SQLSERVER)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/sqlserver"
-        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
         env_var "DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT" "${DEPLOYMENT_PORT_PREFIX}21"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} logs ${DEPLOYMENT_CONTAINER_NAME}"
