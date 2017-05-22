@@ -84,25 +84,25 @@ do_get_database_settings() {
       ;;
       DOCKER_MYSQL)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
-        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_MARIADB)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mariadb"
-        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_POSTGRES)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
-        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} exec -u postgres -i ${DEPLOYMENT_CONTAINER_NAME} psql"
       ;;
       DOCKER_ORACLE)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/oracle"
-        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         # due to oracle limitation on SID
         env_var DEPLOYMENT_DATABASE_NAME "plf"
@@ -112,7 +112,7 @@ do_get_database_settings() {
       ;;
       DOCKER_SQLSERVER)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/sqlserver"
-        env_var "DEPLOYMENT_DATABASE_PORT" "127.0.0.1:${DEPLOYMENT_PORT_PREFIX}20"
+        env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
         env_var "DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT" "${DEPLOYMENT_PORT_PREFIX}21"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} logs ${DEPLOYMENT_CONTAINER_NAME}"
@@ -261,7 +261,7 @@ do_start_database() {
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
 
       ${DOCKER_CMD} run \
-        -p ${DEPLOYMENT_DATABASE_PORT}:3306 -d \
+        -p "127.0.0.1:${DEPLOYMENT_DATABASE_PORT}:3306" -d \
         -v ${DEPLOYMENT_CONTAINER_NAME}:/var/lib/mysql \
         -e MYSQL_ROOT_PASSWORD=${DEPLOYMENT_DATABASE_NAME}@root \
         -e MYSQL_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
@@ -274,7 +274,7 @@ do_start_database() {
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
 
       ${DOCKER_CMD} run \
-        -p ${DEPLOYMENT_DATABASE_PORT}:5432 -d \
+        -p "127.0.0.1:${DEPLOYMENT_DATABASE_PORT}:5432" -d \
         -v ${DEPLOYMENT_CONTAINER_NAME}:/var/lib/postgresql/data \
         -e POSTGRES_DB=${DEPLOYMENT_DATABASE_NAME} \
         -e POSTGRES_USER=${DEPLOYMENT_DATABASE_USER} \
@@ -286,7 +286,7 @@ do_start_database() {
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
 
       ${DOCKER_CMD} run \
-        -p ${DEPLOYMENT_DATABASE_PORT}:1521 \
+        -p "127.0.0.1:${DEPLOYMENT_DATABASE_PORT}:1521" \
         -d \
         -e ORACLE_SID=${DEPLOYMENT_DATABASE_NAME} \
         -e ORACLE_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
@@ -301,7 +301,7 @@ do_start_database() {
 
       ${DOCKER_CMD} run \
         --privileged \
-        -p ${DEPLOYMENT_DATABASE_PORT}:1433 \
+        -p "127.0.0.1:${DEPLOYMENT_DATABASE_PORT}:1433" \
         -p ${DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT}:3389 \
         -d \
         -e SQLSERVER_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
