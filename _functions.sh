@@ -126,7 +126,7 @@ Environment Variables
   DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
   DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
   DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape characters like \" (default: none)
-  
+
   DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
   DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
 
@@ -232,7 +232,7 @@ initialize_product_settings() {
 
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
-      configurable_env_var "DEPLOYMENT_ES_ENABLED" false
+      configurable_env_var "DEPLOYMENT_ES_ENABLED" true
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
@@ -286,7 +286,7 @@ initialize_product_settings() {
       env_var "LDAP_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "STANDALONE_PRODUCT_NAME" "${PRODUCT_NAME}"
-      
+
       # Validate product and load artifact details
       # Be careful, this id should be no longer than 10 (because of mysql user name limit)
       case "${PRODUCT_NAME}" in
@@ -589,7 +589,7 @@ initialize_product_settings() {
       else
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
       fi
-      
+
     ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
@@ -946,7 +946,7 @@ do_deploy() {
 
   # Elasticsearch (ES) ports
   env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
-  
+
   if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
