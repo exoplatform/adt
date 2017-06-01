@@ -98,7 +98,7 @@ do_get_database_settings() {
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
-        env_var "DATABASE_CMD" "${DOCKER_CMD} exec -u postgres -i ${DEPLOYMENT_CONTAINER_NAME} psql"
+        env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db --entrypoint psql -e PGPASSWORD=${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} -h db --user=${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_ORACLE)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/oracle"
