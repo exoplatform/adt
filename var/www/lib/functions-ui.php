@@ -348,10 +348,6 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
   } else {
     $url = $deployment_descriptor->DEPLOYMENT_URL;
   }
-  // Documentation deployment specificity
-  if (isInstanceDoc($deployment_descriptor)) {
-    $url.='/docs/';
-  }
   // Buy page deployment specificity
   if (isInstanceBuyPage($deployment_descriptor)) {
     $url.='/buy/';
