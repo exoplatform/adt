@@ -123,12 +123,12 @@ function getRepositories()
 
   if (empty($features)) {
     $repositories = array(
+        "gatein-dep" => "GateIn DEP",
         "gatein-wci" => "GateIn WCI",
         "kernel" => "Kernel",
         "core" => "Core",
         "ws" => "WS",
         "jcr" => "JCR",
-        "jcr-services" => "JCR S.",
         "gatein-pc" => "GateIn PC",
         "gatein-sso" => "GateIn SSO",
         "gatein-portal" => "GateIn Portal",
