@@ -36,13 +36,27 @@ clone_or_fetch_git_repo() {
     echo_info "Cloning repository ${_repo} into ${_src_dir} ..."
     git clone -v git@github.com:/${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
     echo_info "Clone done ..."
+
+    # Add remote named blessed for exoplatform organization
+    pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
+    echo_info "Add blessed remote for exoplatform organization..."
+    git remote add blessed git@github.com:exoplatform/${_repo}.git
   else
     pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
     set +e
     status=0
     git remote set-url origin git@github.com:${_orga}/${_repo}.git
+    # Add remote named blessed for exoplatform organization
+    git ls-remote --exit-code blessed > /dev/null 2>&1
+    status=$?
+    set -e
+    if [ ${status} -ne 0 ]; then
+      echo_info "Add blessed remote for exoplatform organization..."
+      git remote add blessed git@github.com:exoplatform/${_repo}.git
+    fi
+    set +e
     echo_info "Updating repository ${_repo} in ${_src_dir} ..."
-    git fetch --progress --prune origin
+    git remote update --prune
     status=$?
     set -e
     if [ ${status} -ne 0 ]; then
@@ -54,7 +68,16 @@ clone_or_fetch_git_repo() {
       git clone -v git@github.com:/${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
       echo_info "Clone done ..."
       pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
-      git fetch --progress --prune origin
+      set +e
+      # Add remote named blessed for exoplatform organization if it doesn't exist
+      git ls-remote --exit-code blessed > /dev/null 2>&1
+      status=$?
+      set -e
+      if [ ${status} -ne 0 ]; then
+        echo_info "Add blessed remote for exoplatform organization..."
+        git remote add blessed git@github.com:exoplatform/${_repo}.git
+      fi
+      git remote update --prune
     fi
     echo_info "Update done ..."
     popd > /dev/null 2>&1

@@ -204,21 +204,29 @@ function getTranslationBranches($projects)
                                             //print_r($branches);
                                             //print "</pre>";
       foreach ($branches as $branch) {
+        $baseRemotenameToCompareWith = 'origin';
+        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($project, $branch);
         $fetch_url = $repoObject->git('config --get remote.origin.url');
         if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
-          $github_org = $matches[1];
           $github_repo = $matches[2];
+          if (strpos($baseBranchToCompareWith, 'stable') !== false) {
+            $github_org = 'exoplatform';
+            $baseRemotenameToCompareWith = 'blessed';
+          } else {
+            $github_org = $matches[1];
+          }
+          $github_http_integration_org = $matches[1];
         }
-        $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/integration/" . $branch;
+        $features[$branch][$project]['http_url'] = "https://github.com/" . $github_http_integration_org . "/" . $github_repo . "/tree/integration/" . $branch;
         // Add link to GitHub diff URL
-        $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/integration/" . $branch."...develop";
-        $features[$branch][$project]['http_url_ahead'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/develop" ."...integration/".$branch;
-        $behind_commits_logs = $repoObject->git("log origin/integration/" . $branch . "..origin/develop --oneline");
+        $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_http_integration_org . "/" . $github_repo . "/compare/integration/" . $branch."..." . $github_org . ":" . $baseBranchToCompareWith;
+        $features[$branch][$project]['http_url_ahead'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/" . $baseBranchToCompareWith . "..." . $github_http_integration_org . ":integration/".$branch;
+        $behind_commits_logs = $repoObject->git("log origin/integration/" . $branch . ".." . $baseRemotenameToCompareWith . "/" . $baseBranchToCompareWith ." --oneline");
         if (empty($behind_commits_logs))
           $features[$branch][$project]['behind_commits'] = 0;
         else
           $features[$branch][$project]['behind_commits'] = count(explode("\n", $behind_commits_logs));
-        $ahead_commits_logs = $repoObject->git("log origin/develop..origin/integration/" . $branch . " --oneline");
+        $ahead_commits_logs = $repoObject->git("log " . $baseRemotenameToCompareWith . "/" . $baseBranchToCompareWith ."..origin/integration/" . $branch . " --oneline");
         if (empty($ahead_commits_logs))
           $features[$branch][$project]['ahead_commits'] = 0;
         else
@@ -824,6 +832,29 @@ function human_filesize($bytes, $decimals = 2)
   $sz = 'BKMGTP';
   $factor = floor((strlen($bytes) - 1) / 3);
   return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
+}
+
+/**
+ * Return the git base branch to compare with integration translation branch.
+ *
+ * @param      $project               project name
+ * @param      $branch                Integration branch to display
+ * @param      $plfDevelopVersion     Current PLF version on develop branch
+ *
+ * @return string
+ */
+function getGitBaseBranchToCompareWith($project, $branch, $plfDevelopVersion = '5.0')
+{
+  if (strpos($branch, $plfDevelopVersion) !== false) {
+    return 'develop';
+  } else {
+    $plfVersion = explode('-', $branch);
+    // gatein-portal project version before 5.0.x contains -PLF identifier
+    if (strpos($project, "gatein-portal") !== false) {
+      return 'stable/' . $plfVersion[0] . '-PLF';
+    }
+    return 'stable/' . $plfVersion[0];
+  }
 }
 
 ?>
