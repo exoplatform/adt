@@ -34,7 +34,7 @@ clone_or_fetch_git_repo() {
   fi
   if [ ! -d ${_src_dir}/${_repo}.git ]; then
     echo_info "Cloning repository ${_repo} into ${_src_dir} ..."
-    git clone -v git@github.com:/${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
+    git clone -v git@github.com:${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
     echo_info "Clone done ..."
 
     # Add remote named blessed for exoplatform organization
@@ -65,7 +65,7 @@ clone_or_fetch_git_repo() {
       rm -rf ${_src_dir}/${_repo}.git
       echo_info "Removal done ..."
       echo_info "Cloning repository ${_repo} into ${_src_dir} ..."
-      git clone -v git@github.com:/${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
+      git clone -v git@github.com:${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
       echo_info "Clone done ..."
       pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
       set +e
