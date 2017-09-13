@@ -525,4 +525,33 @@ function componentFBEditIcon($deployment_descriptor) {
 
   return $content;
 }
+
+/**
+ * Get markup for a Git repository branch commits status
+ *
+ * @param $fb_project
+ *
+ * @return string html markup
+ */
+ function componentFeatureRepoBrancheStatus($fb_project) {
+  $content="";
+
+  $content='<a href="'.$fb_project['http_url_behind'].'" target="_blank" title="[behind]">';
+  $content.='<span rel="tooltip" title="'.$fb_project['behind_commits'].' commits on the base branch that do not exist on this branch [behind]">';
+  if ($fb_project['behind_commits'] > 0) {
+    $content.='<span class="label label-commit label-important">'.$fb_project['behind_commits'].' <i class="icon-arrow-down icon-white"></i></span>';
+  } else {
+    $content.='<span class="label label-commit">'.$fb_project['behind_commits'].' <i class="icon-arrow-down"></i></span>';
+  }
+  $content.='</span></a>';
+  $content.='<a href="'.$fb_project['http_url_ahead'].'" target="_blank" title="[ahead]">';
+  $content.='<span rel="tooltip" title="'.$fb_project['ahead_commits'].' commits on this branch that do not exist on the base branch [ahead]">';
+  if ($fb_project['ahead_commits'] > 0) {
+    $content.='<span class="label label-commit label-info "><i class="icon-arrow-up icon-white"></i> '.$fb_project['ahead_commits'].'</span>';
+  } else {
+    $content.='<span class="label label-commit"><i class="icon-arrow-up"></i> '.$fb_project['ahead_commits'].'</span>';
+  }
+  $content.='</span></a>';
+  return $content;
+}
 ?>

@@ -30,7 +30,7 @@ checkCaches();
                 <div class="span12">
                     <p>This page summarizes all Git feature branches (<code>feature/.*</code>) and try to give an overview of branches health.</p>
 
-                    <h3>Feature Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span></h3>
+                    <h3>Feature Branches <u>deployed on acceptance</u> <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span></h3>
                     <?php
                     //List all projects
                     $projectsNames = getRepositories();
@@ -38,12 +38,12 @@ checkCaches();
                     $features = getFeatureBranches($projects);
                     $translations = getTranslationBranches($projects);
                     ?>
-                    <table class="table table-bordered table-hover">
+                    <table class="table table-hover table-header-rotated">
                         <thead>
                         <tr>
-                            <th class="col-center">Branch feature/.*</th>
+                            <th class="col-left"><div><span>feature/.*</span></div></th>
                             <?php foreach ($projects as $project) { ?>
-                                <th class="col-center"><?=$projectsNames[$project]?></th>
+                                <th class="col-center rotate-45"><div><span><?=$projectsNames[$project]?></span></div></th>
                             <?php } ?>
                         </tr>
                         </thead>
@@ -57,11 +57,8 @@ checkCaches();
                                     <?php foreach ($projects as $project) { ?>
                                         <td class="col-center">
                                             <?php if (array_key_exists($project, $FBProjects)) { ?>
-                                              <a href="<?=$FBProjects[$project]['http_url_behind']?>" target="_blank" title="[behind]"><span rel="tooltip" title="<?=$FBProjects[$project]['behind_commits']?> commits on the base branch that do not exist on this branch [behind]"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down icon-white"></i></span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down"></i><?php }?>
-                                              </span><a>
-                                              &nbsp;
-                                              <a href="<?=$FBProjects[$project]['http_url_ahead']?>" target="_blank" title="[ahead]"><span rel="tooltip" title="<?=$FBProjects[$project]['ahead_commits']?> commits on this branch that do not exist on the base branch [ahead]"><?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><i class="icon-arrow-up icon-white"></i> <?= $FBProjects[$project]['ahead_commits'] ?></span><?php } else { ?><i class="icon-arrow-up"></i> <?= $FBProjects[$project]['ahead_commits'] ?><?php }?></span></a><br/>
-                                              <a href='https://ci.exoplatform.org/job/FB/job/<?=$project?>-<?=$feature?>-fb-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=fb/<?=$project?>-<?=$feature?>-fb-ci'></a>
+                                                <?= componentFeatureRepoBrancheStatus($FBProjects[$project]);?>
+                                                <a href='https://ci.exoplatform.org/job/FB/job/<?=$project?>-<?=$feature?>-fb-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=fb/<?=$project?>-<?=$feature?>-fb-ci'></a>
                                             <?php }?>
                                         </td>
                                     <?php } ?>
@@ -72,12 +69,12 @@ checkCaches();
                         </tbody>
                     </table>
                     <h3>Translation Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span></h3>
-                    <table class="table table-bordered table-hover">
+                    <table class="table table-hover table-header-rotated">
                         <thead>
                         <tr>
-                            <th class="col-center">Branch integration/[^/]*translation.*</th>
+                            <th class="col-left">integration/.*translation.*</th>
                             <?php foreach ($projects as $project) { ?>
-                                <th class="col-center"><?=$projectsNames[$project]?></th>
+                                <th class="col-center rotate-45"><div><span><?=$projectsNames[$project]?></span></div></th>
                             <?php } ?>
                         </tr>
                         </thead>
@@ -90,10 +87,7 @@ checkCaches();
                                 <?php foreach ($projects as $project) { ?>
                                     <td class="col-center">
                                         <?php if (array_key_exists($project, $FBProjects)) { ?>
-                                          <a href="<?=$FBProjects[$project]['http_url_behind']?>" target="_blank" title="[behind]"><span rel="tooltip" title="<?=$FBProjects[$project]['behind_commits']?> commits on the base branch that do not exist on this branch [behind]"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down icon-white"></i></span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down"></i><?php }?>
-                                          </span><a>
-                                          &nbsp;
-                                          <a href="<?=$FBProjects[$project]['http_url_ahead']?>" target="_blank" title="[ahead]"><span rel="tooltip" title="<?=$FBProjects[$project]['ahead_commits']?> commits on this branch that do not exist on the base branch [ahead]"><?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><i class="icon-arrow-up icon-white"></i> <?= $FBProjects[$project]['ahead_commits'] ?></span><?php } else { ?><i class="icon-arrow-up"></i> <?= $FBProjects[$project]['ahead_commits'] ?><?php }?></span></a>
+                                            <?= componentFeatureRepoBrancheStatus($FBProjects[$project]);?>
                                         <?php }?>
                                     </td>
                                 <?php } ?>
@@ -102,12 +96,12 @@ checkCaches();
                         </tbody>
                     </table>
                     <h3>Others branches ... <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span><br/>ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP ? </h3>
-                    <table class="table table-bordered table-hover">
+                    <table class="table  table-hover table-header-rotated">
                         <thead>
                         <tr>
-                            <th class="col-center">Branch feature/????</th>
+                            <th class="col-left">feature/????</th>
                             <?php foreach ($projects as $project) { ?>
-                                <th class="col-center"><?=$projectsNames[$project]?></th>
+                                <th class="col-center rotate-45"><div><span><?=$projectsNames[$project]?></span></div></th>
                             <?php } ?>
                         </tr>
                         </thead>
@@ -121,10 +115,7 @@ checkCaches();
                                     <?php foreach ($projects as $project) { ?>
                                         <td class="col-center">
                                             <?php if (array_key_exists($project, $FBProjects)) { ?>
-                                              <a href="<?=$FBProjects[$project]['http_url_behind']?>" target="_blank" title="[behind]"><span rel="tooltip" title="<?=$FBProjects[$project]['behind_commits']?> commits on the base branch that do not exist on this branch [behind]"><?php if ($FBProjects[$project]['behind_commits'] > 0) { ?><span class="label label-important"><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down icon-white"></i></span><?php } else { ?><?= $FBProjects[$project]['behind_commits'] ?> <i class="icon-arrow-down"></i><?php }?>
-                                              </span><a>
-                                              &nbsp;
-                                              <a href="<?=$FBProjects[$project]['http_url_ahead']?>" target="_blank" title="[ahead]"><span rel="tooltip" title="<?=$FBProjects[$project]['ahead_commits']?> commits on this branch that do not exist on the base branch [ahead]"><?php if ($FBProjects[$project]['ahead_commits'] > 0) { ?><span class="label label-info"><i class="icon-arrow-up icon-white"></i> <?= $FBProjects[$project]['ahead_commits'] ?></span><?php } else { ?><i class="icon-arrow-up"></i> <?= $FBProjects[$project]['ahead_commits'] ?><?php }?></span></a>
+                                                <?= componentFeatureRepoBrancheStatus($FBProjects[$project]);?>
                                             <?php }?>
                                         </td>
                                     <?php } ?>
