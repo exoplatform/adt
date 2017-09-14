@@ -50,6 +50,7 @@ function pageNavigation () {
   $nav["Home"]="/";
   $nav["QA"]="/qa.php";
   $nav["Sales"]="/sales.php";
+  $nav["CP"]="/customers.php";
   $nav["Company"]="/company.php";
   $nav["Features"]="/features.php";
   $nav["Servers"]="/servers.php";

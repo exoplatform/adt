@@ -417,7 +417,7 @@ function getGlobalDevInstances() {
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
-      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, array('sales','qa', 'company', 'doc', 'translation'));
+      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, array('sales','qa', 'company', 'doc', 'translation', 'cp'));
       if (count($filtered_instances)>0) {
         $instances[$plf_branch]=$filtered_instances;
       }
@@ -501,6 +501,30 @@ function getGlobalQAInstances() {
     }
     // Instances will be cached for 2 min
     apc_store('qa_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the deployments related to Customer Projects
+ *
+ * @return array
+ */
+ function getGlobalCPInstances() {
+  $instances = apc_fetch('cp_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("cp"));
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
+    }
+    // Instances will be cached for 5 min
+    apc_store('cp_instances', $instances, 300);
   }
   return $instances;
 }
