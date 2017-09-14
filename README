@@ -115,6 +115,7 @@ Usage
       DEPLOYMENT_LABELS                 : Comma separated labels for a deployment (default: none)
       DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
       DEPLOYMENT_ADDONS                 : Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
+      DEPLOYMENT_ADDONS_CATALOG         : The url of an eXo Add-on Manager catalog file (default: none)
 
       Instance Settings
       =================

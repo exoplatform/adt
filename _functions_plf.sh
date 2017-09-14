@@ -139,18 +139,24 @@ do_install_extensions() {
 #
 do_install_addons() {
   local _addons_manager_script=""
+
+  if [ ! -z "${DEPLOYMENT_ADDONS_CATALOG:-}" ]; then
+    echo "The add-on manager catalog url was overriden with : ${DEPLOYMENT_ADDONS_CATALOG}"
+    _addons_manager_option_catalog="--catalog=${DEPLOYMENT_ADDONS_CATALOG}"
+  fi
+
   # Install optional add-ons
   if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
     _addons_manager_script=${DEPLOYMENT_DIR}/addon
   fi
   if [ -n "${_addons_manager_script}" -a -f "${_addons_manager_script}" ]; then
     # Let's list them first (this will trigger an update of the installed version of the addons-manager if required)
-    ${_addons_manager_script} list --snapshots --unstable
+    ${_addons_manager_script} list ${_addons_manager_option_catalog:-} --snapshots --unstable
     echo_info "Installing PLF add-ons ..."
     # Let's install them from $DEPLOYMENT_ADDONS env var
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-      ${_addons_manager_script} install ${_addon} --force --batch-mode
+      ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} --force --batch-mode
     done
     if [ -f "${DEPLOYMENT_DIR}/addons.list" ]; then
       # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
@@ -161,7 +167,7 @@ do_install_addons() {
         # Don't read comments
         [[ "$_addon" =~ ^#.*$ ]] && continue
         # Install addon
-        ${_addons_manager_script} install ${_addon} --force --batch-mode
+        ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} --force --batch-mode
       done < "$_addons_list"
     fi
     echo_info "Done."

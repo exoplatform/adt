@@ -63,6 +63,8 @@ Action
 
   -a ADDONS                 : The comma separated list of add-ons to deploy (ex: exo-site-templates:1.0.0,exo-sdp-demo:1.0.x-SNAPSHOT)
 
+  -C ADDONS_CATALOG         : The add-on manager catalog url to use
+
   -d DATABASE_TYPE:VERSION  : The database type + his version separated with a : char. Possible values are :
     HSQLDB
     DOCKER_MYSQL:5.7 / DOCKER_MYSQL:5.6 / DOCKER_MYSQL:5.5
@@ -111,11 +113,12 @@ shift
 # if 1st parameter start with "-" character : print help
 if [ "${ACTION:0:1}" = "-" ]; then echo "The first parameter must be an ACTION"; print_usage_dev; exit 1; fi
 
-while getopts "n:v:a:d:p:ci:l:h" OPTION; do
+while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
   case $OPTION in
     n) export PRODUCT_NAME=$OPTARG;       echo "## NAME    = $OPTARG";;
     v) export PRODUCT_VERSION=$OPTARG;    echo "## VERSION = $OPTARG";;
     a) export DEPLOYMENT_ADDONS=$OPTARG;  echo "## ADDONS  = $OPTARG";;
+    C) export DEPLOYMENT_ADDONS_CATALOG=$OPTARG;  echo "## ADDONS CATALOG  = $OPTARG";;
     d) export DEPLOYMENT_DATABASE_TYPE=$(echo "${OPTARG}" | sed 's/\([a-zA-Z0-9_\-]*\):[0-9\.]*/\1/'); echo "## DATABASE TYPE  = ${DEPLOYMENT_DATABASE_TYPE}"
        export DEPLOYMENT_DATABASE_VERSION=$(echo "${OPTARG}" | sed 's/[a-zA-Z0-9_\-]*:\([0-9\.]*\)/\1/'); echo "## DATABASE VERSION  = ${DEPLOYMENT_DATABASE_VERSION}" ;;
     p) export DEPLOYMENT_PORT_PREFIX=$OPTARG;  echo "## PORT PREFIX  = $OPTARG";;
