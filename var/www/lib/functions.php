@@ -475,8 +475,8 @@ function getGlobalSalesDemoInstances()
     if (!is_array($instances) || empty($instances)) {
       $instances=array();
     }
-    // Instances will be cached for 2 min
-    apc_store('sales_demo_instances', $instances, 120);
+    // Instances will be cached for 5 min
+    apc_store('sales_demo_instances', $instances, 300);
   }
   return $instances;
 }
@@ -523,8 +523,8 @@ function getGlobalCompanyInstances() {
     if (!is_array($instances) || empty($instances)) {
       $instances=array();
     }
-    // Instances will be cached for 2 min
-    apc_store('company_instances', $instances, 120);
+    // Instances will be cached for 5 min
+    apc_store('company_instances', $instances, 500);
   }
   return $instances;
 }
@@ -547,8 +547,8 @@ function getGlobalDocInstances() {
     if (!is_array($instances) || empty($instances)) {
       $instances=array();
     }
-    // Instances will be cached for 2 min
-    apc_store('doc_instances', $instances, 120);
+    // Instances will be cached for 5 min
+    apc_store('doc_instances', $instances, 300);
   }
   return $instances;
 }
@@ -571,8 +571,8 @@ function getGlobalTranslationInstances() {
     if (!is_array($instances) || empty($instances)) {
       $instances=array();
     }
-    // Instances will be cached for 2 min
-    apc_store('translation_instances', $instances, 120);
+    // Instances will be cached for 5 min
+    apc_store('translation_instances', $instances, 300);
   }
   return $instances;
 }
