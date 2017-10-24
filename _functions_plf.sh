@@ -145,6 +145,11 @@ do_install_addons() {
     _addons_manager_option_catalog="--catalog=${DEPLOYMENT_ADDONS_CATALOG}"
   fi
 
+  if [ ! -z "${DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE:-}" ]; then
+    echo "The add-on manager parameter --conflict was overriden with : ${DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE}"
+    _addons_manager_option_conflict="--conflict=${DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE}"
+  fi
+
   # Install optional add-ons
   if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
     _addons_manager_script=${DEPLOYMENT_DIR}/addon
@@ -156,7 +161,7 @@ do_install_addons() {
     # Let's install them from $DEPLOYMENT_ADDONS env var
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-      ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} --force --batch-mode
+      ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
     done
     if [ -f "${DEPLOYMENT_DIR}/addons.list" ]; then
       # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
@@ -167,7 +172,7 @@ do_install_addons() {
         # Don't read comments
         [[ "$_addon" =~ ^#.*$ ]] && continue
         # Install addon
-        ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} --force --batch-mode
+        ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
       done < "$_addons_list"
     fi
     echo_info "Done."

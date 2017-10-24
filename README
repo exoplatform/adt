@@ -112,10 +112,11 @@ Usage
       ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false; values : true | false)
       ADT_OFFLINE                       : Use only local resources, don't do any remote operations. (default: false; values : true | false)
 
-      DEPLOYMENT_LABELS                 : Comma separated labels for a deployment (default: none)
-      DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
-      DEPLOYMENT_ADDONS                 : Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
-      DEPLOYMENT_ADDONS_CATALOG         : The url of an eXo Add-on Manager catalog file (default: none)
+      DEPLOYMENT_LABELS                         : Comma separated labels for a deployment (default: none)
+      DEPLOYMENT_EXTENSIONS                     : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
+      DEPLOYMENT_ADDONS                         : Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
+      DEPLOYMENT_ADDONS_CATALOG                 : The url of an eXo Add-on Manager catalog file (default: none)
+      DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE   : Used for add-on manager --conflict parameter (default: none) (possible values: fail / skip / overwrite)
 
       Instance Settings
       =================
