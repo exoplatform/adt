@@ -827,11 +827,16 @@ function checkCaches()
 function isAuthorizedToReadFile($log_type, $file_path)
 {
   if (!empty($log_type) && !is_null($log_type)){
-      if ($log_type == "instance" && (strpos($file_path, 'catalina.out') !== false
-            || strpos($file_path, 'server.log') !== false || strpos($file_path, 'access.log') !== false)){
-        return true;
-      }
-      return false;
+      if ($log_type == "instance" && (
+        strpos($file_path, 'catalina.out') !== false
+        || strpos($file_path, 'platform.log') !== false 
+        || strpos($file_path, 'server.log') !== false 
+        || strpos($file_path, 'access.log') !== false
+        )
+      ){
+      return true;
+    }
+    return false;
   }
   return false;
 }
