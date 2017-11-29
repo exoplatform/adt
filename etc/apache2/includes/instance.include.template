@@ -64,5 +64,9 @@
     ProxyPass               /images/Header.png   !
     ProxyPass               /images/Footer.png   !
     ProxyPass               /images/Logo.png     !
+
+    ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
+    ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
+
     ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30
     ProxyPassReverse        /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/

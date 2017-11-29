@@ -69,8 +69,10 @@
         ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
     </IfModule>
 
+    ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
+    ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
+    
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/
-

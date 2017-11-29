@@ -493,6 +493,12 @@ function componentDeploymentActions ($deployment_descriptor) {
   $content.=' | <a href="'.$deployment_descriptor->DEPLOYMENT_AWSTATS_URL.'" rel="tooltip" title="Usage statistics" target="_blank">';
   $content.='<img src="/images/server_chart.png" alt="'.$deployment_descriptor->DEPLOYMENT_URL.' usage statistics" width="16" height="16" class="icon"/>';
   $content.='</a>';
+  // Elasticsearch access
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_ES_ENABLED') && $deployment_descriptor->DEPLOYMENT_ES_ENABLED) {
+    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/elasticsearch" rel="tooltip" title="Elasticearch">';
+    $content.='<img src="/images/elastic.svg" width="16" height="16" alt="elasticearch" class="icon"/></a>';
+  }
+
   return $content;
 }
 
