@@ -152,14 +152,22 @@ checkCaches();
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['nb']?></td> 
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance7.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)</td> 
-                  </tr>                 </tbody>
+                  </tr>                 
                   <tr>
                     <td class="col-center">acceptance8.exoplatform.org</td>
                     <td class="col-center">prd06</td>
                     <td class="col-center"><?=$servers_counter["acceptance8.exoplatform.org"]['nb']?></td>
                     <td class="col-center"><?=$servers_counter["acceptance8.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance8.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB30 / sdb = INTEL SSDSC2BB30 / sdc = INTEL SSDSC2BB30)</td>
-                  </tr>                 </tbody>
+                  </tr>                 
+                  <tr>
+                    <td class="col-center">acceptance9.exoplatform.org</td>
+                    <td class="col-center">prd07</td>
+                    <td class="col-center"><?=$servers_counter["acceptance9.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance9.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance8.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 450GB NVMe</td>
+                  </tr>                 
+                </tbody>
               </table>
             </div>
           </div>
