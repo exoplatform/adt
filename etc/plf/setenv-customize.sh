@@ -42,10 +42,12 @@ if ${DEPLOYMENT_CRASH_ENABLED}; then
 fi
 # Elasticsearch Embedded
 if ${DEPLOYMENT_ES_ENABLED}; then
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.embedded.enabled=${DEPLOYMENT_ES_EMBEDDED}"
     CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${EXO_ES_HTTP_PORT}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.index.server.url=http://127.0.0.1:${EXO_ES_HTTP_PORT}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.search.server.url=http://127.0.0.1:${EXO_ES_HTTP_PORT}"
     CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data=${CATALINA_HOME}/${EXO_ES_PATH_DATA}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Des.node.name=${INSTANCE_KEY}"
 fi
 # eXo Addon Chat
 if ${DEPLOYMENT_CHAT_ENABLED}; then

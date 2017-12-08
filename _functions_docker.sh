@@ -67,6 +67,13 @@ delete_docker_volume() {
    fi
 }
 
+# $1 volume name
+create_docker_volume() {
+  volume=${1}
+
+  ${DOCKER_CMD} volume create --name ${volume}
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_DOCKER_LOADED=true

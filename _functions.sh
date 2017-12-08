@@ -27,6 +27,7 @@ source "${SCRIPT_DIR}/_functions_tomcat.sh"
 source "${SCRIPT_DIR}/_functions_jbosseap.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_database.sh"
+source "${SCRIPT_DIR}/_functions_es.sh"
 
 # #################################################################################
 #
@@ -148,6 +149,12 @@ Environment Variables
 
   DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
 
+  DEPLOYMENT_ES_ENABLED             : Do we need to configure elasticsearch (default: true; values : true|false)
+  DEPLOYMENT_ES_EMBEDDED            : Do we use an embedded Elasticsearch deployment or not (default: true; values: true|false)
+  DEPLOYMENT_ES_IMAGE               : Which docker image to use for standalone elasticsearch (default: exoplatform/elasticsearch)
+  DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the ES image to use (default 1.1.0)
+  DEPLOYMENT_ES_HEAP                : Size of Elasticsearch heap (default: 512m)
+
 EOF
 
 }
@@ -235,6 +242,9 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
+      configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
+      configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
+      configurable_env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
@@ -605,6 +615,7 @@ initialize_product_settings() {
 
    do_get_plf_settings
    do_get_database_settings
+   do_get_es_settings
 }
 
 #
@@ -699,11 +710,11 @@ do_init_empty_data(){
     do_drop_chat_mongo_database
     do_create_chat_mongo_database
   fi
-  if ${DEPLOYMENT_ES_ENABLED}; then
-    do_drop_es_data
-  fi
+  do_drop_es_data
   do_drop_data
+
   do_create_data
+  do_create_es
   echo_info "Done"
 }
 
@@ -792,15 +803,6 @@ do_unpack_server() {
     ;;
   esac
   echo_info "Server unpacked"
-}
-
-#
-# Drops all Elasticsearch datas used by the instance.
-#
-do_drop_es_data() {
-  echo_info "Drops Elasticsearch instance datas ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}
-  echo_info "Done."
 }
 
 #
@@ -983,6 +985,7 @@ do_deploy() {
       if ${DEPLOYMENT_CHAT_ENABLED}; then
         do_create_chat_mongo_database
       fi
+      do_create_es
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -997,6 +1000,7 @@ do_deploy() {
         if ${DEPLOYMENT_CHAT_ENABLED}; then
           do_create_chat_mongo_database
         fi
+        do_create_es
       fi
       )
     fi
@@ -1065,6 +1069,7 @@ do_start() {
   backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
 
   do_start_database
+  do_start_es
 
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
@@ -1237,6 +1242,7 @@ do_stop() {
       echo_info "Server stopped."
 
       do_stop_database
+      do_stop_es
 
     else
       echo_warn "No server directory to stop it"
@@ -1267,6 +1273,7 @@ do_undeploy() {
     if ${DEPLOYMENT_CHAT_ENABLED}; then
       do_drop_chat_mongo_database
     fi
+    do_drop_es_data
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
     # Delete Awstat config
     rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf

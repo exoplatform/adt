@@ -341,7 +341,7 @@ do_configure_tomcat_setenv() {
   if [ "${TOMCAT_SETENV_SCRIPT}" != "UNSET" ]; then
     echo_info "Installing custom setenv.sh script $TOMCAT_SETENV_SCRIPT ..."
     cp ${TOMCAT_SETENV_SCRIPT} ${DEPLOYMENT_DIR}/bin/setenv.sh
-	chmod 755 ${DEPLOYMENT_DIR}/bin/setenv.sh
+    chmod 755 ${DEPLOYMENT_DIR}/bin/setenv.sh
     echo_info "Done."
   fi
 

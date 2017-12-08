@@ -404,6 +404,7 @@ function componentProductHtmlPopover ($deployment_descriptor) {
   $content .= '<strong>Database:</strong> '.$deployment_descriptor->DATABASE.'<br/>';
   $content .= '<strong>Visibility:</strong> '.$deployment_descriptor->DEPLOYMENT_APACHE_SECURITY.'&nbsp;'.componentVisibilityIcon($deployment_descriptor);
   $content .= "<br/><strong>HTTPS available:</strong> " . ($deployment_descriptor->DEPLOYMENT_APACHE_HTTPS_ENABLED ? "yes" : "no");
+  $content .= "<br/><strong>ES embedded:</strong> " . ($deployment_descriptor->DEPLOYMENT_ES_EMBEDDED ? "yes" : "no");
   //SWF-3125: Use Apache version to know if WebSocket can be enabled.
   $content .= "<br/><strong>WebSocket available:</strong> " . ((strcmp($deployment_descriptor->ACCEPTANCE_APACHE_VERSION_MINOR, "2.4") == 0 && $deployment_descriptor->DEPLOYMENT_APACHE_WEBSOCKET_ENABLED) ? "yes" : "no");
   $content .= "<br/><strong>Deployed extensions:</strong> " . $deployment_descriptor->DEPLOYMENT_EXTENSIONS;
