@@ -185,40 +185,14 @@ do_configure_tomcat_datasources() {
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       # Deploy the Mysql driver
-      if [ ! -f ${DEPLOYMENT_DIR}/lib/mysql-connector*.jar ]; then
-        MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
-        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}` ]; then
-          if ${ADT_OFFLINE}; then
-            echo_error "ADT is offine and the MySQL JDBC Driver isn't available locally"
-            exit 1
-          else
-            mkdir -p ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/
-            echo_info "Downloading MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
-            set +e
-            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}`
-            if [ "$?" -ne "0" ]; then
-              echo_error "Cannot download ${MYSQL_JAR_URL}"
-              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` # Remove potential corrupted file
-              exit 1
-            fi
-            set -e
-            echo_info "Done."
-          fi
-        fi
-        echo_info "Validating MySQL JDBC Driver integrity ..."
-        set +e
-        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` > /dev/null
-        if [ "$?" -ne "0" ]; then
-          echo_error "Sorry, "`basename ${MYSQL_JAR_URL}`" integrity failed. Local copy is deleted."
-          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}`
-          exit 1
-        fi
-        set -e
-        echo_info "MySQL JDBC Driver integrity validated."
-        echo_info "Installing MySQL JDBC Driver ..."
-        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` ${DEPLOYMENT_DIR}/lib/
-        echo_info "Done."
+      if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then 
+        local addon="exo-jdbc-driver-mysql:${DEPLOYMENT_MYSQL_ADDON_VERSION}"
+        echo_info "Using ${addon} addon as jdbc driver"
+        env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
+      else 
+        do_install_mysql_driver ${DEPLOYMENT_DIR}/lib/
       fi
+
       # Patch the configuration files
       if [ -e ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ]; then
         # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
@@ -236,19 +210,33 @@ do_configure_tomcat_datasources() {
       # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-postgres.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
-      env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},exo-jdbc-driver-postgresql:1.0.0"
+      local addon="exo-jdbc-driver-postgresql:${DEPLOYMENT_POSTGRESQL_ADDON_VERSION}"
+      echo_info "Using ${addon} addon as jdbc driver"
+      env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
     ;;
     DOCKER_ORACLE)
       # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-oracle.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
-      do_install_oracle_driver ${DEPLOYMENT_DIR}/lib/
+      if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then
+        local addon="exo-jdbc-driver-oracle:${DEPLOYMENT_ORACLE_ADDON_VERSION}"
+        echo_info "Using ${addon} addon as jdbc driver"
+        env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
+      else
+        do_install_oracle_driver ${DEPLOYMENT_DIR}/lib/
+      fi
     ;;
     DOCKER_SQLSERVER)
       # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-sqlserver.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
-      do_install_sqlserver_driver ${DEPLOYMENT_DIR}/lib/
+      if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then
+        local addon="exo-jdbc-driver-sqlserver:${DEPLOYMENT_SQLSERVER_ADDON_VERSION}"
+        echo_info "Using ${addon} addon as jdbc driver"
+        env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
+      else
+        do_install_sqlserver_driver ${DEPLOYMENT_DIR}/lib/
+      fi
     ;;
     HSQLDB)
       # Patch to reconfigure server.xml for database

@@ -229,11 +229,8 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
       env_var "DEPLOYMENT_SERVER_LOG_FILE" "catalina.out"
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
-      env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
-      env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "9.4.1208" #Default version used to download additional postgresql driver
-      env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.1.0.1"
-      env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
-      env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-RC4" #Add-ons Manager to use
+
+      env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-RC4" #Add-ons Manager to use      
 
       configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
       configurable_env_var "REPOSITORY_USERNAME" ""
@@ -600,6 +597,39 @@ initialize_product_settings() {
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION}"
       else
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
+      fi
+
+      if [[ "${PRODUCT_NAME}" =~ ^(plf) ]]; then
+        # specific configuration for plf deployments
+        # - Database drivers
+        # - TODO add DEPLOYMENT_APPSRV_VERSION
+        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
+          env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
+          env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
+          env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.44" #Default version used to download additional mysql driver
+          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.1.0" # Default version of the jdbc postgresql driver addon to use
+          env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.1.4" #Default version used to download additional postgresql driver
+          env_var "DEPLOYMENT_ORACLE_ADDON_VERSION" "1.1.0" # Default version of the oracle jdbc driver addon to use
+          env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.2.0.1"
+          env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.1.0" # Default version of the sqlserver jdbc driver addon to use
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
+        elif [[ "${PRODUCT_BRANCH}" =~ ^([43]) ]]; then
+          env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+          env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
+          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.0.0" # Default version of the jdbc postgresql driver addon to use
+          env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "9.4.1208" #Default version used to download additional postgresql driver
+          env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.1.0.1"
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft"
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "sqljdbc"
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "private"
+          env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
+        else 
+          echo_error "Invalid plf version \"${PRODUCT_BRANCH}\""
+          exit 1
+        fi
       fi
 
     ;;

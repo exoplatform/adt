@@ -46,43 +46,7 @@ do_configure_jbosseap_datasources() {
     MYSQL | DOCKER_MYSQL | DOCKER_MARIADB)
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
-      if [ ! -f ${DEPLOYMENT_DIR}/standalone/deployments/mysql-connector*.jar ]; then
-        MYSQL_JAR_URL="http://repository.exoplatform.org/public/mysql/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
-        if [ ! -e ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}` ]; then
-          if ${ADT_OFFLINE}; then
-            echo_error "ADT is offine and the MySQL JDBC Driver isn't available locally"
-            exit 1
-          else
-            mkdir -p ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/
-            echo_info "Downloading MySQL JDBC driver from ${MYSQL_JAR_URL} ..."
-            set +e
-            curl --fail --show-error --location-trusted ${MYSQL_JAR_URL} > ${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/`basename ${MYSQL_JAR_URL}`
-            if [ "$?" -ne "0" ]; then
-              echo_error "Cannot download ${MYSQL_JAR_URL}"
-              rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` # Remove potential corrupted file
-              exit 1
-            fi
-            set -e
-            echo_info "Done."
-          fi
-        fi
-        echo_info "Validating MySQL JDBC Driver integrity ..."
-        set +e
-        jar -tf "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` > /dev/null
-        if [ "$?" -ne "0" ]; then
-          echo_error "Sorry, "`basename ${MYSQL_JAR_URL}`" integrity failed. Local copy is deleted."
-          rm -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}`
-          exit 1
-        fi
-        set -e
-        echo_info "MySQL JDBC Driver integrity validated."
-        echo_info "Installing MySQL JDBC Driver ..."
-        cp -f "${DL_DIR}/mysql-connector-java/${DEPLOYMENT_MYSQL_DRIVER_VERSION}/"`basename ${MYSQL_JAR_URL}` ${DEPLOYMENT_DIR}/standalone/deployments/
-
-        env_var "DB_DRIVER" "$(basename ${MYSQL_JAR_URL})"
-
-        echo_info "Done."
-      fi
+      do_install_mysql_driver ${DEPLOYMENT_DIR}/standalone/deployments
     ;;
     DOCKER_POSTGRES)
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-postgres.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
