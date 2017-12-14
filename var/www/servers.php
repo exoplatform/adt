@@ -30,11 +30,13 @@ checkCaches();
                             <th class="col-center">Feature Branch</th>
                             <th class="col-center">Bundle</th>
                             <th class="col-center">Database</th>
+                            <th class="col-center">Mongo</th>
                             <th class="col-center">Server</th>
                             <th class="col-center">S</th>
                             <th class="col-center">Prefix</th>
                             <th class="col-center">HTTP</th>
                             <th class="col-center">ES</th>
+                            <th class="col-center">Mongo</th>
                             <th class="col-center">AJP</th>
                             <th class="col-center"><span rel="tooltip" title="JMX RMI Registration port / JMX RMI Server port">JMX RMI</span></th>
                             <th class="col-center"><span rel="tooltip" title="CRaSH ssh port">CRaSH</span></th>
@@ -97,6 +99,7 @@ checkCaches();
                                 <td class="col-right"><?=$feature_branch?></td>
                                 <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
                                 <td class="col-right"><?=$descriptor_array->DATABASE?></td>
+                                <td class="col-right"><?=$descriptor_array->CHAT_DB?></td>
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_HOST === "acceptance5.exoplatform.org") {
                                     $host_html_color = "color-acceptance5";
@@ -113,6 +116,7 @@ checkCaches();
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_ES_HTTP_PORT?></td>
+                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CHAT_MONGODB_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?> / <?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT?></td>

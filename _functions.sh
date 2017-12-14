@@ -28,6 +28,7 @@ source "${SCRIPT_DIR}/_functions_jbosseap.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_database.sh"
 source "${SCRIPT_DIR}/_functions_es.sh"
+source "${SCRIPT_DIR}/_function_chat.sh"
 
 # #################################################################################
 #
@@ -155,6 +156,14 @@ Environment Variables
   DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the ES image to use (default 1.1.0)
   DEPLOYMENT_ES_HEAP                : Size of Elasticsearch heap (default: 512m)
 
+  DEPLOYMENT_CHAT_ENABLE            : Do we need to initiallize chat environment
+  DEPLOYMENT_CHAT_EMBEDDED          : Do we use the embedded Chat Server or not (default: true; values: true|false)
+  DEPLOYMENT_CHAT_SERVER_IMAGE      : Which chat server image to use (default: exoplatform/chat-server)"
+  DEPLOYMENT_CHAT_SERVER_VERSION    : Which version of chat server to use with the chat server
+  DEPLOYMENT_CHAT_MONGODB_TYPE      : Type of mongodb deployment (default: DOCKER if chat embedded is true, HOST otherwise, values: HOST|DOCKER) 
+  DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
+  DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
+
 EOF
 
 }
@@ -247,8 +256,17 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
 
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
+      configurable_env_var "DEPLOYMENT_CHAT_EMBEDDED" true
       configurable_env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
-      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
+      if ${DEPLOYMENT_CHAT_EMBEDDED}; then
+        configurable_env_var "DEPLOYMENT_CHAT_MONGODB_TYPE" "HOST"
+        configurable_env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
+      else
+        # For standalone we force docker mongodb
+        configurable_env_var "DEPLOYMENT_CHAT_MONGODB_TYPE" "DOCKER"
+      fi
+      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_IMAGE" "mongo"
+      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.2"
 
       configurable_env_var "DEPLOYMENT_SKIP_ACCOUNT_SETUP" false
 
@@ -586,12 +604,6 @@ initialize_product_settings() {
           exit 1
         ;;
       esac
-      if ${DEPLOYMENT_CHAT_ENABLED}; then
-        # Build a database name without dot, minus ...
-        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${INSTANCE_KEY}"
-        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//./_}"
-        env_var DEPLOYMENT_CHAT_MONGODB_NAME "${DEPLOYMENT_CHAT_MONGODB_NAME//-/_}"
-      fi
 
       if [ -z "${INSTANCE_ID}" ]; then
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION}"
@@ -646,6 +658,7 @@ initialize_product_settings() {
    do_get_plf_settings
    do_get_database_settings
    do_get_es_settings
+   do_get_chat_settings
 }
 
 #
@@ -736,10 +749,9 @@ do_init_empty_data(){
     do_drop_database
     do_create_database
   fi
-  if ${DEPLOYMENT_CHAT_ENABLED}; then
-    do_drop_chat_mongo_database
-    do_create_chat_mongo_database
-  fi
+
+  do_init_empty_chat_database
+
   do_drop_es_data
   do_drop_data
 
@@ -863,7 +875,9 @@ do_configure_apache() {
   echo_info "Done."
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
-  if ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
+  if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
+    evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  elif ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
     evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   else
     evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
@@ -960,6 +974,12 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     validate_env_var "DEPLOYMENT_CHAT_WEEMO_KEY"
+
+    if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then 
+        local addon="exo-chat-client:${DEPLOYMENT_CHAT_SERVER_VERSION}"
+        echo_info "Using ${addon} addon for chat server client"
+        env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
+    fi
   fi
 
   # Generic Ports
@@ -980,6 +1000,14 @@ do_deploy() {
 
   # Elasticsearch (ES) ports
   env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
+
+  if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then
+    env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "${DEPLOYMENT_PORT_PREFIX}17"
+  fi
+
+  if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
+    configurable_env_var "DEPLOYMENT_CHAT_SERVER_PORT" "${DEPLOYMENT_PORT_PREFIX}25"
+  fi
 
   if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
@@ -1003,7 +1031,6 @@ do_deploy() {
     # Stop the server
     do_stop
   fi
-
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
     _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
@@ -1012,9 +1039,7 @@ do_deploy() {
       echo_warn "This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
       do_create_database
-      if ${DEPLOYMENT_CHAT_ENABLED}; then
-        do_create_chat_mongo_database
-      fi
+      do_create_chat_database
       do_create_es
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
@@ -1027,9 +1052,7 @@ do_deploy() {
       else
         mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
         do_create_database
-        if ${DEPLOYMENT_CHAT_ENABLED}; then
-          do_create_chat_mongo_database
-        fi
+        do_create_chat_database
         do_create_es
       fi
       )
@@ -1065,9 +1088,11 @@ do_deploy() {
 
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
+      do_get_tomcat_settings
       do_configure_tomcat_server
     ;;
     jbosseap)
+      do_get_jboss_settings
       do_configure_jbosseap_server
     ;;
     *)
@@ -1076,6 +1101,8 @@ do_deploy() {
       exit 1
     ;;
   esac
+  # Hack 
+  do_configure_chat
   do_configure_apache
   do_create_deployment_descriptor
   echo_info "Server deployed"
@@ -1100,6 +1127,9 @@ do_start() {
 
   do_start_database
   do_start_es
+  do_start_chat_server
+  # We need this variable for the setenv
+  export DEPLOYMENT_CHAT_SERVER_PORT
 
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
@@ -1273,6 +1303,7 @@ do_stop() {
 
       do_stop_database
       do_stop_es
+      do_stop_chat_server
 
     else
       echo_warn "No server directory to stop it"
@@ -1300,9 +1331,7 @@ do_undeploy() {
     if ${DEPLOYMENT_DATABASE_ENABLED}; then
       do_drop_database
     fi
-    if ${DEPLOYMENT_CHAT_ENABLED}; then
-      do_drop_chat_mongo_database
-    fi
+    do_drop_chat
     do_drop_es_data
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
     # Delete Awstat config

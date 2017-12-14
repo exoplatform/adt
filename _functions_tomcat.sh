@@ -25,6 +25,9 @@ source "${SCRIPT_DIR}/_functions_plf.sh"
 # #############################################################################
 # TDB : Use functions that aren't using global vars
 # #############################################################################
+do_get_tomcat_settings() {
+  export DEPLOYMENT_SETTINGS_DIR="${DEPLOYMENT_DIR}/gatein/conf"
+}
 
 do_configure_tomcat_jmx() {
   if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then

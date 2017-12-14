@@ -314,6 +314,20 @@ function getLocalAcceptanceInstances()
       } elseif ( stripos($descriptor_array['DEPLOYMENT_DATABASE_TYPE'], "docker") !== false ) {
         $descriptor_array['DATABASE'] = str_replace("docker_", "", strtolower($descriptor_array['DEPLOYMENT_DATABASE_TYPE'])) . ":" . $descriptor_array['DEPLOYMENT_DATABASE_VERSION'];
       }
+
+      // Chat informations
+      if ( $descriptor_array['DEPLOYMENT_CHAT_ENABLED'] == true ) {
+        if ($descriptor_array['DEPLOYMENT_CHAT_MONGODB_TYPE'] == 'DOCKER') {
+          $descriptor_array['CHAT_DB'] = "mongo:" . $descriptor_array['DEPLOYMENT_CHAT_MONGODB_VERSION'];
+        } else {
+          if ($descriptor_array['DEPLOYMENT_CHAT_MONGODB_PORT'] == '27017') {
+            $descriptor_array['CHAT_DB'] = "mongo:2.6";
+          } elseif ($descriptor_array['DEPLOYMENT_CHAT_MONGODB_PORT'] == '27018') {
+            $descriptor_array['CHAT_DB'] = "mongo:3.2";
+          }
+        }
+      }
+      
       // status
       if (file_exists($descriptor_array['DEPLOYMENT_PID_FILE']) && processIsRunning(file_get_contents($descriptor_array['DEPLOYMENT_PID_FILE'])))
         $descriptor_array['DEPLOYMENT_STATUS'] = "Up";

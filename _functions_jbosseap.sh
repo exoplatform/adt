@@ -25,6 +25,9 @@ source "${SCRIPT_DIR}/_functions_plf.sh"
 # #############################################################################
 # TDB : Use functions that aren't using global vars
 # #############################################################################
+do_get_jboss_settings() {
+  export DEPLOYMENT_SETTINGS_DIR="${DEPLOYMENT_DIR}/standalone/configuration/gatein"
+}
 
 do_configure_jbosseap_jmx() {
   # JMX settings

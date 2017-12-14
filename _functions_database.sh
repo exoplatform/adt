@@ -60,7 +60,7 @@ do_configure_datasource_file() {
 
 do_get_database_settings() {
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
-    # Build a database name without dot, minus ...
+    # Build a container name prefix without dot, minus ...
     env_var DEPLOYMENT_DATABASE_NAME "${INSTANCE_KEY}"
     env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//./_}"
     env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
@@ -200,35 +200,6 @@ do_drop_database() {
       exit 1
     ;;
   esac
-}
-
-#
-# Creates a MongoDB database for the instance. Don't drop it if it already exists.
-#
-do_create_chat_mongo_database() {
-  echo_info "Creating MongoDB database ${DEPLOYMENT_CHAT_MONGODB_NAME} ..."
-  if [ ! command -v mongo &>/dev/null ]; then
-   echo_error "mongo binary doesn't exist on the system. Please install MongoDB client to be able to manage the MongoDB Server"
-   exit 1
-  fi;
-  # Database are automatically created the first time we access it
-  mongo ${DEPLOYMENT_CHAT_MONGODB_HOSTNAME}:${DEPLOYMENT_CHAT_MONGODB_PORT}/${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.getCollectionNames()" > /dev/null
-  echo 'show dbs' | mongo --quiet
-  echo_info "Done."
-}
-
-#
-# Drops the MongoDB database used by the instance.
-#
-do_drop_chat_mongo_database() {
-  echo_info "Drops MongoDB database ${DEPLOYMENT_CHAT_MONGODB_NAME} ..."
-  if [ ! command -v mongo &>/dev/null ]; then
-   echo_error "mongo binary doesn't exist on the system. Please install MongoDB client to be able to manage the MongoDB Server"
-   exit 1
-  fi;
-  mongo ${DEPLOYMENT_CHAT_MONGODB_HOSTNAME}:${DEPLOYMENT_CHAT_MONGODB_PORT}/${DEPLOYMENT_CHAT_MONGODB_NAME} --quiet --eval "db.dropDatabase()" > /dev/null
-  echo 'show dbs' | mongo --quiet
-  echo_info "Done."
 }
 
 #

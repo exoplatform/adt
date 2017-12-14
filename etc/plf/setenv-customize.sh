@@ -51,10 +51,16 @@ if ${DEPLOYMENT_ES_ENABLED}; then
 fi
 # eXo Addon Chat
 if ${DEPLOYMENT_CHAT_ENABLED}; then
+    if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
+        CATALINA_OPTS="${CATALINA_OPTS} -Dchat.standaloneChatServer=true"
+        CATALINA_OPTS="${CATALINA_OPTS} -Dchat.chatServerBase=http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}"
+    else 
+        CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbServerHost=${EXO_CHAT_MONGODB_HOSTNAME}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbServerPort=${EXO_CHAT_MONGODB_PORT}"
+    fi
     CATALINA_OPTS="${CATALINA_OPTS} -Dchat.weemoKey=${EXO_CHAT_WEEMO_KEY}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbName=${EXO_CHAT_MONGODB_NAME}"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbServerHost=${EXO_CHAT_MONGODB_HOSTNAME}"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbServerPort=${EXO_CHAT_MONGODB_PORT}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dchat.chatPassPhrase=${EXO_CHAT_MONGODB_NAME}"
 fi
 # Skip account creation form
 CATALINA_OPTS="${CATALINA_OPTS} -Daccountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP}"
