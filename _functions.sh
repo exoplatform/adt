@@ -28,7 +28,7 @@ source "${SCRIPT_DIR}/_functions_jbosseap.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_database.sh"
 source "${SCRIPT_DIR}/_functions_es.sh"
-source "${SCRIPT_DIR}/_function_chat.sh"
+source "${SCRIPT_DIR}/_functions_chat.sh"
 
 # #################################################################################
 #
