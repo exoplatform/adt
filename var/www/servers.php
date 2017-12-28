@@ -101,12 +101,12 @@ checkCaches();
                                 <td class="col-right"><?=$descriptor_array->DATABASE?></td>
                                 <td class="col-right"><?=$descriptor_array->CHAT_DB?></td>
                                 <?php
-                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance5.exoplatform.org") {
-                                    $host_html_color = "color-acceptance5";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance7.exoplatform.org") {
+                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance7.exoplatform.org") {
                                     $host_html_color = "color-acceptance7";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance8.exoplatform.org") {
                                     $host_html_color = "color-acceptance8";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance9.exoplatform.org") {
+                                    $host_html_color = "color-acceptance9";
                                 } else {
                                     $host_html_color = "color-acceptanceX";
                                 }
@@ -143,13 +143,6 @@ checkCaches();
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td class="col-center">acceptance5.exoplatform.org</td>
-                    <td class="col-center">prj03</td>
-                    <td class="col-center"><?=$servers_counter["acceptance5.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance5.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance5.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon W3530 2.80GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 2TB (sda = HGST HUS724020ALA640 / sdb = HGST HUS724020ALA640)</td>
-                  </tr>
                   <tr> 
                     <td class="col-center">acceptance7.exoplatform.org</td> 
                     <td class="col-center">prd05</td> 
