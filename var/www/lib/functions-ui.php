@@ -111,6 +111,9 @@ function buildTableTitleDev($plf_branch) {
     case "5.0.x":
       $content="Platform " . $plf_branch . " based builds (R&D) - next product release (no date yet)";
       break;
+    case "5.1.x":
+      $content="Platform " . $plf_branch . " based builds (R&D)";
+      break;
     case "5.x":
       $content="Platform " . $plf_branch . " based builds (R&D) - perhaps next features ;-)"
       ; break;
@@ -120,6 +123,7 @@ function buildTableTitleDev($plf_branch) {
     case "4.3.x Demo":
     case "4.4.x Demo":
     case "5.0.x Demo":
+    case "5.1.x Demo":
       $content="Platform " . $plf_branch . "s";
       break;
     case "COMPANY":

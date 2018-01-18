@@ -616,7 +616,7 @@ initialize_product_settings() {
         # specific configuration for plf deployments
         # - Database drivers
         # - TODO add DEPLOYMENT_APPSRV_VERSION
-        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
+        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
           env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
           env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.44" #Default version used to download additional mysql driver
