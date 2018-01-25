@@ -159,6 +159,7 @@ do_drop_chat_database() {
   else
     echo_info "Removing docker volume ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}"
     delete_docker_container ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
+    delete_docker_volume ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
   fi
   echo_info "Done."
 }
