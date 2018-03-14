@@ -85,7 +85,7 @@ function pageFooter () {
   ?>
 <!-- Footer ================================================== -->
 <div id="footer">
-Copyright &copy; 2006-2017. All rights Reserved, eXo Platform SAS -
+Copyright &copy; 2006-2018. All rights Reserved, eXo Platform SAS -
 <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" title="http://<?= $_SERVER['SERVER_NAME'] ?> usage statistics" target="_blank"><img src="/images/server_chart.png" alt="Statistics" width="16" height="16" class="left icon"/></a>
 </div>
 <script type="text/javascript">
