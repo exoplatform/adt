@@ -118,6 +118,7 @@ Environment Variables
   DEPLOYMENT_LABELS                 : Comma separated labels for a deployment \" (default: none)
 
   DEPLOYMENT_SKIP_ACCOUNT_SETUP     : Do you want to skip the account creation form and use default accounts (default: false; values : true | false)
+  DEPLOYMENT_SKIP_REGISTER          : Do you want to skip the register step (default: false; values : true | false)
 
   DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private; values : private | public)
   DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
@@ -270,6 +271,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.2"
 
       configurable_env_var "DEPLOYMENT_SKIP_ACCOUNT_SETUP" false
+      configurable_env_var "DEPLOYMENT_DEPLOYMENT_SKIP_REGISTER" false
 
       configurable_env_var "DEPLOYMENT_LABELS" ""
 
@@ -498,7 +500,7 @@ initialize_product_settings() {
           env_var EXO_PROFILES "all"
         ;;
         # ID should be no longer than 10 (plfenttrial is too long)
-        plfentrial|plfsales)
+        plfentrial)
           # Platform EE + chat, remote-edit, site-template, task, video
           env_var PRODUCT_DESCRIPTION "Platform EE Trial"
           env_var ARTIFACT_REPO_GROUP "private"
@@ -509,6 +511,18 @@ initialize_product_settings() {
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_CHAT_ENABLED true
+        ;;
+        plfsales)
+          env_var PRODUCT_DESCRIPTION "Platform EE Trial"
+          env_var ARTIFACT_REPO_GROUP "private"
+          env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
+          env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
+          env_var ARTIFACT_CLASSIFIER "trial"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var EXO_PROFILES "all"
+          env_var DEPLOYMENT_CHAT_ENABLED true
+          env_var DEPLOYMENT_SKIP_REGISTER true
         ;;
         addonchat)
           env_var PRODUCT_DESCRIPTION "Platform 4.0 EE + Chat eXo Addon"

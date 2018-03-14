@@ -62,6 +62,10 @@ if ${DEPLOYMENT_CHAT_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbName=${EXO_CHAT_MONGODB_NAME}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dchat.chatPassPhrase=${EXO_CHAT_MONGODB_NAME}"
 fi
+# Skip register form
+if ${DEPLOYMENT_SKIP_REGISTER}; then
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.registration.skip=true"
+fi
 # Skip account creation form
 CATALINA_OPTS="${CATALINA_OPTS} -Daccountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dexo.accountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP}"
