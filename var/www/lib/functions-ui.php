@@ -18,7 +18,6 @@ function pageHeader ($title="") {
     <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
     <script src="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/js/bootstrap.min.js" type="text/javascript"></script>
-    </script>
   <?php
 }
 
