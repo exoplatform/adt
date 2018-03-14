@@ -164,6 +164,44 @@ function componentLabels ($deployment_descriptor) {
 }
 
 /**
+ * Return the markup for addons labels
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function addonsLabels ($deployment_descriptor) {
+  $content="";
+
+  $content.=addonsDistributionLabels($deployment_descriptor)."&nbsp;";
+
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_ADDONS')) {
+    if (is_array($deployment_descriptor->DEPLOYMENT_ADDONS)) {
+      $labels = $deployment_descriptor->DEPLOYMENT_ADDONS;
+    } else {
+      $labels[] = $deployment_descriptor->DEPLOYMENT_ADDONS;
+    }
+    foreach ($labels as $label) {
+      $label_array=explode(':',$label,2);
+      $content.='<span class="label label-addon" rel="tooltip" data-original-title="version: '.(isset($label_array[1]) ? $label_array[1] : 'latest').'">'.$label_array[0].'</span>&nbsp;';
+    }
+  }
+  return $content;
+}
+
+/**
+ * Return the markup for distribution addons labels
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function addonsDistributionLabels ($deployment_descriptor) {
+  $content='<span class="label label-addon" rel="tooltip" data-original-title="distribution add-ons: '.$deployment_descriptor->PRODUCT_ADDONS_DISTRIB.'"><i class="icon-gift"></i></span>';
+  return $content;
+}
+
+/**
  * Return the markup for the Deployment Status
  *
  * @param $deployment_descriptor
@@ -415,8 +453,6 @@ function componentProductHtmlPopover ($deployment_descriptor) {
   }
   //SWF-3125: Use Apache version to know if WebSocket can be enabled.
   $content .= "<br/><strong>WebSocket available:</strong> " . ((strcmp($deployment_descriptor->ACCEPTANCE_APACHE_VERSION_MINOR, "2.4") == 0 && $deployment_descriptor->DEPLOYMENT_APACHE_WEBSOCKET_ENABLED) ? "yes" : "no");
-  $content .= "<br/><strong>Deployed extensions:</strong> " . $deployment_descriptor->DEPLOYMENT_EXTENSIONS;
-  $content .= "<br/><strong>Deployed add-ons:</strong> " . $deployment_descriptor->DEPLOYMENT_ADDONS;
   $content .= "<br/><strong>Virtual Host:</strong> " . preg_replace("/https?:\/\/(.*)/", "$1", $deployment_descriptor->DEPLOYMENT_URL);
   if ($deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS) {
       $content .= "<br/><strong>Virtual Host Alias:</strong> " . $deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS;

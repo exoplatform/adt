@@ -44,12 +44,13 @@ if (isDeploymentInCategoryArray($qa_instances)) {
         <tr>
             <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
             <td>
+                <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
                 <?= componentProductOpenLink($descriptor_array); ?>
+                <br/><?= addonsLabels($descriptor_array); ?>
             </td>
             <td class="col-center">
-                <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-                <?= componentProductVersion($descriptor_array); ?>&nbsp;
-                <?= componentDownloadIcon($descriptor_array); ?>
+                <?= componentDownloadIcon($descriptor_array); ?>&nbsp;
+                <?= componentProductVersion($descriptor_array); ?>
             </td>
             <td class="col-right">deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
             <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>

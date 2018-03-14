@@ -305,6 +305,11 @@ td.category-row {
   font-size: 9px;
 }
 
+.label-addon {
+  font-size: 11px;
+  background-color: #548bc4c7;
+}
+
 /* Make the table header 45 deg rotated */
 
 .table-header-rotated {

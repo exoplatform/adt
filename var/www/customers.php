@@ -46,6 +46,7 @@ if (isDeploymentInCategoryArray($cp_instances)) {
             <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
             <td>
               <?= componentProductOpenLink($descriptor_array); ?>
+              <br/><?= addonsLabels($descriptor_array); ?>
               <span class="pull-right">
                 <a href="https://ci.exoplatform.org/job/platform-enterprise-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
                   <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;

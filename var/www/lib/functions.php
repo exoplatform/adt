@@ -341,6 +341,74 @@ function getLocalAcceptanceInstances()
         $descriptor_array['DEPLOYMENT_LABELS']=explode(',',$descriptor_array['DEPLOYMENT_LABELS']);
       }
 
+      // Deployment Addons
+      if (empty($descriptor_array['DEPLOYMENT_ADDONS'])) {
+        $descriptor_array['DEPLOYMENT_ADDONS']=array();
+      } else {
+        $descriptor_array['DEPLOYMENT_ADDONS']=explode(',',$descriptor_array['DEPLOYMENT_ADDONS']);
+      }
+      
+      // Distribution Addons
+      // $descriptor_array['PRODUCT_ADDONS_DISTRIB']=array();
+      switch ($descriptor_array['PRODUCT_NAME']) {
+        case 'plfcom':
+          switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '5.0.x':
+            case '4.4.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded";
+              break;
+            case '4.3.x':
+            case '4.2.x':
+            case '4.1.x':
+            case '4.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="none";
+              break;
+            default:
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";
+              break;
+          }
+          break;
+        case 'plfent':
+          switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '5.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin";
+              break;
+            case '4.4.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded";
+              break;
+            case '4.3.x':
+            case '4.2.x':
+            case '4.1.x':
+            case '4.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="none";
+              break;
+            default:
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";
+              break;
+          }
+          break;
+        case 'plfentrial':
+        case 'plfsales':
+          switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '5.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin / exo-chat";
+              break;
+            case '4.4.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-chat";
+              break;
+            case '4.3.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-remote-edit / exo-tasks / exo-site-templates / exo-chat / exo-video-calls";
+              break;
+            default:
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";
+              break;
+          }
+          break;
+        default:
+          $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";
+          break;
+      }
+
       $file_base = getenv('ADT_DATA') . "/conf/features/" . $descriptor_array['INSTANCE_KEY'];
       $file_spec = $file_base  . ".spec";
       $file_status = $file_base . ".status";
