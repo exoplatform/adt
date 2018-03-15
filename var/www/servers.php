@@ -93,7 +93,7 @@ checkCaches();
                                 <td>
                                   <?= componentAppServerIcon($descriptor_array); ?>
                                   <?= componentProductHtmlLabel($descriptor_array); ?>
-                                  <br/><?= addonsLabels($descriptor_array); ?>
+                                  <br/><?= componentAddonsTags($descriptor_array); ?>
                                   <br/><?= componentLabels($descriptor_array); ?>
                                 </td>
                                 <td class="col-left"><?= componentProductVersion($descriptor_array); ?></td>

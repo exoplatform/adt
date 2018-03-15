@@ -169,10 +169,10 @@ function componentLabels ($deployment_descriptor) {
  *
  * @return string html markup
  */
-function addonsLabels ($deployment_descriptor) {
+function componentAddonsTags ($deployment_descriptor) {
   $content="";
 
-  $content.=addonsDistributionLabels($deployment_descriptor)."&nbsp;";
+  $content.=componentAddonsDistributionTags($deployment_descriptor)."&nbsp;";
 
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_ADDONS')) {
     if (is_array($deployment_descriptor->DEPLOYMENT_ADDONS)) {
@@ -195,7 +195,7 @@ function addonsLabels ($deployment_descriptor) {
  *
  * @return string html markup
  */
-function addonsDistributionLabels ($deployment_descriptor) {
+function componentAddonsDistributionTags ($deployment_descriptor) {
   $content='<span class="label label-addon" rel="tooltip" data-original-title="distribution add-ons: '.$deployment_descriptor->PRODUCT_ADDONS_DISTRIB.'"><i class="icon-gift"></i></span>';
   return $content;
 }

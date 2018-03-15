@@ -46,7 +46,7 @@ if (isDeploymentInCategoryArray($qa_instances)) {
             <td>
                 <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
                 <?= componentProductOpenLink($descriptor_array); ?>
-                <br/><?= addonsLabels($descriptor_array); ?>
+                <br/><?= componentAddonsTags($descriptor_array); ?>
             </td>
             <td class="col-center">
                 <?= componentDownloadIcon($descriptor_array); ?>&nbsp;
