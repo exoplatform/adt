@@ -156,7 +156,7 @@ function componentLabels ($deployment_descriptor) {
       $labels[] = $deployment_descriptor->DEPLOYMENT_LABELS;
     }
     foreach ($labels as $label) {
-      $content.='<span class="label">'.$label.'</span>&nbsp;';
+      $content.='<span class="label label-label">'.$label.'</span>&nbsp;';
     }
   }
   return $content;
