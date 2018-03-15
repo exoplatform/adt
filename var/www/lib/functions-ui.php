@@ -108,10 +108,10 @@ function buildTableTitleDev($plf_branch) {
       $content="Platform " . $plf_branch . " based builds (Maintenance)";
       break;
     case "5.0.x":
-      $content="Platform " . $plf_branch . " based builds (R&D) - next product release (no date yet)";
+      $content="Platform " . $plf_branch . " based builds (R&D) - release April 1st 2018";
       break;
     case "5.1.x":
-      $content="Platform " . $plf_branch . " based builds (R&D)";
+      $content="Platform " . $plf_branch . " based builds (R&D) - next product release (no date yet)";
       break;
     case "5.x":
       $content="Platform " . $plf_branch . " based builds (R&D) - perhaps next features ;-)"
