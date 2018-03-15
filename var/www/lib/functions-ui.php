@@ -424,10 +424,15 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
  * @return string html markup
  */
 function componentProductVersion ($deployment_descriptor) {
+  $timestamp=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
   $content=$deployment_descriptor->BASE_VERSION;
-  $content.='<span style="font-size: small" class="muted">';
-  $content.=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
-  $content.='</span>';
+  if (!empty($timestamp)) {
+    $content.='<span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">';
+    if (!empty($deployment_descriptor->BRANCH_NAME)) {
+      $content.='-'.$deployment_descriptor->BRANCH_NAME;
+    }
+    $content.='-SNAPSHOT</span>';
+  }
   return $content;
 }
 
