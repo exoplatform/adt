@@ -369,6 +369,7 @@ function getLocalAcceptanceInstances()
           }
           break;
         case 'plfent':
+        case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '5.0.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin";
