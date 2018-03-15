@@ -112,7 +112,7 @@ checkCaches();
                                     $host_html_color = "color-acceptanceX";
                                 }
                                 ?>
-                                <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=$descriptor_array->ACCEPTANCE_HOST?></td>
+                                <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=str_replace ('.exoplatform.org', '', $descriptor_array->ACCEPTANCE_HOST) ?></td>
                                 <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
                                 <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
