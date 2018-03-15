@@ -629,7 +629,7 @@ initialize_product_settings() {
       if [[ "${PRODUCT_NAME}" =~ ^(plf) ]]; then
         # specific configuration for plf deployments
         # - Database drivers
-        # - TODO add DEPLOYMENT_APPSRV_VERSION
+        # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
         if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
           env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
@@ -643,7 +643,16 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
-        elif [[ "${PRODUCT_BRANCH}" =~ ^([43]) ]]; then
+
+          if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
+            env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
+          elif [[ "${PRODUCT_NAME}" =~ ^(plfenteap)$ ]]; then
+            env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+          else 
+            echo_error "Invalid product name \"${PRODUCT_NAME}\""
+            exit 1
+          fi
+        elif [[ "${PRODUCT_BRANCH}" =~ ^4 ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
           env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
           env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.0.0" # Default version of the jdbc postgresql driver addon to use
@@ -653,12 +662,30 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "sqljdbc"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "private"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
+          if [[ "${PRODUCT_BRANCH}" =~ ^4.4. ]]; then
+            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+            elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "6.4"
+            fi
+          elif [[ "${PRODUCT_BRANCH}" =~ ^(4.[123].) ]]; then
+            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+            elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "6.2"
+            fi
+          elif [[ "${PRODUCT_BRANCH}" =~ ^(4.0.) ]]; then
+            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+            elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "6.1"
+            fi
+          fi 
         else 
           echo_error "Invalid plf version \"${PRODUCT_BRANCH}\""
           exit 1
         fi
       fi
-
     ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
