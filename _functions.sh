@@ -644,7 +644,7 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
 
-          if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
+          if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
           elif [[ "${PRODUCT_NAME}" =~ ^(plfenteap)$ ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
@@ -663,13 +663,13 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "private"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
           if [[ "${PRODUCT_BRANCH}" =~ ^4.4. ]]; then
-            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
+            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
             elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "6.4"
             fi
           elif [[ "${PRODUCT_BRANCH}" =~ ^(4.[123].) ]]; then
-            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
+            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
             elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "6.2"
