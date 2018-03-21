@@ -5,7 +5,7 @@
              <buffer-cache name="default"/>
              <server name="default-server">
 +                <ajp-listener name="ajp" socket-binding="ajp"/>
-                 <http-listener name="default" socket-binding="http" redirect-socket="https"/>
+                 <http-listener name="default" socket-binding="http" redirect-socket="https" max-post-size="209715200"/>
                  <host name="default-host" alias="localhost">
                      <location name="/" handler="exoplatform-welcome-content"/>
 @@ -794,13 +795,13 @@
