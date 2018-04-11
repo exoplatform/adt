@@ -1,0 +1,31 @@
+--- /tmp/standalone-exo.xml
++++ /tmp/patchs/standalone-exo-ports.xml
+@@ -876,6 +876,7 @@
+         <subsystem xmlns="urn:jboss:domain:undertow:4.0">
+             <buffer-cache name="default"/>
+             <server name="default-server">
++                <ajp-listener name="ajp" socket-binding="ajp"/>
+                 <http-listener name="default" socket-binding="http" redirect-socket="https" enable-http2="true" max-post-size="209715200"/>
+                 <https-listener name="https" socket-binding="https" security-realm="ApplicationRealm" enable-http2="true" max-post-size="209715200"/>
+                 <host name="default-host" alias="localhost">
+@@ -794,13 +795,13 @@
+         </interface>
+     </interfaces>
+     <socket-binding-group name="standard-sockets" default-interface="public" port-offset="${jboss.socket.binding.port-offset:0}">
+-        <socket-binding name="management-http" interface="management" port="${jboss.management.http.port:9990}"/>
+-        <socket-binding name="management-https" interface="management" port="${jboss.management.https.port:9993}"/>
+-        <socket-binding name="ajp" port="${jboss.ajp.port:8009}"/>
+-        <socket-binding name="http" port="${jboss.http.port:8080}"/>
+-        <socket-binding name="https" port="${jboss.https.port:8443}"/>
+-        <socket-binding name="txn-recovery-environment" port="4712"/>
+-        <socket-binding name="txn-status-manager" port="4713"/>
++        <socket-binding name="management-http" interface="management" port="@MGT_HTTP_PORT@"/>
++        <socket-binding name="management-https" interface="management" port="@MGT_HTTPS_PORT@"/>
++        <socket-binding name="ajp" port="@AJP_PORT@"/>
++        <socket-binding name="http" port="@HTTP_PORT@"/>
++        <socket-binding name="https" port="@HTTPS_PORT@"/>
++        <socket-binding name="txn-recovery-environment" port="@TXN_RECOVERY_ENV_PORT@"/>
++        <socket-binding name="txn-status-manager" port="@TXN_STATUS_MGR_PORT@"/>
+         <outbound-socket-binding name="mail-smtp">
+             <remote-destination host="localhost" port="25"/>
+         </outbound-socket-binding>
