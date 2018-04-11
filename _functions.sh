@@ -643,15 +643,17 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
-
+          
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
           elif [[ "${PRODUCT_NAME}" =~ ^(plfenteap)$ ]]; then
             if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+              env_var "MYSQL_DB_DRIVER_OVERRIDE" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar_com.mysql.jdbc.Driver_5_1"
             elif [[ "${PRODUCT_VERSION}" =~ ^(5.1.x-upgrade-jboss-71) ]]; then
               # TODO replace product branch to 5.1 when the feature will be merged
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.1"
+              env_var "MYSQL_DB_DRIVER_OVERRIDE" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar_com.mysql.jdbc.Driver_5_1"
             fi
           else 
             echo_error "Invalid product name \"${PRODUCT_NAME}\""
@@ -685,7 +687,7 @@ initialize_product_settings() {
             elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "6.1"
             fi
-          fi 
+          fi
         else 
           echo_error "Invalid plf version \"${PRODUCT_BRANCH}\""
           exit 1

@@ -59,7 +59,8 @@ do_install_mysql_driver() {
   cp ${MYSQL_DL_DIR}/mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar $1
 
   # TODO Find a way to determine the driver name from the addon version
-  env_var "DB_DRIVER" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
+  local driver="mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar"
+  env_var "DB_DRIVER" "${MYSQL_DB_DRIVER_OVERRIDE:-$driver}"
 }
 
 do_install_postgresql_driver() {
