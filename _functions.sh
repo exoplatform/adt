@@ -647,7 +647,12 @@ initialize_product_settings() {
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
           elif [[ "${PRODUCT_NAME}" =~ ^(plfenteap)$ ]]; then
-            env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+            if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+            elif [[ "${PRODUCT_VERSION}" =~ ^(5.1.x-upgrade-jboss-71) ]]; then
+              # TODO replace product branch to 5.1 when the feature will be merged
+              env_var "DEPLOYMENT_APPSRV_VERSION" "7.1"
+            fi
           else 
             echo_error "Invalid product name \"${PRODUCT_NAME}\""
             exit 1
@@ -1041,7 +1046,7 @@ do_deploy() {
   env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
   # Elasticsearch (ES) ports
-  env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
+  env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}22"
 
   if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then
     env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "${DEPLOYMENT_PORT_PREFIX}17"

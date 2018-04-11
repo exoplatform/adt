@@ -86,7 +86,17 @@ do_configure_jbosseap_datasources() {
 #
 do_configure_jbosseap_ports() {
   # Patch to reconfigure standalone-exo.xml to change ports
-  find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+  patch_dir=""
+  case "${DEPLOYMENT_APPSRV_VERSION:0:3}" in
+    7.1)
+      patch_dir="${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:3}"
+      ;;
+    *)
+      patch_dir="${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}"
+      ;;
+  esac
+  
+  find_instance_file PORTS_SERVER_PATCH  "${patch_dir}" "standalone-exo-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
 
   # JBOSS Specific ports
   env_var "DEPLOYMENT_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}10"
