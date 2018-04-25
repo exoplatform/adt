@@ -129,7 +129,7 @@ while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
     *) echo "Wrong parameter !!"; print_usage_dev; exit 1;;
   esac
 done
-exit
+
 ${SCRIPT_DIR}/adt.sh $ACTION
 
 exit 0
