@@ -71,7 +71,7 @@ Action
     DOCKER_POSTGRES:9.6 / DOCKER_POSTGRES:9.5 / DOCKER_POSTGRES:9.4
     DOCKER_MARIADB:5.5 / DOCKER_MARIADB:5 / DOCKER_MARIADB:10.0 / DOCKER_MARIADB:10.1 / DOCKER_MARIADB:10
     DOCKER_ORACLE:12cR1_plf (pre initialized database)
-    DOCKER_SQLSERVER:2014express
+    DOCKER_SQLSERVER:2017-CU2
 
   -c                        : Configure mongodb for the Chat
 
@@ -119,8 +119,8 @@ while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
     v) export PRODUCT_VERSION=$OPTARG;    echo "## VERSION = $OPTARG";;
     a) export DEPLOYMENT_ADDONS=$OPTARG;  echo "## ADDONS  = $OPTARG";;
     C) export DEPLOYMENT_ADDONS_CATALOG=$OPTARG;  echo "## ADDONS CATALOG  = $OPTARG";;
-    d) export DEPLOYMENT_DATABASE_TYPE=$(echo "${OPTARG}" | sed 's/\([a-zA-Z0-9_\-]*\):[0-9\.]*/\1/'); echo "## DATABASE TYPE  = ${DEPLOYMENT_DATABASE_TYPE}"
-       export DEPLOYMENT_DATABASE_VERSION=$(echo "${OPTARG}" | sed 's/[a-zA-Z0-9_\-]*:\([0-9\.]*\)/\1/'); echo "## DATABASE VERSION  = ${DEPLOYMENT_DATABASE_VERSION}" ;;
+    d) export DEPLOYMENT_DATABASE_TYPE=$(echo "${OPTARG}" | sed 's/\([a-zA-Z0-9_]*\):[a-zA-z0-9\-\.]*/\1/'); echo "## DATABASE TYPE  = ${DEPLOYMENT_DATABASE_TYPE}"
+       export DEPLOYMENT_DATABASE_VERSION=$(echo "${OPTARG}" | sed 's/[a-zA-Z0-9_]*:\([a-zA-z0-9\-\.]*\)/\1/'); echo "## DATABASE VERSION  = ${DEPLOYMENT_DATABASE_VERSION}" ;;
     p) export DEPLOYMENT_PORT_PREFIX=$OPTARG;  echo "## PORT PREFIX  = $OPTARG";;
     c) export DEPLOYMENT_CHAT_ENABLED=true; export DEPLOYMENT_CHAT_WEEMO_KEY=xxx ;;
     i) export INSTANCE_ID=$OPTARG;  echo "## INSTANCE ID  = $OPTARG";;
@@ -129,7 +129,7 @@ while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
     *) echo "Wrong parameter !!"; print_usage_dev; exit 1;;
   esac
 done
-
+exit
 ${SCRIPT_DIR}/adt.sh $ACTION
 
 exit 0
