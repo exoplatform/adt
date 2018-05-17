@@ -1327,6 +1327,30 @@ do_stop() {
             ;;
             7)
               ${DEPLOYMENT_DIR}/bin/jboss-cli.sh --controller=localhost:${DEPLOYMENT_MGT_HTTP_PORT} --connect --command=shutdown > /dev/null 2>&1 || true
+
+              if [ ${DEPLOYMENT_APPSRV_VERSION:2:3} -ge 1 ]; then
+                echo_warn "Jboss 7.1 or greater detected, ensuring the shutdown was correct (see ACC-97)..."
+                set -x
+                if [ -e ${DEPLOYMENT_PID_FILE} ]; then
+                  pid="$(cat ${DEPLOYMENT_PID_FILE})"
+                  ps ${pid}  > /dev/null
+                  if [ $? -eq 0 ]; then
+                    echo_warn "The process is still present, waiting 30s before killing it...."
+                    sleep 30
+                    # test if the stop was done in the interval
+                    ps ${pid} > /dev/null
+                    if [ $? -eq 0 ]; then
+                      echo_warn "The process is still present, killing it..."
+                      kill -9 ${pid}
+                    else
+                      echo_info "The process was gone in the interval"
+                    fi
+                  fi
+                  set -e
+                else
+                  echo_info "Process not found."
+                fi
+              fi
             ;;
             *)
               echo_error "Invalid JBoss EAP server version \"${DEPLOYMENT_APPSRV_VERSION}\""
