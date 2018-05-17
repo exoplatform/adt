@@ -1330,7 +1330,6 @@ do_stop() {
 
               if [ ${DEPLOYMENT_APPSRV_VERSION:2:3} -ge 1 ]; then
                 echo_warn "Jboss 7.1 or greater detected, ensuring the shutdown was correct (see ACC-97)..."
-                set -x
                 if [ -e ${DEPLOYMENT_PID_FILE} ]; then
                   pid="$(cat ${DEPLOYMENT_PID_FILE})"
                   ps ${pid}  > /dev/null
