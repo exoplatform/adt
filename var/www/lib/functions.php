@@ -958,14 +958,15 @@ function human_filesize($bytes, $decimals = 2)
  *
  * @return string
  */
-function getGitBaseBranchToCompareWith($project, $branch, $plfDevelopVersion = '5.0')
+function getGitBaseBranchToCompareWith($project, $branch, $plfDevelopVersion = '5.1')
 {
   if (strpos($branch, $plfDevelopVersion) !== false) {
     return 'develop';
   } else {
     $plfVersion = explode('-', $branch);
-    // gatein-portal project version before 5.0.x contains -PLF identifier
-    if (strpos($project, "gatein-portal") !== false) {
+    $plfMajorVersion = substr($branch, 0, 1);
+    // gatein-portal project version before 5.0.x are suffixed by -PLF identifier
+    if (strpos($project, "gatein-portal") !== false && ($plfMajorVersion === '3' || $plfMajorVersion === '4')) {
       return 'stable/' . $plfVersion[0] . '-PLF';
     }
     return 'stable/' . $plfVersion[0];
