@@ -1021,13 +1021,15 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
   configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
   configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
+
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     validate_env_var "DEPLOYMENT_CHAT_WEEMO_KEY"
 
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then 
-        local addon="exo-chat-client:${DEPLOYMENT_CHAT_SERVER_VERSION}"
-        echo_info "Using ${addon} addon for chat server client"
-        env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
+        if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-chat-client.* ]]; then
+          echo_error "Chat server standalone is configured, the exo-chat-client addons must be specified on the addon list."
+          exit 1
+        fi
     fi
   fi
 
