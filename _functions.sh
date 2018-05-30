@@ -1023,8 +1023,6 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
 
   if ${DEPLOYMENT_CHAT_ENABLED}; then
-    validate_env_var "DEPLOYMENT_CHAT_WEEMO_KEY"
-
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then 
         if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-chat-client.* ]]; then
           echo_error "Chat server standalone is configured, the exo-chat-client addons must be specified on the addon list."

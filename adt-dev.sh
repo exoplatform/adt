@@ -123,7 +123,7 @@ while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
        # cut -s to avoid retrieve the database type instead an empty version when there is no ':' on the string
        export DEPLOYMENT_DATABASE_VERSION=$(echo "${OPTARG}" | cut -s -f2 -d':'); echo "## DATABASE VERSION  = ${DEPLOYMENT_DATABASE_VERSION}" ;;
     p) export DEPLOYMENT_PORT_PREFIX=$OPTARG;  echo "## PORT PREFIX  = $OPTARG";;
-    c) export DEPLOYMENT_CHAT_ENABLED=true; export DEPLOYMENT_CHAT_WEEMO_KEY=xxx ;;
+    c) export DEPLOYMENT_CHAT_ENABLED=true;;
     i) export INSTANCE_ID=$OPTARG;  echo "## INSTANCE ID  = $OPTARG";;
     l) export DEPLOYMENT_LABELS=$OPTARG;  echo "## LABELS  = $OPTARG";;
     h) print_usage_dev; exit 1;;
