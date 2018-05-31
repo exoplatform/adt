@@ -1332,22 +1332,25 @@ do_stop() {
                 echo_warn "Jboss 7.1 or greater detected, ensuring the shutdown was correct (see ACC-97)..."
                 if [ -e ${DEPLOYMENT_PID_FILE} ]; then
                   pid="$(cat ${DEPLOYMENT_PID_FILE})"
+                  echo_info "The process pid [${pid}] was found in [${DEPLOYMENT_PID_FILE}] file."
                   ps ${pid}  > /dev/null
                   if [ $? -eq 0 ]; then
-                    echo_warn "The process is still present, waiting 30s before killing it...."
+                    echo_warn "The process [${pid}] is still present, waiting 30s before killing it...."
                     sleep 30
                     # test if the stop was done in the interval
                     ps ${pid} > /dev/null
                     if [ $? -eq 0 ]; then
-                      echo_warn "The process is still present, killing it..."
+                      echo_warn "The process [${pid}] is still present :"
+                      ps ${pid}
+                      echo_warn "... Killing [${pid}] process ..."
                       kill -9 ${pid}
                     else
-                      echo_info "The process was gone in the interval"
+                      echo_info "The process [${pid}] was gone in the interval"
                     fi
                   fi
                   set -e
                 else
-                  echo_info "Process not found."
+                  echo_info "Process not found (DEPLOYMENT_PID_FILE variable not set."
                 fi
               fi
             ;;
