@@ -1333,6 +1333,7 @@ do_stop() {
                 if [ -e ${DEPLOYMENT_PID_FILE} ]; then
                   pid="$(cat ${DEPLOYMENT_PID_FILE})"
                   echo_info "The process pid [${pid}] was found in [${DEPLOYMENT_PID_FILE}] file."
+                  set +e
                   ps ${pid}  > /dev/null
                   if [ $? -eq 0 ]; then
                     echo_warn "The process [${pid}] is still present, waiting 30s before killing it...."
