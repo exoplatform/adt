@@ -154,7 +154,7 @@ Environment Variables
   DEPLOYMENT_ES_ENABLED             : Do we need to configure elasticsearch (default: true; values : true|false)
   DEPLOYMENT_ES_EMBEDDED            : Do we use an embedded Elasticsearch deployment or not (default: true; values: true|false)
   DEPLOYMENT_ES_IMAGE               : Which docker image to use for standalone elasticsearch (default: exoplatform/elasticsearch)
-  DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the ES image to use (default 1.1.0)
+  DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the ES image to use (default 0.5.0 for PLF 4.4, 1.1.1 for plf 5.0, 1.2.0 for PLF 5.1)
   DEPLOYMENT_ES_HEAP                : Size of Elasticsearch heap (default: 512m)
 
   DEPLOYMENT_CHAT_ENABLE            : Do we need to initiallize chat environment
@@ -251,7 +251,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
       configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
       configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-      configurable_env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
@@ -644,16 +643,23 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
           
+          # for differences between 5.0 and 5.1 (tomcat and jboss)
+          if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
+          elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
+          fi
+
+          # For configuration differences between tomcat and jboss
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
           elif [[ "${PRODUCT_NAME}" =~ ^(plfenteap)$ ]]; then
+            env_var "MYSQL_DB_DRIVER_OVERRIDE" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar_com.mysql.jdbc.Driver_5_1"
+
             if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
-              env_var "MYSQL_DB_DRIVER_OVERRIDE" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar_com.mysql.jdbc.Driver_5_1"
             elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
-              # TODO replace product branch to 5.1 when the feature will be merged
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.1"
-              env_var "MYSQL_DB_DRIVER_OVERRIDE" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar_com.mysql.jdbc.Driver_5_1"
             fi
           else 
             echo_error "Invalid product name \"${PRODUCT_NAME}\""
@@ -669,6 +675,8 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "sqljdbc"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "private"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
+          env_var "DEPLOYMENT_ES_IMAGE_VERSION" "0.5.0"
+
           if [[ "${PRODUCT_BRANCH}" =~ ^4.4. ]]; then
             if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
