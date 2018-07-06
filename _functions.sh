@@ -631,23 +631,34 @@ initialize_product_settings() {
         # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
         if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-          env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
-          env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.44" #Default version used to download additional mysql driver
-          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.1.0" # Default version of the jdbc postgresql driver addon to use
-          env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.1.4" #Default version used to download additional postgresql driver
-          env_var "DEPLOYMENT_ORACLE_ADDON_VERSION" "1.1.0" # Default version of the oracle jdbc driver addon to use
-          env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.2.0.1"
-          env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.1.0" # Default version of the sqlserver jdbc driver addon to use
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
-          
+
+          # Oracle driver is the same for 5.0 and 5.1
+          env_var "DEPLOYMENT_ORACLE_ADDON_VERSION" "1.1.0" # Default version of the oracle jdbc driver addon to use
+          env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.2.0.1"
+
           # for differences between 5.0 and 5.1 (tomcat and jboss)
           if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
+
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.44" #Default version used to download additional mysql driver
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.1.0" # Default version of the jdbc postgresql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.1.4" #Default version used to download additional postgresql driver
+              env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.1.0" # Default version of the sqlserver jdbc driver addon to use
+              env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
+
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
+
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.2.0" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.46" #Default version used to download additional mysql driver
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.2.0" # Default version of the jdbc postgresql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.2" #Default version used to download additional postgresql driver
+              env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.2.0" # Default version of the sqlserver jdbc driver addon to use
+              env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.4.0.jre8"
           fi
 
           # For configuration differences between tomcat and jboss
