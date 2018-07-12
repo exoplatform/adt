@@ -1370,7 +1370,7 @@ do_stop() {
                   fi
                   set -e
                 else
-                  echo_info "Process not found (DEPLOYMENT_PID_FILE variable not set."
+                  echo_info "Process not found (DEPLOYMENT_PID_FILE variable not set)."
                 fi
               fi
             ;;

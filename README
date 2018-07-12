@@ -170,3 +170,17 @@ Usage
       DEPLOYMENT_OAUTH_GOOGLE_CLIENT_SECRET   : Secret for Facebook OAuth integration (used by community)
       DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_ID     : Identifier for LinkedIn OAuth integration (used by community)
       DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_SECRET : Secret for Facebook OAuth integration (used by community)
+
+      DEPLOYMENT_ES_ENABLED             : Do we need to configure elasticsearch (default: true; values : true|false)
+      DEPLOYMENT_ES_EMBEDDED            : Do we use an embedded Elasticsearch deployment or not (default: true; values: true|false)
+      DEPLOYMENT_ES_IMAGE               : Which docker image to use for standalone elasticsearch (default: exoplatform/elasticsearch)
+      DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the ES image to use (default 1.1.0)
+      DEPLOYMENT_ES_HEAP                : Size of Elasticsearch heap (default: 512m)
+  
+      DEPLOYMENT_CHAT_ENABLE            : Do we need to initiallize chat environment
+      DEPLOYMENT_CHAT_EMBEDDED          : Do we use the embedded Chat Server or not (default: true; values: true|false)
+      DEPLOYMENT_CHAT_SERVER_IMAGE      : Which chat server image to use (default: exoplatform/chat-server)"
+      DEPLOYMENT_CHAT_SERVER_VERSION    : Which version of chat server to use with the chat server
+      DEPLOYMENT_CHAT_MONGODB_TYPE      : Type of mongodb deployment (default: DOCKER if chat embedded is true, HOST otherwise, values: HOST|DOCKER) 
+      DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
+      DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
