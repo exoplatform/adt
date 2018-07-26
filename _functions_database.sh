@@ -272,6 +272,7 @@ do_start_database() {
 
       ${DOCKER_CMD} run \
         --privileged \
+        --init \
         -p "127.0.0.1:${DEPLOYMENT_DATABASE_PORT}:1433" \
         -p ${DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT}:3389 \
         -d \
