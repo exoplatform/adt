@@ -84,24 +84,31 @@ do_get_database_settings() {
       ;;
       DOCKER_MYSQL)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mysql"
+        configurable_env_var "DEPLOYMENT_DATABASE_VERSION" "${DEPLOYMENT_MYSQL_DEFAULT_VERSION}"
+        validate_env_var     "DEPLOYMENT_DATABASE_VERSION"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_MARIADB)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "mariadb"
+        validate_env_var     "DEPLOYMENT_DATABASE_VERSION"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} mysql -h db -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_POSTGRES)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "postgres"
+        configurable_env_var "DEPLOYMENT_DATABASE_VERSION" "${DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION}"
+        validate_env_var     "DEPLOYMENT_DATABASE_VERSION"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         env_var "DATABASE_CMD" "${DOCKER_CMD} run -i --rm --link ${DEPLOYMENT_CONTAINER_NAME}:db --entrypoint psql -e PGPASSWORD=${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION} -h db --user=${DEPLOYMENT_DATABASE_USER} ${DEPLOYMENT_DATABASE_NAME}"
       ;;
       DOCKER_ORACLE)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/oracle"
+        configurable_env_var "DEPLOYMENT_DATABASE_VERSION" "${DEPLOYMENT_ORACLE_DEFAULT_VERSION}"
+        validate_env_var     "DEPLOYMENT_DATABASE_VERSION"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
 
         # due to oracle limitation on SID
@@ -112,6 +119,8 @@ do_get_database_settings() {
       ;;
       DOCKER_SQLSERVER)
         configurable_env_var "DEPLOYMENT_DATABASE_IMAGE" "exoplatform/sqlserver"
+        configurable_env_var "DEPLOYMENT_DATABASE_VERSION" "${DEPLOYMENT_SQLSERVER_DEFAULT_VERSION}"
+        validate_env_var     "DEPLOYMENT_DATABASE_VERSION"
         env_var "DEPLOYMENT_DATABASE_PORT" "${DEPLOYMENT_PORT_PREFIX}20"
         env_var "DEPLOYMENT_DATABASE_REMOTE_DISPLAY_PORT" "${DEPLOYMENT_PORT_PREFIX}21"
 

@@ -629,6 +629,7 @@ initialize_product_settings() {
         # specific configuration for plf deployments
         # - Database drivers
         # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
+        # - Default version for each supported database type
         if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
@@ -650,7 +651,12 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.1.0" # Default version of the sqlserver jdbc driver addon to use
               env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
 
-          elif [[ "${PRODUCT_VERSION}" =~ ^(5.1|5.2) ]]; then
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "9.6" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR2_plf" # Default version of the oracle server to use
+              env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2014express" # Default version of the sqlserver server to use
+
+          elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.2.0" # Default version of the mysql driver addon to use
@@ -659,7 +665,31 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.2" #Default version used to download additional postgresql driver
               env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.2.0" # Default version of the sqlserver jdbc driver addon to use
               env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.4.0.jre8"
-          fi
+
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "10" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR2_plf" # Default version of the oracle server to use
+              env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2017-CU2" # Default version of the sqlserver server to use
+
+          elif [[ "${PRODUCT_VERSION}" =~ ^(5.2) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
+
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.2.0" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.46" #Default version used to download additional mysql driver
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.2.0" # Default version of the jdbc postgresql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.2" #Default version used to download additional postgresql driver
+              env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.2.0" # Default version of the sqlserver jdbc driver addon to use
+              env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.4.0.jre8"
+
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "10" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR2_plf" # Default version of the oracle server to use
+              env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2017-CU2" # Default version of the sqlserver server to use
+
+            else 
+              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
+              exit 1
+            fi
 
           # For configuration differences between tomcat and jboss
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
@@ -695,6 +725,11 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "private"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
           env_var "DEPLOYMENT_ES_IMAGE_VERSION" "0.5.0"
+
+          env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.6" # Default version of the mysql server to use
+          env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "9.4" # Default version of the postgresql server to use
+          env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR1_plf" # Default version of the oracle server to use
+          env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2014express" # Default version of the sqlserver server to use
 
           if [[ "${PRODUCT_BRANCH}" =~ ^4.4. ]]; then
             if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
