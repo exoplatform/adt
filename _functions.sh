@@ -629,18 +629,18 @@ initialize_product_settings() {
         # specific configuration for plf deployments
         # - Database drivers
         # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
-        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1) ]]; then
+        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
 
-          # Oracle driver is the same for 5.0 and 5.1
+          # Oracle driver is the same for 5.0 / 5.1 / 5.2
           env_var "DEPLOYMENT_ORACLE_ADDON_VERSION" "1.1.0" # Default version of the oracle jdbc driver addon to use
           env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.2.0.1"
 
-          # for differences between 5.0 and 5.1 (tomcat and jboss)
-          if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
+          # for differences between 5.0 / 5.1 / 5.2 (tomcat and jboss)
+          if [[ "${PRODUCT_VERSION}" =~ ^(5.0) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
@@ -650,7 +650,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.1.0" # Default version of the sqlserver jdbc driver addon to use
               env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
 
-          elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(5.1|5.2) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.2.0" # Default version of the mysql driver addon to use
@@ -663,14 +663,22 @@ initialize_product_settings() {
 
           # For configuration differences between tomcat and jboss
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
-            env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
+            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2) ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
+            else 
+              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
+              exit 1
+            fi
           elif [[ "${PRODUCT_NAME}" =~ ^(plfenteap)$ ]]; then
             env_var "MYSQL_DB_DRIVER_OVERRIDE" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar_com.mysql.jdbc.Driver_5_1"
 
-            if [[ "${PRODUCT_BRANCH}" =~ ^(5.0) ]]; then
+            if [[ "${PRODUCT_VERSION}" =~ ^(5.0) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
-            elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
+            elif [[ "${PRODUCT_VERSION}" =~ ^(5.1|5.2) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.1"
+            else 
+              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (JBoss EAP version)"
+              exit 1
             fi
           else 
             echo_error "Invalid product name \"${PRODUCT_NAME}\""
