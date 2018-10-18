@@ -115,6 +115,11 @@ section>ul li {
   color       : #0202FF
 }
 
+.color-acceptance10 {
+  font-weight : normal;
+  color       : green;
+}
+
 /* logs */
 .code p {
   white-space : nowrap;

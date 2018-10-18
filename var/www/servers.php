@@ -108,6 +108,8 @@ checkCaches();
                                     $host_html_color = "color-acceptance8";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance9.exoplatform.org") {
                                     $host_html_color = "color-acceptance9";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance10.exoplatform.org") {
+                                    $host_html_color = "color-acceptance10";
                                 } else {
                                     $host_html_color = "color-acceptanceX";
                                 }
@@ -162,9 +164,16 @@ checkCaches();
                     <td class="col-center">acceptance9.exoplatform.org</td>
                     <td class="col-center">prd07</td>
                     <td class="col-center"><?=$servers_counter["acceptance9.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance9.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance8.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td class="col-center"><?=$servers_counter["acceptance9.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance9.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 450GB NVMe</td>
                   </tr>                 
+                  <tr>
+                    <td class="col-center">acceptance10.exoplatform.org</td>
+                    <td class="col-center">acc01</td>
+                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance10.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 1.2To NVMe</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
