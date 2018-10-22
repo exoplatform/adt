@@ -958,7 +958,7 @@ function human_filesize($bytes, $decimals = 2)
  *
  * @return string
  */
-function getGitBaseBranchToCompareWith($project, $branch, $plfDevelopVersion = '5.1')
+function getGitBaseBranchToCompareWith($project, $branch, $plfDevelopVersion = '5.2')
 {
   if (strpos($branch, $plfDevelopVersion) !== false) {
     return 'develop';
