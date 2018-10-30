@@ -29,6 +29,7 @@ source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_database.sh"
 source "${SCRIPT_DIR}/_functions_es.sh"
 source "${SCRIPT_DIR}/_functions_chat.sh"
+source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 
 # #################################################################################
 #
@@ -165,6 +166,12 @@ Environment Variables
   DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
   DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
 
+  DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_HOST         : Specify Onlyoffice documentserver hostname
+  DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_SCHEMA       : Specify protocol, possible values : http,https
+  DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ALLOWEDHOSTS : Specify the list of the eXo instances allowed to interact with Onlyoffice documentserver
+  DEPLOYMENT_ONLYOFFICE_IMAGE        : Which docker image to use for onlyoffice documentserver (default : onlyoffice/documentserver)
+  DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION: Which version of the OnlyOffice documentserver image to use (default 5.2.2.2 for all eXo PLF versions, to avoid latest and image downloads)
+
 EOF
 
 }
@@ -251,6 +258,16 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
       configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
       configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
+
+      
+      env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
+
+      if [[ ",$DEPLOYMENT_ADDONS:" =~ "exo-onlyoffice" ]]; then
+      env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.2.2.2"
+      fi
+
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
@@ -640,6 +657,9 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_ORACLE_ADDON_VERSION" "1.1.0" # Default version of the oracle jdbc driver addon to use
           env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.2.0.1"
 
+          #Only office addon is the same for  5.0 / 5.1 / 5.2
+          env_var "DEPLOYMENT_ONLYOFFICE_ADDON_VERSION" "1.2.0"
+
           # for differences between 5.0 / 5.1 / 5.2 (tomcat and jboss)
           if [[ "${PRODUCT_VERSION}" =~ ^(5.0) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
@@ -734,6 +754,7 @@ initialize_product_settings() {
           if [[ "${PRODUCT_BRANCH}" =~ ^4.4. ]]; then
             if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
+              env_var "DEPLOYMENT_ONLYOFFICE_ADDON_VERSION" "1.2.0"
             elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "6.4"
             fi
@@ -767,6 +788,9 @@ initialize_product_settings() {
   esac
 
    do_get_plf_settings
+   if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
+      do_get_onlyoffice_settings
+   fi 
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1110,7 +1134,10 @@ do_deploy() {
   env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
 
   # Elasticsearch (ES) ports
-  env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}22"
+  configurable_env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}22"
+
+  # ONLYOFFICE  port
+  env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
 
   if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then
     env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "${DEPLOYMENT_PORT_PREFIX}17"
@@ -1152,6 +1179,7 @@ do_deploy() {
       do_create_database
       do_create_chat_database
       do_create_es
+      do_create_onlyoffice
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -1165,6 +1193,7 @@ do_deploy() {
         do_create_database
         do_create_chat_database
         do_create_es
+        do_create_onlyoffice
       fi
       )
     fi
@@ -1236,9 +1265,15 @@ do_start() {
   # We need to backup existing logs if they already exist
   backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
 
+  if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
+    env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
+    do_start_onlyoffice
+  fi
+
   do_start_database
   do_start_es
   do_start_chat_server
+
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
 
@@ -1439,6 +1474,9 @@ do_stop() {
       esac
       echo_info "Server stopped."
 
+      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
+        do_stop_onlyoffice
+      fi
       do_stop_database
       do_stop_es
       do_stop_chat_server
@@ -1468,6 +1506,9 @@ do_undeploy() {
     do_stop
     if ${DEPLOYMENT_DATABASE_ENABLED}; then
       do_drop_database
+    fi
+    if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
+      do_drop_onlyoffice_data
     fi
     do_drop_chat
     do_drop_es_data

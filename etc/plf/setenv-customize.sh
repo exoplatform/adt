@@ -61,6 +61,14 @@ if ${DEPLOYMENT_CHAT_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbName=${EXO_CHAT_MONGODB_NAME}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dchat.chatPassPhrase=${EXO_CHAT_MONGODB_NAME}"
 fi
+
+# eXo Onlyoffice addon
+if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
+        CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.host=localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
+        CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.schema=http"
+        CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.allowedhosts=localhost"
+fi        
+
 # Skip register form
 if ${DEPLOYMENT_SKIP_REGISTER}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.registration.skip=true"

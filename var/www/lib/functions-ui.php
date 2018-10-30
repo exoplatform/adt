@@ -455,6 +455,7 @@ function componentProductHtmlPopover ($deployment_descriptor) {
   $content .= '<strong>Visibility:</strong> '.$deployment_descriptor->DEPLOYMENT_APACHE_SECURITY.'&nbsp;'.componentVisibilityIcon($deployment_descriptor);
   $content .= "<br/><strong>HTTPS available:</strong> " . ($deployment_descriptor->DEPLOYMENT_APACHE_HTTPS_ENABLED ? "yes" : "no");
   $content .= "<br/><strong>ES embedded:</strong> " . ($deployment_descriptor->DEPLOYMENT_ES_EMBEDDED ? "yes" : "no");
+  $content .= "<br/><strong>OnlyOffice addon:</strong> " . ($deployment_descriptor->DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED ? "yes" : "no");
   if ($deployment_descriptor->DEPLOYMENT_CHAT_ENABLED ) {
     $content .= "<br/><strong>Chat embedded:</strong> " . ($deployment_descriptor->DEPLOYMENT_CHAT_EMBEDDED ? "yes" : "no");
     $content .= "<br/><strong>Mongo db version:</strong> " . $deployment_descriptor->DEPLOYMENT_CHAT_MONGODB_VERSION;
