@@ -97,10 +97,10 @@ check_ONLYOFFICE_availability() {
     set -e
   done
   if [ $count -eq $try ]; then
-    echo_error "OpenOffice DocumentServer ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
+    echo_error "Onlyoffice DocumentServer ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
     exit 1
   fi
-  echo_info "OpenOffice DocumentServer ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} up and available"
+  echo_info "Onlyoffice DocumentServer ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} up and available"
 }
 
 # #############################################################################
