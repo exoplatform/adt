@@ -71,7 +71,6 @@ do_start_onlyoffice() {
 
   ${DOCKER_CMD} run \
     -d \
-    --add-host plfent-5.0.3.acceptance.exoplatform.org:192.168.2.21 \
     -p "127.0.0.1:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
     -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}:/var/log/onlyoffice  \
     --name ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}
