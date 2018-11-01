@@ -186,13 +186,7 @@ do_install_addons() {
     # Let's install them from $DEPLOYMENT_ADDONS env var
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-    # Install Onlyoffice addon using the --no-compat flag, may be resolved if catalog get updated.
-        if [[ "$_addon" =~ "exo-onlyoffice" ]]; then
-          echo "exo-onlyoffice nocompat"
-          ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --no-compat --force --batch-mode
-        else
           ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
-        fi
     done
     if [ -f "${DEPLOYMENT_DIR}/addons.list" ]; then
       # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
@@ -202,12 +196,6 @@ do_install_addons() {
         [[ "$_addon" =~ ^[[:blank:]]+$ ]] && continue
         # Don't read comments
         [[ "$_addon" =~ ^#.*$ ]] && continue
-
-        # Install Onlyoffice addon using the --no-compat flag, may be resolved if catalog get updated.
-        if [[ "$_addon" =~ "exo-onlyoffice" ]]; then
-        echo "exo-onlyoffice nocompat"
-        ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --no-compat --force --batch-mode
-        fi
         # Install addon
         ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
       done < "$_addons_list"
