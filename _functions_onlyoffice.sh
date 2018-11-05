@@ -30,8 +30,14 @@ do_drop_onlyoffice_data() {
   if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
     echo_info "Drops Onlyoffice container ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}
-    echo_info "Drops Onlyoffice docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ..."
-    delete_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}
+    echo_info "Drops Onlyoffice docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs ..."
+    delete_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs
+    echo_info "Drops Onlyoffice docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data ..."
+    delete_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data
+    echo_info "Drops Onlyoffice docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib ..."
+    delete_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib
+    echo_info "Drops Onlyoffice docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db ..."
+    delete_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db
     echo_info "Done."
     echo_info "Onlyoffice data dropped"
   else
@@ -41,9 +47,14 @@ do_drop_onlyoffice_data() {
 
 do_create_onlyoffice() {
   if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
-    echo_info "Creation of the OnlyOffice Docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ..."
-    create_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}
-    echo_info "OnlyOffice Docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} created"
+    echo_info "Creation of the OnlyOffice Docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs ..."
+    create_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs
+    echo_info "Creation of the OnlyOffice Docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data ..."
+    create_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data
+    echo_info "Creation of the OnlyOffice Docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib ..."
+    create_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib
+    echo_info "Creation of the OnlyOffice Docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db ..."
+    create_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db
   fi
 }
 
@@ -72,7 +83,10 @@ do_start_onlyoffice() {
   ${DOCKER_CMD} run \
     -d \
     -p "127.0.0.1:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
-    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}:/var/log/onlyoffice  \
+    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs:/var/log/onlyoffice  \
+    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
+    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
+    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db:/var/lib/postgresql  \
     --name ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}
 
   echo_info "${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} container started"
