@@ -68,7 +68,6 @@ if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.schema=http"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.allowedhosts=localhost,${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.accessOnly=false"
-
 fi        
 
 # Skip register form
