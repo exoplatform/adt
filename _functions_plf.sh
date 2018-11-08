@@ -186,7 +186,7 @@ do_install_addons() {
     # Let's install them from $DEPLOYMENT_ADDONS env var
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-          ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
+      ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
     done
     if [ -f "${DEPLOYMENT_DIR}/addons.list" ]; then
       # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
