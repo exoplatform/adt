@@ -64,7 +64,7 @@ fi
 
 # eXo Onlyoffice addon
 if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
-    CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.host=localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.host=${EXO_HOST_PORT}"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.schema=http"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.allowedhosts=localhost,${INSTANCE_KEY}.${ACCEPTANCE_HOST},${DEPLOYMENT_APACHE_VHOST_ALIAS}"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.accessOnly=false"

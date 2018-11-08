@@ -28,8 +28,6 @@ do_get_onlyoffice_settings() {
 do_drop_onlyoffice_data() {
   echo_info "Dropping onlyoffice data ..."
   if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
-    echo_info "Drops Onlyoffice container ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ..."
-    delete_docker_container ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}
     echo_info "Drops Onlyoffice docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs ..."
     delete_docker_volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs
     echo_info "Drops Onlyoffice docker volume ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data ..."
@@ -41,7 +39,7 @@ do_drop_onlyoffice_data() {
     echo_info "Done."
     echo_info "Onlyoffice data dropped"
   else
-    echo_info "Skip Drops Onlyoffice container ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ..."
+    echo_info "Skip Drops Onlyoffice container ..."
   fi
 }
 

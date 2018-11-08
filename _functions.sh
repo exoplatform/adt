@@ -223,7 +223,7 @@ initialize_product_settings() {
       configurable_env_var "INSTANCE_ID" ""
 
       # Defaults values we can override by product/branch/version
-      configurable_env_var "EXO_PROFILES" "-Dexo.profiles=all"
+      env_var "EXO_PROFILES" "-Dexo.profiles=all"
       # Comma separated list of PLF extensions to install. all (by default) to install all extensions available. Empty string for none.
       configurable_env_var "DEPLOYMENT_EXTENSIONS" "all"
       # Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
@@ -1143,8 +1143,10 @@ do_deploy() {
 
   if [ -z ${DEPLOYMENT_APACHE_VHOST_ALIAS} ]; then
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
+    env_var "EXO_HOST_PORT" "${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_EXT_PORT}"
   else
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
+    env_var "EXO_HOST_PORT" "${DEPLOYMENT_APACHE_VHOST_ALIAS}:${DEPLOYMENT_EXT_PORT}"
   fi
 
 
@@ -1507,6 +1509,7 @@ do_undeploy() {
     do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
+    do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
     echo_info "Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
