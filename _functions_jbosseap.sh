@@ -189,6 +189,10 @@ do_configure_jbosseap_server() {
     do_ufw_open_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
   fi
 
+  if [ DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED ]; then
+    # Open firewall port for Onlyoffice documentserver
+    do_ufw_open_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
+  fi
 }
 
 # #############################################################################
