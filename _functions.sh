@@ -29,6 +29,7 @@ source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_database.sh"
 source "${SCRIPT_DIR}/_functions_es.sh"
 source "${SCRIPT_DIR}/_functions_chat.sh"
+source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 
 # #################################################################################
 #
@@ -251,6 +252,14 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
       configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
       configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
+
+      env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.2.2.2"
+
+      if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
+        env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
+      fi
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
@@ -767,6 +776,7 @@ initialize_product_settings() {
   esac
 
    do_get_plf_settings
+   do_get_onlyoffice_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1112,6 +1122,9 @@ do_deploy() {
   # Elasticsearch (ES) ports
   env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}22"
 
+  # ONLYOFFICE  port
+  env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
+
   if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then
     env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "${DEPLOYMENT_PORT_PREFIX}17"
   fi
@@ -1152,6 +1165,7 @@ do_deploy() {
       do_create_database
       do_create_chat_database
       do_create_es
+      do_create_onlyoffice
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -1165,6 +1179,7 @@ do_deploy() {
         do_create_database
         do_create_chat_database
         do_create_es
+        do_create_onlyoffice
       fi
       )
     fi
@@ -1236,11 +1251,16 @@ do_start() {
   # We need to backup existing logs if they already exist
   backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
 
+  do_start_onlyoffice
   do_start_database
   do_start_es
   do_start_chat_server
+
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
+
+  # We need this variable for the setenv
+  export DEPLOYMENT_ONLYOFFICE_HTTP_PORT
 
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
@@ -1439,6 +1459,7 @@ do_stop() {
       esac
       echo_info "Server stopped."
 
+      do_stop_onlyoffice
       do_stop_database
       do_stop_es
       do_stop_chat_server
@@ -1469,6 +1490,7 @@ do_undeploy() {
     if ${DEPLOYMENT_DATABASE_ENABLED}; then
       do_drop_database
     fi
+    do_drop_onlyoffice_data
     do_drop_chat
     do_drop_es_data
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
