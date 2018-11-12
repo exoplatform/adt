@@ -223,7 +223,7 @@ initialize_product_settings() {
       configurable_env_var "INSTANCE_ID" ""
 
       # Defaults values we can override by product/branch/version
-      env_var "EXO_PROFILES" "-Dexo.profiles=all"
+      configurable_env_var "EXO_PROFILES" "-Dexo.profiles=all"
       # Comma separated list of PLF extensions to install. all (by default) to install all extensions available. Empty string for none.
       configurable_env_var "DEPLOYMENT_EXTENSIONS" "all"
       # Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
