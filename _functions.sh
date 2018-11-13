@@ -1143,10 +1143,10 @@ do_deploy() {
 
   if [ -z ${DEPLOYMENT_APACHE_VHOST_ALIAS} ]; then
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
-    env_var "EXO_HOST_PORT" "${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_EXT_PORT}"
+    env_var "DEPLOYMENT_ONLY_OFFICE_HOST_PORT" "${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
   else
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
-    env_var "EXO_HOST_PORT" "${DEPLOYMENT_APACHE_VHOST_ALIAS}:${DEPLOYMENT_EXT_PORT}"
+    env_var "DEPLOYMENT_ONLY_OFFICE_HOST_PORT" "${DEPLOYMENT_APACHE_VHOST_ALIAS}:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
   fi
 
 
@@ -1509,7 +1509,10 @@ do_undeploy() {
     do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
-    do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
+    if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
+      # close firewall port for Onlyoffice documentserver only if addon was deployed
+      do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
+    fi
     echo_info "Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
