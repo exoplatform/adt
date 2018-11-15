@@ -223,7 +223,7 @@ initialize_product_settings() {
       configurable_env_var "INSTANCE_ID" ""
 
       # Defaults values we can override by product/branch/version
-      configurable_env_var "EXO_PROFILES" "-Dexo.profiles=all"
+      configurable_env_var "EXO_PROFILES" "all"
       # Comma separated list of PLF extensions to install. all (by default) to install all extensions available. Empty string for none.
       configurable_env_var "DEPLOYMENT_EXTENSIONS" "all"
       # Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
@@ -460,7 +460,6 @@ initialize_product_settings() {
               env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
               env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
               env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-              env_var EXO_PROFILES "all"
             ;;
           esac
         ;;
@@ -470,7 +469,6 @@ initialize_product_settings() {
           env_var PLF_BRANCH "CODEFEST"
           env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-          env_var EXO_PROFILES "all"
         ;;
         plfdemo)
           env_var PRODUCT_DESCRIPTION "Platform 4.0 EE Public Demo"
@@ -479,7 +477,6 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "demo-login-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
-          env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_EXTENSIONS "acme,cmis,crash,ide,wai"
           env_var DEPLOYMENT_SKIP_ACCOUNT_SETUP true
         ;;
@@ -494,7 +491,6 @@ initialize_product_settings() {
           else
             env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           fi
-          env_var EXO_PROFILES "all"
         ;;
         plfenteap)
           env_var PRODUCT_DESCRIPTION "Platform EE"
@@ -505,7 +501,6 @@ initialize_product_settings() {
           env_var DEPLOYMENT_APPSRV_TYPE "jbosseap"
           env_var DEPLOYMENT_SERVER_LOG_FILE "server.log"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var EXO_PROFILES "all"
         ;;
         # ID should be no longer than 10 (plfenttrial is too long)
         plfentrial)
@@ -517,7 +512,6 @@ initialize_product_settings() {
           env_var ARTIFACT_CLASSIFIER "trial"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_CHAT_ENABLED true
         ;;
         plfsales)
@@ -528,7 +522,6 @@ initialize_product_settings() {
           env_var ARTIFACT_CLASSIFIER "trial"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_CHAT_ENABLED true
           env_var DEPLOYMENT_SKIP_REGISTER true
         ;;
@@ -539,7 +532,6 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-chat-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
-          env_var EXO_PROFILES "all"
           env_var DEPLOYMENT_EXTENSIONS "crash,ide,chat"
           env_var DEPLOYMENT_CHAT_ENABLED true
         ;;
@@ -551,7 +543,6 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID           "company-intranet-package"
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
-          env_var EXO_PROFILES                  "all"
           env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
           env_var DEPLOYMENT_JVM_SIZE_MAX       "3g"
@@ -570,7 +561,6 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID           "exo-community-package"
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
-          env_var EXO_PROFILES                  "all"
           env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
           env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
           # Datasets remote location
