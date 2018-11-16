@@ -82,7 +82,7 @@ do_start_onlyoffice() {
 
   ${DOCKER_CMD} run \
     -d \
-    -p "127.0.0.1:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
+    -p "${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
     -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs:/var/log/onlyoffice  \
     -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
     -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
