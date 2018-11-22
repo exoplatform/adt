@@ -11,7 +11,7 @@
                removeAbandonedOnBorrow="true" removeAbandonedOnMaintenance="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
-+              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_IDM_HOST@:@DB_IDM_PORT@/@DB_IDM_NAME@?autoReconnect=true" />
++              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_IDM_HOST@:@DB_IDM_PORT@/@DB_IDM_NAME@?autoReconnect=true&amp;useSSL=false" />
  
      <!-- eXo JCR Datasource for portal -->
      <Resource name="exo-jcr_portal" auth="Container" type="javax.sql.DataSource"
@@ -23,7 +23,7 @@
                removeAbandonedOnBorrow="true" removeAbandonedOnMaintenance="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
-+              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_JCR_HOST@:@DB_JCR_PORT@/@DB_JCR_NAME@?autoReconnect=true" />
++              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_JCR_HOST@:@DB_JCR_PORT@/@DB_JCR_NAME@?autoReconnect=true&amp;useSSL=false" />
  
      <!-- eXo JPA Datasource for portal -->
      <Resource name="exo-jpa_portal" auth="Container" type="javax.sql.DataSource"
@@ -35,7 +35,7 @@
                removeAbandonedOnBorrow="true" removeAbandonedOnMaintenance="true" removeAbandonedTimeout="300" logAbandoned="false"
                poolPreparedStatements="true"
 -              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
-+              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_JPA_HOST@:@DB_JPA_PORT@/@DB_JPA_NAME@?autoReconnect=true&amp;characterEncoding=utf8" />
++              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://@DB_JPA_HOST@:@DB_JPA_PORT@/@DB_JPA_NAME@?autoReconnect=true&amp;characterEncoding=utf8&amp;useSSL=false" />
  
    </GlobalNamingResources>
  
