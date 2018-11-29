@@ -185,11 +185,7 @@ do_configure_tomcat_datasources() {
   case ${DEPLOYMENT_DATABASE_TYPE} in
     MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
       # Patch to reconfigure server.xml for database
-      if [[ "${PRODUCT_VERSION}" =~ ^(5.2) ]]; then
-        find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml-5.2.x.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
-      else
-        find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
-      fi
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       # Deploy the Mysql driver
       if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then 
