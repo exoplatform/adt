@@ -456,6 +456,7 @@ function componentProductHtmlPopover ($deployment_descriptor) {
   $content .= "<br/><strong>HTTPS available:</strong> " . ($deployment_descriptor->DEPLOYMENT_APACHE_HTTPS_ENABLED ? "yes" : "no");
   $content .= "<br/><strong>ES embedded:</strong> " . ($deployment_descriptor->DEPLOYMENT_ES_EMBEDDED ? "yes" : "no");
   $content .= "<br/><strong>OnlyOffice addon:</strong> " . ($deployment_descriptor->DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED ? "yes" : "no");
+  $content .= "<br/><strong>CMIS Server:</strong> " . ($deployment_descriptor->DEPLOYMENT_CMISSERVER_ENABLED ? "yes" : "no");
   if ($deployment_descriptor->DEPLOYMENT_CHAT_ENABLED ) {
     $content .= "<br/><strong>Chat embedded:</strong> " . ($deployment_descriptor->DEPLOYMENT_CHAT_EMBEDDED ? "yes" : "no");
     $content .= "<br/><strong>Mongo db version:</strong> " . $deployment_descriptor->DEPLOYMENT_CHAT_MONGODB_VERSION;
@@ -502,6 +503,10 @@ function componentDeploymentActions ($deployment_descriptor) {
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_ES_ENABLED') && $deployment_descriptor->DEPLOYMENT_ES_ENABLED) {
     $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/elasticsearch" rel="tooltip" title="Elasticearch">';
     $content.='<img src="/images/elastic.svg" width="16" height="16" alt="elasticearch" class="icon"/></a>';
+  }
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CMISSERVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CMISSERVER_ENABLED) {
+    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/cmis" rel="tooltip" title="CMIS Server">';
+    $content.='<img src="/images/cmis.png" width="16" height="16" alt="cmis" class="icon"/></a>';
   }
 
   return $content;

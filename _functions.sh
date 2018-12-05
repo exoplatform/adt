@@ -30,6 +30,7 @@ source "${SCRIPT_DIR}/_functions_database.sh"
 source "${SCRIPT_DIR}/_functions_es.sh"
 source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
+source "${SCRIPT_DIR}/_functions_cmis.sh"
 
 # #################################################################################
 #
@@ -166,6 +167,8 @@ Environment Variables
   DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
   DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
 
+  DEPLOYMENT_CMISSERVER_ENABLED : Enable the deployment of a dedicated CMIS server, as exo-cloud-drive is not only about CMIS, it can be deloyed without a CMIS server when this param isn't set to true. (default: false; values: true|false)
+
 EOF
 
 }
@@ -259,6 +262,17 @@ initialize_product_settings() {
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
+      fi
+
+      configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/lightweightcmis"
+      configurable_env_var "DEPLOYMENT_CMIS_IMAGE_VERSION" "1.0"
+      # exo-cloud-drive can be used for gdrive, box, dropbox integration without the need for a cmis server.
+      configurable_env_var "DEPLOYMENT_CMISSERVER_ENABLED" false
+
+      if [[ "$DEPLOYMENT_ADDONS" =~ "exo-cloud-drive" ]] && "$DEPLOYMENT_CMISSERVER_ENABLED" ; then
+        echo_info "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED : CMIS server will be deployed for CMIS integration."
+      else
+        echo_warn "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED : No CMIS server will be deployed."
       fi
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
@@ -766,6 +780,7 @@ initialize_product_settings() {
   esac
 
    do_get_plf_settings
+   do_get_cmis_settings
    do_get_onlyoffice_settings
    do_get_database_settings
    do_get_es_settings
@@ -987,11 +1002,21 @@ do_configure_apache() {
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
   if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
-    evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    else
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    fi
   elif ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
-    evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-  else
-    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    else
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    fi
+  elif ${DEPLOYMENT_CMISSERVER_ENABLED}; then
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    else
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   fi
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
@@ -1115,6 +1140,9 @@ do_deploy() {
   # ONLYOFFICE  port
   env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
 
+  # CMIS server  port
+  env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
+
   if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then
     env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "${DEPLOYMENT_PORT_PREFIX}17"
   fi
@@ -1158,6 +1186,7 @@ do_deploy() {
       do_create_chat_database
       do_create_es
       do_create_onlyoffice
+      do_create_cmis
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -1172,6 +1201,7 @@ do_deploy() {
         do_create_chat_database
         do_create_es
         do_create_onlyoffice
+        do_create_cmis
       fi
       )
     fi
@@ -1244,6 +1274,7 @@ do_start() {
   backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
 
   do_start_onlyoffice
+  do_start_cmis
   do_start_database
   do_start_es
   do_start_chat_server
@@ -1253,6 +1284,7 @@ do_start() {
 
   # We need this variable for the setenv
   export DEPLOYMENT_ONLYOFFICE_HTTP_PORT
+  export DEPLOYMENT_CMIS_HTTP_PORT
 
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
@@ -1452,6 +1484,7 @@ do_stop() {
       echo_info "Server stopped."
 
       do_stop_onlyoffice
+      do_stop_cmis
       do_stop_database
       do_stop_es
       do_stop_chat_server
@@ -1483,6 +1516,7 @@ do_undeploy() {
       do_drop_database
     fi
     do_drop_onlyoffice_data
+    do_drop_cmis_data
     do_drop_chat
     do_drop_es_data
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
