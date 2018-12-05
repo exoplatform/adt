@@ -264,15 +264,16 @@ initialize_product_settings() {
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
 
-      configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/lightweightcmis"
+      configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/lightweightcmisserver"
       configurable_env_var "DEPLOYMENT_CMIS_IMAGE_VERSION" "1.0"
       # exo-cloud-drive can be used for gdrive, box, dropbox integration without the need for a cmis server.
       configurable_env_var "DEPLOYMENT_CMISSERVER_ENABLED" false
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-cloud-drive" ]] && "$DEPLOYMENT_CMISSERVER_ENABLED" ; then
-        echo_info "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED : CMIS server will be deployed for CMIS integration."
-      else
-        echo_warn "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED : No CMIS server will be deployed."
+        echo_info "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED and exo-cloud-drive is installed: CMIS server will be deployed for CMIS integration."
+      elif ! [[ "$DEPLOYMENT_ADDONS" =~ "exo-cloud-drive" ]] && "$DEPLOYMENT_CMISSERVER_ENABLED" ; then
+        echo_warn "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED and exo-cloud-drive not installed:  No CMIS server will be deployed. Forcing DEPLOYMENT_CMISSERVER_ENABLED to false"
+        configurable_env_var "DEPLOYMENT_CMISSERVER_ENABLED" false
       fi
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
@@ -1162,9 +1163,11 @@ do_deploy() {
   if [ -z ${DEPLOYMENT_APACHE_VHOST_ALIAS} ]; then
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
     env_var "DEPLOYMENT_ONLY_OFFICE_HOST_PORT" "${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
+    env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_EXT_HOST}"
   else
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
     env_var "DEPLOYMENT_ONLY_OFFICE_HOST_PORT" "${DEPLOYMENT_APACHE_VHOST_ALIAS}:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
+    env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
   fi
 
 

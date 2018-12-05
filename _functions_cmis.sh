@@ -41,7 +41,7 @@ do_drop_cmis_data() {
   fi
 }
 
-do_create_CMIS() {
+do_create_cmis() {
   if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
     echo_info "Creation of the CMIS Server Docker volume ${DEPLOYMENT_CMIS_CONTAINER_NAME}_logs ..."
     create_docker_volume ${DEPLOYMENT_CMIS_CONTAINER_NAME}_logs

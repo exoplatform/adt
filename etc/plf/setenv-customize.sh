@@ -70,6 +70,12 @@ if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.accessOnly=false"
 fi        
 
+#CMIS deployment on https is not supported
+if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
+    CATALINA_OPTS="${CATALINA_OPTS} -Dclouddrive.service.schema=http"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dclouddrive.service.host=${DEPLOYMENT_CMIS_HOST}"
+fi
+
 # Skip register form
 if ${DEPLOYMENT_SKIP_REGISTER}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.registration.skip=true"
