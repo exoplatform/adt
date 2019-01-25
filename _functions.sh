@@ -688,10 +688,10 @@ initialize_product_settings() {
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.2) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
 
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.2.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.46" #Default version used to download additional mysql driver
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.2.0" # Default version of the jdbc postgresql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.2" #Default version used to download additional postgresql driver
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.3.0" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.47" #Default version used to download additional mysql driver
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.3.0" # Default version of the jdbc postgresql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.5" #Default version used to download additional postgresql driver
               env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.2.0" # Default version of the sqlserver jdbc driver addon to use
               env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.4.0.jre8"
 
