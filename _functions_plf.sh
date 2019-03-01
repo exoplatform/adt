@@ -204,6 +204,36 @@ do_install_addons() {
   fi
 }
 
+do_install_patches() {
+  local _addons_manager_script=""
+
+  if [ ! -z "${DEPLOYMENT_PATCHES_CATALOG:-}" ]; then
+    echo "The add-on manager patches catalog url was set to  : ${DEPLOYMENT_PATCHES_CATALOG}"
+    _addons_manager_patches_catalog="--catalog=${DEPLOYMENT_PATCHES_CATALOG}"
+  fi
+
+  if [ ! -z "${DEPLOYMENT_ADDONS_MANAGER_PATCHES_CONFLICT_MODE:-}" ]; then
+    echo "The add-on manager parameter --conflict was overriden with : ${DEPLOYMENT_ADDONS_MANAGER_PATCHES_CONFLICT_MODE}"
+    _addons_manager_patches_option_conflict="--conflict=${DEPLOYMENT_ADDONS_MANAGER_PATCHES_CONFLICT_MODE}"
+  fi
+
+  # Install optional add-ons
+  if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
+    _addons_manager_script=${DEPLOYMENT_DIR}/addon
+  fi
+  if [ -n "${_addons_manager_script}" -a -f "${_addons_manager_script}" ]; then
+    # Let's list them first (this will trigger an update of the installed version of the addons-manager if required)
+    ${_addons_manager_script} list ${_addons_manager_patches_catalog:-}
+    echo_info "Installing PLF Patches ..."
+    # Let's install them from $DEPLOYMENT_PATCHES env var
+    _addons=$(echo $DEPLOYMENT_PATCHES | tr "," "\n")
+    for _addon in $_addons; do
+      ${_addons_manager_script} install ${_addons_manager_patches_catalog:-} ${_addon} ${_addons_manager_patches_option_conflict:-} --force --batch-mode
+    done
+    echo_info "Done."
+  fi
+}
+
 #
 # Function that get plf properties
 #

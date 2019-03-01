@@ -390,6 +390,9 @@ do_configure_tomcat_server() {
   # Install optional addons
   do_install_addons
 
+  # Install patches from patch catalog
+  do_install_patches
+
   if [ -f ${DEPLOYMENT_DIR}/webapps/crash*.war ]; then
     env_var "DEPLOYMENT_CRASH_ENABLED" true
     # Open firewall port for CRaSH
