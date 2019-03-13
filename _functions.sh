@@ -356,8 +356,7 @@ initialize_product_settings() {
         docker)
           env_var PRODUCT_DESCRIPTION "Docker Image dep"
           env_var DEPLOYMENT_DATABASE_ENABLED false
-          env_var DEPLOYMENT_ES_ENABLED false
-          echo "Go docker Go!"
+          env_var DEPLOYMENT_ES_ENABLED false          
         ;;
         gatein)
           env_var PRODUCT_DESCRIPTION "GateIn Community edition"
@@ -1293,7 +1292,8 @@ do_start() {
 
   if [ "${PRODUCT_NAME}" == "docker" ]; then
     echo_info "Starting docker container ${INSTANCE_DESCRIPTION} ..."
-    ${DOCKER_CMD} run -d  -p "127.0.0.1:${ACCEPTANCE_PORT}:${DEPLOYMENT_HTTP_PORT}" ${DEPLOYMENT_DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}
+    echo_info "Starting docker container ${INSTANCE_KEY} ..."
+    ${DOCKER_CMD} run -d --name="${INSTANCE_KEY}"  -p "127.0.0.1:${ACCEPTANCE_PORT}:${DEPLOYMENT_HTTP_PORT}" ${DEPLOYMENT_DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}
 
   else
 
@@ -1431,6 +1431,9 @@ do_stop() {
     echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo_warn "The product cannot be stopped"
     exit 0
+  elif [ "${PRODUCT_NAME}" == "docker" ]; then
+    echo_info "Stopping docker container ${INSTANCE_KEY}"
+    ensure_docker_container_stopped ${INSTANCE_KEY}
   else
     # Use a subshell to not expose settings loaded from the deployment descriptor
     (
@@ -1552,7 +1555,11 @@ do_undeploy() {
     do_drop_cmis_data
     do_drop_chat
     do_drop_es_data
-    echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    if [ "${PRODUCT_NAME}" == "docker" ]; then
+      echo_info "Undeploying docker image ${DEPLOYMENT_DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION} ..."
+    else
+      echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    fi  
     # Delete Awstat config
     rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
     # Delete the vhost
@@ -1570,9 +1577,15 @@ do_undeploy() {
       # close firewall port for Onlyoffice documentserver only if addon was deployed
       do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
     fi
+    if [ "${PRODUCT_NAME}" == "docker" ]; then
+      echo_info "Suppress docker container ${INSTANCE_KEY}"
+      ${DOCKER_CMD} rm ${INSTANCE_KEY}
+    else  
     echo_info "Server undeployed"
+    fi
     # Delete the deployment descriptor
-    rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
+    rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST} 
+    
     )
   fi
 }
