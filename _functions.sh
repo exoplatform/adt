@@ -1290,129 +1290,137 @@ do_start() {
   # The server is supposed to be already deployed.
   # We load its settings from the configuration
   do_load_deployment_descriptor
-  echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
-  chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
-  mkdir -p $(dirname ${DEPLOYMENT_LOG_PATH})
-  cd `dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}`
 
-  # We need to backup existing logs if they already exist
-  backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
+  if [ "${PRODUCT_NAME}" == "docker" ]; then
+    echo_info "Starting docker container ${INSTANCE_DESCRIPTION} ..."
+    ${DOCKER_CMD} run -d  -p "127.0.0.1:${ACCEPTANCE_PORT}:${DEPLOYMENT_HTTP_PORT}" ${DEPLOYMENT_DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}
 
-  do_start_onlyoffice
-  do_start_cmis
-  do_start_database
-  do_start_es
-  do_start_chat_server
+  else
 
-  # We need this variable for the setenv
-  export DEPLOYMENT_CHAT_SERVER_PORT
+    echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
+    chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
+    mkdir -p $(dirname ${DEPLOYMENT_LOG_PATH})
+    cd `dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}`
 
-  # We need this variable for the setenv
-  export DEPLOYMENT_ONLYOFFICE_HTTP_PORT
-  export DEPLOYMENT_CMIS_HTTP_PORT
+    # We need to backup existing logs if they already exist
+    backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
 
-  case ${DEPLOYMENT_APPSRV_TYPE} in
-    tomcat)
-      END_STARTUP_MSG="Server startup in"
-      CATALINA_OPTS=""
+    do_start_onlyoffice
+    do_start_cmis
+    do_start_database
+    do_start_es
+    do_start_chat_server
 
-      if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
-        export CATALINA_HOME=${DEPLOYMENT_DIR}
-        export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-        # JVM
-        CATALINA_OPTS="${CATALINA_OPTS} -XX:+HeapDumpOnOutOfMemoryError"
-        CATALINA_OPTS="${CATALINA_OPTS} -XX:HeapDumpPath="$(dirname ${DEPLOYMENT_LOG_PATH})
-        # JMX
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote=true"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.ssl=false"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-        CATALINA_OPTS="${CATALINA_OPTS} -Djava.rmi.server.hostname=${DEPLOYMENT_EXT_HOST}"
-        # Email
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.domain.url=${DEPLOYMENT_URL}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=noreply+acceptance@exoplatform.com"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.username="
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.password="
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.host=localhost"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.port=25"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.starttls.enable=false"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.auth=false"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.port="
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class="
-        # JOD Server
-        CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${DEPLOYMENT_JOD_CONVERTER_PORTS}"
-        # CRaSH
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
-        # Elasticsearch
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.index.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.search.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}"
-        export CATALINA_OPTS
-        export EXO_PROFILES="${EXO_PROFILES}"
+    # We need this variable for the setenv
+    export DEPLOYMENT_CHAT_SERVER_PORT
+
+    # We need this variable for the setenv
+    export DEPLOYMENT_ONLYOFFICE_HTTP_PORT
+    export DEPLOYMENT_CMIS_HTTP_PORT
+
+    case ${DEPLOYMENT_APPSRV_TYPE} in
+      tomcat)
+        END_STARTUP_MSG="Server startup in"
+        CATALINA_OPTS=""
+
+        if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
+          export CATALINA_HOME=${DEPLOYMENT_DIR}
+          export CATALINA_PID=${DEPLOYMENT_PID_FILE}
+          # JVM
+          CATALINA_OPTS="${CATALINA_OPTS} -XX:+HeapDumpOnOutOfMemoryError"
+          CATALINA_OPTS="${CATALINA_OPTS} -XX:HeapDumpPath="$(dirname ${DEPLOYMENT_LOG_PATH})
+          # JMX
+          CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote=true"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.ssl=false"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
+          CATALINA_OPTS="${CATALINA_OPTS} -Djava.rmi.server.hostname=${DEPLOYMENT_EXT_HOST}"
+          # Email
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.domain.url=${DEPLOYMENT_URL}"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=noreply+acceptance@exoplatform.com"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.username="
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.password="
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.host=localhost"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.port=25"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.starttls.enable=false"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.auth=false"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.port="
+          CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class="
+          # JOD Server
+          CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${DEPLOYMENT_JOD_CONVERTER_PORTS}"
+          # CRaSH
+          CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
+          # Elasticsearch
+          CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_HTTP_PORT}"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.index.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
+          CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.search.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
+          CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}"
+          export CATALINA_OPTS
+          export EXO_PROFILES="${EXO_PROFILES}"
+        fi
+        # Additional settings
+        export CATALINA_OPTS="${CATALINA_OPTS} ${DEPLOYMENT_OPTS}"
+        # Startup the server
+        ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
+      ;;
+      jbosseap)
+        case ${DEPLOYMENT_APPSRV_VERSION:0:1} in
+          6)
+            END_STARTUP_MSG="JBAS01587[45]"
+          ;;
+          7)
+            END_STARTUP_MSG="WFLYSRV0025"
+          ;;
+          *)
+            echo_error "Invalid JBoss EAP server version \"${DEPLOYMENT_APPSRV_VERSION}\""
+            print_usage
+            exit 1
+          ;;
+        esac
+        # Additional settings
+        export JAVA_OPTS="${DEPLOYMENT_OPTS}"
+        # Startup the server
+        ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}  > /dev/null 2>&1 &
+      ;;
+      *)
+        echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
+        print_usage
+        exit 1
+      ;;
+    esac
+
+
+    # Wait for logs availability
+    while [ true ];
+    do
+      if [ -e "${DEPLOYMENT_LOG_PATH}" ]; then
+        break
       fi
-      # Additional settings
-      export CATALINA_OPTS="${CATALINA_OPTS} ${DEPLOYMENT_OPTS}"
-      # Startup the server
-      ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
-    ;;
-    jbosseap)
-      case ${DEPLOYMENT_APPSRV_VERSION:0:1} in
-        6)
-          END_STARTUP_MSG="JBAS01587[45]"
-        ;;
-        7)
-          END_STARTUP_MSG="WFLYSRV0025"
-        ;;
-        *)
-          echo_error "Invalid JBoss EAP server version \"${DEPLOYMENT_APPSRV_VERSION}\""
-          print_usage
-          exit 1
-        ;;
-      esac
-      # Additional settings
-      export JAVA_OPTS="${DEPLOYMENT_OPTS}"
-      # Startup the server
-      ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}  > /dev/null 2>&1 &
-    ;;
-    *)
-      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-
-
-  # Wait for logs availability
-  while [ true ];
-  do
-    if [ -e "${DEPLOYMENT_LOG_PATH}" ]; then
-      break
-    fi
-    sleep 1
-  done
-  # Display logs
-  tail -f "${DEPLOYMENT_LOG_PATH}" &
-  local _tailPID=$!
-  # Check for the end of startup
-  set +e
-  while [ true ];
-  do
-    if grep -q "${END_STARTUP_MSG}" "${DEPLOYMENT_LOG_PATH}"; then
-      kill ${_tailPID}
-      wait ${_tailPID} 2> /dev/null
-      break
-    fi
-    sleep 1
-  done
-  set -e
-  cd -
-  echo_info "Server started"
-  echo_info "URL  : ${DEPLOYMENT_URL}"
-  echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
-  echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
-  )
+      sleep 1
+    done
+    # Display logs
+    tail -f "${DEPLOYMENT_LOG_PATH}" &
+    local _tailPID=$!
+    # Check for the end of startup
+    set +e
+    while [ true ];
+    do
+      if grep -q "${END_STARTUP_MSG}" "${DEPLOYMENT_LOG_PATH}"; then
+        kill ${_tailPID}
+        wait ${_tailPID} 2> /dev/null
+        break
+      fi
+      sleep 1
+    done
+    set -e
+    cd -
+    echo_info "Server started"
+    echo_info "URL  : ${DEPLOYMENT_URL}"
+    echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
+    echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
+  fi
+    )
 }
 
 #
