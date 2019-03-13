@@ -100,6 +100,9 @@ Action
 
   # Undeploy eXo Platform Enterprise 4.4.0 on MySQL 5.7
   ./adt-dev.sh undeploy-all -n plfent -v 4.4.0 -p 200 -d DOCKER_MYSQL:5.7
+
+  # Deploy Docker image of tomcat 8
+  ./adt-dev.sh deploy -n docker -r tomcat:8.0
 EOF
 
 }
@@ -113,7 +116,7 @@ shift
 # if 1st parameter start with "-" character : print help
 if [ "${ACTION:0:1}" = "-" ]; then echo "The first parameter must be an ACTION"; print_usage_dev; exit 1; fi
 
-while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
+while getopts "n:v:a:C:d:r:p:ci:l:h" OPTION; do
   case $OPTION in
     n) export PRODUCT_NAME=$OPTARG;       echo "## NAME    = $OPTARG";;
     v) export PRODUCT_VERSION=$OPTARG;    echo "## VERSION = $OPTARG";;
@@ -122,6 +125,9 @@ while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
     d) export DEPLOYMENT_DATABASE_TYPE=$(echo "${OPTARG}" | cut -f1 -d':'); echo "## DATABASE TYPE  = ${DEPLOYMENT_DATABASE_TYPE}"
        # cut -s to avoid retrieve the database type instead an empty version when there is no ':' on the string
        export DEPLOYMENT_DATABASE_VERSION=$(echo "${OPTARG}" | cut -s -f2 -d':'); echo "## DATABASE VERSION  = ${DEPLOYMENT_DATABASE_VERSION}" ;;
+    r) export DEPLOYMENT_DOCKER_IMAGE=$(echo "$OPTARG" | cut -f1 -d':'); echo "## DOCKER IMAGE   = ${DEPLOYMENT_DOCKER_IMAGE}"
+       # cut -s to avoid retrieve the docker image version instead a latest version when there is no ':' on the string
+       export DOCKER_IMAGE_VERSION=$(echo "$OPTARG" | cut -s -f2 -d':'); echo "## DOCKER IMAGE VERSION  = ${DOCKER_IMAGE_VERSION}" ;;   
     p) export DEPLOYMENT_PORT_PREFIX=$OPTARG;  echo "## PORT PREFIX  = $OPTARG";;
     c) export DEPLOYMENT_CHAT_ENABLED=true;;
     i) export INSTANCE_ID=$OPTARG;  echo "## INSTANCE ID  = $OPTARG";;

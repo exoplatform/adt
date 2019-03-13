@@ -207,22 +207,28 @@ initialize_product_settings() {
 
   # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
   # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
-  env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
-  env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
-  configurable_env_var "INSTANCE_ID" ""
+  if [[ -v PRODUCT_VERSION ]]; then
+    env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
+    env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
+    configurable_env_var "INSTANCE_ID" ""
 
-  if [ -z "${INSTANCE_ID}" ]; then
-    env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}"
-  else
-    env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}-${INSTANCE_ID}"
+    if [ -z "${INSTANCE_ID}" ]; then
+      env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}"
+    else
+      env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}-${INSTANCE_ID}"
+    fi
   fi
+  # docker image should have INSTANCE_KEY  
+  if [ -n "${DEPLOYMENT_DOCKER_IMAGE}" ]; then
+      env_var "INSTANCE_KEY" "docker-${DEPLOYMENT_DOCKER_IMAGE}-${DOCKER_IMAGE_VERSION}"
+  fi 
 
   # validate additional parameters
   case "${ACTION}" in
     start | stop | restart | undeploy | deploy | download-dataset)
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
-      validate_env_var "PRODUCT_VERSION"
+      configurable_env_var "PRODUCT_VERSION" ""
       configurable_env_var "INSTANCE_ID" ""
 
       # Defaults values we can override by product/branch/version
@@ -347,6 +353,12 @@ initialize_product_settings() {
       # Validate product and load artifact details
       # Be careful, this id should be no longer than 10 (because of mysql user name limit)
       case "${PRODUCT_NAME}" in
+        docker)
+          env_var PRODUCT_DESCRIPTION "Docker Image dep"
+          env_var DEPLOYMENT_DATABASE_ENABLED false
+          env_var DEPLOYMENT_ES_ENABLED false
+          echo "Go docker Go!"
+        ;;
         gatein)
           env_var PRODUCT_DESCRIPTION "GateIn Community edition"
           case "${PRODUCT_BRANCH}" in
@@ -1174,46 +1186,50 @@ do_deploy() {
     env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
   fi
 
+  if [ "${PRODUCT_NAME}" == "docker" ]; then
+    echo_info "Deploying Docker image ${INSTANCE_DESCRIPTION} ..."
+    ${DOCKER_CMD} pull ${DEPLOYMENT_DOCKER_IMAGE}:${DOCKER_IMAGE_VERSION}
 
-  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
+  else
+    echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
 
-  do_download_server
-  if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
-    # Stop the server
-    do_stop
-  fi
-  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
-    echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
-    _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
-    echo_info "Using temporary directory ${_tmpdir}"
-    if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
-      echo_warn "This instance wasn't deployed before. Nothing to keep."
-      mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      do_create_database
-      do_create_chat_database
-      do_create_es
-      do_create_onlyoffice
-      do_create_cmis
-    else
-      # Use a subshell to not expose settings loaded from the deployment descriptor
-      (
-      # The server have been already deployed.
-      # We load its settings from the configuration
-      do_load_deployment_descriptor
-      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ]; then
-        mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
-      else
+    do_download_server
+    if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+      # Stop the server
+      do_stop
+    fi
+    if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
+      echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
+      _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
+      echo_info "Using temporary directory ${_tmpdir}"
+      if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+        echo_warn "This instance wasn't deployed before. Nothing to keep."
         mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
         do_create_database
         do_create_chat_database
         do_create_es
         do_create_onlyoffice
         do_create_cmis
+      else
+        # Use a subshell to not expose settings loaded from the deployment descriptor
+        (
+        # The server have been already deployed.
+        # We load its settings from the configuration
+        do_load_deployment_descriptor
+        if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ]; then
+          mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
+        else
+          mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+          do_create_database
+          do_create_chat_database
+          do_create_es
+          do_create_onlyoffice
+          do_create_cmis
+        fi
+        )
       fi
-      )
+      echo_info "Done."
     fi
-    echo_info "Done."
-  fi
 
   do_unpack_server
 
@@ -1258,6 +1274,8 @@ do_deploy() {
   esac
   # Hack 
   do_configure_chat
+
+  fi
   do_configure_apache
   do_create_deployment_descriptor
   echo_info "Server deployed"
