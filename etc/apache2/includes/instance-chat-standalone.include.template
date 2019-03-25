@@ -73,7 +73,7 @@
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /chatServer       http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer acquire=1000 retry=30 disablereuse=on flushpackets=on
-    ProxyPassReverse        /chatServer       htpp://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer
+    ProxyPassReverse        /chatServer       http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer
 
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}

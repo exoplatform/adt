@@ -70,9 +70,6 @@
         ProxyPass /chatServer/cometd ws://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
     </IfModule>
 
-    ProxyPass /cmis http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 timeout=20
-    ProxyPassReverse /cmis http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
-
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /chatServer       http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer acquire=1000 retry=30 disablereuse=on flushpackets=on
@@ -81,6 +78,21 @@
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     
+    # Forward request to OnlyOffice when the url start with the version scheme (see in side the Docker container for it)
+    # ex: /v5.2.8-24/*
+    ProxyPassMatch    "^\/(v[\d]+\.[\d]+\.[\d]+[\.|-][\d]+\/.*)$"    http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+    ProxyPassMatch	  "^\/OfficeWeb\/.*)$"							 http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+
+    # Add header for X-Forwarded-For / X-Forwarded-Host / X-Forwarded-Server
+    ProxyAddHeaders On
+    # Add header X-Forwarded-Proto to enforce https on the underlying webserver
+    RequestHeader set X-Forwarded-Proto "https"
+
+    # Proxify of websocket url pattern
+    <IfModule mod_proxy_wstunnel.c>
+    ProxyPassMatch    (.*)(\/websocket)$                            ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2  disablereuse=on flushpackets=on
+    </IfModule>
+
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on

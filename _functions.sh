@@ -1008,20 +1008,50 @@ do_configure_apache() {
   mkdir -p ${APACHE_CONF_DIR}
   if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
     if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
+        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-cmis-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+        echo_info "used template is : instance-chat-standalone-cmis-oo.include.template"
+      else
+       evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+       echo_info "used template is : instance-chat-standalone-cmis.include.template"
+      fi   
     else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
+        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+        echo_info "used template is : instance-chat-standalone-oo.include.template"
+      else
+        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+        echo_info "used template is : instance-chat-standalone.include.template"
+      fi
     fi
   elif ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
     if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
+        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-cmis-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+        echo_info "used template is : instance-ws-cmis-oo.include.template"
+      else
+        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+        echo_info "used template is : instance-ws-cmis.include.template"
+      fi  
     else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
+        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+        echo_info "used template is : instance-ws-oo.include.template"
+      else
+        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+        echo_info "used template is : instance-ws.include.template"
+      fi
     fi
   elif ${DEPLOYMENT_CMISSERVER_ENABLED}; then
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-cmis-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
     else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    fi
+  elif ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
+    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include-oo.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  else  
+    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   fi
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
@@ -1166,11 +1196,9 @@ do_deploy() {
 
   if [ -z ${DEPLOYMENT_APACHE_VHOST_ALIAS} ]; then
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
-    env_var "DEPLOYMENT_ONLY_OFFICE_HOST_PORT" "${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
     env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_EXT_HOST}"
   else
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
-    env_var "DEPLOYMENT_ONLY_OFFICE_HOST_PORT" "${DEPLOYMENT_APACHE_VHOST_ALIAS}:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
     env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
   fi
 
