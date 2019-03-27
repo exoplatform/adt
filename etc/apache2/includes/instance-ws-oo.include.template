@@ -77,6 +77,7 @@
     ProxyPassMatch    "^\/(v[\d]+\.[\d]+\.[\d]+[\.|-][\d]+\/.*)$"    http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch      "^\/(OfficeWeb\/.*)$"    http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch      "^\/(cache\/.*)$" http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+    ProxyPassMatch      "^\/(web-apps\/.*)$" http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
 
     # Add header for X-Forwarded-For / X-Forwarded-Host / X-Forwarded-Server
     ProxyAddHeaders On
