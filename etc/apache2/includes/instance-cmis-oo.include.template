@@ -65,6 +65,11 @@
     ProxyPass               /images/Footer.png   !
     ProxyPass               /images/Logo.png     !
 
+    # Proxify of websocket url pattern
+    <IfModule mod_proxy_wstunnel.c>
+    ProxyPassMatch    (.*)(\/websocket)$    ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2  disablereuse=on flushpackets=on
+    </IfModule>
+
     ProxyPass /cmis http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 timeout=20
     ProxyPassReverse /cmis http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
 
@@ -82,11 +87,6 @@
     ProxyAddHeaders On
     # Add header X-Forwarded-Proto to enforce https on the underlying webserver
     RequestHeader set X-Forwarded-Proto "https"
-
-    # Proxify of websocket url pattern
-    <IfModule mod_proxy_wstunnel.c>
-    ProxyPassMatch    (.*)(\/websocket)$                            ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2  disablereuse=on flushpackets=on
-    </IfModule>
 
     ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30
     ProxyPassReverse        /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/
