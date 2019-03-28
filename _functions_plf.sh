@@ -234,6 +234,24 @@ do_install_patches() {
   fi
 }
 
+do_remove_addons() {
+  local _addons_manager_script=""
+
+  # Uninstall optional add-ons
+  if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
+    _addons_manager_script=${DEPLOYMENT_DIR}/addon
+  fi
+  if [ -n "${_addons_manager_script}" -a -f "${_addons_manager_script}" ]; then
+    echo_info "Uninstalling PLF Addons ..."
+    # Let's install them from $DEPLOYMENT_ADDONS_TOREMOVE env var
+    _addons=$(echo $DEPLOYMENT_ADDONS_TOREMOVE | tr "," "\n")
+    for _addon in $_addons; do
+      ${_addons_manager_script} uninstall ${_addon}
+    done
+    echo_info "Done."
+  fi
+}
+
 #
 # Function that get plf properties
 #

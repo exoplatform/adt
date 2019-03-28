@@ -237,6 +237,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_PATCHES" ""
       configurable_env_var "DEPLOYMENT_PATCHES_CATALOG" "http://patches.exoplatform.org/catalog.json"
       configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_PATCHES_CONFLICT_MODE" "overwrite" # used for add-on manager --conflict parameter (default: overwrite) (possible values: fail / skip / overwrite)
+      # Comma separated list of addons to remove using addon-ons manager. Empty string for none. (default: none)
+      configurable_env_var "DEPLOYMENT_ADDONS_TOREMOVE" ""
       # Additional command line settings to pass to the startup
       configurable_env_var "DEPLOYMENT_OPTS" ""
       configurable_env_var "DEPLOYMENT_APPSRV_VERSION" "7.0.75" #Default version used to download additional resources like JMX lib
