@@ -167,10 +167,12 @@ Environment Variables
   DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
   DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
 
-  DEPLOYMENT_CMISSERVER_ENABLED : Enable the deployment of a dedicated CMIS server, as exo-cloud-drive is not only about CMIS, it can be deloyed without a CMIS server when this param isn't set to true. (default: false; values: true|false)
+  DEPLOYMENT_CMISSERVER_ENABLED     : Enable the deployment of a dedicated CMIS server, as exo-cloud-drive is not only about CMIS, it can be deloyed without a CMIS server when this param isn't set to true. (default: false; values: true|false)
+  DEPLOYMENT_CMIS_IMAGE             : Which docker image to use for the cmis server (default: exoplatform/cmis-server)
+  DEPLOYMENT_CMIS_IMAGE_VERSION     : Which version of the cmis server image to use (default: 1.0)
+  DEPLOYMENT_CMIS_USERS_PASSWORD    : Which password to use for the cmis users (by default, use the cmis image default)
 
 EOF
-
 }
 
 # find_instance_file <VAR> <DIR> <BASENAME> <PRODUCT_NAME>
@@ -270,8 +272,10 @@ initialize_product_settings() {
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
 
-      configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/lightweightcmisserver"
+      configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/cmis-server"
       configurable_env_var "DEPLOYMENT_CMIS_IMAGE_VERSION" "1.0"
+      configurable_env_var "DEPLOYMENT_CMIS_USERS_PASSWORD" ""
+      
       # exo-cloud-drive can be used for gdrive, box, dropbox integration without the need for a cmis server.
       configurable_env_var "DEPLOYMENT_CMISSERVER_ENABLED" false
 
@@ -1017,53 +1021,30 @@ do_configure_apache() {
   echo_info "Done."
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
+
+  # Apache configuration matrix
   if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
-    if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
-      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-cmis-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-        echo_info "used template is : instance-chat-standalone-cmis-oo.include.template"
-      else
-       evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-       echo_info "used template is : instance-chat-standalone-cmis.include.template"
-      fi   
+    if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      echo_info "used template is : instance-chat-standalone-oo.include.template"
     else
-      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-        echo_info "used template is : instance-chat-standalone-oo.include.template"
-      else
-        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-        echo_info "used template is : instance-chat-standalone.include.template"
-      fi
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      echo_info "used template is : instance-chat-standalone.include.template"
     fi
   elif ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
-    if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
-      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-cmis-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-        echo_info "used template is : instance-ws-cmis-oo.include.template"
-      else
-        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-        echo_info "used template is : instance-ws-cmis.include.template"
-      fi  
-    else
-      if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-        echo_info "used template is : instance-ws-oo.include.template"
-      else
-        evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-        echo_info "used template is : instance-ws.include.template"
-      fi
-    fi
-  elif ${DEPLOYMENT_CMISSERVER_ENABLED}; then
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-cmis-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      echo_info "used template is : instance-ws-oo.include.template"
     else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-cmis.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      echo_info "used template is : instance-ws.include.template"
     fi
   elif ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
     evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include-oo.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   else  
     evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   fi
+
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then

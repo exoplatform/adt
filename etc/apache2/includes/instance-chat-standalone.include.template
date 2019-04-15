@@ -70,6 +70,9 @@
         ProxyPass /chatServer/cometd ws://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
     </IfModule>
 
+    ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
+    ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
+
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /chatServer       http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer acquire=1000 retry=30 disablereuse=on flushpackets=on

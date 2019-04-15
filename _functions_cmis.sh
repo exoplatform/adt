@@ -69,13 +69,26 @@ do_start_cmis() {
 
   echo_info "Starting CMIS Server container ${DEPLOYMENT_CMIS_CONTAINER_NAME} based on image ${DEPLOYMENT_CMIS_IMAGE}:${DEPLOYMENT_CMIS_IMAGE_VERSION}"
 
+  local DOCKER_ENV=""
+  DOCKER_ENV="${DOCKER_ENV} -e PROXY_VHOST=${DEPLOYMENT_CMIS_HOST}"
+
+  if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
+    DOCKER_ENV="${DOCKER_ENV} -e PROXY_SSL=true -e PROXY_PORT=443"
+  else
+    DOCKER_ENV="${DOCKER_ENV} -e PROXY_SSL=false -e PROXY_PORT=80"
+  fi
+
+  if [ -n "${DEPLOYMENT_CMIS_USERS_PASSWORD}" ]; then
+    DOCKER_ENV="${DOCKER_ENV} -e CMIS_USERS_PASSWORD='${DEPLOYMENT_CMIS_USERS_PASSWORD}'"
+  fi
+
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_CMIS_CONTAINER_NAME}
 
   ${DOCKER_CMD} run \
-    -d \
+    -d ${DOCKER_ENV} \
     -p "127.0.0.1:${DEPLOYMENT_CMIS_HTTP_PORT}:8080" \
-    -v ${DEPLOYMENT_CMIS_CONTAINER_NAME}_logs:/opt/tomcat/logs  \
+    -v ${DEPLOYMENT_CMIS_CONTAINER_NAME}_logs:/opt/cmis-server/logs  \
     -v ${DEPLOYMENT_CMIS_CONTAINER_NAME}_data:/data  \
     --name ${DEPLOYMENT_CMIS_CONTAINER_NAME} ${DEPLOYMENT_CMIS_IMAGE}:${DEPLOYMENT_CMIS_IMAGE_VERSION}
 
