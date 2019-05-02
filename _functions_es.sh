@@ -16,8 +16,10 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
 fi
 
 do_get_es_settings() {
-  env_var DEPLOYMENT_ES_CONTAINER_NAME "${INSTANCE_KEY}_es"
-  configurable_env_var DEPLOYMENT_ES_HEAP "512m"
+  if ${DEPLOYMENT_ES_ENABLED}; then
+    env_var DEPLOYMENT_ES_CONTAINER_NAME "${INSTANCE_KEY}_es"
+    configurable_env_var DEPLOYMENT_ES_HEAP "512m"
+  fi
 }
 
 #
