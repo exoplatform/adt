@@ -916,6 +916,9 @@ do_drop_data() {
   echo_info "Drops instance values ..."
   rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/values/
   echo_info "Done."
+  echo_info "Drops instance codec folder ..."
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/
+  echo_info "Done."
 }
 
 #
@@ -1002,6 +1005,9 @@ do_create_data() {
   echo_info "Done."
   echo_info "Creates instance values directory ..."
   mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+  echo_info "Done."
+  echo_info "Creates instance codec directory ..."
+  mkdir -p ${DEPLOYMENT_DIR}${DEPLOYMENT_CODEC_DIR}
   echo_info "Done."
 }
 
@@ -1209,6 +1215,7 @@ do_deploy() {
     if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
       echo_warn "This instance wasn't deployed before. Nothing to keep."
       mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+      mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
       do_create_database
       do_create_chat_database
       do_create_es
@@ -1222,8 +1229,10 @@ do_deploy() {
       do_load_deployment_descriptor
       if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ]; then
         mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
+        mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}
       else
         mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+        mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
         do_create_database
         do_create_chat_database
         do_create_es
@@ -1248,6 +1257,7 @@ do_deploy() {
       rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
       mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
       mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
       rm -rf ${_tmpdir}
       echo_info "Done."
     ;;

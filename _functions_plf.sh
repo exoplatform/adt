@@ -259,9 +259,11 @@ do_get_plf_settings() {
   case "${DEPLOYMENT_APPSRV_TYPE}" in
     "tomcat")
       env_var DEPLOYMENT_DATA_DIR "/gatein/data"
+      env_var DEPLOYMENT_CODEC_DIR "/gatein/conf/codec"
     ;;
     "jbosseap")
       env_var DEPLOYMENT_DATA_DIR "/standalone/data/gatein"
+      env_var DEPLOYMENT_CODEC_DIR "standalone/configuration/gatein/codec"
     ;;
     *)
       echo_error "Server type ${DEPLOYMENT_APPSRV_TYPE} not supported"
