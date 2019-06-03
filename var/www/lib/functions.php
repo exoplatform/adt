@@ -252,7 +252,7 @@ function getLocalAcceptanceInstances()
       // Parse deployment descriptor
       $descriptor_array = parse_ini_file(getenv('ADT_DATA') . "/conf/adt/" . $vhost);
       $matches = array();
-      if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array['PRODUCT_VERSION'], $matches)) {
+      if (preg_match("/([^\-]*)\-(.*)\-SNAPSHOT/", $descriptor_array['PRODUCT_VERSION'], $matches)) {
         $descriptor_array['BASE_VERSION'] = $matches[1];
         $descriptor_array['BRANCH_NAME'] = $matches[2];
       } elseif (preg_match("/(.*)\-SNAPSHOT/", $descriptor_array['PRODUCT_VERSION'], $matches)) {
