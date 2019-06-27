@@ -87,6 +87,7 @@ do_start_onlyoffice() {
     -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
     -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
     -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db:/var/lib/postgresql  \
+    -v ${HOME}/.eXo/Platform/local.json:/etc/onlyoffice/documentserver/local.json  \
     --name ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}
 
   echo_info "${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} container started"
