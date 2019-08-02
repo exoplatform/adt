@@ -713,7 +713,7 @@ initialize_product_settings() {
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.3) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.1"
 
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.3.0" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.4.1" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.3.0" # Default version of the jdbc postgresql driver addon to use
 
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
