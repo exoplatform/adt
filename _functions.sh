@@ -300,8 +300,7 @@ initialize_product_settings() {
         # For standalone we force docker mongodb
         configurable_env_var "DEPLOYMENT_CHAT_MONGODB_TYPE" "DOCKER"
       fi
-      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_IMAGE" "mongo"
-      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.2"
+      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_IMAGE" "mongo"      
 
       configurable_env_var "DEPLOYMENT_SKIP_ACCOUNT_SETUP" false
       configurable_env_var "DEPLOYMENT_DEPLOYMENT_SKIP_REGISTER" false
@@ -667,6 +666,7 @@ initialize_product_settings() {
           # for differences between 5.0 / 5.1 / 5.2 / 5.3 (tomcat and jboss)
           if [[ "${PRODUCT_VERSION}" =~ ^(5.0) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
+              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.4"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.44" #Default version used to download additional mysql driver
@@ -682,6 +682,7 @@ initialize_product_settings() {
 
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
+              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.6"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.2.0" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.46" #Default version used to download additional mysql driver
@@ -697,6 +698,7 @@ initialize_product_settings() {
 
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.2) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.1"
+              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.3.0" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.47" #Default version used to download additional mysql driver
@@ -712,6 +714,7 @@ initialize_product_settings() {
 
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.3) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.4.1" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.3.0" # Default version of the jdbc postgresql driver addon to use
