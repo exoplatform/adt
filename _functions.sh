@@ -539,15 +539,41 @@ initialize_product_settings() {
           env_var DEPLOYMENT_CHAT_ENABLED true
         ;;
         plfsales)
-          env_var PRODUCT_DESCRIPTION "Platform EE Trial"
           env_var ARTIFACT_REPO_GROUP "private"
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
-          env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
-          env_var ARTIFACT_CLASSIFIER "trial"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var DEPLOYMENT_CHAT_ENABLED true
           env_var DEPLOYMENT_SKIP_REGISTER true
+          case "${PRODUCT_BRANCH}" in
+            "4.4.x")
+              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
+              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
+              env_var ARTIFACT_CLASSIFIER "trial"
+              env_var DEPLOYMENT_CHAT_ENABLED true
+            ;;
+            "5.0.x")
+              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
+              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
+              env_var ARTIFACT_CLASSIFIER "trial"
+              env_var DEPLOYMENT_CHAT_ENABLED true
+            ;;
+            "5.1.x")
+              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
+              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
+              env_var ARTIFACT_CLASSIFIER "trial"
+              env_var DEPLOYMENT_CHAT_ENABLED true
+            ;;
+            "5.2.x")
+              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
+              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
+              env_var DEPLOYMENT_CHAT_ENABLED true
+            ;;
+            *)
+              # 5.3.x and +
+              env_var PRODUCT_DESCRIPTION "Platform EE"
+              env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
+            ;;
+          esac
         ;;
         addonchat)
           env_var PRODUCT_DESCRIPTION "Platform 4.0 EE + Chat eXo Addon"
