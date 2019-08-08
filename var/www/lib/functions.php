@@ -599,6 +599,54 @@ function getGlobalQAInstances() {
 }
 
 /**
+ * Get all the deployments related to QA for users usage (not automatic one)
+ *
+ * @return array
+ */
+function getGlobalQAUserInstances() {
+  $instances = apc_fetch('qa_user_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalQAInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithoutLabels($descriptor_arrays, array("auto"));
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
+    }
+    // Instances will be cached for 2 min
+    apc_store('qa_user_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the deployments related to QA but dedicated to Automatic testing
+ *
+ * @return array
+ */
+function getGlobalQAAutoInstances() {
+  $instances = apc_fetch('qa_auto_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalQAInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("auto"));
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
+    }
+    // Instances will be cached for 2 min
+    apc_store('qa_auto_instances', $instances, 120);
+  }
+  return $instances;
+}
+
+/**
  * Get all the deployments related to Customer Projects
  *
  * @return array
