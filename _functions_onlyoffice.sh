@@ -75,6 +75,15 @@ do_start_onlyoffice() {
     return
   fi
 
+  # add onlyoffice security paramaters to exo server conf
+  if [ -z "${DEPLOYMENT_ONLYOFFICE_SECRET}" ]
+  then
+    echo_error "Missing DEPLOYMENT_ONLYOFFICE_SECRET configured environment variable. OnlyOffice may not be deployed"
+    exit 1
+  fi 
+  
+  export DEPLOYMENT_OPTS="${DEPLOYMENT_OPTS} -Donlyoffice.documentserver.accessOnly=false -Donlyoffice.documentserver.secret=${DEPLOYMENT_ONLYOFFICE_SECRET}"
+
   echo_info "Starting OnlyOffice container ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} based on image ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}"
 
   # Ensure there is no container with the same name

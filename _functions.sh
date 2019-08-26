@@ -267,6 +267,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.2.2.2"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" ""
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
