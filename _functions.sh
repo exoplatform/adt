@@ -30,6 +30,7 @@ source "${SCRIPT_DIR}/_functions_database.sh"
 source "${SCRIPT_DIR}/_functions_es.sh"
 source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
+source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
 
 # #################################################################################
@@ -268,6 +269,15 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.2.2.2"
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" ""
+
+      configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
+      configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
+      configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "latest"
+      # USER_DIRECTORY should have LDAP/MSAD as values
+      configurable_env_var "USER_DIRECTORY" "LDAP"
+      configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
+      configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
+      configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"      
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -842,6 +852,7 @@ initialize_product_settings() {
    do_get_plf_settings
    do_get_cmis_settings
    do_get_onlyoffice_settings
+   do_get_ldap_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1191,6 +1202,13 @@ do_deploy() {
     fi
   fi
 
+  if [ ${DEPLOYMENT_LDAP_ENABLED} ]; then
+    if [ -z "${USER_DIRECTORY_BASE_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_PASSWORD}" ]; then
+      echo_error "Directory Base DN: ${USER_DIRECTORY_BASE_DN} , ADMIN DN: ${USER_DIRECTORY_ADMIN_PASSWORD} (or/end) password: ${USER_DIRECTORY_ADMIN_PASSWORD} not set"      
+      exit 1
+    fi
+  fi
+
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
   env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
@@ -1212,6 +1230,9 @@ do_deploy() {
 
   # ONLYOFFICE  port
   env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
+
+  # LDAP  port
+  env_var "DEPLOYMENT_LDAP_PORT" "${DEPLOYMENT_PORT_PREFIX}89"
 
   # CMIS server  port
   env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
@@ -1351,6 +1372,7 @@ do_start() {
   backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
 
   do_start_onlyoffice
+  do_start_ldap
   do_start_cmis
   do_start_database
   do_start_es
@@ -1559,7 +1581,7 @@ do_stop() {
         ;;
       esac
       echo_info "Server stopped."
-
+      do_stop_ldap
       do_stop_onlyoffice
       do_stop_cmis
       do_stop_database
@@ -1593,6 +1615,7 @@ do_undeploy() {
       do_drop_database
     fi
     do_drop_onlyoffice_data
+    do_drop_ldap_data
     do_drop_cmis_data
     do_drop_chat
     do_drop_es_data
@@ -1613,6 +1636,10 @@ do_undeploy() {
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
       # close firewall port for Onlyoffice documentserver only if addon was deployed
       do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
+    fi
+    if [ ${DEPLOYMENT_LDAP_ENABLED} ] && [ ${USER_DIRECTORY} == "LDAP" ]; then
+      # Close firewall port for LDAPS
+      do_ufw_close_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
     fi
     echo_info "Server undeployed"
     # Delete the deployment descriptor

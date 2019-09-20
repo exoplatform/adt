@@ -150,33 +150,14 @@ do_configure_tomcat_jod() {
   fi
 }
 
-do_configure_tomcat_ldap() {
-  if [ -e ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ]; then
-    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH
-
-    # Ensure the configuration.properties doesn't have some windows end line characters
-    # '\015' is Ctrl+V Ctrl+M = ^M
-    cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig
-    tr -d '\015' < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.orig > ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}
-
-    # Patch to reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for ldap
-    find_instance_file LDAP_GATEIN_PATCH "${ETC_DIR}/gatein" "ldap-configuration.properties.patch" "${LDAP_GATEIN_PATCH_PRODUCT_NAME}"
-
-    # Reconfigure $DEPLOYMENT_GATEIN_CONF_PATH for LDAP
-    if [ "${LDAP_GATEIN_PATCH}" != "UNSET" ]; then
-      # Prepare the patch
-      cp ${LDAP_GATEIN_PATCH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
-      echo_info "Applying on $DEPLOYMENT_GATEIN_CONF_PATH the patch $LDAP_GATEIN_PATCH ..."
-      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.ori.ldap
-      patch -l -p0 ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} < ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patch
-      cp ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH}.patched.ldap
-
-      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_LDAP_URL@" "${DEPLOYMENT_LDAP_URL}"
-      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_LDAP_ADMIN_DN@" "${DEPLOYMENT_LDAP_ADMIN_DN}"
-      replace_in_file ${DEPLOYMENT_DIR}/${DEPLOYMENT_GATEIN_CONF_PATH} "@DEPLOYMENT_LDAP_ADMIN_PWD@" "${DEPLOYMENT_LDAP_ADMIN_PWD}"
-      echo_info "Done."
-    fi
-
+do_configure_tomcat_ldap() {  
+  if [ ${DEPLOYMENT_LDAP_ENABLED} ]; then
+    echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."      
+    mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/portal/portal
+    cp ${ETC_DIR}/gatein/portal/portal/configuration.xml ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/configuration.xml
+    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/idm-configuration.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/idm-configuration.xml
+    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml
+    echo_info "End Deploying Directory ${USER_DIRECTORY} conf ..."    
   fi
 }
 
@@ -405,6 +386,11 @@ do_configure_tomcat_server() {
   if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
     # Open firewall port for Onlyoffice documentserver
     do_ufw_open_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
+  fi
+
+  if [ ${DEPLOYMENT_LDAP_ENABLED} ] && [ ${USER_DIRECTORY} == "LDAP" ]; then
+    # Open firewall port for LDAPS
+    do_ufw_open_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
   fi
 }
 
