@@ -1201,8 +1201,7 @@ do_deploy() {
         fi
     fi
   fi
-
-  if [ ${DEPLOYMENT_LDAP_ENABLED} ]; then
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
     if [ -z "${USER_DIRECTORY_BASE_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_PASSWORD}" ]; then
       echo_error "Directory Base DN: ${USER_DIRECTORY_BASE_DN} , ADMIN DN: ${USER_DIRECTORY_ADMIN_PASSWORD} (or/end) password: ${USER_DIRECTORY_ADMIN_PASSWORD} not set"      
       exit 1
@@ -1637,7 +1636,7 @@ do_undeploy() {
       # close firewall port for Onlyoffice documentserver only if addon was deployed
       do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
     fi
-    if [ ${DEPLOYMENT_LDAP_ENABLED} ] && [ ${USER_DIRECTORY} == "LDAP" ]; then
+    if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ] && [ "${USER_DIRECTORY}" == "LDAP" ]; then
       # Close firewall port for LDAPS
       do_ufw_close_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
     fi

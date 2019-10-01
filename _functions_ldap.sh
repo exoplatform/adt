@@ -15,8 +15,8 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
-do_get_ldap_settings() {
-  if [ ! ${DEPLOYMENT_LDAP_ENABLED} ] || [ "${USER_DIRECTORY}" != "LDAP" ]; then
+do_get_ldap_settings() {  
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "false" ] || [ "${USER_DIRECTORY}" != "LDAP" ]; then
     return;
   fi
   env_var DEPLOYMENT_LDAP_CONTAINER_NAME "${INSTANCE_KEY}_ldap"
@@ -27,7 +27,7 @@ do_get_ldap_settings() {
 #
 do_drop_ldap_data() {
   echo_info "Dropping ldap data ..."
-  if [ ${DEPLOYMENT_LDAP_ENABLED} ] && [ ${USER_DIRECTORY} == "LDAP" ]; then
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ] && [ "${USER_DIRECTORY}" == "LDAP" ]; then
     echo_info "Drops Ldap container ${DEPLOYMENT_LDAP_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_LDAP_CONTAINER_NAME}
     echo_info "Done."
@@ -39,7 +39,7 @@ do_drop_ldap_data() {
 
 do_stop_ldap() {
   echo_info "Stopping Ldap ..."
-  if [ ! ${DEPLOYMENT_LDAP_ENABLED} ] || [ "${USER_DIRECTORY}" != "LDAP" ]; then
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "false" ] || [ "${USER_DIRECTORY}" != "LDAP" ]; then
     echo_info "Ldap wasn't specified, skiping its server container shutdown"
     return
   fi
@@ -49,7 +49,7 @@ do_stop_ldap() {
 
 do_start_ldap() {
   echo_info "Starting Ldap..."
-  if [ ! ${DEPLOYMENT_LDAP_ENABLED} ] || [ "${USER_DIRECTORY}" != "LDAP" ]; then
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "false" ] || [ "${USER_DIRECTORY}" != "LDAP" ]; then
     echo_info "Ldap not specified, skiping its server container startup"
     return
   fi

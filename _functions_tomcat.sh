@@ -151,7 +151,7 @@ do_configure_tomcat_jod() {
 }
 
 do_configure_tomcat_ldap() {  
-  if [ ${DEPLOYMENT_LDAP_ENABLED} ]; then
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
     echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."      
     mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/portal/portal
     cp ${ETC_DIR}/gatein/portal/portal/configuration.xml ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/configuration.xml
@@ -388,7 +388,7 @@ do_configure_tomcat_server() {
     do_ufw_open_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
   fi
 
-  if [ ${DEPLOYMENT_LDAP_ENABLED} ] && [ ${USER_DIRECTORY} == "LDAP" ]; then
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ] && [ "${USER_DIRECTORY}" == "LDAP" ]; then
     # Open firewall port for LDAPS
     do_ufw_open_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
   fi
