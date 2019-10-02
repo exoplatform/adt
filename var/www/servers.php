@@ -65,7 +65,7 @@ checkCaches();
                             } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'m')) {
                               $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']+(str_replace('m','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN)/1000);
                             } else {
-                              throw new Exception("The unit of the DEPLOYMENT_JVM_SIZE_MIN is not manage (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN.")");
+                              error_log("The unit of the DEPLOYMENT_JVM_SIZE_MIN is not managed (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN.") (".$descriptor_array->ACCEPTANCE_HOST.":". componentProductVersion($descriptor_array).")");
                             }
 
                             // Compute the maximum amount of JVM size allocated per acceptance server
@@ -74,7 +74,7 @@ checkCaches();
                             } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'m')) {
                               $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']+(str_replace('m','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX)/1000);
                             } else {
-                              throw new Exception("The unit of the DEPLOYMENT_JVM_SIZE_MAX is not manage (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX.")");
+                              error_log("The unit of the DEPLOYMENT_JVM_SIZE_MAX is not managed (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX.") (".$descriptor_array->ACCEPTANCE_HOST.":". componentProductVersion($descriptor_array).")");
                             }
 
                             $matches = array();
