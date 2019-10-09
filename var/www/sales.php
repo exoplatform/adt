@@ -43,7 +43,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
         <tr>
             <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
             <td>
-              <?= componentProductOpenLink($descriptor_array); ?>
+              <?= componentProductOpenLink($descriptor_array, "", true); ?>
               <br/><?= componentAddonsTags($descriptor_array); ?>
               <span class="pull-right">
                 <a href="https://ci.exoplatform.org/job/platform-enterprise-trial-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
@@ -94,7 +94,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
       <tr>
         <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
         <td>
-          <?= componentProductOpenLink($descriptor_array); ?>
+          <?= componentProductOpenLink($descriptor_array, "", true); ?>
           <br/><?= componentAddonsTags($descriptor_array); ?>
           <span class="pull-right">
             <a href="https://ci.exoplatform.org/job/platform-enterprise-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
@@ -145,7 +145,7 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
       <tr>
         <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
         <td>
-          <?= componentProductOpenLink($descriptor_array); ?>
+          <?= componentProductOpenLink($descriptor_array, "", true); ?>
           <br/><?= componentAddonsTags($descriptor_array); ?>
           <span class="pull-right">
             <?= componentEditNoteIcon($descriptor_array) ?>
