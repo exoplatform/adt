@@ -336,6 +336,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_LOG_PATH" ""
       env_var "DEPLOYMENT_JMX_URL" ""
       env_var "DEPLOYMENT_PID_FILE" ""
+      env_var "DEPLOYMENT_LDAP_URL"
 
       # Classifier to group together projects in the UI
       env_var PLF_BRANCH "UNKNOWN" # 3.0.x, 3.5.x, 4.0.x
@@ -1485,6 +1486,10 @@ do_start() {
   echo_info "URL  : ${DEPLOYMENT_URL}"
   echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
   echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
+  if [ ! -z "${DEPLOYMENT_LDAP_URL}" ]; then
+    echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_URL}"
+  fi
+
   )
 }
 
