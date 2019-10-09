@@ -277,7 +277,9 @@ initialize_product_settings() {
       configurable_env_var "USER_DIRECTORY" "LDAP"
       configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
-      configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"      
+      configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
+      # Deploy exo in docker or not
+      configurable_env_var "DEPLOY_EXO_DOCKER" false      
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -1261,8 +1263,21 @@ do_deploy() {
   fi
 
 
-  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
+  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..." 
+  if [ "${DEPLOY_EXO_DOCKER}" == "true" ]; then
+    do_docker_server_deploy 
+  else
+    do_default_server_deploy
+  fi 
+  
+  # Hack 
+  do_configure_chat
+  do_configure_apache
+  do_create_deployment_descriptor
+  echo_info "Server deployed"
+}
 
+do_default_server_deploy(){
   do_download_server
   if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
@@ -1346,11 +1361,91 @@ do_deploy() {
       exit 1
     ;;
   esac
-  # Hack 
-  do_configure_chat
-  do_configure_apache
-  do_create_deployment_descriptor
-  echo_info "Server deployed"
+}
+
+do_docker_server_deploy(){
+  #do_download_server
+  if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+    # Stop the server
+    do_stop
+  fi
+  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
+    echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
+    _tmpdir=`mktemp -d -t archive-data.XXXXXXXXXX` || exit 1
+    echo_info "Using temporary directory ${_tmpdir}"
+    if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+      echo_warn "This instance wasn't deployed before. Nothing to keep."
+      mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+      mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
+      do_create_database
+      do_create_chat_database
+      do_create_es
+      do_create_onlyoffice
+      do_create_cmis
+    else
+      # Use a subshell to not expose settings loaded from the deployment descriptor
+      (
+      # The server have been already deployed.
+      # We load its settings from the configuration
+      do_load_deployment_descriptor
+      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ]; then
+        mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
+        mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}
+      else
+        mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+        mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
+        do_create_database
+        do_create_chat_database
+        do_create_es
+        do_create_onlyoffice
+        do_create_cmis
+      fi
+      )
+    fi
+    echo_info "Done."
+  fi
+
+  set -e
+  DEPLOYMENT_PID_FILE=${SRV_DIR}/${INSTANCE_KEY}.pid
+  mkdir -p ${SRV_DIR}
+  echo_info "Deleting existing server ..."
+  rm -rf ${SRV_DIR}/${INSTANCE_KEY}
+  echo_info "Done"
+  cp -rf ${TMP_DIR}/${INSTANCE_KEY} ${SRV_DIR}/${INSTANCE_KEY}
+  rm -rf ${TMP_DIR}/${INSTANCE_KEY}
+
+  # We search the server directory
+  pushd `find ${SRV_DIR}/${INSTANCE_KEY} -maxdepth 4 -mindepth 1 -name bin -type d`/.. > /dev/null
+  DEPLOYMENT_DIR=`pwd -P`
+  popd > /dev/null
+
+  # Initialize database before configuratation
+  # before with docker the datase must be started before to retreive the port number
+  case "${DEPLOYMENT_MODE}" in
+    NO_DATA)
+      do_init_empty_data
+    ;;
+    KEEP_DATA)
+      echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} ..."
+      rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
+      rm -rf ${_tmpdir}
+      echo_info "Done."
+    ;;
+    RESTORE_DATASET)
+      do_restore_dataset
+    ;;
+    *)
+      echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+  do_get_tomcat_settings
+  do_configure_tomcat_server 
+
 }
 
 #
