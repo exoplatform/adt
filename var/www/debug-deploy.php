@@ -73,6 +73,57 @@ if (isDeploymentInCategoryArray($instances)) {
 echo "<br />\n";
 
 
+echo "## getGlobalSalesUserInstances()<br />\n";
+$instances=getGlobalSalesUserInstances();
+echo "isDeploymentInCategoryArray=".debug_var(isDeploymentInCategoryArray($instances))."<br />\n";
+if (isDeploymentInCategoryArray($instances)) {
+  foreach ($instances as $category => $instances_array) {
+    echo "$category : <br />\n";
+    foreach ($instances_array as $instance) {
+      echo "&nbsp;&nbsp;&nbsp; $instance->INSTANCE_DESCRIPTION<br />\n";
+    }
+  }
+  echo debug_var_toggle ($instances);
+} else {
+  echo "-Nothing-";
+}
+echo "<br />\n";
+
+
+echo "## getGlobalSalesDemoInstances()<br />\n";
+$instances=getGlobalSalesDemoInstances();
+echo "isDeploymentInCategoryArray=".debug_var(isDeploymentInCategoryArray($instances))."<br />\n";
+if (isDeploymentInCategoryArray($instances)) {
+  foreach ($instances as $category => $instances_array) {
+    echo "$category : <br />\n";
+    foreach ($instances_array as $instance) {
+      echo "&nbsp;&nbsp;&nbsp; $instance->INSTANCE_DESCRIPTION<br />\n";
+    }
+  }
+  echo debug_var_toggle ($instances);
+} else {
+  echo "-Nothing-";
+}
+echo "<br />\n";
+
+
+echo "## getGlobalSalesEvalInstances()<br />\n";
+$instances=getGlobalSalesEvalInstances();
+echo "isDeploymentInCategoryArray=".debug_var(isDeploymentInCategoryArray($instances))."<br />\n";
+if (isDeploymentInCategoryArray($instances)) {
+  foreach ($instances as $category => $instances_array) {
+    echo "$category : <br />\n";
+    foreach ($instances_array as $instance) {
+      echo "&nbsp;&nbsp;&nbsp; $instance->INSTANCE_DESCRIPTION<br />\n";
+    }
+  }
+  echo debug_var_toggle ($instances);
+} else {
+  echo "-Nothing-";
+}
+echo "<br />\n";
+
+
 ?>
 </div>
 </div>

@@ -550,7 +550,7 @@ function getGlobalSalesUserInstances()
 }
 
 /**
- * Get all the demo / evaluation deployments for Sales Team only
+ * Get all the demo deployments for Sales Team only
  *
  * @return array
  */
@@ -570,6 +570,31 @@ function getGlobalSalesDemoInstances()
     }
     // Instances will be cached for 5 min
     apc_store('sales_demo_instances', $instances, 300);
+  }
+  return $instances;
+}
+
+/**
+ * Get all the evaluation deployments for Sales Team only
+ *
+ * @return array
+ */
+function getGlobalSalesEvalInstances()
+{
+  $instances = apc_fetch('sales_eval_instances');
+  if (empty($instances) || getenv('ADT_DEV_MODE')) {
+    $all_instances=getGlobalAcceptanceInstances();
+    foreach ($all_instances as $plf_branch => $descriptor_arrays) {
+      $filtered_instances=filterInstancesWithLabels($descriptor_arrays, array("sales","eval"), true);
+      if (count($filtered_instances)>0) {
+        $instances[$plf_branch]=$filtered_instances;
+      }
+    }
+    if (!is_array($instances) || empty($instances)) {
+      $instances=array();
+    }
+    // Instances will be cached for 5 min
+    apc_store('sales_eval_instances', $instances, 300);
   }
   return $instances;
 }

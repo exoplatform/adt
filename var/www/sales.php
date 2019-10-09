@@ -33,13 +33,11 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
     </tr>
     </thead>
     <tbody>
+    <tr>
+        <td colspan="15" class="category-row"><i class="icon-user"></i> - <?= "Platform personal environments for Sales people"; ?></td>
+    </tr>
   <?php
   foreach ($sales_user_instances as $plf_branch => $descriptor_arrays) {
-    ?>
-    <tr>
-        <td colspan="15" class="category-row"><i class="icon-user"></i> - <?= "Platform " . $plf_branch . " demo environments for Sales people"; ?></td>
-    </tr>
-    <?php
     foreach ($descriptor_arrays as $descriptor_array) {
         ?>
         <tr>
@@ -51,7 +49,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
                 <a href="https://ci.exoplatform.org/job/platform-enterprise-trial-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
                   <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
                 </a> - 
-              <?= componentEditNoteIcon($descriptor_array) ?>
+                <?= componentEditNoteIcon($descriptor_array) ?>
               </span>
             </td>
             <td class="col-center">
@@ -70,7 +68,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
 ?>
     </tbody>
 </table>
-    <p>These instances are deployed for <strong>Lead demo / evaluation</strong> purpose usage only.</p>
+    <p>These instances are deployed for <strong>eXo Demo</strong> purpose usage only.</p>
 <?php
 // List all Sales lead demo environments
 $sales_demo_instances=getGlobalSalesDemoInstances();
@@ -86,13 +84,11 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
     </tr>
     </thead>
     <tbody>
+    <tr>
+      <td colspan="15" class="category-row"><i class="icon-briefcase"></i> - <?= "Platform demo environments for Leads"; ?></td>
+    </tr>
   <?php
   foreach ($sales_demo_instances as $plf_branch => $descriptor_arrays) {
-  ?>
-    <tr>
-      <td colspan="15" class="category-row"><i class="icon-briefcase"></i> - <?= "Platform " . $plf_branch . " demo / evaluation environments for Leads"; ?></td>
-    </tr>
-    <?php
     foreach ($descriptor_arrays as $descriptor_array) {
     ?>
       <tr>
@@ -101,8 +97,11 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
           <?= componentProductOpenLink($descriptor_array); ?>
           <br/><?= componentAddonsTags($descriptor_array); ?>
           <span class="pull-right">
-                <?= componentEditNoteIcon($descriptor_array) ?>
-              </span>
+            <a href="https://ci.exoplatform.org/job/platform-enterprise-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+              <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
+            </a> - 
+            <?= componentEditNoteIcon($descriptor_array) ?>
+          </span>
         </td>
         <td class="col-center">
           <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
@@ -120,6 +119,56 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
 ?>
     </tbody>
 </table>
+    <p>These instances are deployed for <strong>Evaluation by Leads</strong> purpose usage only.</p>
+<?php
+// List all Sales lead evaluation environments
+$sales_eval_instances=getGlobalSalesEvalInstances();
+if (isDeploymentInCategoryArray($sales_eval_instances)) {
+  ?>
+  <table class="table table-bordered table-hover">
+    <thead>
+    <tr>
+      <th class="col-center">Status</th>
+      <th class="col-center">Name</th>
+      <th class="col-center">Version</th>
+      <th class="col-center" colspan="3">Characteristics</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+      <td colspan="15" class="category-row"><i class="icon-briefcase"></i> - <?= "Platform evaluation environments for Leads"; ?></td>
+    </tr>
+  <?php
+  foreach ($sales_eval_instances as $plf_branch => $descriptor_arrays) {
+    foreach ($descriptor_arrays as $descriptor_array) {
+    ?>
+      <tr>
+        <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
+        <td>
+          <?= componentProductOpenLink($descriptor_array); ?>
+          <br/><?= componentAddonsTags($descriptor_array); ?>
+          <span class="pull-right">
+            <?= componentEditNoteIcon($descriptor_array) ?>
+          </span>
+        </td>
+        <td class="col-center">
+          <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
+          <?= componentProductVersion($descriptor_array); ?>&nbsp;
+          <?= componentDownloadIcon($descriptor_array); ?>
+        </td>
+        <td class="col-right">deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+        <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
+      </tr>
+    <?php
+    }
+  }
+}
+?>
+    </tbody>
+</table>
+
+<!-- footer -->
 <p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and these credentials :
     <strong><code>acceptanceMonitor</code></strong> / <strong><code>monitorAcceptance!</code></strong>
 </p>
