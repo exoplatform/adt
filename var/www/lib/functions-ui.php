@@ -488,8 +488,8 @@ function componentDeploymentActions ($deployment_descriptor) {
     $content.=' | <a href="'.$deployment_descriptor->DEPLOYMENT_JMX_URL.'" rel="tooltip" title="jmx monitoring" target="_blank">';
     $content.='<img src="/images/action_log.png" alt="JMX url" width="16" height="16" class="icon"/></a>';
   }
-  if (!empty($deployment_descriptor->DEPLOYMENT_LDAP_URL)) {
-    $content.=' | <a href="'.$deployment_descriptor->DEPLOYMENT_LDAP_URL.'" rel="tooltip" title="ldap url" target="_blank">';
+  if (!empty($deployment_descriptor->DEPLOYMENT_LDAP_LINK)) {
+    $content.=' | <a href="'.$deployment_descriptor->DEPLOYMENT_LDAP_LINK.'" rel="tooltip" title="ldap url" target="_blank">';
     $content.='<img src="/images/ldap_link.png" alt="ldap url" width="16" height="16" class="icon"/></a>';
   }
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_CRASH_ENABLED') && $deployment_descriptor->DEPLOYMENT_CRASH_ENABLED) {

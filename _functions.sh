@@ -336,7 +336,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_LOG_PATH" ""
       env_var "DEPLOYMENT_JMX_URL" ""
       env_var "DEPLOYMENT_PID_FILE" ""
-      env_var "DEPLOYMENT_LDAP_URL"
+      env_var "DEPLOYMENT_LDAP_LINK" ""
 
       # Classifier to group together projects in the UI
       env_var PLF_BRANCH "UNKNOWN" # 3.0.x, 3.5.x, 4.0.x
@@ -1201,13 +1201,7 @@ do_deploy() {
           exit 1
         fi
     fi
-  fi
-  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
-    if [ -z "${USER_DIRECTORY_BASE_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_PASSWORD}" ]; then
-      echo_error "Directory Base DN: ${USER_DIRECTORY_BASE_DN} , ADMIN DN: ${USER_DIRECTORY_ADMIN_PASSWORD} (or/end) password: ${USER_DIRECTORY_ADMIN_PASSWORD} not set"      
-      exit 1
-    fi
-  fi
+  fi  
 
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
@@ -1260,11 +1254,20 @@ do_deploy() {
     env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
     env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
   fi
-
+  
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
+    if [ -z "${USER_DIRECTORY_BASE_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_PASSWORD}" ]; then
+      echo_error "Directory Base DN: ${USER_DIRECTORY_BASE_DN} , ADMIN DN: ${USER_DIRECTORY_ADMIN_PASSWORD} (or/end) password: ${USER_DIRECTORY_ADMIN_PASSWORD} not set"      
+      exit 1
+    fi 
+    DEPLOYMENT_LDAP_LINK="ldap://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_LDAP_PORT}"   
+  fi
 
   echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
 
   do_download_server
+
+  
   if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
     do_stop
@@ -1486,8 +1489,8 @@ do_start() {
   echo_info "URL  : ${DEPLOYMENT_URL}"
   echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
   echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
-  if [ ! -z "${DEPLOYMENT_LDAP_URL}" ]; then
-    echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_URL}"
+  if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
+    echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
   fi
 
   )

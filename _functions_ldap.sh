@@ -66,9 +66,7 @@ do_start_ldap() {
     -e SLAPD_DOMAIN=exoplatform.com  \
     -v ${HOME}/.eXo/Platform/LDAP/:/etc/ldap.dist/prepopulate  \
     --name ${DEPLOYMENT_LDAP_CONTAINER_NAME} ${DEPLOYMENT_LDAP_IMAGE}:${DEPLOYMENT_LDAP_IMAGE_VERSION}
-  echo_info "${DEPLOYMENT_LDAP_CONTAINER_NAME} container started"
-
-  DEPLOYMENT_LDAP_URL="ldap://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_LDAP_PORT}"
+  echo_info "${DEPLOYMENT_LDAP_CONTAINER_NAME} container started"  
 
   check_ldap_availability
 }
