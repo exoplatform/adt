@@ -34,10 +34,6 @@ do_drop_exo_docker_data() {
     delete_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs
     echo_info "Drops Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data ..."
     delete_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data
-    echo_info "Drops Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_lib ..."
-    delete_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_lib
-    echo_info "Drops Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_db ..."
-    delete_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_db
     echo_info "Done."
     echo_info "exo docker data dropped"
   else
@@ -50,11 +46,7 @@ do_create_exo_docker() {
     echo_info "Creation of the Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs ..."
     create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs
     echo_info "Creation of the Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data ..."
-    create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data
-    echo_info "Creation of the Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_lib ..."
-    create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_lib
-    echo_info "Creation of the Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_db ..."
-    create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_db
+    create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data    
   fi
 }
 
@@ -81,57 +73,86 @@ do_start_exo_docker() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}
 
-  ${DOCKER_CMD} run \
+${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
-    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs:/var/log/onlyoffice  \
-    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
-    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
-    -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db:/var/lib/postgresql  \
-    -v ${HOME}/.eXo/Platform/local.json:/etc/onlyoffice/documentserver/local.json  \
-    --name ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}
+    -p "${DEPLOYMENT_HTTP_PORT}:8080" \
+    -p "${DEPLOYMENT_AJP_PORT}:8443" \
+    -p "10001:10001"
+    -p "10002:10002"
+    -e EXO_REGISTRATION="${DEPLOYMENT_SKIP_REGISTER}" \ #check how to negate
+    -e EXO_ADDONS_LIST="${DEPLOYMENT_ADDONS}" \
+    -e EXO_ADDONS_REMOVE_LIST="${DEPLOYMENT_ADDONS_TOREMOVE}" \
+    -e EXO_ADDONS_CATALOG_URL="${DEPLOYMENT_ADDONS_CATALOG}" \
+    -e EXO_PATCHES_CATALOG_URL="${DEPLOYMENT_PATCHES_CATALOG}" \
+    -e EXO_PATCHES_LIST="${DEPLOYMENT_PATCHES}" \
+    -e EXO_JVM_SIZE_MAX="${DEPLOYMENT_JVM_SIZE_MAX}" \
+    -e EXO_JVM_SIZE_MIN="${DEPLOYMENT_JVM_SIZE_MIN}" \  
+    -e EXO_PROXY_VHOST="${DEPLOYMENT_APACHE_VHOST_ALIAS}" \
+    -e EXO_DATA_DIR="${DEPLOYMENT_DATA_DIR}" \
+    -e EXO_JODCONVERTER_PORTS="${DEPLOYMENT_JOD_CONVERTER_PORTS}" \
+    -e EXO_DB_TYPE="${DEPLOYMENT_DATABASE_TYPE}" \
+    -e EXO_DB_NAME="${DEPLOYMENT_DATABASE_NAME}" \
+    -e EXO_DB_USER="${DEPLOYMENT_DATABASE_USER}" \
+    -e EXO_DB_PASSWORD="${DEPLOYMENT_DATABASE_USER}" \
+    -e EXO_DB_HOST="${DEPLOYMENT_DATABASE_HOST}" \
+    -e EXO_DB_PORT="${DEPLOYMENT_DATABASE_PORT}" \
+    -e EXO_MONGO_HOST="${DEPLOYMENT_CHAT_MONGODB_HOSTNAME}" \
+    -e EXO_MONGO_PORT="${DEPLOYMENT_CHAT_MONGODB_PORT}" \
+    -e EXO_MONGO_DB_NAME="${DEPLOYMENT_CHAT_MONGODB_NAME}" \
+    -e EXO_ES_EMBEDDED="${DEPLOYMENT_ES_EMBEDDED}" \	
+    -e EXO_ES_HOST="${DEPLOYMENT_ES_CONTAINER_NAME}" \
+    -e EXO_ES_PORT="${DEPLOYMENT_ES_HTTP_PORT}" \
+    -e EXO_MAIL_FROM="${EXO_EMAIL_FROM}" \
+    -e EXO_MAIL_SMTP_HOST="${EXO_EMAIL_SMTP_HOST}" \
+    -e EXO_MAIL_SMTP_PORT="${EXO_EMAIL_SMTP_PORT}" \
+    -e EXO_MAIL_SMTP_STARTTLS="${EXO_EMAIL_SMTP_STARTTLS_ENABLE}" \
+    -e EXO_JMX_ENABLED: "true" \
+    -e EXO_JMX_RMI_REGISTRY_PORT: 10001 \
+    -e EXO_JMX_RMI_SERVER_PORT: 10002 \
+    -e EXO_JMX_RMI_SERVER_HOSTNAME: "${DEPLOYMENT_EXT_HOST}" \
+    -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data:/srv/exo:rw \
+    -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs:/var/log/exo:rw \
+    -v "${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}":/opt/exo/gatein/conf/codec:rw \
+    --link "${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}" \
+    --link "${DEPLOYMENT_CONTAINER_NAME}" \
+    --link "${DEPLOYMENT_ES_CONTAINER_NAME}" \
+    --name ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} ${DEPLOYMENT_EXO_DOCKER_IMAGE}:${DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION}
 
-  echo_info "${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} container started"
+  echo_info "${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} container started"
 
-  check_onlyoffice_availability
+  check_exo_docker_availability
 }
 
-check_onlyoffice_availability() {
-  echo_info "Waiting for Onlyoffice DocumentServer availability on port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}"
-  local count=0
-  local try=600
-  local wait_time=1
-  local RET=-1
-
-  local temp_file="/tmp/${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}.txt"
-
-  while [ $count -lt $try -a $RET -ne 0 ]; do
-    count=$(( $count + 1 ))
-    set +e
-
-    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}  > /dev/null
-    RET=$?
-    if [ $RET -ne 0 ]; then
-      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "OnlyOffice documentserver not yet available (${count} / ${try})..."
-    else
-      curl -f -s --max-time ${wait_time} http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck > ${temp_file} 
-      local status=$(grep "true" ${temp_file})
-      if [ "${status}" == "true" ]; then
-        RET=0   
-      fi
+check_exo_docker_availability() {  
+  END_STARTUP_MSG="Server startup in"
+  DEPLOYMENT_LOG_PATH="${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs/exo/platform.log"
+  while [ true ];
+  do
+    if [ -e "${DEPLOYMENT_LOG_PATH}" ]; then
+      break
     fi
-
-    if [ $RET -ne 0 ]; then
-      echo -n "."
-      sleep $wait_time
-    fi
-    set -e
+    sleep 1
   done
-  if [ $count -eq $try ]; then
-    echo_error "Onlyoffice DocumentServer ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
-    exit 1
-  fi
-  echo_info "Onlyoffice DocumentServer ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} up and available"
+  # Display logs
+  tail -f "${DEPLOYMENT_LOG_PATH}" &
+  local _tailPID=$!
+  # Check for the end of startup
+  set +e
+  while [ true ];
+  do
+    if grep -q "${END_STARTUP_MSG}" "${DEPLOYMENT_LOG_PATH}"; then
+      kill ${_tailPID}
+      wait ${_tailPID} 2> /dev/null
+      break
+    fi
+    sleep 1
+  done
+  set -e
+  cd -
+  echo_info "Server started"
+  echo_info "URL  : ${DEPLOYMENT_URL}"
+  echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
+  echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"  
 }
 
 # #############################################################################
