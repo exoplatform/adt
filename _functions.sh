@@ -539,7 +539,7 @@ initialize_product_settings() {
           env_var DEPLOY_EXO_DOCKER "true"
           env_var DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION "${PRODUCT_VERSION}"          
           if [ -z "${DEPLOYMENT_EXO_DOCKER_IMAGE}" ] || [ -z "${DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION}" ] ; then
-           echo_error "DEPLOYMENT_EXO_DOCKER_IMAGE (or/and) DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION have to be specified with docker deployment"            
+           echo_error "DEPLOYMENT_EXO_DOCKER_IMAGE (or/and) PRODUCT_VERSION  have to be specified with docker deployment"            
            exit 1
           fi
         ;;
@@ -1820,7 +1820,17 @@ else
   do_drop_chat
   do_drop_es_data
   echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  # Delete Awstat config
+  rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
+  # Delete the vhost
+  rm -f ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  # Reload Apache to deactivate the config
+  do_reload_apache ${ADT_DEV_MODE}
   do_stop_exo_docker
+  # Delete the server
+  rm -rf ${SRV_DIR}/${INSTANCE_KEY}
+  echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
   # Close firewall ports
   do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
   do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
