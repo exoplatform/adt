@@ -279,11 +279,13 @@ initialize_product_settings() {
       configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
-      # Deploy exo in docker or not
+      # Deploy exo in docker
       configurable_env_var "DEPLOY_EXO_DOCKER" false  
       configurable_env_var "DEPLOYMENT_EXO_DOCKER_IMAGE" ""
-      configurable_env_var "DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION" ""   
-
+      configurable_env_var "DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION" ""
+      # some docker needed vars
+      configurable_env_var "DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME" ""  
+      configurable_env_var "DEPLOYMENT_ES_CONTAINER_NAME" ""
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
@@ -1390,7 +1392,10 @@ do_default_server_deploy(){
 }
 
 do_docker_server_deploy(){
-  #do_download_server
+  # We search the server directory
+  set -e
+  mkdir -p ${SRV_DIR}/${INSTANCE_KEY}
+  env_var DEPLOYMENT_DIR "${SRV_DIR}/${INSTANCE_KEY}"
   if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
     do_stop
@@ -1590,6 +1595,7 @@ do_default_start() {
 
 do_docker_start(){
   (
+  do_load_deployment_descriptor  
   do_start_onlyoffice
   do_start_ldap
   do_start_cmis

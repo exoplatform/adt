@@ -30,8 +30,8 @@ do_drop_exo_docker_data() {
   if ${DEPLOY_EXO_DOCKER}; then
     echo_info "Drops Exo docker container ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}
-    echo_info "Drops Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs ..."
-    delete_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs
+    echo_info "Drops Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_codec..."
+    delete_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_codec
     echo_info "Drops Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data ..."
     delete_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data
     echo_info "Done."
@@ -43,8 +43,8 @@ do_drop_exo_docker_data() {
 
 do_create_exo_docker() {
   if ${DEPLOY_EXO_DOCKER}; then
-    echo_info "Creation of the Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs ..."
-    create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs
+    echo_info "Creation of the Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_codec ..."
+    create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_codec
     echo_info "Creation of the Exo docker volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data ..."
     create_docker_volume ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data    
   fi
@@ -61,86 +61,107 @@ do_stop_exo_docker() {
 }
 
 do_start_exo_docker() {
+  local DOCKER_ARGS=""
   echo_info "Starting Exo docker..."
-  if ! ${DEPLOYMENT_EXO_DOCKER_ENABLED}; then
+  if ! ${DEPLOY_EXO_DOCKER}; then
     echo_info "Exo wasn't deployed in docker, skiping exo docker startup"
     return
   fi
-
-  
+  mkdir -p ${DEPLOYMENT_DIR}/logs/exo
   echo_info "Starting exo docker container ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} based on image ${DEPLOYMENT_EXO_DOCKER_IMAGE}:${DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION}"
-
   # Ensure there is no container with the same name
-  delete_docker_container ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}
+  delete_docker_container ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}  
+  
+  
+  DOCKER_ARGS="${DOCKER_ARGS} run -d"
+  DOCKER_ARGS="${DOCKER_ARGS} -p ${DEPLOYMENT_HTTP_PORT}:8080"
+  DOCKER_ARGS="${DOCKER_ARGS} -p ${DEPLOYMENT_AJP_PORT}:8443"
+  DOCKER_ARGS="${DOCKER_ARGS} -p 10001:10001" 
+  DOCKER_ARGS="${DOCKER_ARGS} -p 10002:10002" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_REGISTRATION=false" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_ADDONS_LIST=${DEPLOYMENT_ADDONS}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_ADDONS_REMOVE_LIST=${DEPLOYMENT_ADDONS_TOREMOVE}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_ADDONS_CATALOG_URL=${DEPLOYMENT_ADDONS_CATALOG}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_PATCHES_CATALOG_URL=${DEPLOYMENT_PATCHES_CATALOG}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_PATCHES_LIST=${DEPLOYMENT_PATCHES}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_JVM_SIZE_MAX=${DEPLOYMENT_JVM_SIZE_MAX}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_JVM_SIZE_MIN=${DEPLOYMENT_JVM_SIZE_MIN}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_PROXY_VHOST=${DEPLOYMENT_APACHE_VHOST_ALIAS}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_DATA_DIR=/srv/exo" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_DB_TYPE=mysql" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_DB_NAME=${DEPLOYMENT_DATABASE_NAME}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_DB_USER=${DEPLOYMENT_DATABASE_USER}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_DB_PASSWORD=${DEPLOYMENT_DATABASE_USER}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_MONGO_HOST=${DEPLOYMENT_CHAT_MONGODB_HOSTNAME}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_MONGO_PORT=${DEPLOYMENT_CHAT_MONGODB_PORT}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_MONGO_DB_NAME=${DEPLOYMENT_CHAT_MONGODB_NAME}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_ES_EMBEDDED=${DEPLOYMENT_ES_EMBEDDED}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_ES_HOST=${DEPLOYMENT_ES_CONTAINER_NAME}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_ES_PORT=${DEPLOYMENT_ES_HTTP_PORT}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_MAIL_FROM=noreply+acceptance@exoplatform.com" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_MAIL_SMTP_HOST=localhost" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_MAIL_SMTP_PORT=25" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_MAIL_SMTP_STARTTLS=false" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_JMX_ENABLED=true" 
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_JMX_RMI_REGISTRY_PORT=10001"
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_JMX_RMI_SERVER_PORT=10002"
+  DOCKER_ARGS="${DOCKER_ARGS} -e EXO_JMX_RMI_SERVER_HOSTNAME=${DEPLOYMENT_EXT_HOST}" 
+  DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data:/srv/exo:rw"
+  DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_DIR}/logs/exo:/var/log/exo:rw"
+  DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_codec:/etc/exo/codec/:rw"
+  DOCKER_ARGS="${DOCKER_ARGS} --link ${DEPLOYMENT_CONTAINER_NAME}:db"
+  if [ ! -z "${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}" ]; then
+   DOCKER_ARGS="${DOCKER_ARGS} --link ${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}:db"
+  fi
+  if [ ! -z "${DEPLOYMENT_ES_CONTAINER_NAME}" ]; then 
+   
+  fi
+  DOCKER_ARGS="${DOCKER_ARGS} --name ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} ${DEPLOYMENT_EXO_DOCKER_IMAGE}:${DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION}"
+echo_info ${DOCKER_ARGS} b 
+${DOCKER_CMD} ${DOCKER_ARGS}
 
-${DOCKER_CMD} run \
-    -d \
-    -p "${DEPLOYMENT_HTTP_PORT}:8080" \
-    -p "${DEPLOYMENT_AJP_PORT}:8443" \
-    -p "10001:10001"
-    -p "10002:10002"
-    -e EXO_REGISTRATION="${DEPLOYMENT_SKIP_REGISTER}" \ #check how to negate
-    -e EXO_ADDONS_LIST="${DEPLOYMENT_ADDONS}" \
-    -e EXO_ADDONS_REMOVE_LIST="${DEPLOYMENT_ADDONS_TOREMOVE}" \
-    -e EXO_ADDONS_CATALOG_URL="${DEPLOYMENT_ADDONS_CATALOG}" \
-    -e EXO_PATCHES_CATALOG_URL="${DEPLOYMENT_PATCHES_CATALOG}" \
-    -e EXO_PATCHES_LIST="${DEPLOYMENT_PATCHES}" \
-    -e EXO_JVM_SIZE_MAX="${DEPLOYMENT_JVM_SIZE_MAX}" \
-    -e EXO_JVM_SIZE_MIN="${DEPLOYMENT_JVM_SIZE_MIN}" \  
-    -e EXO_PROXY_VHOST="${DEPLOYMENT_APACHE_VHOST_ALIAS}" \
-    -e EXO_DATA_DIR="${DEPLOYMENT_DATA_DIR}" \
-    -e EXO_JODCONVERTER_PORTS="${DEPLOYMENT_JOD_CONVERTER_PORTS}" \
-    -e EXO_DB_TYPE="${DEPLOYMENT_DATABASE_TYPE}" \
-    -e EXO_DB_NAME="${DEPLOYMENT_DATABASE_NAME}" \
-    -e EXO_DB_USER="${DEPLOYMENT_DATABASE_USER}" \
-    -e EXO_DB_PASSWORD="${DEPLOYMENT_DATABASE_USER}" \
-    -e EXO_DB_HOST="${DEPLOYMENT_DATABASE_HOST}" \
-    -e EXO_DB_PORT="${DEPLOYMENT_DATABASE_PORT}" \
-    -e EXO_MONGO_HOST="${DEPLOYMENT_CHAT_MONGODB_HOSTNAME}" \
-    -e EXO_MONGO_PORT="${DEPLOYMENT_CHAT_MONGODB_PORT}" \
-    -e EXO_MONGO_DB_NAME="${DEPLOYMENT_CHAT_MONGODB_NAME}" \
-    -e EXO_ES_EMBEDDED="${DEPLOYMENT_ES_EMBEDDED}" \	
-    -e EXO_ES_HOST="${DEPLOYMENT_ES_CONTAINER_NAME}" \
-    -e EXO_ES_PORT="${DEPLOYMENT_ES_HTTP_PORT}" \
-    -e EXO_MAIL_FROM="${EXO_EMAIL_FROM}" \
-    -e EXO_MAIL_SMTP_HOST="${EXO_EMAIL_SMTP_HOST}" \
-    -e EXO_MAIL_SMTP_PORT="${EXO_EMAIL_SMTP_PORT}" \
-    -e EXO_MAIL_SMTP_STARTTLS="${EXO_EMAIL_SMTP_STARTTLS_ENABLE}" \
-    -e EXO_JMX_ENABLED: "true" \
-    -e EXO_JMX_RMI_REGISTRY_PORT: 10001 \
-    -e EXO_JMX_RMI_SERVER_PORT: 10002 \
-    -e EXO_JMX_RMI_SERVER_HOSTNAME: "${DEPLOYMENT_EXT_HOST}" \
-    -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data:/srv/exo:rw \
-    -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs:/var/log/exo:rw \
-    -v "${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}":/opt/exo/gatein/conf/codec:rw \
-    --link "${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}" \
-    --link "${DEPLOYMENT_CONTAINER_NAME}" \
-    --link "${DEPLOYMENT_ES_CONTAINER_NAME}" \
-    --name ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} ${DEPLOYMENT_EXO_DOCKER_IMAGE}:${DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION}
 
-  echo_info "${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} container started"
 
-  check_exo_docker_availability
+#-e EXO_DB_TYPE="${DEPLOYMENT_DATABASE_TYPE}" 
+#if [ ! -z "${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}" ]; then
+# --link "${DEPLOYMENT_ES_CONTAINER_NAME}" \
+#--link "${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}" \
+#fi
+
+echo_info "${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} container started"
+
+check_exo_docker_availability
 }
 
 check_exo_docker_availability() {  
   END_STARTUP_MSG="Server startup in"
-  DEPLOYMENT_LOG_PATH="${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_logs/exo/platform.log"
-  while [ true ];
+  DEPLOYMENT_LOG_PATH="${DEPLOYMENT_DIR}/logs/exo"
+  local count=0
+  local try=600
+  local wait_time=1
+  while [ $count -lt $try ];  
   do
-    if [ -e "${DEPLOYMENT_LOG_PATH}" ]; then
+  count=$(( $count + 1 ))
+    if [ -e "${DEPLOYMENT_LOG_PATH}/platform.log" ]; then
       break
     fi
+    echo -n "."
     sleep 1
   done
+
+  if [ $count -eq $try ]; then
+    echo_error "Exo ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} container's logs were not available after $(( ${count} * ${wait_time}))s"
+    exit 1
+  fi
+
   # Display logs
-  tail -f "${DEPLOYMENT_LOG_PATH}" &
+  tail -f "${DEPLOYMENT_LOG_PATH}/platform.log" &
   local _tailPID=$!
   # Check for the end of startup
   set +e
   while [ true ];
   do
-    if grep -q "${END_STARTUP_MSG}" "${DEPLOYMENT_LOG_PATH}"; then
+    if grep -q "${END_STARTUP_MSG}" "${DEPLOYMENT_LOG_PATH}/platform.log"; then
       kill ${_tailPID}
       wait ${_tailPID} 2> /dev/null
       break
