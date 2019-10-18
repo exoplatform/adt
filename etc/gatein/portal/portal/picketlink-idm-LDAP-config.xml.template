@@ -266,6 +266,10 @@
                 <value>member</value>
               </option>
               <option>
+                <name>parentMembershipAttributePlaceholder</name>
+                <value>ou=placeholder,o=portal,o=gatein,${USER_DIRECTORY_BASE_DN}</value>
+              </option>
+              <option>
                 <name>isParentMembershipAttributeDN</name>
                 <value>true</value>
               </option>
@@ -277,6 +281,7 @@
                 <name>createEntryAttributeValues</name>
                 <value>objectClass=top</value>
                 <value>objectClass=groupOfNames</value>
+                <value>member=ou=placeholder,o=portal,o=gatein,${USER_DIRECTORY_BASE_DN}</value>
               </option>
             </options>
           </identity-object-type>
@@ -316,6 +321,10 @@
                 <value>member</value>
               </option>
               <option>
+                <name>parentMembershipAttributePlaceholder</name>
+                <value>ou=placeholder,o=portal,o=gatein,${USER_DIRECTORY_BASE_DN}</value>
+              </option>
+              <option>
                 <name>isParentMembershipAttributeDN</name>
                 <value>true</value>
               </option>
@@ -327,6 +336,7 @@
                 <name>createEntryAttributeValues</name>
                 <value>objectClass=top</value>
                 <value>objectClass=groupOfNames</value>
+                <value>member=ou=placeholder,o=portal,o=gatein,${USER_DIRECTORY_BASE_DN}</value>
               </option>
             </options>
           </identity-object-type>
@@ -351,6 +361,10 @@
           <option>
             <name>createMissingContexts</name>
             <value>true</value>
+          </option>
+          <option>
+            <name>sortExtensionSupported</name>
+            <value>false</value>
           </option>
           <option>
             <name>customJNDIConnectionParameters</name>
