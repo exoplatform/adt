@@ -50,6 +50,19 @@ do_create_exo_docker() {
   fi
 }
 
+do_configure_exo_docker_ldap(){
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
+    echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."      
+    mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/portal/portal
+    env_var LDAP_HOST "ldap"
+    env_var DEPLOYMENT_LDAP_PORT "389"
+    cp ${ETC_DIR}/gatein/portal/portal/configuration.xml ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/configuration.xml
+    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/idm-configuration.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/idm-configuration.xml
+    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml
+    echo_info "End Deploying Directory ${USER_DIRECTORY} conf ..."  
+  fi
+}
+
 do_stop_exo_docker() {
   echo_info "Stopping Exo docker ..."
   if ! ${DEPLOY_EXO_DOCKER}; then
@@ -123,8 +136,15 @@ do_start_exo_docker() {
   DOCKER_ARGS="${DOCKER_ARGS} -e EXO_JMX_RMI_SERVER_HOSTNAME=${DEPLOYMENT_EXT_HOST}" 
   DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_data:/srv/exo:rw"
   DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_DIR}/logs/exo:/var/log/exo:rw"
+  if [ -e "${DEPLOYMENT_DIR}/exo.properties" ]; then
+   DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_DIR}/exo.properties:/etc/exo/exo.properties"
+  fi  
   DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME}_codec:/etc/exo/codec/:rw"
-  DOCKER_ARGS="${DOCKER_ARGS} --link ${DEPLOYMENT_CONTAINER_NAME}:db"
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
+   DOCKER_ARGS="${DOCKER_ARGS} -v ${DEPLOYMENT_DIR}/gatein/conf/portal:/etc/exo/portal"
+   DOCKER_ARGS="${DOCKER_ARGS} --link ${DEPLOYMENT_LDAP_CONTAINER_NAME}:ldap"
+  fi
+  DOCKER_ARGS="${DOCKER_ARGS} --link ${DEPLOYMENT_CONTAINER_NAME}:db" 
   if [ ! -z "${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}" ]; then
    DOCKER_ARGS="${DOCKER_ARGS} --link ${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}:mongo"
   fi

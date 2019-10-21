@@ -1395,7 +1395,7 @@ do_docker_server_deploy(){
   # We search the server directory
   set -e
   mkdir -p ${SRV_DIR}/${INSTANCE_KEY}
-  env_var DEPLOYMENT_DIR "${SRV_DIR}/${INSTANCE_KEY}"
+  env_var DEPLOYMENT_DIR "${SRV_DIR}/${INSTANCE_KEY}"  
   if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
     do_stop
@@ -1403,7 +1403,8 @@ do_docker_server_deploy(){
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
       echo_warn "This instance wasn't deployed before. Nothing to keep."
-      do_create_exo_docker
+      do_create_exo_docker 
+      do_configure_exo_docker_ldap     
       do_create_database
       do_create_chat_database
       do_create_es
@@ -1418,6 +1419,7 @@ do_docker_server_deploy(){
     # The server have been already deployed.
     # We load its settings from the configuration     
     do_create_exo_docker
+    do_configure_exo_docker_ldap
     do_create_database
     do_create_chat_database
     do_create_es
@@ -1447,6 +1449,12 @@ do_docker_server_deploy(){
       exit 1
     ;;
   esac
+  if [ ! -z "${DEPLOYMENT_OPTS}" ]; then
+   echo_info "prepare exo.properties file..."
+   echo " ${DEPLOYMENT_OPTS}" > ${DEPLOYMENT_DIR}/exo.properties.tmp
+   awk -F " -D" '{for(i=1;i<=NF;i++) print $i}' ${DEPLOYMENT_DIR}/exo.properties.tmp > ${DEPLOYMENT_DIR}/exo.properties
+   rm -rf ${DEPLOYMENT_DIR}/exo.properties.tmp
+  fi
 
 }
 
