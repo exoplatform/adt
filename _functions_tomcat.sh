@@ -152,7 +152,8 @@ do_configure_tomcat_jod() {
 
 do_configure_tomcat_ldap() {  
   if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
-    echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."      
+    echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."
+    env_var LDAP_HOST "localhost"      
     mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/portal/portal
     cp ${ETC_DIR}/gatein/portal/portal/configuration.xml ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/configuration.xml
     evaluate_file_content ${ETC_DIR}/gatein/portal/portal/idm-configuration.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/idm-configuration.xml

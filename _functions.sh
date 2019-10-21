@@ -32,6 +32,7 @@ source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
+source "${SCRIPT_DIR}/_functions_exo_docker.sh"
 
 # #################################################################################
 #
@@ -277,8 +278,14 @@ initialize_product_settings() {
       configurable_env_var "USER_DIRECTORY" "LDAP"
       configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
-      configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"      
-
+      configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
+      # Deploy exo in docker
+      configurable_env_var "DEPLOY_EXO_DOCKER" false  
+      configurable_env_var "DEPLOYMENT_EXO_DOCKER_IMAGE" ""
+      configurable_env_var "DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION" ""
+      # some docker needed vars
+      configurable_env_var "DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME" ""  
+      configurable_env_var "DEPLOYMENT_ES_CONTAINER_NAME" ""
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
@@ -526,6 +533,15 @@ initialize_product_settings() {
             env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
           else
             env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          fi
+        ;;
+        plfdocker)
+          env_var PRODUCT_DESCRIPTION "Platform EE in docker"
+          env_var DEPLOY_EXO_DOCKER "true"
+          env_var DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION "${PRODUCT_VERSION}"          
+          if [ -z "${DEPLOYMENT_EXO_DOCKER_IMAGE}" ] || [ -z "${DEPLOYMENT_EXO_DOCKER_IMAGE_VERSION}" ] ; then
+           echo_error "DEPLOYMENT_EXO_DOCKER_IMAGE (or/and) PRODUCT_VERSION  have to be specified with docker deployment"            
+           exit 1
           fi
         ;;
         plfenteap)
@@ -776,7 +792,7 @@ initialize_product_settings() {
           fi
 
           # For configuration differences between tomcat and jboss
-          if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
+          if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales|plfdocker)$ ]]; then
             if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
             else 
@@ -852,11 +868,12 @@ initialize_product_settings() {
 
    do_get_plf_settings
    do_get_cmis_settings
-   do_get_onlyoffice_settings
+   do_get_onlyoffice_settings   
    do_get_ldap_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
+   do_get_exo_docker_settings
 }
 
 #
@@ -914,6 +931,11 @@ do_download_dataset() {
 }
 
 do_restore_dataset(){
+
+  if ${DEPLOY_EXO_DOCKER}; then
+    echo_error "restore dataset not yet implemented for docker deployment"
+    exit 1
+  fi  
   # System dependent settings
   if ${LINUX}; then
     env_var "TAR_BZIP2_COMPRESS_PRG" "--use-compress-prog=pbzip2"
@@ -962,12 +984,16 @@ do_init_empty_data(){
 # Drops all data used by the instance.
 #
 do_drop_data() {
-  echo_info "Drops instance indexes ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/index/
-  echo_info "Done."
-  echo_info "Drops instance values ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/values/
-  echo_info "Done."
+  if ${DEPLOY_EXO_DOCKER}; then
+   do_drop_exo_docker_data
+  else
+   echo_info "Drops instance indexes ..."
+   rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/index/
+   echo_info "Done."
+   echo_info "Drops instance values ..."
+   rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/values/
+   echo_info "Done."
+  fi
   echo_info "Drops instance codec folder ..."
   rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/
   echo_info "Done."
@@ -1052,15 +1078,19 @@ do_unpack_server() {
 # Creates all data directories used by the instance.
 #
 do_create_data() {
-  echo_info "Creates instance indexes directory ..."
-  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
-  echo_info "Done."
-  echo_info "Creates instance values directory ..."
-  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
-  echo_info "Done."
-  echo_info "Creates instance codec directory ..."
-  mkdir -p ${DEPLOYMENT_DIR}${DEPLOYMENT_CODEC_DIR}
-  echo_info "Done."
+  if ${DEPLOY_EXO_DOCKER}; then
+   do_create_exo_docker
+  else
+   echo_info "Creates instance indexes directory ..."
+   mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
+   echo_info "Done."
+   echo_info "Creates instance values directory ..."
+   mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
+   echo_info "Done."
+  fi
+   echo_info "Creates instance codec directory ..."
+   mkdir -p ${DEPLOYMENT_DIR}${DEPLOYMENT_CODEC_DIR}
+   echo_info "Done."
 }
 
 do_configure_apache() {
@@ -1263,8 +1293,21 @@ do_deploy() {
     DEPLOYMENT_LDAP_LINK="ldap://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_LDAP_PORT}"   
   fi
 
-  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
+  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..." 
+  if [ "${DEPLOY_EXO_DOCKER}" == "true" ]; then
+    do_docker_server_deploy 
+  else
+    do_default_server_deploy
+  fi 
+  
+  # Hack 
+  do_configure_chat
+  do_configure_apache
+  do_create_deployment_descriptor
+  echo_info "Server deployed"
+}
 
+do_default_server_deploy(){
   do_download_server
 
   
@@ -1350,17 +1393,87 @@ do_deploy() {
       exit 1
     ;;
   esac
-  # Hack 
-  do_configure_chat
-  do_configure_apache
-  do_create_deployment_descriptor
-  echo_info "Server deployed"
+}
+
+do_docker_server_deploy(){
+  # We search the server directory
+  set -e
+  mkdir -p ${SRV_DIR}/${INSTANCE_KEY}
+  env_var DEPLOYMENT_DIR "${SRV_DIR}/${INSTANCE_KEY}"  
+  if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+    # Stop the server
+    do_stop
+  fi
+  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
+    if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+      echo_warn "This instance wasn't deployed before. Nothing to keep."
+      do_create_exo_docker 
+      do_configure_exo_docker_ldap     
+      do_create_database
+      do_create_chat_database
+      do_create_es
+      do_create_onlyoffice
+      do_create_cmis
+    else
+     do_load_deployment_descriptor
+    fi
+  else  
+    # Use a subshell to not expose settings loaded from the deployment descriptor
+    (
+    # The server have been already deployed.
+    # We load its settings from the configuration     
+    do_create_exo_docker
+    do_configure_exo_docker_ldap
+    do_create_database
+    do_create_chat_database
+    do_create_es
+    do_create_onlyoffice
+    do_create_cmis
+    
+    )
+  fi
+  echo_info "Done."
+  
+
+  # Initialize database before configuratation
+  # before with docker the datase must be started before to retreive the port number
+  case "${DEPLOYMENT_MODE}" in
+    NO_DATA)
+      do_init_empty_data
+    ;;
+    KEEP_DATA)
+      echo_info "previous data ${INSTANCE_DESCRIPTION} are already kept ..."      
+    ;;
+    RESTORE_DATASET)
+      do_restore_dataset
+    ;;
+    *)
+      echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+  if [ ! -z "${DEPLOYMENT_OPTS}" ]; then
+   echo_info "prepare exo.properties file..."
+   echo " ${DEPLOYMENT_OPTS}" > ${DEPLOYMENT_DIR}/exo.properties.tmp
+   awk -F " -D" '{for(i=1;i<=NF;i++) print $i}' ${DEPLOYMENT_DIR}/exo.properties.tmp > ${DEPLOYMENT_DIR}/exo.properties
+   rm -rf ${DEPLOYMENT_DIR}/exo.properties.tmp
+  fi
+
 }
 
 #
 # Function that starts the app server
 #
 do_start() {
+  if ${DEPLOY_EXO_DOCKER}; then
+   do_docker_start
+  else
+   do_default_start
+  fi
+
+}
+do_default_start() {
   # Use a subshell to not expose settings loaded from the deployment descriptor
   (
   # The server is supposed to be already deployed.
@@ -1496,10 +1609,38 @@ do_start() {
   )
 }
 
+do_docker_start(){
+  (
+  do_load_deployment_descriptor  
+  do_start_onlyoffice
+  do_start_ldap
+  do_start_cmis
+  do_start_database
+  do_start_es
+  do_start_chat_server
+
+  # We need this variable for the setenv
+  export DEPLOYMENT_CHAT_SERVER_PORT
+
+  # We need this variable for the setenv
+  export DEPLOYMENT_ONLYOFFICE_HTTP_PORT
+  export DEPLOYMENT_CMIS_HTTP_PORT
+  do_start_exo_docker
+  )
+}
+
 #
 # Function that stops the app server
 #
 do_stop() {
+  if ${DEPLOY_EXO_DOCKER}; then
+   do_docker_stop
+  else
+   do_default_stop
+  fi
+}
+
+do_default_stop() {
   if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo_warn "The product cannot be stopped"
@@ -1602,10 +1743,29 @@ do_stop() {
   fi
 }
 
+do_docker_stop(){
+  do_stop_exo_docker
+  do_stop_ldap
+  do_stop_onlyoffice
+  do_stop_cmis
+  do_stop_database
+  do_stop_es
+  do_stop_chat_server
+}
+
 #
 # Function that undeploys (delete) the app server
 #
+
 do_undeploy() {
+  if ${DEPLOY_EXO_DOCKER}; then
+   do_docker_undeploy
+  else
+   do_default_undeploy
+  fi
+}
+
+do_default_undeploy() {
   if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo_warn "The product cannot be undeployed"
@@ -1653,6 +1813,52 @@ do_undeploy() {
     rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
     )
   fi
+}
+
+do_docker_undeploy() {
+if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+  echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
+  echo_warn "The product cannot be undeployed"
+  exit 0
+else
+(
+  # The server is supposed to be already deployed.
+  # We load its settings from the configuration
+  do_load_deployment_descriptor
+  # Stop the server
+  do_stop
+  if ${DEPLOYMENT_DATABASE_ENABLED}; then
+    do_drop_database
+  fi
+  do_drop_onlyoffice_data
+  do_drop_ldap_data
+  do_drop_cmis_data
+  do_drop_chat
+  do_drop_es_data
+  echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  # Delete Awstat config
+  rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
+  # Delete the vhost
+  rm -f ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  # Reload Apache to deactivate the config
+  do_reload_apache ${ADT_DEV_MODE}
+  do_stop_exo_docker
+  # Delete the server
+  rm -rf ${SRV_DIR}/${INSTANCE_KEY}
+  echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+  # Close firewall ports
+  do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
+  do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
+  do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
+  if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
+      # close firewall port for Onlyoffice documentserver only if addon was deployed
+    do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
+  fi      
+  # Delete the deployment descriptor
+  rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
+)
+fi
 }
 
 #
