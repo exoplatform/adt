@@ -369,7 +369,7 @@
         <options>
           <option>
             <name>providerURL</name>
-            <value>ldap://localhost:${DEPLOYMENT_LDAP_PORT}</value>
+            <value>ldap://${DEPLOYMENT_AD_HOST}:${DEPLOYMENT_AD_PORT}</value>
           </option>
           <option>
             <name>adminDN</name>
