@@ -353,6 +353,10 @@ function getLocalAcceptanceInstances()
       switch ($descriptor_array['PRODUCT_NAME']) {
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '6.0.x':
+            case '5.3.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
+              break;
             case '5.2.x':
             case '5.1.x':
             case '5.0.x':
@@ -373,6 +377,10 @@ function getLocalAcceptanceInstances()
         case 'plfent':
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '6.0.x':
+            case '5.3.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin / exo-push-notifications / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
+              break;
             case '5.2.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin / exo-push-notifications";
               break;
