@@ -20,9 +20,8 @@
 
 -->
 
-<jboss-identity xmlns="urn:picketlink:idm:config:v1_0_0_ga"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="urn:picketlink:idm:config:v1_0_0_ga identity-config.xsd">
+<jboss-identity xmlns="urn:picketlink:idm:config:v1_0_0_ga" 
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:picketlink:idm:config:v1_0_0_ga identity-config.xsd">
   <realms>
     <realm>
       <id>idm_realm_sample-portal</id>
@@ -195,7 +194,7 @@
               </attribute>
               <attribute>
                 <name>email</name>
-                <mapping>mail</mapping>
+                <mapping>userPrincipalName</mapping>
                 <type>text</type>
                 <isRequired>false</isRequired>
                 <isMultivalued>false</isMultivalued>
@@ -206,11 +205,11 @@
             <options>
               <option>
                 <name>idAttributeName</name>
-                <value>cn</value>
+                <value>sAMAccountName</value>
               </option>
               <option>
                 <name>entrySearchFilter</name>
-                <value><![CDATA[(&(cn={0})(objectClass=User))]]></value>
+                <value><![CDATA[(&(sAMAccountName={0})(objectClass=User))]]></value>
               </option>
               <option>
                 <name>passwordAttributeName</name>
@@ -271,7 +270,7 @@
             <options>
               <option>
                 <name>idAttributeName</name>
-                <value>cn</value>
+                <value>sAMAccountName</value>
               </option>
               <option>
                 <name>ctxDNs</name>
@@ -279,7 +278,7 @@
               </option>
               <option>
                 <name>entrySearchFilter</name>
-                <value><![CDATA[(&(cn={0})(objectClass=group))]]></value>
+                <value><![CDATA[(&(sAMAccountName={0})(objectClass=group))]]></value>
               </option>
               <option>
                 <name>allowCreateEntry</name>
@@ -331,7 +330,7 @@
             <options>
               <option>
                 <name>idAttributeName</name>
-                <value>cn</value>
+                <value>sAMAccountName</value>
               </option>
               <option>
                 <name>ctxDNs</name>
@@ -339,7 +338,7 @@
               </option>
               <option>
                 <name>entrySearchFilter</name>
-                <value><![CDATA[(&(cn={0})(objectClass=group))]]></value>
+                <value><![CDATA[(&(sAMAccountName={0})(objectClass=group))]]></value>
               </option>
               <option>
                 <name>allowCreateEntry</name>
