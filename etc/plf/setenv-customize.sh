@@ -54,7 +54,7 @@ if ${DEPLOYMENT_CHAT_ENABLED}; then
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
         CATALINA_OPTS="${CATALINA_OPTS} -Dchat.standaloneChatServer=true"
         CATALINA_OPTS="${CATALINA_OPTS} -Dchat.chatServerBase=http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}"
-    else 
+    else
         CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbServerHost=${EXO_CHAT_MONGODB_HOSTNAME}"
         CATALINA_OPTS="${CATALINA_OPTS} -Dchat.dbServerPort=${EXO_CHAT_MONGODB_PORT}"
     fi
@@ -78,7 +78,7 @@ if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.schema=${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_SCHEME}"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.allowedhosts=localhost,${INSTANCE_KEY}.${ACCEPTANCE_HOST},${DEPLOYMENT_APACHE_VHOST_ALIAS}"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.accessOnly=false"
-fi        
+fi
 
 #CMIS deployment on https is not supported
 if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
@@ -90,6 +90,12 @@ fi
 if ${DEPLOYMENT_SKIP_REGISTER}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.registration.skip=true"
 fi
+
+# Push notification configuration
+if ${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED}; then
+    [ ! -z "${DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE}" ] && CATALINA_OPTS="${CATALINA_OPTS} -Dexo.push.fcm.serviceAccountFilePath=${DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE}"
+fi
+
 # Skip account creation form
 CATALINA_OPTS="${CATALINA_OPTS} -Daccountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dexo.accountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP}"
