@@ -278,7 +278,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_AD_PORT" "389"
       configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
-      configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"      
+      configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -318,6 +318,15 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_DEPLOYMENT_SKIP_REGISTER" false
 
       configurable_env_var "DEPLOYMENT_LABELS" ""
+
+      # Push notifications configuration
+      # Enabled by default for
+      #   - trial and enterprise editions
+      #   - if the exo-push-notifications addon is present on the deployed addons
+      if [[ "$DEPLOYMENT_ADDONS" =~ "exo-push-notifications" ]]; then
+        env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED" true
+      fi
+      configurable_env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE" ""
 
       env_var "ARTIFACT_GROUPID" ""
       env_var "ARTIFACT_ARTIFACTID" ""
@@ -781,6 +790,13 @@ initialize_product_settings() {
               exit 1
           fi
 
+          # For configuration differences between community and enterprise editions
+          if [[ "${PRODUCT_NAME}" =~ ^(plfent|plfentrial|plfsales)$ ]]; then
+            echo "set"
+            env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED" true
+            echo "${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED}"
+          fi
+
           # For configuration differences between tomcat and jboss
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
             if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0) ]]; then
@@ -845,6 +861,12 @@ initialize_product_settings() {
           exit 1
         fi
       fi
+
+      ## Global configuration checks
+      if ${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED:-} && [ -z "${DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE}" ]; then
+        echo_warn "Push notification are enabled but the firebase configuration file is not specified (\"DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE\" property)"
+      fi
+
     ;;
     list | start-all | stop-all | restart-all | undeploy-all)
     # Nothing to do
