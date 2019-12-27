@@ -161,6 +161,17 @@ do_configure_tomcat_ldap() {
   fi
 }
 
+do_configure_tomcat_lemonldap() {  
+  if [ "${DEPLOYMENT_LEMONLDAP_ENABLED}" == "true" ]; then
+    echo_info "Start Deploying Directory lemonldap conf ..."      
+    mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/
+    cp ${ETC_DIR}/gatein/picketlink-sp.xml ${DEPLOYMENT_DIR}/gatein/conf/picketlink-sp.xml
+    #TODO: generate valide key and add it to lemonldap json
+    cp ${ETC_DIR}/gatein/jbid_test_keystore.jks ${DEPLOYMENT_DIR}/gatein/conf/jbid_test_keystore.jks
+    echo_info "End Deploying Directory lemonldap conf ..."    
+  fi
+}
+
 do_configure_tomcat_datasources() {
 
   case ${DEPLOYMENT_DATABASE_TYPE} in
@@ -351,6 +362,7 @@ do_configure_tomcat_server() {
   do_configure_tomcat_email
   do_configure_tomcat_jod
   do_configure_tomcat_ldap
+  do_configure_tomcat_lemonldap
 
   # Install the addons manager
   # Addon manager is needed to install jdbc driver
