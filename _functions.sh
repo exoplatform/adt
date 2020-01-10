@@ -867,7 +867,7 @@ initialize_product_settings() {
 
    do_get_plf_settings
    do_get_cmis_settings
-   do_get_onlyoffice_settings   
+   do_get_onlyoffice_settings
    do_get_ldap_settings
    do_get_database_settings
    do_get_es_settings
