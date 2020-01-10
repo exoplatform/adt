@@ -157,7 +157,7 @@ do_start_exo_docker() {
 
   echo_info "${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} container started"
 
-check_exo_docker_availability
+  check_exo_docker_availability
 }
 
 check_exo_docker_availability() {  
