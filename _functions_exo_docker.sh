@@ -155,7 +155,7 @@ do_start_exo_docker() {
 
   ${DOCKER_CMD} ${DOCKER_ARGS}
 
-echo_info "${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} container started"
+  echo_info "${DEPLOYMENT_EXO_DOCKER_CONTAINER_NAME} container started"
 
 check_exo_docker_availability
 }
