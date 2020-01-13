@@ -59,21 +59,25 @@ do_start_lemonldap() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_LEMONLDAP_CONTAINER_NAME}
 
+  echo_info "Start command: ${DOCKER_CMD} run -d -e SSODOMAIN=\"${DEPLOYMENT_EXT_HOST}\" -e MANAGER_HOSTNAME=\"manager.${DEPLOYMENT_EXT_HOST}\" -e HANDLER_HOSTNAME=\"handler.${DEPLOYMENT_EXT_HOST}\" -e LOGLEVEL=\"debug\" -e FASTCGI_LISTEN_PORT=\"\" --name ${DEPLOYMENT_LEMONLDAP_CONTAINER_NAME} ${DEPLOYMENT_LEMONLDAP_IMAGE}:${DEPLOYMENT_LEMONLDAP_IMAGE_VERSION}"
+
   ${DOCKER_CMD} run \
-    -d \    
+    -d \
     -e SSODOMAIN="${DEPLOYMENT_EXT_HOST}"  \
     -e PORTAL_HOSTNAME="auth.${DEPLOYMENT_EXT_HOST}"  \
     -e MANAGER_HOSTNAME="manager.${DEPLOYMENT_EXT_HOST}"  \
     -e HANDLER_HOSTNAME="handler.${DEPLOYMENT_EXT_HOST}"  \
     -e TEST1_HOSTNAME="exo.${DEPLOYMENT_EXT_HOST}"  \
     -e LOGLEVEL="debug"  \
-    -e FASTCGI_LISTEN_PORT=""  \    
+    -e FASTCGI_LISTEN_PORT=""  \
     --name ${DEPLOYMENT_LEMONLDAP_CONTAINER_NAME} ${DEPLOYMENT_LEMONLDAP_IMAGE}:${DEPLOYMENT_LEMONLDAP_IMAGE_VERSION}
+
+   echo_info "${DEPLOYMENT_LEMONLDAP_CONTAINER_NAME} container started"
 
   evaluate_file_content ${ETC_DIR}/lemonldap/conf/config.json.template ${DEPLOYMENT_DIR}/temp/configlemon.json
 
 # Import lemon ldap configuration
-cat ${DEPLOYMENT_DIR}/temp/configlemon.json | ${DOCKER_CMD} exec -T ${DEPLOYMENT_LEMONLDAP_CONTAINER_NAME} /usr/share/lemonldap-ng/bin/lemonldap-ng-cli restore -
+cat ${DEPLOYMENT_DIR}/temp/configlemon.json | ${DOCKER_CMD} exec -t ${DEPLOYMENT_LEMONLDAP_CONTAINER_NAME} /usr/share/lemonldap-ng/bin/lemonldap-ng-cli restore -
 
 # restart lemon to be sure the configuration is uptodate
 ${DOCKER_CMD} restart --no-deps ${DEPLOYMENT_LEMONLDAP_CONTAINER_NAME}
