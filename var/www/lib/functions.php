@@ -215,9 +215,36 @@ function getTranslationBranches($projects)
 {
   $features = apc_fetch('translation');
 
+  $projectsToIgnore = array(
+      "wallet",
+      "kudos",
+      "perk-store",
+      "cas-addon",
+      "chat-application",
+      "cmis-addon",
+      "digital-workplace",
+      "exo-es-embedded",
+      "layout-management",
+      "lecko",
+      "legacy-intranet",
+      "news",
+      "onlyoffice",
+      "openam-addon",
+      "push-notifications",
+      "remote-edit",
+      "saml2-addon",
+      "spnego-addon",
+      "task",
+      "wcm-template-pack",
+      "web-conferencing",
+      "gamification"); // Addons with different version than product is ignored, See ACC-144
+
   if (empty($features)) {
     $features = array();
     foreach ($projects as $project) {
+      if(array_key_exists($project, $projectsToIgnore)) {
+          continue;
+      }
       $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
       $branches = array_filter(preg_replace('/.*\/integration\//', '',
                                             array_filter(explode("\n", $repoObject->git('branch -r')), 'isTranslation')));
