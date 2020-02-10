@@ -133,7 +133,6 @@ function getRepositories()
         "gatein-portal" => "GateIn Portal",
         "maven-depmgt-pom" => "DEPMGT POM",
         "platform-ui" => "PLF UI",
-        "enterprise-skin" => "Enterprise Skin",
         "commons" => "Commons",
         "social" => "Social",
         "addons-manager" => "Addons Manager",
@@ -402,6 +401,8 @@ function getLocalAcceptanceInstances()
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '6.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-es-embedded / exo-gamification / exo-kudos / exo-perk-store / exo-push-notifications / exo-wallet";
+              break;
             case '5.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
               break;
@@ -426,6 +427,8 @@ function getLocalAcceptanceInstances()
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '6.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-es-embedded / exo-gamification / exo-kudos / exo-perk-store / exo-push-notifications / exo-wallet / exo-jcr / exo-calendar / exo-ecms / exo-tasks / exo-web-conferencing";
+              break;
             case '5.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin / exo-push-notifications / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
               break;
