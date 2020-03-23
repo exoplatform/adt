@@ -135,6 +135,13 @@ function getRepositories()
         "platform-ui" => "PLF UI",
         "commons" => "Commons",
         "social" => "Social",
+        "exo-es-embedded" => "ES embedded",
+        "gamification" => "Gamification",
+        "wallet" => "Wallet",
+        "app-center" => "App Center",
+        "kudos" => "Kudos",
+        "perk-store" => "Perk store",
+        "push-notifications" => "Push notifications",
         "addons-manager" => "Addons Manager",
         "platform-public-distributions" => "PLF Public Dist",
         "platform-private-distributions" => "PLF Private Dist",
@@ -143,23 +150,17 @@ function getRepositories()
         "ecms" => "ECMS",
         "calendar" => "Calendar",
         "forum" => "Forum",
-        "gamification" => "Gamification",
-        "wallet" => "Wallet",
-        "kudos" => "Kudos",
-        "perk-store" => "Perk store",
         "cas-addon" => "CAS SSO",
         "chat-application" => "CHAT",
         "cmis-addon" => "CMIS",
         "data-upgrade" => "Data upgrade",
         "digital-workplace" => "DW",
-        "exo-es-embedded" => "ES embedded",
         "layout-management" => "Layout Management",
         "lecko" => "Lecko",
         "legacy-intranet" => "Legacy intranet",
         "news" => "News",
         "onlyoffice" => "Only Office",
         "openam-addon" => "OpenAM",
-        "push-notifications" => "Push notifications",
         "remote-edit" => "Remote edit",
         "saml2-addon" => "SAML2",
         "spnego-addon" => "SPENEGO",
@@ -215,9 +216,12 @@ function getTranslationBranches($projects)
   $features = apc_fetch('translation');
 
   $projectsToIgnore = array(
+      "app-center",,
+      "gamification"
       "wallet",
       "kudos",
       "perk-store",
+      "push-notifications",
       "cas-addon",
       "chat-application",
       "cmis-addon",
@@ -229,14 +233,12 @@ function getTranslationBranches($projects)
       "news",
       "onlyoffice",
       "openam-addon",
-      "push-notifications",
       "remote-edit",
       "saml2-addon",
       "spnego-addon",
       "task",
       "wcm-template-pack",
-      "web-conferencing",
-      "gamification"); // Addons with different version than product is ignored, See ACC-144
+      "web-conferencing"); // Addons with different version than product is ignored, See ACC-144
 
   if (empty($features)) {
     $features = array();
