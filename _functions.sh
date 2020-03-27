@@ -106,6 +106,7 @@ Environment Variables
     exogtn         GateIn eXo edition                      - Apache Tomcat bundle
     plf            eXo Platform Standard Edition           - Apache Tomcat bundle
     plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
+    meeds          Meeds.io                                - Apache Tomcat bundle
     plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
     plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
     plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
@@ -486,6 +487,13 @@ initialize_product_settings() {
               exit 1
             ;;
           esac
+        ;;
+        meeds)
+          env_var PRODUCT_DESCRIPTION "Meeds.io"
+          env_var ARTIFACT_GROUPID "io.meeds.distribution"
+          env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "Platform CE"
