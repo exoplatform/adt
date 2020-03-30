@@ -216,8 +216,8 @@ function getTranslationBranches($projects)
   $features = apc_fetch('translation');
 
   $projectsToIgnore = array(
-      "app-center",,
-      "gamification"
+      "app-center",
+      "gamification",
       "wallet",
       "kudos",
       "perk-store",
@@ -400,6 +400,15 @@ function getLocalAcceptanceInstances()
       // Distribution Addons
       // $descriptor_array['PRODUCT_ADDONS_DISTRIB']=array();
       switch ($descriptor_array['PRODUCT_NAME']) {
+        case 'meeds': 
+          switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '1.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-es-embedded / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet";
+              break;
+            default:
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";     
+              break;       
+          }
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '6.0.x':
