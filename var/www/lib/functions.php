@@ -403,7 +403,7 @@ function getLocalAcceptanceInstances()
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '1.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-es-embedded / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-es-embedded / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet";
               break;
             default:
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";     
@@ -412,7 +412,7 @@ function getLocalAcceptanceInstances()
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '6.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-es-embedded / exo-gamification / exo-kudos / exo-perk-store / exo-push-notifications / exo-wallet";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-jcr / exo-ecms / exo-calendar / exo-tasks / exo-web-conferencing / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / meeds-app-center / meeds-es-embedded / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications";
               break;
             case '5.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
@@ -437,9 +437,6 @@ function getLocalAcceptanceInstances()
         case 'plfent':
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
-            case '6.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-es-embedded / exo-gamification / exo-kudos / exo-perk-store / exo-push-notifications / exo-wallet / exo-jcr / exo-calendar / exo-ecms / exo-tasks / exo-web-conferencing";
-              break;
             case '5.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin / exo-push-notifications / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
               break;
