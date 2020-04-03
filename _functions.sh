@@ -717,7 +717,6 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.3.0" # Default version of the jdbc postgresql driver addon to use
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "10" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
         else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
               exit 1
