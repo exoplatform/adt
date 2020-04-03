@@ -494,6 +494,7 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var DEPLOYMENT_APPSRV_VERSION "8.5"
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "Platform CE"
