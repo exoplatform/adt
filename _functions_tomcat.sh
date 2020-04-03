@@ -194,9 +194,13 @@ do_configure_tomcat_datasources() {
       # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-postgres.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
-      local addon="exo-jdbc-driver-postgresql:${DEPLOYMENT_POSTGRESQL_ADDON_VERSION}"
-      echo_info "Using ${addon} addon as jdbc driver"
-      env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
+      if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then
+        local addon="exo-jdbc-driver-postgresql:${DEPLOYMENT_POSTGRESQL_ADDON_VERSION}"
+        echo_info "Using ${addon} addon as jdbc driver"
+        env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
+      else
+        do_install_postgresql_driver ${DEPLOYMENT_DIR}/lib/
+      fi
     ;;
     DOCKER_ORACLE)
       # Patch to reconfigure server.xml for database

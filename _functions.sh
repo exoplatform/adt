@@ -495,6 +495,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var DEPLOYMENT_APPSRV_VERSION "8.5"
+          env_var DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON "false"
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "Platform CE"
@@ -712,11 +713,10 @@ initialize_product_settings() {
         if [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.4.1" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.3.0" # Default version of the jdbc postgresql driver addon to use
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "10" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.19" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.10"
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
               exit 1
