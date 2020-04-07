@@ -216,33 +216,34 @@ function getTranslationBranches($projects)
   $features = apc_fetch('translation');
 
   $projectsToIgnore = array(
-      "app-center",
-      "gamification",
-      "wallet",
-      "kudos",
-      "perk-store",
-      "push-notifications",
-      "cas-addon",
-      "chat-application",
-      "cmis-addon",
-      "digital-workplace",
-      "exo-es-embedded",
-      "layout-management",
-      "lecko",
-      "legacy-intranet",
-      "news",
-      "onlyoffice",
-      "openam-addon",
-      "remote-edit",
-      "saml2-addon",
-      "spnego-addon",
-      "task",
-      "wcm-template-pack",
-      "web-conferencing"); // Addons with different version than product is ignored, See ACC-144
+      "app-center" => true,
+      "gamification" => true,
+      "wallet" => true,
+      "kudos" => true,
+      "perk-store" => true,
+      "push-notifications" => true,
+      "cas-addon" => true,
+      "chat-application" => true,
+      "cmis-addon" => true,
+      "digital-workplace" => true,
+      "exo-es-embedded" => true,
+      "layout-management" => true,
+      "lecko" => true,
+      "legacy-intranet" => true,
+      "news" => true,
+      "onlyoffice" => true,
+      "openam-addon" => true,
+      "remote-edit" => true,
+      "saml2-addon" => true,
+      "spnego-addon" => true,
+      "task" => true,
+      "wcm-template-pack" => true,
+      "web-conferencing" => true); // Addons with different version than product is ignored, See ACC-144
 
   if (empty($features)) {
     $features = array();
     foreach ($projects as $project) {
+
       if(array_key_exists($project, $projectsToIgnore)) {
           continue;
       }
