@@ -711,7 +711,7 @@ initialize_product_settings() {
         # - Database drivers
         # - Default version for each supported database type
         if [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
+              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.19" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
