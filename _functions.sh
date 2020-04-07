@@ -106,6 +106,7 @@ Environment Variables
     exogtn         GateIn eXo edition                      - Apache Tomcat bundle
     plf            eXo Platform Standard Edition           - Apache Tomcat bundle
     plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
+    meeds          Meeds.io                                - Apache Tomcat bundle
     plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
     plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
     plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
@@ -487,6 +488,15 @@ initialize_product_settings() {
             ;;
           esac
         ;;
+        meeds)
+          env_var PRODUCT_DESCRIPTION "Meeds.io"
+          env_var ARTIFACT_GROUPID "io.meeds.distribution"
+          env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
+          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var DEPLOYMENT_APPSRV_VERSION "8.5"
+          env_var DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON "false"
+        ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "Platform CE"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
@@ -695,7 +705,24 @@ initialize_product_settings() {
       else
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
       fi
-
+      
+      if [[ "${PRODUCT_NAME}" =~ ^(meeds) ]]; then
+        # specific configuration for meeds deployments
+        # - Database drivers
+        # - Default version for each supported database type
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
+              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.19" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.10"
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
+        else 
+              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
+              exit 1
+        fi
+      fi
+      
       if [[ "${PRODUCT_NAME}" =~ ^(plf) ]]; then
         # specific configuration for plf deployments
         # - Database drivers

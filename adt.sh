@@ -71,7 +71,7 @@ env_var "INSTANCES_CONF_DIR" "${ADT_DATA}/conf/instances"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
-env_var "REPOS_LIST" "exoplatform:gatein-dep exodev:gatein-wci exodev:kernel exodev:core exodev:ws exodev:jcr exodev:gatein-sso exodev:gatein-pc exodev:gatein-portal exoplatform:maven-depmgt-pom exodev:docs-style exodev:platform-ui exodev:commons exodev:calendar exodev:forum exodev:wiki exodev:social exodev:ecms exodev:integration exodev:platform exoplatform:platform-public-distributions exoplatform:platform-private-trial-distributions exoplatform:platform-private-distributions"
+env_var "REPOS_LIST" "meeds-io:gatein-dep meeds-io:gatein-wci meeds-io:kernel meeds-io:core meeds-io:ws meeds-io:gatein-sso meeds-io:gatein-pc meeds-io:gatein-portal meeds-io:maven-depmgt-pom meeds-io:platform-ui meeds-io:commons meeds-io:social meeds-io:gamification meeds-io:wallet meeds-io:kudos meeds-io:perk-store meeds-io:app-center meeds-io:exo-es-embedded meeds-io:push-notifications meeds-io:addons-manager meeds-io:meeds exoplatform:platform-private-distributions exodev:wiki exodev:jcr exodev:ecms exodev:calendar exodev:forum exo-addons:cas-addon exo-addons:chat-application exo-addons:cmis-addon exo-addons:data-upgrade exo-addons:digital-workplace exo-addons:layout-management exo-addons:lecko exo-addons:legacy-intranet exo-addons:news exo-addons:onlyoffice exo-addons:openam-addon exo-addons:remote-edit exo-addons:saml2-addon exo-addons:spnego-addon exo-addons:task exo-addons:wcm-template-pack exo-addons:web-conferencing"
 
 if ${ADT_DEV_MODE}; then
   configurable_env_var "ACCEPTANCE_SCHEME"  "http"

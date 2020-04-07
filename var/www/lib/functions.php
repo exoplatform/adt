@@ -128,24 +128,45 @@ function getRepositories()
         "kernel" => "Kernel",
         "core" => "Core",
         "ws" => "WS",
-        "jcr" => "JCR",
         "gatein-pc" => "GateIn PC",
         "gatein-sso" => "GateIn SSO",
         "gatein-portal" => "GateIn Portal",
         "maven-depmgt-pom" => "DEPMGT POM",
-        "docs-style" => "Docs Style",
         "platform-ui" => "PLF UI",
         "commons" => "Commons",
-        "ecms" => "ECMS",
         "social" => "Social",
-        "wiki" => "Wiki",
-        "forum" => "Forum",
-        "calendar" => "Calendar",
-        "integration" => "Integration",
-        "platform" => "Platform",
+        "exo-es-embedded" => "ES embedded",
+        "gamification" => "Gamification",
+        "wallet" => "Wallet",
+        "app-center" => "App Center",
+        "kudos" => "Kudos",
+        "perk-store" => "Perk store",
+        "push-notifications" => "Push notifications",
+        "addons-manager" => "Addons Manager",
         "platform-public-distributions" => "PLF Public Dist",
         "platform-private-distributions" => "PLF Private Dist",
-        "platform-private-trial-distributions" => "PLF Private Trial Dist");
+        "wiki" => "Wiki",
+        "jcr" => "JCR",
+        "ecms" => "ECMS",
+        "calendar" => "Calendar",
+        "forum" => "Forum",
+        "cas-addon" => "CAS SSO",
+        "chat-application" => "CHAT",
+        "cmis-addon" => "CMIS",
+        "data-upgrade" => "Data upgrade",
+        "digital-workplace" => "DW",
+        "layout-management" => "Layout Management",
+        "lecko" => "Lecko",
+        "legacy-intranet" => "Legacy intranet",
+        "news" => "News",
+        "onlyoffice" => "Only Office",
+        "openam-addon" => "OpenAM",
+        "remote-edit" => "Remote edit",
+        "saml2-addon" => "SAML2",
+        "spnego-addon" => "SPENEGO",
+        "task" => "TASK",
+        "wcm-template-pack" => "Web pack",
+        "web-conferencing" => "Web conferencing");
     apc_store('repositories', $repositories);
   }
   return $repositories;
@@ -194,9 +215,38 @@ function getTranslationBranches($projects)
 {
   $features = apc_fetch('translation');
 
+  $projectsToIgnore = array(
+      "app-center" => true,
+      "gamification" => true,
+      "wallet" => true,
+      "kudos" => true,
+      "perk-store" => true,
+      "push-notifications" => true,
+      "cas-addon" => true,
+      "chat-application" => true,
+      "cmis-addon" => true,
+      "digital-workplace" => true,
+      "exo-es-embedded" => true,
+      "layout-management" => true,
+      "lecko" => true,
+      "legacy-intranet" => true,
+      "news" => true,
+      "onlyoffice" => true,
+      "openam-addon" => true,
+      "remote-edit" => true,
+      "saml2-addon" => true,
+      "spnego-addon" => true,
+      "task" => true,
+      "wcm-template-pack" => true,
+      "web-conferencing" => true); // Addons with different version than product is ignored, See ACC-144
+
   if (empty($features)) {
     $features = array();
     foreach ($projects as $project) {
+
+      if(array_key_exists($project, $projectsToIgnore)) {
+          continue;
+      }
       $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
       $branches = array_filter(preg_replace('/.*\/integration\//', '',
                                             array_filter(explode("\n", $repoObject->git('branch -r')), 'isTranslation')));
@@ -351,9 +401,20 @@ function getLocalAcceptanceInstances()
       // Distribution Addons
       // $descriptor_array['PRODUCT_ADDONS_DISTRIB']=array();
       switch ($descriptor_array['PRODUCT_NAME']) {
+        case 'meeds': 
+          switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '1.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-es-embedded / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet";
+              break;
+            default:
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";     
+              break;       
+          }
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '6.0.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-jcr / exo-ecms / exo-calendar / exo-tasks / exo-web-conferencing / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / meeds-app-center / meeds-es-embedded / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications";
+              break;
             case '5.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
               break;
@@ -377,7 +438,6 @@ function getLocalAcceptanceInstances()
         case 'plfent':
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
-            case '6.0.x':
             case '5.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-es-embedded / exo-remote-edit / exo-tasks / exo-web-pack / exo-web-conferencing / exo-enterprise-skin / exo-push-notifications / exo-kudos / exo-perk-store / exo-wallet / exo-gamification";
               break;
