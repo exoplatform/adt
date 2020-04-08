@@ -143,7 +143,7 @@ function getRepositories()
         "perk-store" => "Perk store",
         "push-notifications" => "Push notifications",
         "addons-manager" => "Addons Manager",
-        "platform-public-distributions" => "PLF Public Dist",
+        "meeds" => "Meeds Distribution",
         "platform-private-distributions" => "PLF Private Dist",
         "wiki" => "Wiki",
         "jcr" => "JCR",
