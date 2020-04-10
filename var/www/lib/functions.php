@@ -228,6 +228,7 @@ function getTranslationBranches($projects)
       "digital-workplace" => true,
       "exo-es-embedded" => true,
       "layout-management" => true,
+      "meeds" => true,
       "lecko" => true,
       "legacy-intranet" => true,
       "news" => true,
