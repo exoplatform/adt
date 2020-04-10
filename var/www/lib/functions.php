@@ -216,17 +216,23 @@ function getTranslationBranches($projects)
   $features = apc_fetch('translation');
 
   $projectsToIgnore = array(
+      "ecms" => true,
       "app-center" => true,
+      "forum" => true,
       "gamification" => true,
+      "gatein-portal" => true,
       "wallet" => true,
       "kudos" => true,
       "perk-store" => true,
       "push-notifications" => true,
+      "calendar" => true,
       "cas-addon" => true,
+      "commons" => true,
       "chat-application" => true,
       "cmis-addon" => true,
       "digital-workplace" => true,
       "exo-es-embedded" => true,
+      "gatein-portal" => true,
       "layout-management" => true,
       "meeds" => true,
       "lecko" => true,
@@ -234,11 +240,15 @@ function getTranslationBranches($projects)
       "news" => true,
       "onlyoffice" => true,
       "openam-addon" => true,
+      "platform-ui" => true,
+      "platform-private-distributions" => true,
       "remote-edit" => true,
       "saml2-addon" => true,
+      "social" => true,
       "spnego-addon" => true,
       "task" => true,
       "wcm-template-pack" => true,
+      "wiki" => true,
       "web-conferencing" => true); // Addons with different version than product is ignored, See ACC-144
 
   if (empty($features)) {
