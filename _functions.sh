@@ -237,6 +237,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ADDONS" ""
       configurable_env_var "DEPLOYMENT_ADDONS_CATALOG" ""
       configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE" "" # used for add-on manager --conflict parameter (default: none) (possible values: fail / skip / overwrite)
+      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE" "" # used for add-on manager --no-compat parameter (default: none) (possible values: true / false)
       # Comma separated list of patches to install using addon-ons manager. Empty string for none. (default: none)
       configurable_env_var "DEPLOYMENT_PATCHES" ""
       configurable_env_var "DEPLOYMENT_PATCHES_CATALOG" "http://patches.exoplatform.org/catalog.json"

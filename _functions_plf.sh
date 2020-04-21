@@ -217,6 +217,11 @@ do_install_patches() {
     _addons_manager_patches_option_conflict="--conflict=${DEPLOYMENT_ADDONS_MANAGER_PATCHES_CONFLICT_MODE}"
   fi
 
+  if [ "${DEPLOYMENT_ADDONS_MANAGER_PATCHES_NOCOMPAT_MODE}" == "true" ]; then
+    echo "The add-on manager parameter --no-compat was enabled for the patch install"
+    _addons_manager_patches_option_nocompat="--no-compat"
+  fi
+
   # Install optional add-ons
   if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
     _addons_manager_script=${DEPLOYMENT_DIR}/addon
@@ -228,7 +233,7 @@ do_install_patches() {
     # Let's install them from $DEPLOYMENT_PATCHES env var
     _addons=$(echo $DEPLOYMENT_PATCHES | tr "," "\n")
     for _addon in $_addons; do
-      ${_addons_manager_script} install ${_addons_manager_patches_catalog:-} ${_addon} ${_addons_manager_patches_option_conflict:-} --force --batch-mode
+      ${_addons_manager_script} install ${_addons_manager_patches_catalog:-} ${_addon} ${_addons_manager_patches_option_conflict:-} ${_addons_manager_patches_option_nocompat:-} --force --batch-mode
     done
     echo_info "Done."
   fi
