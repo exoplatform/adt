@@ -175,6 +175,11 @@ do_install_addons() {
     _addons_manager_option_conflict="--conflict=${DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE}"
   fi
 
+  if [ "${DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE}" == "true" ]; then
+    echo "The add-on manager parameter --no-compat was enabled for the addon install"
+    _addons_manager_option_nocompat="--no-compat"
+  fi
+
   # Install optional add-ons
   if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
     _addons_manager_script=${DEPLOYMENT_DIR}/addon
@@ -186,7 +191,7 @@ do_install_addons() {
     # Let's install them from $DEPLOYMENT_ADDONS env var
     _addons=$(echo $DEPLOYMENT_ADDONS | tr "," "\n")
     for _addon in $_addons; do
-      ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
+      ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} ${_addons_manager_option_nocompat:-} --force --batch-mode
     done
     if [ -f "${DEPLOYMENT_DIR}/addons.list" ]; then
       # Let's install them from ${DEPLOYMENT_DIR}/addons.list file
@@ -197,7 +202,7 @@ do_install_addons() {
         # Don't read comments
         [[ "$_addon" =~ ^#.*$ ]] && continue
         # Install addon
-        ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} --force --batch-mode
+        ${_addons_manager_script} install ${_addons_manager_option_catalog:-} ${_addon} ${_addons_manager_option_conflict:-} ${_addons_manager_option_nocompat:-} --force --batch-mode
       done < "$_addons_list"
     fi
     echo_info "Done."
