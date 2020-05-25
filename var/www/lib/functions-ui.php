@@ -425,7 +425,11 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
  */
 function componentProductVersion ($deployment_descriptor) {
   $timestamp=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
-  $content=$deployment_descriptor->BASE_VERSION;
+  if (preg_match("/.*-M(LT|BL)$/", $deployment_descriptor->BASE_VERSION)) {
+    $content=$deployment_descriptor->ARTIFACT_TIMESTAMP." (Auto)";
+  } else {
+    $content=$deployment_descriptor->BASE_VERSION;
+  }
   if (!empty($timestamp)) {
     $content.='<span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">';
     if (!empty($deployment_descriptor->BRANCH_NAME)) {
