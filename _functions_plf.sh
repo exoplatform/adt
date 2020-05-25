@@ -184,6 +184,12 @@ do_install_addons() {
     echo "The add-on manager parameter --unstable was enabled for the addon install"
     _addons_manager_option_unstable="--unstable"
   fi
+   
+  if echo $DEPLOYMENT_ADDONS | grep -qP "\-M(BL|LT)"; then 
+    if [ ! -z ${MILESTONE_SUFFIX} ]; then
+      DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/-M${MILESTONE_SUFFIX}/g")    
+    fi
+  fi
 
   # Install optional add-ons
   if [ -f "${DEPLOYMENT_DIR}/addon" ]; then
