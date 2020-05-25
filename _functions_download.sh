@@ -157,10 +157,58 @@ do_download_maven_artifact() {
     echo_info "Latest timestamp : $_artifactTimestamp"
     _artifactDate=`expr "$_artifactTimestamp" : '.*-\(.*\)-.*'`
   fi
+  
+  #
+  # For the latest milestone (LT) or before the latest one (BL), we will need to manually compute its TIMESTAMP from maven metadata
+  #
+  if [[ "$_artifactVersion" =~ .*-M(BL|LT)$ ]]; then
+    local _metadataFile="$_downloadDirectory/$_fileBaseName-$_artifactVersion-maven-metadata.xml"
+    local _metadataUrl="$(dirname $_baseUrl)/maven-metadata.xml"
+    if [ -e "$_metadataFile" ]; then
+      mv ${_metadataFile} ${_metadataFile}.bck
+    fi
+    do_curl "$_curlOptions" "$_metadataUrl" "$_metadataFile" "Artifact Metadata"
+    local _xpathQuery="";
+    _xpathQuery="/metadata/versioning/release/text()"
+    set +e
+    if ${DARWIN}; then
+      _artifactTimestamp=`xpath ${_metadataFile} ${_xpathQuery}`
+    fi
+    if ${LINUX}; then
+      _artifactTimestamp=`xpath -q -e ${_xpathQuery} ${_metadataFile}`
+    fi
+    set -e
+    if [ -z "$_artifactTimestamp" ] && [ -e "$_metadataFile.bck" ]; then
+      echo_warn "Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
+      mv ${_metadataFile}.bck ${_metadataFile}
+      if ${DARWIN}; then
+        _artifactTimestamp=`xpath ${_metadataFile} ${_xpathQuery}`
+      fi
+      if ${LINUX}; then
+        _artifactTimestamp=`xpath -q -e ${_xpathQuery} ${_metadataFile}`
+      fi
+    fi
+    if [ -z "$_artifactTimestamp" ]; then
+      echo_error "No package available in the remote repository and no previous version available locally."
+      exit 1;
+    fi
+    rm -f ${_metadataFile}.bck
+    if [[ "$_artifactVersion" =~ .*-MBL$ ]]; then
+      local latestmilestonesuffix=$(echo $_artifactTimestamp | grep -oP "[0-9]+$")
+      local latestmilestoneprefix=$(echo $_artifactTimestamp | grep -oP ".*-M")
+      ((latestmilestonesuffix--))
+      [ $latestmilestonesuffix -lt 10 ] && latestmilestonesuffix="0$latestmilestonesuffix"
+      _artifactTimestamp="$latestmilestoneprefix$latestmilestonesuffix"
+    fi
+    echo_info "Latest timestamp : $_artifactTimestamp"
+    _artifactDate=""
+    _baseUrl=$(echo $_baseUrl | sed "s/$_artifactVersion/$_artifactTimestamp/g" )
+  fi
 
   #
   # Compute the Download URL for the artifact
   #
+
   local _filename=${_artifactArtifactId}-${_artifactTimestamp}
   local _name=${_artifactGroupId}:${_artifactArtifactId}:${_artifactVersion}
   if [ -n "$_artifactClassifier" ]; then
@@ -264,7 +312,7 @@ EOF
   #
   # Create a symlink if it is a SNAPSHOT to the TIMESTAMPED version
   #
-  if [[ "$_artifactVersion" =~ .*-SNAPSHOT ]]; then
+  if [[ "$_artifactVersion" =~ .*-(SNAPSHOT|MBL|MLT) ]]; then
     ln -fs "$_fileBaseName-$_artifactTimestamp.$_artifactPackaging" "$_downloadDirectory/$_fileBaseName-$_artifactVersion.$_artifactPackaging"
     ln -fs "$_fileBaseName-$_artifactTimestamp.info" "$_downloadDirectory/$_fileBaseName-$_artifactVersion.info"
   fi
