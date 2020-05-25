@@ -117,7 +117,9 @@ Usage
       DEPLOYMENT_ADDONS                         : Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
       DEPLOYMENT_ADDONS_CATALOG                 : The url of an eXo Add-on Manager catalog file (default: none)
       DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE   : Used for add-on manager --conflict parameter (default: none) (possible values: fail / skip / overwrite)
-
+      DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE   : Used for add-on manager --no-compat parameter (default: none) (possible values: true / false)
+      DEPLOYMENT_ADDONS_MANAGER_UNSTABLE_MODE   : Used for add-on manager --unstable parameter (default: none) (possible values: true / false)
+      DEPLOYMENT_ADDONS_MANAGER_PATCHES_NOCOMPAT_MODE   : Used for add-on manager --no-compat parameter when installing patches (default: none) (possible values: true / false)
       Instance Settings
       =================
 
