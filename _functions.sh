@@ -31,6 +31,7 @@ source "${SCRIPT_DIR}/_functions_es.sh"
 source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
+source "${SCRIPT_DIR}/_functions_lemonldap.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
 
 # #################################################################################
@@ -272,7 +273,8 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" ""
-
+      configurable_env_var "DEPLOYMENT_SAML_ENABLED" false
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "latest"
@@ -283,7 +285,9 @@ initialize_product_settings() {
       configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
-
+      # LEMONLDAP CONF
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_IMAGE" "coudot/lemonldap-ng"
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_IMAGE_VERSION" "2.0.6"
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
@@ -374,7 +378,13 @@ initialize_product_settings() {
       env_var "LDAP_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "STANDALONE_PRODUCT_NAME" "${PRODUCT_NAME}"
+      env_var "DEPLOYMENT_SAML_ENABLED" "$DEPLOYMENT_SAML_ENABLED"
 
+      # ACTIVATE SAML CONF
+      if $DEPLOYMENT_SAML_ENABLED ; then
+        env_var DEPLOYMENT_LEMONLDAP_ENABLED "true"
+        env_var DEPLOYMENT_LDAP_ENABLED "true"
+      fi
       # Validate product and load artifact details
       # Be careful, this id should be no longer than 10 (because of mysql user name limit)
       case "${PRODUCT_NAME}" in
@@ -912,6 +922,7 @@ initialize_product_settings() {
    do_get_cmis_settings
    do_get_onlyoffice_settings
    do_get_ldap_settings
+   do_get_lemonldap_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1434,6 +1445,7 @@ do_start() {
 
   do_start_onlyoffice
   do_start_ldap
+  do_start_lemonldap
   do_start_cmis
   do_start_database
   do_start_es
@@ -1647,6 +1659,7 @@ do_stop() {
       esac
       echo_info "Server stopped."
       do_stop_ldap
+      do_stop_lemonldap
       do_stop_onlyoffice
       do_stop_cmis
       do_stop_database
@@ -1681,6 +1694,7 @@ do_undeploy() {
     fi
     do_drop_onlyoffice_data
     do_drop_ldap_data
+    do_drop_lemonldap_data
     do_drop_cmis_data
     do_drop_chat
     do_drop_es_data

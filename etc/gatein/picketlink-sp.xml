@@ -1,0 +1,30 @@
+<PicketLink xmlns="urn:picketlink:identity-federation:config:2.1">
+  <PicketLinkSP xmlns="urn:picketlink:identity-federation:config:2.1"
+                ServerEnvironment="tomcat" BindingType="POST" SupportsSignatures="true" LogOutPage="/" EnableAudit="true">
+    <IdentityURL>${gatein.sso.idp.url}</IdentityURL>
+    <ServiceURL>${gatein.sso.sp.url}</ServiceURL>
+
+    <!-- WARNING: This bundled keystore is only for testing purposes. You should generate and configure your own keystore!-->
+    <KeyProvider ClassName="org.picketlink.identity.federation.core.impl.KeyStoreKeyManager">
+      <Auth Key="KeyStoreURL" Value="${gatein.sso.picketlink.keystore}"/>
+      <Auth Key="KeyStorePass" Value="${gatein.sso.idp.keystorepass}"/>
+      <Auth Key="SigningKeyPass" Value="${gatein.sso.idp.signingkeypass}"/>
+      <Auth Key="SigningKeyAlias" Value="${gatein.sso.idp.alias}"/>
+      <Auth Key="salt" Value="18273645"/>
+      <Auth Key="iterationCount" Value="11"/>
+      <ValidatingAlias Key="${gatein.sso.idp.host}" Value="${gatein.sso.idp.alias}"/>
+    </KeyProvider>
+
+  </PicketLinkSP>
+
+  <Handlers xmlns="urn:picketlink:identity-federation:handler:config:2.1">
+    <Handler
+        class="org.gatein.sso.agent.saml.PortalSAML2LogOutHandler"/>
+    <Handler
+        class="org.picketlink.identity.federation.web.handlers.saml2.SAML2AuthenticationHandler">
+        <Option Key="NAMEID_FORMAT" Value="urn:oasis:names:tc:SAML:1.1:nameid-format:persistent"/>
+    </Handler>
+    <Handler
+        class="org.picketlink.identity.federation.web.handlers.saml2.RolesGenerationHandler"/>
+  </Handlers>
+</PicketLink>
