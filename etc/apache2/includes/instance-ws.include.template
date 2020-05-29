@@ -77,5 +77,5 @@
     
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
-    ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
-    ProxyPassReverse        /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/
+    ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
+    ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/

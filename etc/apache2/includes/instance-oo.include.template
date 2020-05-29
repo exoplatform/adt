@@ -89,5 +89,5 @@
     # Add header X-Forwarded-Proto to enforce https on the underlying webserver
     RequestHeader set X-Forwarded-Proto "https"
 
-    ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30
-    ProxyPassReverse        /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/
+    ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30
+    ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/

@@ -71,5 +71,5 @@
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
 
-    ProxyPass               /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/ acquire=1000 retry=30
-    ProxyPassReverse        /       ajp://localhost:${DEPLOYMENT_AJP_PORT}/
+    ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30
+    ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/
