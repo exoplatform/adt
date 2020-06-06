@@ -31,6 +31,7 @@ source "${SCRIPT_DIR}/_functions_es.sh"
 source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
+source "${SCRIPT_DIR}/_functions_mailhog.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
 
 # #################################################################################
@@ -283,6 +284,10 @@ initialize_product_settings() {
       configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
+
+      configurable_env_var "DEPLOYMENT_MAILHOG_ENABLED" false
+      configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
+      configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -912,6 +917,7 @@ initialize_product_settings() {
    do_get_cmis_settings
    do_get_onlyoffice_settings
    do_get_ldap_settings
+   do_get_mailhog_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1251,6 +1257,7 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
   configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
   configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
+  configurable_env_var "DEPLOYMENT_SMTP_PORT" "25"
 
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then 
@@ -1285,6 +1292,10 @@ do_deploy() {
 
   # LDAP  port
   env_var "DEPLOYMENT_LDAP_PORT" "${DEPLOYMENT_PORT_PREFIX}89"
+
+  # Mailhog  port
+  env_var "DEPLOYMENT_MAILHOG_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
+  env_var "DEPLOYMENT_MAILHOG_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
 
   # CMIS server  port
   env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
@@ -1322,6 +1333,10 @@ do_deploy() {
   fi
 
   echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
+
+  if [ "${DEPLOYMENT_MAILHOG_ENABLED}" == "true" ]; then
+    env_var "DEPLOYMENT_SMTP_PORT" "${DEPLOYMENT_MAILHOG_SMTP_PORT}"
+  fi
 
   do_download_server
 
@@ -1434,6 +1449,7 @@ do_start() {
 
   do_start_onlyoffice
   do_start_ldap
+  do_start_mailhog
   do_start_cmis
   do_start_database
   do_start_es
@@ -1647,6 +1663,7 @@ do_stop() {
       esac
       echo_info "Server stopped."
       do_stop_ldap
+      do_stop_mailhog
       do_stop_onlyoffice
       do_stop_cmis
       do_stop_database
@@ -1681,6 +1698,7 @@ do_undeploy() {
     fi
     do_drop_onlyoffice_data
     do_drop_ldap_data
+    do_drop_mailhog_data
     do_drop_cmis_data
     do_drop_chat
     do_drop_es_data

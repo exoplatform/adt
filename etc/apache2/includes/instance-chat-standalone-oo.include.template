@@ -66,6 +66,9 @@
     ProxyPass               /images/Logo.png     !
 
     <IfModule mod_proxy_wstunnel.c>
+        ProxyPass /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
+        ProxyPassReverse /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
+ 
         # Proxify of websocket url pattern for only office
         ProxyPassMatch    (.*)(\/websocket)$                            ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2  disablereuse=on flushpackets=on
 
@@ -83,6 +86,9 @@
 
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
+
+    ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+    ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
     
     # Forward request to OnlyOffice when the url start with the version scheme (see in side the Docker container for it)
     # ex: /v5.2.8-24/* OR /5.3.0-243/*
