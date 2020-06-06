@@ -45,7 +45,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
             <td>
               <?= componentProductOpenLink($descriptor_array, "", true); ?>
               <span class="pull-right">
-                <a href="https://ci.exoplatform.org/job/platform-enterprise-trial-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-trial-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
                   <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
                 </a> - 
                 <?= componentEditNoteIcon($descriptor_array) ?>
@@ -96,7 +96,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
         <td>
           <?= componentProductOpenLink($descriptor_array, "", true); ?>
           <span class="pull-right">
-            <a href="https://ci.exoplatform.org/job/platform-enterprise-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+            <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
               <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
             </a> - 
             <?= componentEditNoteIcon($descriptor_array) ?>
