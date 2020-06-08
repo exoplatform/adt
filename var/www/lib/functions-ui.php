@@ -509,6 +509,11 @@ function componentDeploymentActions ($deployment_descriptor) {
     $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/elasticsearch" rel="tooltip" title="Elasticearch">';
     $content.='<img src="/images/elastic.svg" width="16" height="16" alt="elasticearch" class="icon"/></a>';
   }
+  // Mailhog access
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_MAILHOG_ENABLED') && $deployment_descriptor->DEPLOYMENT_MAILHOG_ENABLED) {
+    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/mailhog/" rel="tooltip" title="Mailhog">';
+    $content.='<img src="/images/mailhog.svg" width="16" height="16" alt="mailhog" class="icon"/></a>';
+  }
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_CMISSERVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CMISSERVER_ENABLED) {
     $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/cmis" rel="tooltip" title="CMIS Server">';
     $content.='<img src="/images/cmis.png" width="16" height="16" alt="cmis" class="icon"/></a>';
