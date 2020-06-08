@@ -151,7 +151,7 @@ do_configure_tomcat_jod() {
 }
 
 do_configure_tomcat_ldap() {  
-  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
+  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ] && ! grep -qP "^(1|6)." <<< "${PRODUCT_VERSION}"; then
     echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."      
     mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/portal/portal
     cp ${ETC_DIR}/gatein/portal/portal/configuration.xml ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/configuration.xml
