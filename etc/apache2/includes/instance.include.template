@@ -68,6 +68,9 @@
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
 
+    ProxyPass               /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
+    ProxyPassReverse        /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
+
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
 
