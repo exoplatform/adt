@@ -98,6 +98,9 @@ Copyright &copy; 2006-2018. All rights Reserved, eXo Platform SAS -
 
 function buildTableTitleDev($plf_branch) {
   switch ($plf_branch) {
+    case "1.0.x":
+      $content="Platform " . $plf_branch . " based builds (Meeds)";
+      break;
     case "4.0.x":
     case "4.1.x":
     case "4.2.x":
