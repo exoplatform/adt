@@ -80,6 +80,9 @@
 
     ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
     ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+
+    ProxyPass               /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
+    ProxyPassReverse        /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
     
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13

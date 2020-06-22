@@ -152,6 +152,9 @@ foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
   Each instance can be accessed using JMX with the URL linked to the monitoring icon and these credentials :
   <strong><code>acceptanceMonitor</code></strong> / <strong><code>monitorAcceptance!</code></strong>
 </p>
+<p>Each deployed Keycloak can be accessed using the Keycloak icon and these credentials :
+  <strong><code>root</code></strong> / <strong><code>password</code></strong>
+</p>
 <p>Each Ldap deployed can be accessed using the URL linked to the ldap url icon and these parameters :
     <strong><code>Base DN:dc=exoplatform,dc=com</code></strong> / <strong><code>User DN:cn=admin,dc=exoplatform,dc=com</code></strong> / <strong><code>password:exo</code></strong>
 </p>

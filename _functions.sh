@@ -32,6 +32,7 @@ source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
+source "${SCRIPT_DIR}/_functions_keycloak.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
 
 # #################################################################################
@@ -288,6 +289,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MAILHOG_ENABLED" false
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
+
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "latest"
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -918,6 +923,7 @@ initialize_product_settings() {
    do_get_onlyoffice_settings
    do_get_ldap_settings
    do_get_mailhog_settings
+   do_get_keycloak_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1266,7 +1272,14 @@ do_deploy() {
           exit 1
         fi
     fi
-  fi  
+  fi
+
+  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
+    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
+      echo_error "Keycloak deployment is enabled, the exo-saml addon must be specified on the addon list."
+      exit 1
+    fi
+  fi    
 
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
@@ -1296,6 +1309,9 @@ do_deploy() {
   # Mailhog  port
   env_var "DEPLOYMENT_MAILHOG_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
   env_var "DEPLOYMENT_MAILHOG_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
+
+  # Keycloak  port
+  env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
 
   # CMIS server  port
   env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
@@ -1450,6 +1466,7 @@ do_start() {
   do_start_onlyoffice
   do_start_ldap
   do_start_mailhog
+  do_start_keycloak
   do_start_cmis
   do_start_database
   do_start_es
@@ -1664,6 +1681,7 @@ do_stop() {
       echo_info "Server stopped."
       do_stop_ldap
       do_stop_mailhog
+      do_stop_keycloak
       do_stop_onlyoffice
       do_stop_cmis
       do_stop_database
@@ -1699,6 +1717,7 @@ do_undeploy() {
     do_drop_onlyoffice_data
     do_drop_ldap_data
     do_drop_mailhog_data
+    do_drop_keycloak_data
     do_drop_cmis_data
     do_drop_chat
     do_drop_es_data

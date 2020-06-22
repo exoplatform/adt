@@ -90,6 +90,32 @@ if ${DEPLOYMENT_LDAP_ENABLED}; then
   [ ! -z "${USER_DIRECTORY_BASE_DN}" ] && CATALINA_OPTS="${CATALINA_OPTS} -Dexo.ldap.groups.base.dn=ou=groups,${USER_DIRECTORY_BASE_DN}"
 fi
 
+#Keycloak integration
+if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
+  # Make URL to lowercase to avoid Keycloak matching conflicts
+  DEP_URL="$(echo ${EXO_DEPLOYMENT_URL} | sed -e 's/\(.*\)/\L\1/')"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.enabled=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.sp.enabled=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.callback.enabled=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.enabled=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.class=org.gatein.sso.agent.login.SAML2IntegrationLoginModule"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.enabled=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.class=org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.login.sso.url=/portal/dologin"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.initiatelogin.enabled=false"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.enabled=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.class=org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.sp.url=${DEP_URL}/portal/dologin"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.url=${DEP_URL}/portal/dologin?GLO=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.host=$(echo ${DEP_URL} | sed -e 's|^[^/]*//||' -e 's|/.*$||')"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url=${DEP_URL}/auth/realms/master/protocol/saml"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.alias=master"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
+fi
+
+
 #CMIS deployment on https is not supported
 if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dclouddrive.service.schema=http"
