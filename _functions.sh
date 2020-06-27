@@ -129,6 +129,7 @@ Environment Variables
   DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private; values : private | public)
   DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
   DEPLOYMENT_APACHE_HTTPS_ENABLED   : Do you want to add an HTTPs VirtualHost (default: false; values : true | false)
+  DEPLOYMENT_APACHE_HTTPSONLY_ENABLED : Do you want to use a HTTPs VirtualHost (default: false; values : true | false)
   DEPLOYMENT_PORT_PREFIX            : Default prefix for all ports (2 digits will be added after it for each required port)
 
   DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
@@ -313,6 +314,7 @@ initialize_product_settings() {
       fi
 
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
+      configurable_env_var "DEPLOYMENT_APACHE_HTTPSONLY_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
 
       configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
@@ -1173,12 +1175,21 @@ do_configure_apache() {
     evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   fi
 
+  if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then 
+    env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" true
+  fi
+
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
         if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
-          echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
+            echo_n_info "Deploying Apache instance configuration for HTTPS only..."
+            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          else 
+            echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
+            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          fi  
           echo "OK."
         else
           echo_error "Deploying instance with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
@@ -1194,8 +1205,13 @@ do_configure_apache() {
     private)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
         if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
-          echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
+            echo_n_info "Deploying Apache instance configuration for HTTPS only..."
+            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          else 
+            echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
+            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          fi  
           echo "OK."
         else
           echo_error "Deploying instance with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
@@ -1331,12 +1347,14 @@ do_deploy() {
     env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
     env_var "DEPLOYMENT_EXT_PORT" "80"
   fi
-
+  DEPLOYMENT_URL_SCHEME="http"
+  ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED} && DEPLOYMENT_URL_SCHEME="https"
+     
   if [ -z ${DEPLOYMENT_APACHE_VHOST_ALIAS} ]; then
-    env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
+    env_var "DEPLOYMENT_URL" $(do_build_url "${DEPLOYMENT_URL_SCHEME}" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
     env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_EXT_HOST}"
   else
-    env_var "DEPLOYMENT_URL" $(do_build_url "http" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
+    env_var "DEPLOYMENT_URL" $(do_build_url "${DEPLOYMENT_URL_SCHEME}" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
     env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
   fi
   
