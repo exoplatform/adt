@@ -1,65 +1,10 @@
 <VirtualHost *:80>
     ServerName  ${DEPLOYMENT_EXT_HOST}
     ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
-
-    Include ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-
+    
     RewriteEngine On 
     RewriteCond %{HTTPS}  !=on 
     RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L] 
-
-    # No security for gadgets
-    <ProxyMatch "^.*/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)/.*$">
-        Order allow,deny
-        Allow from all
-        Satisfy any
-    </ProxyMatch>
-
-    # No security for chat local access
-    <ProxyMatch "^.*/chatServer/.*$">
-        Order deny,allow
-        Deny from all
-        Allow from exoplatform.org
-        Satisfy any
-    </ProxyMatch>
-
-    # Everything else is secured
-    <Proxy *>
-        <IfModule authnz_crowd_module>
-            Order deny,allow
-            Allow from all
-
-            AuthName "eXo Employees only"
-            AuthType Basic
-            AuthBasicProvider crowd
-
-            CrowdAppName ${CROWD_ACCEPTANCE_APP_NAME}
-            CrowdAppPassword ${CROWD_ACCEPTANCE_APP_PASSWORD}
-            CrowdURL https://identity.exoplatform.org/
-
-            # Activate SSO
-            CrowdAcceptSSO On
-            CrowdCreateSSO On
-
-            # Only exo-employees can access
-            Require group exo-employees
-        </IfModule>
-        <IfModule !authnz_crowd_module>
-            Require all denied
-
-            AuthName "eXo Employees only"
-            AuthType Basic
-            AuthBasicProvider ldap
-
-            AuthLDAPBindDN          "${LDAP_ACCEPTANCE_BIND_DN}"
-            AuthLDAPBindPassword    ${LDAP_ACCEPTANCE_BIND_PASSWORD}
-            AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn
-            <RequireAll>
-                Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
-                AuthLDAPMaxSubGroupDepth 1
-            </RequireAll>
-        </IfModule>
-    </Proxy>
 </VirtualHost>
 
 <VirtualHost *:443>
