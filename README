@@ -146,6 +146,7 @@ Usage
       DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private; values : private | public)
       DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
       DEPLOYMENT_APACHE_HTTPS_ENABLED   : Do you want to add an HTTPs VirtualHost (default: false; values : true | false)
+      DEPLOYMENT_APACHE_HTTPSONLY_ENABLED : Do you want to use a HTTPs VirtualHost (default: false; values : true | false)
       DEPLOYMENT_PORT_PREFIX            : Default prefix for all ports (2 digits will be added after it for each required port)
 
       DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
