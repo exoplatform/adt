@@ -13,6 +13,8 @@
 
     Include ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
 
+    RewriteRule  ^/(.*);jsessionid=(.*) /$1 [R=301,L]
+
     # No security for gadgets
     <ProxyMatch "^.*/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)/.*$">
         Order allow,deny
