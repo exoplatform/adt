@@ -33,6 +33,7 @@ source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
+source "${SCRIPT_DIR}/_functions_sftp.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
 
 # #################################################################################
@@ -177,6 +178,8 @@ Environment Variables
   DEPLOYMENT_CMIS_IMAGE_VERSION     : Which version of the cmis server image to use (default: 1.0)
   DEPLOYMENT_CMIS_USERS_PASSWORD    : Which password to use for the cmis users (by default, use the cmis image default)
 
+  DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
+
 EOF
 }
 
@@ -295,6 +298,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "latest"
 
+      configurable_env_var "DEPLOYMENT_SFTP_ENABLED" false
+      configurable_env_var "DEPLOYMENT_SFTP_IMAGE" "atmoz/sftp"
+      configurable_env_var "DEPLOYMENT_SFTP_IMAGE_VERSION" "latest"
+
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
@@ -363,6 +370,8 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_JMX_URL" ""
       env_var "DEPLOYMENT_PID_FILE" ""
       env_var "DEPLOYMENT_LDAP_LINK" ""
+      env_var "DEPLOYMENT_SFTP_LINK" ""
+
 
       # Classifier to group together projects in the UI
       env_var PLF_BRANCH "UNKNOWN" # 3.0.x, 3.5.x, 4.0.x
@@ -926,6 +935,7 @@ initialize_product_settings() {
    do_get_ldap_settings
    do_get_mailhog_settings
    do_get_keycloak_settings
+   do_get_sftp_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1295,7 +1305,7 @@ do_deploy() {
       echo_error "Keycloak deployment is enabled, the exo-saml addon must be specified on the addon list."
       exit 1
     fi
-  fi    
+  fi  
 
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
@@ -1328,6 +1338,10 @@ do_deploy() {
 
   # Keycloak  port
   env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
+
+  # SFTP port
+  env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
+
 
   # CMIS server  port
   env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
@@ -1365,6 +1379,14 @@ do_deploy() {
     fi 
     DEPLOYMENT_LDAP_LINK="ldap://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_LDAP_PORT}"   
   fi
+
+  if ${DEPLOYMENT_SFTP_ENABLED}; then
+    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-lecko.* ]]; then
+      echo_error "SFTP deployment is enabled, the exo-lecko addon must be specified on the addon list."
+      exit 1
+    fi
+    DEPLOYMENT_SFTP_LINK="sftp://root:password@${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_SFTP_PORT}//upload"   
+  fi      
 
   echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
 
@@ -1485,6 +1507,7 @@ do_start() {
   do_start_ldap
   do_start_mailhog
   do_start_keycloak
+  do_start_sftp
   do_start_cmis
   do_start_database
   do_start_es
@@ -1700,6 +1723,7 @@ do_stop() {
       do_stop_ldap
       do_stop_mailhog
       do_stop_keycloak
+      do_stop_sftp
       do_stop_onlyoffice
       do_stop_cmis
       do_stop_database
@@ -1736,6 +1760,7 @@ do_undeploy() {
     do_drop_ldap_data
     do_drop_mailhog_data
     do_drop_keycloak_data
+    do_drop_sftp_data
     do_drop_cmis_data
     do_drop_chat
     do_drop_es_data
@@ -1761,6 +1786,11 @@ do_undeploy() {
       # Close firewall port for LDAPS
       do_ufw_close_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
     fi
+    
+    if [ "${DEPLOYMENT_SFTP_ENABLED}" == "true" ]; then
+      do_ufw_close_port ${DEPLOYMENT_SFTP_PORT} "Sftp Port" ${ADT_DEV_MODE}
+    fi
+
     echo_info "Server undeployed"
     # Delete the deployment descriptor
     rm ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
