@@ -115,6 +115,17 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
 fi
 
+#SFTP integration
+if ${DEPLOYMENT_SFTP_ENABLED}; then
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.addons.lecko.job.enabled=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.addons.lecko.out.name=acceptance_lecko"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.addons.lecko.SftpHost=localhost"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.addons.lecko.SftPortNumber=${DEPLOYMENT_SFTP_PORT}"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.addons.lecko.SftpUser=root"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.addons.lecko.SftpPassword=password"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.addons.lecko.SftpRemotePath=/upload"
+fi
+
 
 #CMIS deployment on https is not supported
 if ${DEPLOYMENT_CMISSERVER_ENABLED}; then

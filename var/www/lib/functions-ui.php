@@ -522,6 +522,10 @@ function componentDeploymentActions ($deployment_descriptor) {
       $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/auth/admin/" rel="tooltip" title="Keycloak">';
       $content.='<img src="/images/keycloak.svg" width="16" height="16" alt="keycloak" class="icon"/></a>';
   }
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_SFTP_ENABLED') && $deployment_descriptor->DEPLOYMENT_SFTP_ENABLED) {
+      $content.=' | <a href="'.$deployment_descriptor->DEPLOYMENT_SFTP_LINK.'" rel="tooltip" title="Sftp">';
+      $content.='<img src="/images/lecko.svg" width="16" height="16" alt="Lecko" class="icon"/></a>';
+  }
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_CMISSERVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CMISSERVER_ENABLED) {
     $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/cmis" rel="tooltip" title="CMIS Server">';
     $content.='<img src="/images/cmis.png" width="16" height="16" alt="cmis" class="icon"/></a>';
