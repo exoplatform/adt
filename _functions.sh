@@ -734,7 +734,7 @@ initialize_product_settings() {
         # specific configuration for meeds deployments
         # - Database drivers
         # - Default version for each supported database type
-        if [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.0|1.1) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.19" # Default version of the mysql server to use
@@ -825,7 +825,7 @@ initialize_product_settings() {
           
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
 
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.0) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(6.0|6.1) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
@@ -850,7 +850,7 @@ initialize_product_settings() {
 
           # For configuration differences between tomcat and jboss
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
-            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0) ]]; then
+            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
             else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
