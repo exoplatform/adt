@@ -414,6 +414,9 @@ function getLocalAcceptanceInstances()
       switch ($descriptor_array['PRODUCT_NAME']) {
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '1.1.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-es-embedded / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet";
+              break;
             case '1.0.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-es-embedded / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet";
               break;
@@ -423,6 +426,9 @@ function getLocalAcceptanceInstances()
           }
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '6.1.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-jcr / exo-ecms / exo-calendar / exo-tasks / exo-web-conferencing / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / meeds-app-center / meeds-es-embedded / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications";
+              break;
             case '6.0.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-jcr / exo-ecms / exo-calendar / exo-tasks / exo-web-conferencing / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / meeds-app-center / meeds-es-embedded / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications";
               break;
