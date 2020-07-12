@@ -1392,6 +1392,8 @@ do_deploy() {
 
   if [ "${DEPLOYMENT_MAILHOG_ENABLED}" == "true" ]; then
     env_var "DEPLOYMENT_SMTP_PORT" "${DEPLOYMENT_MAILHOG_SMTP_PORT}"
+    env_var "EXO_EMAIL_SMTP_STARTTLS_ENABLE" true
+    env_var "EXO_EMAIL_SMTP_AUTH" true
   fi
 
   do_download_server
