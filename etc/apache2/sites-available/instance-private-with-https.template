@@ -62,6 +62,8 @@
     ServerName  ${DEPLOYMENT_EXT_HOST}
     ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
 
+    RequestHeader set X-Forwarded-Proto "https"
+
     Include ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
 
     # No security for gadgets

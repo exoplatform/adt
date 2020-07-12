@@ -11,6 +11,8 @@
     ServerName  ${DEPLOYMENT_EXT_HOST}
     ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
 
+    RequestHeader set X-Forwarded-Proto "https"
+
     <LocationMatch "^/elasticsearch.*">
         Require all denied
         AuthName "eXo Employees only"
