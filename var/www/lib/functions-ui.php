@@ -436,19 +436,19 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
  * @return string html markup
  */
 function componentProductVersion ($deployment_descriptor) {
-  $timestamp=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
   if (preg_match("/.*-M(LT|BL)$/", $deployment_descriptor->BASE_VERSION)) {
     $tooltipmessage=(preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION) ? "Before latest" : "Latest")." milestone continuous deployment enabled";
     $content=$deployment_descriptor->ARTIFACT_TIMESTAMP.' <span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$tooltipmessage.'">Auto</span>';
   } else {
     $content=$deployment_descriptor->BASE_VERSION;
-  }
-  if (!empty($timestamp)) {
-    $content.='<span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">';
-    if (!empty($deployment_descriptor->BRANCH_NAME)) {
-      $content.='-'.$deployment_descriptor->BRANCH_NAME;
+    $timestamp=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
+    if (!empty($timestamp)) {
+      $content.='<span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">';
+      if (!empty($deployment_descriptor->BRANCH_NAME)) {
+        $content.='-'.$deployment_descriptor->BRANCH_NAME;
+      }
+      $content.='-SNAPSHOT</span>';
     }
-    $content.='-SNAPSHOT</span>';
   }
   return $content;
 }
