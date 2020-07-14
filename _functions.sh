@@ -263,6 +263,8 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_SERVER_LOG_FILE" "catalina.out"
       env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
 
+      env_var "DEPLOYMENT_BUILD_URL" "$(dirname ${BUILD_URL})"
+
       env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-RC4" #Add-ons Manager to use      
 
       configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
