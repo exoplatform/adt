@@ -1664,7 +1664,12 @@ do_stop() {
             export CATALINA_HOME=${DEPLOYMENT_DIR}
             export CATALINA_PID=${DEPLOYMENT_PID_FILE}
           fi
-          ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
+          if [ "${ACTION}" = "undeploy" ] && [ -f "${DEPLOYMENT_PID_FILE}" ]; then 
+            pid="$(cat ${DEPLOYMENT_PID_FILE})"
+            kill -9 ${pid}
+          else  
+            ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
+          fi  
         ;;
         jbosseap)
           case ${DEPLOYMENT_APPSRV_VERSION:0:1} in
