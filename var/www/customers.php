@@ -48,9 +48,17 @@ if (isDeploymentInCategoryArray($cp_instances)) {
               <?= componentProductOpenLink($descriptor_array); ?>
               <br/><?= componentAddonsTags($descriptor_array); ?>
               <span class="pull-right">
-                <a href="https://ci.exoplatform.org/job/platform-enterprise-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
-                  <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
-                </a> - 
+              <?php 
+                if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
+                  ?>
+                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                } else { 
+                  ?>
+                  <a href="https://ci.exoplatform.org/job/platform-enterprise-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                }
+                ?>
               <?= componentEditNoteIcon($descriptor_array) ?>
               </span>
             </td>

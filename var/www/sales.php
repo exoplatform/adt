@@ -45,7 +45,17 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
             <td>
               <?= componentProductOpenLink($descriptor_array, "", true); ?>
               <span class="pull-right">
-                <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-trial-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                <?php 
+                if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
+                  ?>
+                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                } else { 
+                  ?>
+                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-trial-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                }
+                ?>
                   <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
                 </a> - 
                 <?= componentEditNoteIcon($descriptor_array) ?>
