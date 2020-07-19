@@ -46,6 +46,21 @@ if (isDeploymentInCategoryArray($qa_instances)) {
             <td>
                 <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
                 <?= componentProductOpenLink($descriptor_array); ?>
+                <span class="pull-right">
+                <?php 
+                if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
+                  ?>
+                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                } else { 
+                  ?>
+                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                }
+                ?>
+                  <i class="icon-refresh"></i>
+                </a>
+                </span>
                 <br/><?= componentAddonsTags($descriptor_array); ?>
             </td>
             <td class="col-center">
@@ -96,6 +111,21 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
             <td>
                 <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
                 <?= componentProductOpenLink($descriptor_array); ?>
+                <span class="pull-right">
+                <?php 
+                if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
+                  ?>
+                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                } else { 
+                  ?>
+                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <?php 
+                }
+                ?>
+                  <i class="icon-refresh"></i>
+                </a>
+                </span>
                 <br/><?= componentAddonsTags($descriptor_array); ?>
             </td>
             <td class="col-center">
