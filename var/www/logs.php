@@ -24,7 +24,7 @@ checkCaches();
                         if (isAuthorizedToReadFile($log_type, $file_path) == true){
                     ?>
                         <div class="instructions">
-                          Download file (<?php printf(human_filesize(filesize($file_path),0)); ?>) : <a target="_blank" href="./logsDownload.php?type=instance&file=<?=$file_path?>"><?=$file_path?></a>
+                          Download file (<?php printf(human_filesize(filesize($file_path),0)); ?>) : <a target="_blank" href="./logsDownload.php?type=<?=$log_type?>&file=<?=$file_path?>"><?=$file_path?></a>
                         </div>
                         <hr/>
                     <?php
