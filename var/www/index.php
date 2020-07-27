@@ -65,9 +65,9 @@ if (isDeploymentInCategoryArray($translation_instances)) {
   }
 }
 ?>
-<tr>
+<!--<tr>
   <td colspan="15" class="category-row"><i class="icon-book"></i> - Documentation deployments</td>
-</tr>
+</tr>-->
 <?php
 $doc_instances = getGlobalDocInstances();
 if (isDeploymentInCategoryArray($doc_instances)) {
