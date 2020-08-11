@@ -195,7 +195,7 @@ do_download_maven_artifact() {
     fi
     rm -f ${_metadataFile}.bck
     local latestmilestonesuffix=$(echo $_artifactTimestamp | grep -oP "[0-9]+$")
-    local latestmilestoneprefix=$(echo $_artifactTimestamp | grep -oP "([0-9]+\.)+[0-9]+(\-(M|RC|CP))?")
+    local latestmilestoneprefix=$(echo $_artifactTimestamp | grep -oP "([0-9]+\.)+[0-9]+\-(M|RC|CP)?")
     if [[ "$_artifactVersion" =~ .*-MBL$ ]]; then
       ((latestmilestonesuffix--))
       [ $latestmilestonesuffix -lt 10 ] && latestmilestonesuffix="0$latestmilestonesuffix"
@@ -204,11 +204,11 @@ do_download_maven_artifact() {
     fi
     
     # Stable version detected
-    if [[ ! "$latestmilestoneprefix" =~ .*-(M|RC|CP)$ ]]; then
+    if [[ ! "$latestmilestoneprefix" =~ .*-(M|RC|CP)?$ ]]; then
       _artifactTimestamp="$latestmilestoneprefix"
     else 
       env_var MILESTONE_SUFFIX "$latestmilestonesuffix"
-      env_var MILESTONE_PREFIX "$(echo $latestmilestoneprefix | grep -oP '\-(M|RC|CP)')"
+      env_var MILESTONE_PREFIX "$(echo $latestmilestoneprefix | grep -oP '\-(M|RC|CP)?')"
     fi    
 
     echo_info "Latest timestamp : $_artifactTimestamp"
