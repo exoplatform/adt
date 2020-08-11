@@ -169,23 +169,24 @@ do_download_maven_artifact() {
     fi
     do_curl "$_curlOptions" "$_metadataUrl" "$_metadataFile" "Artifact Metadata"
     local _xpathQuery="";
-    _xpathQuery="/metadata/versioning/release/text()"
+    _xpathQuery="/metadata/versioning/versions"
+    local plfversionprefix=$(echo $_artifactVersion | grep -oP ^[0-9]+\.[0-9]+\.[0-9]+)
     set +e
     if ${DARWIN}; then
-      _artifactTimestamp=`xpath ${_metadataFile} ${_xpathQuery}`
+      _artifactTimestamp=$(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
     fi
     if ${LINUX}; then
-      _artifactTimestamp=`xpath -q -e ${_xpathQuery} ${_metadataFile}`
+      _artifactTimestamp=$(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
     fi
     set -e
     if [ -z "$_artifactTimestamp" ] && [ -e "$_metadataFile.bck" ]; then
       echo_warn "Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv ${_metadataFile}.bck ${_metadataFile}
       if ${DARWIN}; then
-        _artifactTimestamp=`xpath ${_metadataFile} ${_xpathQuery}`
+        _artifactTimestamp=$(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
       fi
       if ${LINUX}; then
-        _artifactTimestamp=`xpath -q -e ${_xpathQuery} ${_metadataFile}`
+        _artifactTimestamp=$(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
       fi
     fi
     if [ -z "$_artifactTimestamp" ]; then
