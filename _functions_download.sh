@@ -173,35 +173,34 @@ do_download_maven_artifact() {
     local plfversionprefix=$(echo $_artifactVersion | grep -oP ^[0-9]+\.[0-9]+\.[0-9]+)
     set +e
     if ${DARWIN}; then
-      _artifactTimestamp=$(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
+      _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
     fi
     if ${LINUX}; then
-      _artifactTimestamp=$(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
+      _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
     fi
     set -e
-    if [ -z "$_artifactTimestamp" ] && [ -e "$_metadataFile.bck" ]; then
+    if [ -z "${_artifactTimestampArray}" ] && [ -e "$_metadataFile.bck" ]; then
       echo_warn "Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv ${_metadataFile}.bck ${_metadataFile}
       if ${DARWIN}; then
-        _artifactTimestamp=$(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
+        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
       fi
       if ${LINUX}; then
-        _artifactTimestamp=$(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | tail -n 1 | sed -e 's/<[^>]*>//g' | xargs)
+        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
       fi
     fi
-    if [ -z "$_artifactTimestamp" ]; then
+    if [ -z "${_artifactTimestampArray}" ]; then
       echo_error "No package available in the remote repository and no previous version available locally."
       exit 1;
     fi
     rm -f ${_metadataFile}.bck
+    _artifactTimestamp="${_artifactTimestampArray[-1]}"
+    if [[ "$_artifactVersion" =~ .*-MBL$ ]] && [ ${#_artifactTimestampArray[@]} -gt 1 ]; then
+        _artifactTimestamp="${_artifactTimestampArray[-2]}" 
+    fi
+    
     local latestmilestonesuffix=$(echo $_artifactTimestamp | grep -oP "[0-9]+$")
     local latestmilestoneprefix=$(echo $_artifactTimestamp | grep -oP "([0-9]+\.)+[0-9]+(\-(M|RC|CP))?")
-    if [[ "$_artifactVersion" =~ .*-MBL$ ]]; then
-      ((latestmilestonesuffix--))
-      [ $latestmilestonesuffix -lt 10 ] && latestmilestonesuffix="0$latestmilestonesuffix"
-      [ $latestmilestonesuffix -lt 1 ] && latestmilestonesuffix="01"
-      _artifactTimestamp="$latestmilestoneprefix$latestmilestonesuffix"
-    fi
     
     # Stable version detected
     if [[ ! "$latestmilestoneprefix" =~ .*-(M|RC|CP)$ ]]; then
