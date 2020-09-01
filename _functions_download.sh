@@ -205,6 +205,7 @@ do_download_maven_artifact() {
     # Stable version detected
     if [[ ! "$latestmilestoneprefix" =~ .*-(M|RC|CP)$ ]]; then
       _artifactTimestamp="$latestmilestoneprefix"
+      env_var MILESTONE_PREFIX ""
     else 
       env_var MILESTONE_SUFFIX "$latestmilestonesuffix"
       env_var MILESTONE_PREFIX "$(echo $latestmilestoneprefix | grep -oP '\-(M|RC|CP)')"
