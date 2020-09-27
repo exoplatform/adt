@@ -173,20 +173,20 @@ do_download_maven_artifact() {
     local plfversionprefix=$(echo $_artifactVersion | grep -oP ^[0-9]+\.[0-9]+\.[0-9]+)
     set +e
     if ${DARWIN}; then
-      _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
+      _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
     fi
     if ${LINUX}; then
-      _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
+      _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
     fi
     set -e
     if [ -z "${_artifactTimestampArray}" ] && [ -e "$_metadataFile.bck" ]; then
       echo_warn "Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv ${_metadataFile}.bck ${_metadataFile}
       if ${DARWIN}; then
-        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
+        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
       fi
       if ${LINUX}; then
-        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} | sed -e 's/<[^>]*>//g' | xargs))
+        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
       fi
     fi
     if [ -z "${_artifactTimestampArray}" ]; then
