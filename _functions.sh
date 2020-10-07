@@ -33,6 +33,7 @@ source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
+source "${SCRIPT_DIR}/_functions_jitsi.sh"
 source "${SCRIPT_DIR}/_functions_sftp.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
 
@@ -299,6 +300,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "latest"
+
+      configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
+      configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
+      configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "latest"
 
       configurable_env_var "DEPLOYMENT_SFTP_ENABLED" false
       configurable_env_var "DEPLOYMENT_SFTP_IMAGE" "atmoz/sftp"
@@ -937,6 +942,7 @@ initialize_product_settings() {
    do_get_ldap_settings
    do_get_mailhog_settings
    do_get_keycloak_settings
+   do_get_jitsi_settings
    do_get_sftp_settings
    do_get_database_settings
    do_get_es_settings
@@ -1030,6 +1036,11 @@ do_init_empty_data(){
   if ${DEPLOYMENT_DATABASE_ENABLED}; then
     do_drop_database
     do_create_database
+  fi
+
+  if ${DEPLOYMENT_JITSI_ENABLED}; then
+    do_drop_jitsi_data
+    do_create_jitsi
   fi
 
   do_init_empty_chat_database
@@ -1309,6 +1320,13 @@ do_deploy() {
     fi
   fi  
 
+  if ${DEPLOYMENT_JITSI_ENABLED}; then
+    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-jitsi.* ]]; then
+      echo_error "JITSI deployment is enabled, the exo-jitsi addon must be specified on the addon list."
+      exit 1
+    fi
+  fi 
+
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
   env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
@@ -1340,6 +1358,13 @@ do_deploy() {
 
   # Keycloak  port
   env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
+
+  # Jitsi  port
+  env_var "DEPLOYMENT_JITSI_CALL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}81"
+  env_var "DEPLOYMENT_JITSI_WEB_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}82"
+  env_var "DEPLOYMENT_JITSI_PROSODY_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}83"
+  env_var "DEPLOYMENT_JITSI_JVB_TCP_PORT" "${DEPLOYMENT_PORT_PREFIX}84"
+  env_var "DEPLOYMENT_JITSI_JVB_UDP_PORT" "${DEPLOYMENT_PORT_PREFIX}85"
 
   # SFTP port
   env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
@@ -1418,6 +1443,9 @@ do_deploy() {
       do_create_es
       do_create_onlyoffice
       do_create_cmis
+      if ${DEPLOYMENT_JITSI_ENABLED}; then
+        do_create_jitsi
+      fi
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -1435,6 +1463,9 @@ do_deploy() {
         do_create_es
         do_create_onlyoffice
         do_create_cmis
+        if ${DEPLOYMENT_JITSI_ENABLED}; then
+          do_create_jitsi
+        fi
       fi
       )
     fi
@@ -1511,6 +1542,7 @@ do_start() {
   do_start_ldap
   do_start_mailhog
   do_start_keycloak
+  do_start_jitsi
   do_start_sftp
   do_start_cmis
   do_start_database
@@ -1732,6 +1764,7 @@ do_stop() {
       do_stop_ldap
       do_stop_mailhog
       do_stop_keycloak
+      do_stop_jitsi
       do_stop_sftp
       do_stop_onlyoffice
       do_stop_cmis
@@ -1769,6 +1802,7 @@ do_undeploy() {
     do_drop_ldap_data
     do_drop_mailhog_data
     do_drop_keycloak_data
+    do_drop_jitsi_data
     do_drop_sftp_data
     do_drop_cmis_data
     do_drop_chat

@@ -83,6 +83,9 @@
 
     ProxyPass               /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
     ProxyPassReverse        /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
+
+    ProxyPass               /jitsi            http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/jitsi
+    ProxyPassReverse        /jitsi            http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/jitsi
     
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
