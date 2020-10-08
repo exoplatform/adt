@@ -98,7 +98,7 @@ delete_docker_network() {
 create_docker_network() {
   network=${1}
 
-  ${DOCKER_CMD} network create --name ${network}
+  ${DOCKER_CMD} network create ${network}
 }
 
 # #############################################################################
