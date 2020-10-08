@@ -24,6 +24,7 @@ do_get_jitsi_settings() {
   env_var DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_prosody"
   env_var DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jicofo"
   env_var DEPLOYMENT_JITSI_JVB_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jvb"
+  env_var DEPLOYMENT_JITSI_NETWORK_NAME "${INSTANCE_KEY}.jitsi"
 }
 
 #
@@ -53,7 +54,9 @@ do_drop_jitsi_data() {
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo ..."
     delete_docker_volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config      
+    delete_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config
+    echo_info "Drops Jitsi docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
+    delete_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
     echo_info "Done."
     echo_info "Jitsi data dropped"
   else
@@ -63,6 +66,8 @@ do_drop_jitsi_data() {
 
 do_create_jitsi() {
   if ${DEPLOYMENT_JITSI_ENABLED}; then
+    echo_info "Creation of the Jitsi Docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
+    create_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web ..."
     create_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts ..."
@@ -129,6 +134,12 @@ do_start_jitsi() {
     -e "DISABLE_HTTPS=1" \
     -e "JICOFO_AUTH_USER=focus" \
     -e "PUBLIC_URL= ${DEPLOYMENT_URL}/jitsi" \
+    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_BOSH_URL_BASE=http://xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}:5280" \
+    -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "TZ=UTC" \
     -e "JIBRI_BREWERY_MUC=jibribrewery" \
     -e "JIBRI_PENDING_TIMEOUT=90" \
@@ -136,6 +147,8 @@ do_start_jitsi() {
     -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
     -e "JIBRI_RECORDER_USER=recorder" \
     -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:latest
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
@@ -148,8 +161,14 @@ do_start_jitsi() {
     -d \
     -v ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config:/config:Z  \
     -v ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_plugins-custom:/prosody-plugins-custom:Z \
-    -e "AUTH_TYPE=jwt"
+    -e "AUTH_TYPE=jwt" \
     -e "ENABLE_AUTH=1" \
+    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "JICOFO_COMPONENT_SECRET=2024eb12115fccc435ac8382e347d5d9" \
     -e "JICOFO_AUTH_USER=focus" \
     -e "JICOFO_AUTH_PASSWORD=c4f0b969570298d5d77a8545f23dc8ce" \
@@ -161,13 +180,14 @@ do_start_jitsi() {
     -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
     -e "JIBRI_RECORDER_USER=recorder" \
     -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
-    -e "JWT_APP_ID=exo-jitsi"
-    -e "JWT_APP_SECRET=nQzPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx"
+    -e "JWT_APP_ID=exo-jitsi" \
+    -e "JWT_APP_SECRET=nQzPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx" \
     -e "TZ=UTC" \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:latest
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
-  check_jitsi_prosody_availability
 
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:latest"
   # Ensure there is no container with the same name
@@ -175,8 +195,13 @@ do_start_jitsi() {
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo:/config:Z  \
-    -e "AUTH_TYPE=jwt"
+    -e "AUTH_TYPE=jwt" \
     -e "ENABLE_AUTH=1" \
+    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_SERVER=xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "JICOFO_COMPONENT_SECRET=2024eb12115fccc435ac8382e347d5d9" \
     -e "JICOFO_AUTH_USER=focus" \
     -e "JICOFO_AUTH_PASSWORD=c4f0b969570298d5d77a8545f23dc8ce" \
@@ -185,6 +210,7 @@ do_start_jitsi() {
     -e "JIBRI_BREWERY_MUC=jibribrewery" \
     -e "JIBRI_PENDING_TIMEOUT=90" \
     -e "TZ=UTC" \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:latest
   echo_info "${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} container started"
@@ -197,6 +223,9 @@ do_start_jitsi() {
     -p "${DEPLOYMENT_JITSI_JVB_TCP_PORT}:4443" \
     -p "${DEPLOYMENT_JITSI_JVB_UDP_PORT}:10000/udp" \
     -v ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config:/config:Z  \
+    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_SERVER=xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "JVB_AUTH_USER=jvb" \
     -e "JVB_AUTH_PASSWORD=a2f17f0b494489773ec879bd12ef6a12" \
     -e "JVB_BREWERY_MUC=jvbbrewery" \
@@ -205,6 +234,7 @@ do_start_jitsi() {
     -e "JVB_TCP_PORT=${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
     -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
     -e "TZ=UTC" \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:latest
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
@@ -263,33 +293,6 @@ check_jitsi_web_availability() {
     exit 1
   fi
   echo_info "Jitsi Web ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} up and available"
-}
-
-check_jitsi_prosody_availability() {
-  echo_info "Waiting for Jitsi Prosody availability on port ${DEPLOYMENT_JITSI_PROSODY_HTTP_PORT}"
-  local count=0
-  local try=600
-  local wait_time=1
-  local RET=-1
-
-  while [ $count -lt $try -a $RET -ne 0 ]; do
-    count=$(( $count + 1 ))
-    set +e
-
-    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_PROSODY_HTTP_PORT}  > /dev/null
-    RET=$?
-    if [ $RET -ne 0 ]; then
-      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Prosody not yet available (${count} / ${try})..."    
-      echo -n "."
-      sleep $wait_time
-    fi
-    set -e
-  done
-  if [ $count -eq $try ]; then
-    echo_error "Jitsi Prosody ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
-    exit 1
-  fi
-  echo_info "Jitsi Prosody ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} up and available"
 }
 
 check_jitsi_jvb_availability() {

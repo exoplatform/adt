@@ -74,6 +74,33 @@ create_docker_volume() {
   ${DOCKER_CMD} volume create --name ${volume}
 }
 
+# $1 network name or id
+delete_docker_network() {
+  network=${1}
+  
+  local network_name=$(${DOCKER_CMD} network inspect ${network} 2>/dev/null | jq -r '.[0].Name')
+  
+  if [ "${network_name}" == "null" ] 
+  then 
+    echo_info "Network ${network} does not exist."
+  else
+    ${DOCKER_CMD} network rm ${network}
+    if [ $? -ne 0 ]
+    then
+      echo_error "Error removing network ${network}"
+      exit 1
+    fi
+    echo_info "Network ${network} removed"
+   fi
+}
+
+# $1 network name
+create_docker_network() {
+  network=${1}
+
+  ${DOCKER_CMD} network create --name ${network}
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_DOCKER_LOADED=true
