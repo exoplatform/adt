@@ -115,7 +115,7 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
 fi
 
-#Keycloak integration
+#Jitsi integration
 if ${DEPLOYMENT_JITSI_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.jitsi.external.secret=MAPPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.jitsi.internal.secret=aMpulkJQhAAmUwM0FM4r16NgAd3fa5tNaxqqNFDdb49a4TPaFx"
