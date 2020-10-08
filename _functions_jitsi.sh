@@ -218,7 +218,7 @@ do_start_jitsi() {
     -e "ENABLE_AUTH=1" \
     -e "DISABLE_HTTPS=1" \
     -e "JICOFO_AUTH_USER=focus" \
-    -e "PUBLIC_URL= ${DEPLOYMENT_URL}/jitsi" \
+    -e "PUBLIC_URL= ${DEPLOYMENT_URL}/jitsiweb" \
     -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_BOSH_URL_BASE=http://xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}:5280" \
