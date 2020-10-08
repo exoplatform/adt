@@ -206,7 +206,6 @@ do_start_jitsi() {
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:latest
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
-  check_jitsi_jvb_availability
 
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:latest"
   # Ensure there is no container with the same name
@@ -239,7 +238,7 @@ do_start_jitsi() {
     --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:latest
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
   check_jitsi_web_availability
-  
+
 }
 
 check_jitsi_call_availability() {
@@ -294,33 +293,6 @@ check_jitsi_web_availability() {
     exit 1
   fi
   echo_info "Jitsi Web ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} up and available"
-}
-
-check_jitsi_jvb_availability() {
-  echo_info "Waiting for Jitsi Jvb availability on port ${DEPLOYMENT_JITSI_JVB_TCP_PORT}"
-  local count=0
-  local try=600
-  local wait_time=1
-  local RET=-1
-
-  while [ $count -lt $try -a $RET -ne 0 ]; do
-    count=$(( $count + 1 ))
-    set +e
-
-    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_JVB_TCP_PORT}  > /dev/null
-    RET=$?
-    if [ $RET -ne 0 ]; then
-      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Jvb not yet available (${count} / ${try})..."    
-      echo -n "."
-      sleep $wait_time
-    fi
-    set -e
-  done
-  if [ $count -eq $try ]; then
-    echo_error "Jitsi Jvb ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
-    exit 1
-  fi
-  echo_info "Jitsi Jvb ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} up and available"
 }
 
 # #############################################################################
