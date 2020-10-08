@@ -119,7 +119,7 @@ fi
 if ${DEPLOYMENT_JITSI_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.jitsi.external.secret=MAPPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.jitsi.internal.secret=aMpulkJQhAAmUwM0FM4r16NgAd3fa5tNaxqqNFDdb49a4TPaFx"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.jitsi.url=http://localhost:9980"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.jitsi.url=http://localhost:${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.active=true"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.default.stun.enabled=true"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.exo.stun.enabled=true"
