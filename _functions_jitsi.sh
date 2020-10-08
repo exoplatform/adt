@@ -24,7 +24,7 @@ do_get_jitsi_settings() {
   env_var DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_prosody"
   env_var DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jicofo"
   env_var DEPLOYMENT_JITSI_JVB_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jvb"
-  env_var DEPLOYMENT_JITSI_NETWORK_NAME "${INSTANCE_KEY}.jitsi"
+  env_var DEPLOYMENT_JITSI_NETWORK_NAME "$(tolower "${INSTANCE_KEY}").jitsi"
 }
 
 #
@@ -122,38 +122,6 @@ do_start_jitsi() {
   echo_info "${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} container started"
   check_jitsi_call_availability
 
-  echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:latest"
-  # Ensure there is no container with the same name
-  delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
-  ${DOCKER_CMD} run \
-    -d \
-    -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
-    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web:/config:Z  \
-    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts:/usr/share/jitsi-meet/transcripts:Z \
-    -e "ENABLE_AUTH=1" \
-    -e "DISABLE_HTTPS=1" \
-    -e "JICOFO_AUTH_USER=focus" \
-    -e "PUBLIC_URL= ${DEPLOYMENT_URL}/jitsi" \
-    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_BOSH_URL_BASE=http://xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}:5280" \
-    -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "TZ=UTC" \
-    -e "JIBRI_BREWERY_MUC=jibribrewery" \
-    -e "JIBRI_PENDING_TIMEOUT=90" \
-    -e "JIBRI_XMPP_USER=jibri" \
-    -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
-    -e "JIBRI_RECORDER_USER=recorder" \
-    -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
-    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:latest
-  echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
-  check_jitsi_web_availability
-
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:latest"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
@@ -239,6 +207,39 @@ do_start_jitsi() {
     --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:latest
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
   check_jitsi_jvb_availability
+
+  echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:latest"
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
+  ${DOCKER_CMD} run \
+    -d \
+    -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
+    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web:/config:Z  \
+    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts:/usr/share/jitsi-meet/transcripts:Z \
+    -e "ENABLE_AUTH=1" \
+    -e "DISABLE_HTTPS=1" \
+    -e "JICOFO_AUTH_USER=focus" \
+    -e "PUBLIC_URL= ${DEPLOYMENT_URL}/jitsi" \
+    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_BOSH_URL_BASE=http://xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}:5280" \
+    -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "TZ=UTC" \
+    -e "JIBRI_BREWERY_MUC=jibribrewery" \
+    -e "JIBRI_PENDING_TIMEOUT=90" \
+    -e "JIBRI_XMPP_USER=jibri" \
+    -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
+    -e "JIBRI_RECORDER_USER=recorder" \
+    -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:latest
+  echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
+  check_jitsi_web_availability
+  
 }
 
 check_jitsi_call_availability() {
