@@ -533,8 +533,8 @@ function componentDeploymentActions ($deployment_descriptor) {
   }
   // Jitsi admin access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_JITSI_ENABLED') && $deployment_descriptor->DEPLOYMENT_JITSI_ENABLED) {
-      $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/jitsi/" rel="tooltip" title="Jitsi">';
-      $content.='<img src="/images/jitsi.png" width="16" height="16" alt="keycloak" class="icon"/></a>';
+      $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/jitsiweb" rel="tooltip" title="Jitsi">';
+      $content.='<img src="/images/jitsi.png" width="16" height="16" alt="jitsi" class="icon"/></a>';
   }
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_SFTP_ENABLED') && $deployment_descriptor->DEPLOYMENT_SFTP_ENABLED) {
       $content.=' | <a href="'.$deployment_descriptor->DEPLOYMENT_SFTP_LINK.'" rel="tooltip" title="Sftp">';
