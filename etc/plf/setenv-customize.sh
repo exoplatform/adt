@@ -123,7 +123,7 @@ if ${DEPLOYMENT_JITSI_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.active=true"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.default.stun.enabled=true"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.exo.stun.enabled=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.exo.turn.enabledtrue"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.exo.turn.enabled=true"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.exo.turn.username=acceptance"
   CATALINA_OPTS="${CATALINA_OPTS} -Dwebconferencing.webrtc.exo.turn.credential=acc3pt@nce" 
 fi
