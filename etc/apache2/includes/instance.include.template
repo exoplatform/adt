@@ -71,6 +71,23 @@
     ProxyPass               /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
     ProxyPassReverse        /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
 
+    ProxyPass               /jitsiweb            http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}
+    ProxyPassReverse        /jitsiweb            http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}
+    ProxyPass               /css/                http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/css/
+    ProxyPassReverse        /css/                http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/css/
+    ProxyPass               /libs/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/libs/
+    ProxyPassReverse        /libs/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/libs/
+    ProxyPass               /images/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/images/
+    ProxyPassReverse        /images/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/images/
+    ProxyPass               /sounds/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/sounds/
+    ProxyPassReverse        /sounds/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/sounds/
+    ProxyPass               /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
+    ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
+    ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    ProxyPass               /xmpp-websocket      http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket
+    ProxyPassReverse        /xmpp-websocket      http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket
+
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
 
