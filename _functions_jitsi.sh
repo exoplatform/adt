@@ -111,6 +111,7 @@ do_start_jitsi() {
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
+  ${DOCKER_CMD} pull ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_IMAGE_VERSION}
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
