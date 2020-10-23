@@ -218,6 +218,7 @@ function getTranslationBranches($projects)
   $features = apc_fetch('translation');
 
   $projectsToIgnore = array(
+      "agenda" => true,
       "ecms" => true,
       "app-center" => true,
       "forum" => true,
@@ -251,6 +252,7 @@ function getTranslationBranches($projects)
       "task" => true,
       "wcm-template-pack" => true,
       "wiki" => true,
+      "jitsi" => true,
       "web-conferencing" => true); // Addons with different version than product is ignored, See ACC-144
 
   if (empty($features)) {
