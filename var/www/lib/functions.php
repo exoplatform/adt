@@ -123,6 +123,7 @@ function getRepositories()
 
   if (empty($features)) {
     $repositories = array(
+        "agenda" => "Agenda",
         "gatein-dep" => "GateIn DEP",
         "gatein-wci" => "GateIn WCI",
         "kernel" => "Kernel",
@@ -146,6 +147,7 @@ function getRepositories()
         "meeds" => "Meeds Distribution",
         "platform-private-distributions" => "PLF Private Dist",
         "wiki" => "Wiki",
+        "jitsi" => "Jitsi",
         "jcr" => "JCR",
         "ecms" => "ECMS",
         "calendar" => "Calendar",
