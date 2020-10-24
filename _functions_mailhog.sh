@@ -30,11 +30,19 @@ do_drop_mailhog_data() {
   if [ "${DEPLOYMENT_MAILHOG_ENABLED}" == "true" ]; then
     echo_info "Drops Mailhog container ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_MAILHOG_CONTAINER_NAME}
+    delete_docker_volume ${DEPLOYMENT_MAILHOG_CONTAINER_NAME}
     echo_info "Done."
     echo_info "Mailhog data dropped"
   else
     echo_info "Skip Drops Mailhog container ..."
   fi
+}
+
+do_create_mailhog() {
+  if [ "${DEPLOYMENT_MAILHOG_ENABLED}" == "true" ]; then
+    echo_info "Creation of the Mailhog Docker volume ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} ..."
+    create_docker_volume ${DEPLOYMENT_MAILHOG_CONTAINER_NAME}
+  fi  
 }
 
 do_stop_mailhog() {
@@ -61,8 +69,10 @@ do_start_mailhog() {
 
   ${DOCKER_CMD} run \
     -d \
+    -e "MH_STORAGE=maildir" \
     -p "${DEPLOYMENT_MAILHOG_SMTP_PORT}:1025" \
     -p "${DEPLOYMENT_MAILHOG_HTTP_PORT}:8025" \
+    -v ${DEPLOYMENT_MAILHOG_CONTAINER_NAME}:/maildir \
     --name ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} ${DEPLOYMENT_MAILHOG_IMAGE}:${DEPLOYMENT_MAILHOG_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_MAILHOG_CONTAINER_NAME} container started"  
 
