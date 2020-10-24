@@ -50,7 +50,7 @@ clone_or_fetch_git_repo() {
     git ls-remote --exit-code blessed > /dev/null 2>&1
     status=$?
     set -e
-    if [ ${status} -ne 0 ]; then
+    if [ ${status} -ne 0 ] && [[ ! "$(git remote | xargs)" =~ "blessed" ]]; then
       echo_info "Add blessed remote for exoplatform organization..."
       git remote add blessed git@github.com:exoplatform/${_repo}.git
     fi
