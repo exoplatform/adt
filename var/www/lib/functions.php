@@ -167,7 +167,6 @@ function getRepositories()
         "saml2-addon" => "SAML2",
         "spnego-addon" => "SPENEGO",
         "task" => "TASK",
-        "wcm-template-pack" => "Web pack",
         "web-conferencing" => "Web conferencing");
     apc_store('repositories', $repositories);
   }
