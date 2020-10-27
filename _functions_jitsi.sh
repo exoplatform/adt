@@ -34,6 +34,8 @@ do_get_jitsi_settings() {
 do_drop_jitsi_data() {
   echo_info "Dropping Jitsi data ..."
   if ${DEPLOYMENT_JITSI_ENABLED}; then
+    echo_info "Drops Jitsi docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
+    delete_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
     echo_info "Drops Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
     echo_info "Drops Jitsi web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} ..."
@@ -62,8 +64,6 @@ do_drop_jitsi_data() {
     delete_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm ..."
     delete_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm
-    echo_info "Drops Jitsi docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
-    delete_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
     echo_info "Done."
     echo_info "Jitsi data dropped"
   else
