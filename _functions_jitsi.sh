@@ -58,6 +58,8 @@ do_drop_jitsi_data() {
     delete_docker_volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config ..."
     delete_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config
+    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config ..."
+    delete_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm ..."
     delete_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm
     echo_info "Drops Jitsi docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
@@ -85,6 +87,8 @@ do_create_jitsi() {
     create_docker_volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config ..."
     create_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config
+    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config ..."
+    create_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm ..."
     create_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm
   fi
@@ -223,11 +227,12 @@ do_start_jitsi() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   mkdir -p ${DEPLOYMENT_DIR}/jitsi-jibri-config
-  cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/jitsi-jibri-config/finalize.sh
+  cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_DIR}/jitsi-jibri-config:/config:Z  \
+    -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config:/config:Z  \
     -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm:/dev/shm:Z  \
+    -v ${DEPLOYMENT_DIR}/finalize.sh:/finalize.sh  \    
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
     --device /dev/snd \
@@ -242,7 +247,7 @@ do_start_jitsi() {
     -e "JIBRI_RECORDER_USER=recorder" \
     -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
     -e "JIBRI_RECORDING_DIR=/config/recordings" \
-    -e "JIBRI_FINALIZE_RECORDING_SCRIPT_PATH=/config/finalize.sh" \
+    -e "JIBRI_FINALIZE_RECORDING_SCRIPT_PATH=/finalize.sh" \
     -e "JIBRI_STRIP_DOMAIN_JID=muc" \
     -e "JIBRI_LOGS_DIR=/config/logs" \
     -e "CALL_APP_URL=http://${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -257,12 +262,11 @@ do_start_jitsi() {
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:stable-5142"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
-  mkdir -p ${DEPLOYMENT_DIR}/jitsi-web-config
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
-    -v ${DEPLOYMENT_DIR}/jitsi-web-config:/config:Z  \
+    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web:/config:Z  \
     -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts:/usr/share/jitsi-meet/transcripts:Z \
     -e "ENABLE_AUTH=1" \
     -e "ENABLE_RECORDING=1" \
