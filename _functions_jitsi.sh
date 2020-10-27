@@ -50,6 +50,8 @@ do_drop_jitsi_data() {
     delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web ..."
     delete_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web
+    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt ..."
+    delete_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts ..."
     delete_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config ..."
@@ -77,6 +79,8 @@ do_create_jitsi() {
     create_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web ..."
     create_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web
+    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt ..."
+    create_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts ..."
     create_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config ..."
@@ -267,6 +271,7 @@ do_start_jitsi() {
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
     -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web:/config:Z  \
+    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt:/etc/letsencrypt:Z 
     -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts:/usr/share/jitsi-meet/transcripts:Z \
     -e "ENABLE_AUTH=1" \
     -e "ENABLE_RECORDING=1" \
