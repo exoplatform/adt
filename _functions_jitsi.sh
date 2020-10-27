@@ -128,7 +128,7 @@ do_start_jitsi() {
     -e "PUBLIC_URL= ${DEPLOYMENT_URL}/jitsiweb" \
     -e "JWT_APP_SECRET=nQzPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx" \
     -e "JWT_APP_ID=exo-jitsi" \
-    -e "EXO_FILE_UPLOAD_URL=${DEPLOYMENT_URL}/portal/rest/jitsi/upload"
+    -e "EXO_FILE_UPLOAD_URL=${DEPLOYMENT_URL}/portal/rest/jitsi/upload" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --name ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} container started"
