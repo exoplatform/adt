@@ -287,9 +287,8 @@ do_start_jitsi() {
     --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:stable-5142
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
   check_jitsi_web_availability
-  echo "interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';" >> "${DEPLOYMENT_DIR}/jitsi-web-config/interface_config.js"
-  echo "interfaceConfig['JITSI_WATERMARK_LINK'] = '';" >> "${DEPLOYMENT_DIR}/jitsi-web-config/interface_config.js"
-
+  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
+  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
 }
 
 check_jitsi_call_availability() {
