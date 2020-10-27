@@ -271,7 +271,7 @@ do_start_jitsi() {
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
     -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web:/config:Z  \
-    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt:/etc/letsencrypt:Z 
+    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt:/etc/letsencrypt:Z \
     -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts:/usr/share/jitsi-meet/transcripts:Z \
     -e "ENABLE_AUTH=1" \
     -e "ENABLE_RECORDING=1" \
