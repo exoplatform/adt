@@ -223,7 +223,7 @@ do_start_jitsi() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   mkdir -p ${DEPLOYMENT_DIR}/jitsi-jibri-config
-  cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/jitsi-config/finalize.sh
+  cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/jitsi-jibri-config/finalize.sh
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/jitsi-jibri-config:/config:Z  \
@@ -245,8 +245,8 @@ do_start_jitsi() {
     -e "JIBRI_FINALIZE_RECORDING_SCRIPT_PATH=/config/finalize.sh" \
     -e "JIBRI_STRIP_DOMAIN_JID=muc" \
     -e "JIBRI_LOGS_DIR=/config/logs" \
-    -e "CALL_APP_URL=http://${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}.${DEPLOYMENT_JITSI_NETWORK_NAME}"
-    -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.uApouG7Gp_xol8MbZfodkxPjJfWmaxnQUkayV5_yH_Q"
+    -e "CALL_APP_URL=http://${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.uApouG7Gp_xol8MbZfodkxPjJfWmaxnQUkayV5_yH_Q" \
     -e "DISPLAY=:0" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
