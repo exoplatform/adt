@@ -232,7 +232,7 @@ do_start_jitsi() {
     -d \
     -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config:/config:Z  \
     -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm:/dev/shm:Z  \
-    -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh  \    
+    -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
     --device /dev/snd \
@@ -333,7 +333,7 @@ check_jitsi_web_availability() {
     count=$(( $count + 1 ))
     set +e
 
-    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}  > /dev/null
+    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}  > /dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
       [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Web not yet available (${count} / ${try})..."    
