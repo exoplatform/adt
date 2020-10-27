@@ -229,8 +229,8 @@ do_start_jitsi() {
     -v ${DEPLOYMENT_DIR}/jitsi-jibri-config:/config:Z  \
     -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm:/dev/shm:Z  \
     --cap-add SYS_ADMIN \
-    --cap-add NET_BIND_SERVICE
-    --device /dev/snd
+    --cap-add NET_BIND_SERVICE \
+    --device /dev/snd \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
