@@ -235,7 +235,7 @@ do_start_jitsi() {
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config:/config:Z  \
-    -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm:/dev/shm:Z  \
+    -v /dev/shm:/dev/shm:Z  \
     -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
@@ -254,7 +254,7 @@ do_start_jitsi() {
     -e "JIBRI_FINALIZE_RECORDING_SCRIPT_PATH=/tmp/finalize.sh" \
     -e "JIBRI_STRIP_DOMAIN_JID=muc" \
     -e "JIBRI_LOGS_DIR=/config/logs" \
-    -e "CALL_APP_URL=http://${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "CALL_APP_URL=${DEPLOYMENT_URL}/jitsicall" \
     -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.uApouG7Gp_xol8MbZfodkxPjJfWmaxnQUkayV5_yH_Q" \
     -e "DISPLAY=:0" \
     -e "TZ=UTC" \

@@ -92,24 +92,23 @@
 
     ProxyPass               /jitsicall           http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}
     ProxyPassReverse        /jitsicall           http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}
-    ProxyPass               /jitsiweb            https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}
-    ProxyPassReverse        /jitsiweb            https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}
-    ProxyPass               /css/                https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/css/
-    ProxyPassReverse        /css/                https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/css/
-    ProxyPass               /libs/               https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/libs/
-    ProxyPassReverse        /libs/               https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/libs/
-    ProxyPass               /images/             https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/images/
-    ProxyPassReverse        /images/             https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/images/
-    ProxyPass               /sounds/             https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/sounds/
-    ProxyPassReverse        /sounds/             https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/sounds/
-    ProxyPass               /lang/               https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/lang/
-    ProxyPassReverse        /lang/               https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/lang/
-    ProxyPass               /http-bind           https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/http-bind
-    ProxyPassReverse        /http-bind           https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/http-bind
-    ProxyPass               /xmpp-websocket      https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/xmpp-websocket
-    ProxyPassReverse        /xmpp-websocket      https://localhost:${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}/xmpp-websocket
-    s
-    # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
+    ProxyPass               /jitsiweb            http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}
+    ProxyPassReverse        /jitsiweb            http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}
+    ProxyPass               /css/                http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/css/
+    ProxyPassReverse        /css/                http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/css/
+    ProxyPass               /libs/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/libs/
+    ProxyPassReverse        /libs/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/libs/
+    ProxyPass               /images/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/images/
+    ProxyPassReverse        /images/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/images/
+    ProxyPass               /sounds/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/sounds/
+    ProxyPassReverse        /sounds/             http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/sounds/
+    ProxyPass               /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
+    ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
+    ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    ProxyPass               /xmpp-websocket      http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket
+    ProxyPassReverse        /xmpp-websocket      http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket
+    s    # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/
