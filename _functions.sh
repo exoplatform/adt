@@ -1553,6 +1553,11 @@ do_start() {
   do_start_es
   do_start_chat_server
 
+  # Kill existing running jodconverter threads to prevent busy port error message
+  set +e
+  [ ! -z "${DEPLOYMENT_JOD_CONVERTER_PORTS}" ] && lsof -t -i:${DEPLOYMENT_JOD_CONVERTER_PORTS} | xargs --no-run-if-empty kill
+  set -e
+
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
 
