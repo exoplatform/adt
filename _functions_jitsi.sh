@@ -255,7 +255,7 @@ do_start_jitsi() {
     -e "JIBRI_STRIP_DOMAIN_JID=muc" \
     -e "JIBRI_LOGS_DIR=/config/logs" \
     -e "CALL_APP_URL=${DEPLOYMENT_URL}/jitsicall" \
-    -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.uApouG7Gp_xol8MbZfodkxPjJfWmaxnQUkayV5_yH_Q" \
+    -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.n_wKXsF5lydXN2QEWdgwNshO5EBosirSalZGtd8Y43E" \
     -e "DISPLAY=:0" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
