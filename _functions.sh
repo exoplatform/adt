@@ -290,6 +290,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_AD_HOST" "localhost"
       configurable_env_var "DEPLOYMENT_AD_PORT" "389"
       configurable_env_var "USER_DIRECTORY_BASE_DN" "dc=exoplatform,dc=com"
+      configurable_env_var "GROUP_DIRECTORY_BASE_DN" ""
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
 
