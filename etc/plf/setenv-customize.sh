@@ -87,7 +87,8 @@ if ${DEPLOYMENT_LDAP_ENABLED}; then
   [ ! -z "${USER_DIRECTORY_ADMIN_DN}" ] && CATALINA_OPTS="${CATALINA_OPTS} -Dexo.ldap.admin.dn=\"${USER_DIRECTORY_ADMIN_DN}\""
   [ ! -z "${USER_DIRECTORY_ADMIN_PASSWORD}" ] && CATALINA_OPTS="${CATALINA_OPTS} -Dexo.ldap.admin.password=\"${USER_DIRECTORY_ADMIN_PASSWORD}\""
   [ ! -z "${USER_DIRECTORY_BASE_DN}" ] && CATALINA_OPTS="${CATALINA_OPTS} -Dexo.ldap.users.base.dn=\"ou=People,o=portal,o=gatein,${USER_DIRECTORY_BASE_DN}\""
-  [ ! -z "${GROUP_DIRECTORY_BASE_DN}" ] && CATALINA_OPTS="${CATALINA_OPTS} -Dexo.ldap.groups.base.dn=\"ou=groups,${GROUP_DIRECTORY_BASE_DN}\""
+  #Even when no groups sync, We have to override the value and set it to empty
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.ldap.groups.base.dn=\"${GROUP_DIRECTORY_BASE_DN}\""
 fi
 
 #Keycloak integration
