@@ -223,7 +223,7 @@ do_start_jitsi() {
     -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \    
+    --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:stable-5142
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
