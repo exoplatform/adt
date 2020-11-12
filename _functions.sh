@@ -1776,12 +1776,14 @@ do_stop() {
       do_stop_database
       do_stop_es
       do_stop_chat_server
-
     else
       echo_warn "No server directory to stop it"
     fi
     )
   fi
+  
+  # Stop Jodconverter Process
+  [ ! -z "${DEPLOYMENT_JOD_CONVERTER_PORTS:-}" ] && lsof -n -i :${DEPLOYMENT_JOD_CONVERTER_PORTS} | grep LISTEN | awk '{print $2}' | xargs --no-run-if-empty kill
 }
 
 #
