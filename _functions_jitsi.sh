@@ -208,8 +208,8 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_JITSI_JVB_TCP_PORT}:4443" \
-    -p "${DEPLOYMENT_JITSI_JVB_UDP_PORT}:10000/udp" \
+    -p "${DEPLOYMENT_JITSI_JVB_TCP_PORT}:${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
+    -p "${DEPLOYMENT_JITSI_JVB_UDP_PORT}:${DEPLOYMENT_JITSI_JVB_UDP_PORT}/udp" \
     -v ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config:/config:Z  \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -223,6 +223,7 @@ do_start_jitsi() {
     -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:stable-5142
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
@@ -255,7 +256,7 @@ do_start_jitsi() {
     -e "JIBRI_STRIP_DOMAIN_JID=muc" \
     -e "JIBRI_LOGS_DIR=/config/logs" \
     -e "CALL_APP_URL=${DEPLOYMENT_URL}/jitsicall" \
-    -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.uApouG7Gp_xol8MbZfodkxPjJfWmaxnQUkayV5_yH_Q" \
+    -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.n_wKXsF5lydXN2QEWdgwNshO5EBosirSalZGtd8Y43E" \
     -e "DISPLAY=:0" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
