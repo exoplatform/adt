@@ -64,8 +64,6 @@ do_drop_jitsi_data() {
     delete_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config
     echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config ..."
     delete_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm
     echo_info "Done."
     echo_info "Jitsi data dropped"
   else
@@ -93,8 +91,6 @@ do_create_jitsi() {
     create_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config
     echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config ..."
     create_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_shm
   fi
 }
 
@@ -236,11 +232,11 @@ do_start_jitsi() {
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config:/config:Z  \
-    -v /dev/shm:/dev/shm:Z  \
     -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
     --device /dev/snd \
+    --shm-size=512m \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
