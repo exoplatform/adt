@@ -48,22 +48,6 @@ do_drop_jitsi_data() {
     delete_docker_container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}
     echo_info "Drops Jitsi jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_plugins-custom ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_plugins-custom
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config
-    echo_info "Drops Jitsi docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config ..."
-    delete_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config
     echo_info "Done."
     echo_info "Jitsi data dropped"
   else
@@ -75,22 +59,6 @@ do_create_jitsi() {
   if ${DEPLOYMENT_JITSI_ENABLED}; then
     echo_info "Creation of the Jitsi Docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
     create_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_plugins-custom ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_plugins-custom
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config
-    echo_info "Creation of the Jitsi Docker volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config ..."
-    create_docker_volume ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config
   fi
 }
 
@@ -143,8 +111,6 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_config:/config:Z  \
-    -v ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}_plugins-custom:/prosody-plugins-custom:Z \
     -e "AUTH_TYPE=jwt" \
     -e "ENABLE_AUTH=1" \
     -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -178,7 +144,6 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}_jicofo:/config:Z  \
     -e "AUTH_TYPE=jwt" \
     -e "ENABLE_AUTH=1" \
     -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -206,7 +171,6 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_JVB_TCP_PORT}:${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
     -p "${DEPLOYMENT_JITSI_JVB_UDP_PORT}:${DEPLOYMENT_JITSI_JVB_UDP_PORT}/udp" \
-    -v ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}_config:/config:Z  \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_SERVER=xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -231,7 +195,6 @@ do_start_jitsi() {
   chmod +x ${DEPLOYMENT_DIR}/finalize.sh
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}_config:/config:Z  \
     -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
@@ -267,9 +230,6 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
-    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_web:/config:Z  \
-    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_letsencrypt:/etc/letsencrypt:Z \
-    -v ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}_transcripts:/usr/share/jitsi-meet/transcripts:Z \
     -e "ENABLE_AUTH=1" \
     -e "ENABLE_RECORDING=1" \
     -e "JICOFO_AUTH_USER=focus" \
