@@ -310,6 +310,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_SFTP_IMAGE" "atmoz/sftp"
       configurable_env_var "DEPLOYMENT_SFTP_IMAGE_VERSION" "latest"
 
+      configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
+
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
@@ -1371,7 +1373,9 @@ do_deploy() {
 
   # SFTP port
   env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
-
+  
+  # Remote debug port
+  env_var "DEPLOYMENT_DEBUG_PORT" "${DEPLOYMENT_PORT_PREFIX}26"
 
   # CMIS server  port
   env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
@@ -1554,6 +1558,11 @@ do_start() {
   do_start_es
   do_start_chat_server
 
+  if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
+    do_ufw_open_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
+  fi
+
+
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
 
@@ -1664,6 +1673,9 @@ do_start() {
   echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
   if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
     echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
+  fi
+  if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
+    echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT}"
   fi
 
   )
@@ -1828,6 +1840,8 @@ do_undeploy() {
     do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
+    # Close debug port
+    do_ufw_close_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
       # close firewall port for Onlyoffice documentserver only if addon was deployed
       do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
