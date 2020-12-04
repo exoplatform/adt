@@ -47,6 +47,9 @@
         Order allow,deny
         Allow from all
     </Directory>
+    
+    RewriteEngine on 
+    RewriteRule ^/mailhog$ /mailhog/ [R]
 
     ProxyRequests           Off
     ProxyPreserveHost       On
