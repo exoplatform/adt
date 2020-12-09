@@ -460,7 +460,7 @@ function getLocalAcceptanceInstances()
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '6.1.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-jcr / exo-ecms / exo-calendar / exo-tasks / exo-web-conferencing / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / meeds-app-center / meeds-es-embedded / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-jcr / exo-ecms / exo-agenda / exo-jitsi / exo-analytics / exo-tasks / exo-web-conferencing / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / meeds-app-center / meeds-es-embedded / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications";
               break;
             case '6.0.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-digital-workplace / exo-jcr / exo-ecms / exo-calendar / exo-tasks / exo-web-conferencing / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / meeds-app-center / meeds-es-embedded / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications";
