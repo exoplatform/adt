@@ -1325,13 +1325,6 @@ do_deploy() {
     fi
   fi  
 
-  if ${DEPLOYMENT_JITSI_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-jitsi.* ]]; then
-      echo_error "JITSI deployment is enabled, the exo-jitsi addon must be specified on the addon list."
-      exit 1
-    fi
-  fi 
-
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
   env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
