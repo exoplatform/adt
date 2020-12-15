@@ -311,6 +311,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_SFTP_IMAGE_VERSION" "latest"
 
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
+      configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -1687,6 +1688,10 @@ do_start() {
   if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
     echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT}"
   fi
+  if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
+    echo_info "DEV Mode is enabled."
+  fi
+
 
   )
 }

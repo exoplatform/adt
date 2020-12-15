@@ -180,3 +180,11 @@ CATALINA_OPTS="${CATALINA_OPTS} -Dexo.accountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP
 if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
   CATALINA_OPTS="${CATALINA_OPTS} -agentlib:jdwp=transport=dt_socket,address=${DEPLOYMENT_DEBUG_PORT},server=y,suspend=n"
 fi
+# DEV Mode
+if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
+  CATALINA_OPTS="${CATALINA_OPTS} -Dorg.exoplatform.container.configuration.debug"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.product.developing=true"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dignore.unregistered.webapp=false"
+  CATALINA_OPTS="${CATALINA_OPTS} -DEXO_DEV=true"
+ fi
+
