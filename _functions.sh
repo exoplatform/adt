@@ -745,7 +745,7 @@ initialize_product_settings() {
         # specific configuration for meeds deployments
         # - Database drivers
         # - Default version for each supported database type
-        if [[ "${PRODUCT_VERSION}" =~ ^(1.1) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.1|1.2) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.19" # Default version of the mysql server to use
