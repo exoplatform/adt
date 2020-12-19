@@ -221,8 +221,16 @@ initialize_product_settings() {
   env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
   env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
   configurable_env_var "INSTANCE_ID" ""
+  configurable_env_var "INSTANCE_TOKEN" ""
 
-  if [ -z "${INSTANCE_ID}" ]; then
+
+  if [ ! -z "${INSTANCE_TOKEN:-}" ]; then
+    if [[ ! "${INSTANCE_TOKEN}" =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then 
+      echo_error "${INSTANCE_TOKEN} must be a valid UUID Token!"
+      exit 1
+    fi
+    env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${INSTANCE_TOKEN:0:8}"
+  elif [ -z "${INSTANCE_ID}" ]; then
     env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}"
   else
     env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}-${INSTANCE_ID}"
@@ -1403,7 +1411,11 @@ do_deploy() {
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
   else
-    env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+    if [ -z "${INSTANCE_TOKEN:-}" ]; then
+      env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+    else 
+      env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${DEPLOYMENT_PORT_PREFIX}.${ACCEPTANCE_HOST}"
+    fi   
     env_var "DEPLOYMENT_EXT_PORT" "80"
   fi
   DEPLOYMENT_URL_SCHEME="http"

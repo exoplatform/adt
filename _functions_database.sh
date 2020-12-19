@@ -66,7 +66,11 @@ do_get_database_settings() {
     env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
     env_var DEPLOYMENT_CONTAINER_NAME "${DEPLOYMENT_DATABASE_NAME}"
     # Build a database user without dot, minus ... (using the branch because limited to 16 characters)
-    env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
+    if [ -z "${INSTANCE_TOKEN:-}" ]; then
+      env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
+    else
+      env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${INSTANCE_TOKEN:0:8}"
+    fi  
     env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
     env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
 
