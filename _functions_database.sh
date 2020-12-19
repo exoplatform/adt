@@ -139,6 +139,28 @@ do_get_database_settings() {
 }
 
 #
+# Check and Perform Postgres upgrade
+#
+check_pg_upgrades() {
+  [ -z "${DEPLOYMENT_PG_UPGRADE_IMAGE:-}" ] && return 0
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_CONTAINER_NAME}) || return 0
+  [ -z "${mount_point:-}" ] && return 0
+  local data_pg_version=$(sudo cat ${mount_point}/PG_VERSION 2>/dev/null| xargs -n 1)
+  [ -z "${data_pg_version:-}" ] && return 0
+  if (( $(echo "${DEPLOYMENT_DATABASE_VERSION} > ${data_pg_version}" |bc -l) )); then
+     echo_info "Postgres Database changes detected. Performing upgrade from ${data_pg_version} to ${DEPLOYMENT_DATABASE_VERSION} version ..."
+     sudo mv -v ${mount_point} ${mount_point}_old
+     ${DOCKER_CMD} run --rm -e PGPASSWORD=${DEPLOYMENT_DATABASE_USER} -e PGUSER=${DEPLOYMENT_DATABASE_USER} -e POSTGRES_INITDB_ARGS="-U ${DEPLOYMENT_DATABASE_USER}" \
+	   -v ${mount_point}_old:/var/lib/postgresql/${data_pg_version}/data \
+	   -v ${mount_point}:/var/lib/postgresql/${DEPLOYMENT_DATABASE_VERSION}/data \
+	   ${DEPLOYMENT_PG_UPGRADE_IMAGE}:${data_pg_version}-to-${DEPLOYMENT_DATABASE_VERSION}
+     # Fix User permission after the upgrade
+     echo "host  all  all 0.0.0.0/0 md5" | sudo tee -a ${mount_point}/pg_hba.conf
+     echo_info "Upgrade from ${data_pg_version} to ${DEPLOYMENT_DATABASE_VERSION} has been executed successfully!"
+  fi
+}
+
+#
 # Creates a database for the instance. Don't drop it if it already exists.
 #
 do_create_database() {
@@ -256,7 +278,7 @@ do_start_database() {
     DOCKER_POSTGRES)
       echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
-
+      check_pg_upgrades
       ${DOCKER_CMD} run \
         -p "127.0.0.1:${DEPLOYMENT_DATABASE_PORT}:5432" -d \
         -v ${DEPLOYMENT_CONTAINER_NAME}:/var/lib/postgresql/data \
