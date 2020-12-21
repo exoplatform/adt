@@ -149,13 +149,16 @@ check_pg_upgrades() {
   [ -z "${data_pg_version:-}" ] && return 0
   if (( $(echo "${DEPLOYMENT_DATABASE_VERSION} > ${data_pg_version}" |bc -l) )); then
      echo_info "Postgres Database changes detected. Performing upgrade from ${data_pg_version} to ${DEPLOYMENT_DATABASE_VERSION} version ..."
-     sudo mv -v ${mount_point} ${mount_point}_old
+     local tmpfolder="/tmp/$(date +'%s')pgold"
+     sudo mv -v ${mount_point} ${tmpfolder}
      ${DOCKER_CMD} run --rm -e PGPASSWORD=${DEPLOYMENT_DATABASE_USER} -e PGUSER=${DEPLOYMENT_DATABASE_USER} -e POSTGRES_INITDB_ARGS="-U ${DEPLOYMENT_DATABASE_USER}" \
-	   -v ${mount_point}_old:/var/lib/postgresql/${data_pg_version}/data \
+	   -v ${tmpfolder}:/var/lib/postgresql/${data_pg_version}/data \
 	   -v ${mount_point}:/var/lib/postgresql/${DEPLOYMENT_DATABASE_VERSION}/data \
 	   ${DEPLOYMENT_PG_UPGRADE_IMAGE}:${data_pg_version}-to-${DEPLOYMENT_DATABASE_VERSION}
      # Fix User permission after the upgrade
      echo "host  all  all 0.0.0.0/0 md5" | sudo tee -a ${mount_point}/pg_hba.conf
+     # Cleanup
+     sudo rm -rf ${tmpfolder}
      echo_info "Upgrade from ${data_pg_version} to ${DEPLOYMENT_DATABASE_VERSION} has been executed successfully!"
   fi
 }
