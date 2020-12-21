@@ -1412,12 +1412,16 @@ do_deploy() {
   if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
-  else
+  else 
     if [ -z "${INSTANCE_TOKEN:-}" ]; then
       env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
-    else 
-      env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${DEPLOYMENT_PORT_PREFIX}.${ACCEPTANCE_HOST}"
-    fi   
+    else
+      if [ -z "${INSTANCE_ID}" ]; then
+        env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${DEPLOYMENT_PORT_PREFIX}.${ACCEPTANCE_HOST}"
+      else
+        env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${DEPLOYMENT_PORT_PREFIX}-${INSTANCE_ID}.${ACCEPTANCE_HOST}"
+      fi
+    fi  
     env_var "DEPLOYMENT_EXT_PORT" "80"
   fi
   DEPLOYMENT_URL_SCHEME="http"
