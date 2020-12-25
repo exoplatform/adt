@@ -125,7 +125,8 @@ foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
             }
           ?>
         </span>
-        <br/><?= componentAddonsTags($descriptor_array); ?>
+        <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+        <?= componentAddonsTags($descriptor_array); ?>
         <br/><?= componentLabels($descriptor_array); ?>
       </td>
       <td class="col-left"><?= componentDownloadIcon($descriptor_array); ?>&nbsp;<?= componentProductVersion($descriptor_array); ?></td>

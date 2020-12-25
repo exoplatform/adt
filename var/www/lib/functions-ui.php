@@ -219,6 +219,21 @@ function componentAddonsDistributionTags ($deployment_descriptor) {
 }
 
 /**
+ * Return the markup for instance upgrades eligiblity
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function componentUpgradeEligibility($deployment_descriptor) {
+  if (property_exists($deployment_descriptor, 'INSTANCE_TOKEN') && $deployment_descriptor->INSTANCE_TOKEN) {
+    $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-flag"></i></span>';
+    return $content;
+  }
+  return '';
+}
+
+/**
  * Return the markup for the Deployment Status
  *
  * @param $deployment_descriptor

@@ -46,7 +46,8 @@ if (isDeploymentInCategoryArray($cp_instances)) {
             <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
             <td>
               <?= componentProductOpenLink($descriptor_array); ?>
-              <br/><?= componentAddonsTags($descriptor_array); ?>
+              <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+              <?= componentAddonsTags($descriptor_array); ?>
               <span class="pull-right">
               <?php 
                 if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {

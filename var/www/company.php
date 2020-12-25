@@ -58,6 +58,7 @@ if (isDeploymentInCategoryArray($company_instances)) {
         <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
         <td>
           <?= componentProductInfoIcon($descriptor_array) ?>&nbsp;
+          <?= componentUpgradeEligibility($descriptor_array); ?>
           <?= componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'green'); ?>&nbsp;
           <?= componentProductOpenLink($descriptor_array, "", true) ?>
           <span class="pull-right">

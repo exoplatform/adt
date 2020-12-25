@@ -60,7 +60,8 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
                 </a> - 
                 <?= componentEditNoteIcon($descriptor_array) ?>
               </span>
-              <br/><?= componentAddonsTags($descriptor_array); ?>
+              <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+              <?= componentAddonsTags($descriptor_array); ?>
             </td>
             <td class="col-center">
                 <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
@@ -121,7 +122,8 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
             </a> - 
             <?= componentEditNoteIcon($descriptor_array) ?>
           </span>
-          <br/><?= componentAddonsTags($descriptor_array); ?>
+          <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+          <?= componentAddonsTags($descriptor_array); ?>
         </td>
         <td class="col-center">
           <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
@@ -169,7 +171,8 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
           <span class="pull-right">
             <?= componentEditNoteIcon($descriptor_array) ?>
           </span>
-          <br/><?= componentAddonsTags($descriptor_array); ?>
+          <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+          <?= componentAddonsTags($descriptor_array); ?>
         </td>
         <td class="col-center">
           <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;

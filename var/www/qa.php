@@ -61,7 +61,8 @@ if (isDeploymentInCategoryArray($qa_instances)) {
                   <i class="icon-refresh"></i>
                 </a>
                 </span>
-                <br/><?= componentAddonsTags($descriptor_array); ?>
+                <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+                <?= componentAddonsTags($descriptor_array); ?>
             </td>
             <td class="col-center">
                 <?= componentDownloadIcon($descriptor_array); ?>&nbsp;
@@ -126,7 +127,8 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
                   <i class="icon-refresh"></i>
                 </a>
                 </span>
-                <br/><?= componentAddonsTags($descriptor_array); ?>
+                <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+                <?= componentAddonsTags($descriptor_array); ?>
             </td>
             <td class="col-center">
                 <?= componentDownloadIcon($descriptor_array); ?>&nbsp;
