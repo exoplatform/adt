@@ -50,11 +50,11 @@ if (isDeploymentInCategoryArray($qa_instances)) {
                 <?php 
                 if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
                   ?>
-                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
                   <?php 
                 } else { 
                   ?>
-                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
                   <?php 
                 }
                 ?>
@@ -116,11 +116,11 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
                 <?php 
                 if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
                   ?>
-                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
                   <?php 
                 } else { 
                   ?>
-                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's datas">
+                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
                   <?php 
                 }
                 ?>
