@@ -227,8 +227,12 @@ function componentAddonsDistributionTags ($deployment_descriptor) {
  */
 function componentUpgradeEligibility($deployment_descriptor) {
   if (property_exists($deployment_descriptor, 'INSTANCE_TOKEN') && $deployment_descriptor->INSTANCE_TOKEN) {
-    $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-flag"></i></span>';
-    return $content;
+    if (property_exists($deployment_descriptor, 'DEPLOYMENT_LABELS') && $deployment_descriptor->DEPLOYMENT_LABELS && $deployment_descriptor->DEPLOYMENT_LABELS == "company") {
+      $content='<span rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-flag"></i></span>';  
+    } else {  
+      $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-flag"></i></span>';
+    }
+      return $content;
   }
   return '';
 }
