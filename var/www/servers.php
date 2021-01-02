@@ -92,9 +92,9 @@ checkCaches();
                             <tr>
                                 <td>
                                   <?= componentAppServerIcon($descriptor_array); ?>
-                                  <?= componentUpgradeEligibility($descriptor_array); ?>
                                   <?= componentProductHtmlLabel($descriptor_array); ?>
-                                  <br/><?= componentAddonsTags($descriptor_array); ?>
+                                  <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+                                  <?= componentAddonsTags($descriptor_array); ?>
                                   <br/><?= componentLabels($descriptor_array); ?>
                                 </td>
                                 <td class="col-left"><?= componentProductVersion($descriptor_array); ?></td>
