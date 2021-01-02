@@ -92,6 +92,7 @@ checkCaches();
                             <tr>
                                 <td>
                                   <?= componentAppServerIcon($descriptor_array); ?>
+                                  <?= componentUpgradeEligibility($descriptor_array); ?>
                                   <?= componentProductHtmlLabel($descriptor_array); ?>
                                   <br/><?= componentAddonsTags($descriptor_array); ?>
                                   <br/><?= componentLabels($descriptor_array); ?>
