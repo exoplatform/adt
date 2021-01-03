@@ -228,9 +228,47 @@ function componentAddonsDistributionTags ($deployment_descriptor) {
 function componentUpgradeEligibility($deployment_descriptor, $is_label_addon = true) {
   if (property_exists($deployment_descriptor, 'INSTANCE_TOKEN') && $deployment_descriptor->INSTANCE_TOKEN) {
     if (!$is_label_addon) {
-      $content='<span rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-flag"></i></span>';  
+      $content='<span rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-level-up"></i></span>';  
     } else {  
-      $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-flag"></i></span>';
+      $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="icon-level-up"></i></span>';
+    }
+      return $content;
+  }
+  return '';
+}
+
+/**
+ * Return the markup for instance dev mode availability
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function componentDevModeEnabled($deployment_descriptor, $is_label_addon = true) {
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_DEV_ENABLED') && $deployment_descriptor->DEPLOYMENT_DEV_ENABLED) {
+    if (!$is_label_addon) {
+      $content='<span rel="tooltip" data-original-title="This instance is enabled with Dev mode."><i class="icon-github"></i></span>';  
+    } else {  
+      $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is enabled with Dev mode."><i class="icon-github"></i></span>';
+    }
+      return $content;
+  }
+  return '';
+}
+
+/**
+ * Return the markup for instance debug mode availability
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function componentDebugModeEnabled($deployment_descriptor, $is_label_addon = true) {
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_DEBUG_ENABLED') && $deployment_descriptor->DEPLOYMENT_DEBUG_ENABLED) {
+    if (!$is_label_addon) {
+      $content='<span rel="tooltip" data-original-title="This instance is enabled with Debug mode."><i class="icon-stethoscope"></i></span>';  
+    } else {  
+      $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is enabled with Debug mode."><i class="icon-stethoscope"></i></span>';
     }
       return $content;
   }

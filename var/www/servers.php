@@ -94,6 +94,8 @@ checkCaches();
                                   <?= componentAppServerIcon($descriptor_array); ?>
                                   <?= componentProductHtmlLabel($descriptor_array); ?>
                                   <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+                                  <?= componentDevModeEnabled($descriptor_array); ?>
+                                  <?= componentDebugModeEnabled($descriptor_array); ?>
                                   <?= componentAddonsTags($descriptor_array); ?>
                                   <br/><?= componentLabels($descriptor_array); ?>
                                 </td>

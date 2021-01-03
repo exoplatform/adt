@@ -126,6 +126,8 @@ foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
           ?>
         </span>
         <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+        <?= componentDevModeEnabled($descriptor_array); ?>
+        <?= componentDebugModeEnabled($descriptor_array); ?>
         <?= componentAddonsTags($descriptor_array); ?>
         <br/><?= componentLabels($descriptor_array); ?>
       </td>
