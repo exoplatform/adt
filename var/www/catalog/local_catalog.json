@@ -164,23 +164,6 @@
         "compatibility": "[@exo_plf_version]"
     },
     {
-        "id": "exo-lecko",
-        "version": "2.1.0@exo_plf_version_suffix",
-        "unstable": true,
-        "name": "eXo Lecko integration",
-        "description": "Lecko Analytics (http://analytics.lecko.fr) integration for eXo Platform",
-        "sourceUrl": "https://github.com/exo-addons/lecko",
-        "documentationUrl": "https://github.com/exo-addons/lecko/blob/master/README.md",
-        "downloadUrl": "http://addons.exoplatform.org/n/exo-addons-releases/org.exoplatform.addons.lecko/lecko-packaging/2.1.0@exo_plf_version_suffix/zip",
-        "vendor": "eXo",
-        "license": "LGPLv3",
-        "licenseUrl": "https://www.gnu.org/licenses/lgpl-3.0.txt",
-        "mustAcceptLicense": false,
-        "supportedDistributions": "community,enterprise",
-        "supportedApplicationServers": "tomcat,jboss",
-        "compatibility": "[@exo_plf_version]"
-    },
-    {
         "id": "exo-chat",
         "version": "3.2.0@exo_plf_version_suffix",
         "unstable": true,
