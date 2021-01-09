@@ -321,6 +321,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
+      configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
