@@ -32,5 +32,5 @@ if(isset($_GET["remote"])){
 }
 header("Content-type: application/json; charset=utf-8");
 // Merge remote catalog and local catalog and print result
-echo str_replace("\/","/",json_encode(array_merge(json_decode($remote_catalog, true),json_decode($local_catalog, true)),JSON_PRETTY_PRINT));
+echo str_replace("\/","/",json_encode(array_merge(json_decode($local_catalog, true),json_decode($remote_catalog, true)),JSON_PRETTY_PRINT));
 ?>
