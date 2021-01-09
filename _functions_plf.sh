@@ -187,7 +187,11 @@ do_install_addons() {
    
   if echo $DEPLOYMENT_ADDONS | grep -qP "\-M(BL|LT)"; then 
     if [ ! -z "${MILESTONE_PREFIX}" ] && [ ! -z "${MILESTONE_SUFFIX}" ]; then
-      DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/${MILESTONE_PREFIX}${MILESTONE_SUFFIX}/g")
+      if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then 
+        DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/${MILESTONE_PREFIX}/g")
+      else 
+        DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/${MILESTONE_PREFIX}${MILESTONE_SUFFIX}/g")
+      fi
     else 
       DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)//g")
     fi
