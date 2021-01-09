@@ -1358,6 +1358,13 @@ do_deploy() {
     fi
   fi  
 
+  if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+    if [[ ! "${PRODUCT_VERSION}" =~ .*-M(BL|LT)$ ]]; then
+      echo_error "Continuous deployment is enabled and product version must ends with -MLT or -MBL!"
+      exit 1
+    fi
+  fi  
+
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
   env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
