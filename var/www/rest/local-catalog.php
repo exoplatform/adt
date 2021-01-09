@@ -13,11 +13,13 @@ if(!preg_match('/^[0-9].[0-9].[0-9]-[0-9]{8}$/', $_GET["plfversion"])){
 if (!file_exists("../catalog/local_catalog.json")) {
     http_response_code(500);
     echo "Error! Could not find local catalog file!";
+    die();
 }
 $local_catalog = file_get_contents("../catalog/local_catalog.json");
 if ($local_catalog === false) {
     http_response_code(500);
     echo "Error! Could not parse local catalog file!";
+    die();
 }
 $plf_version=$_GET["plfversion"];
 $plf_suffix= preg_replace("/^[0-9].[0-9].[0-9]/", '', $plf_version);
@@ -31,5 +33,4 @@ if(isset($_GET["remote"])){
 header("Content-type: application/json; charset=utf-8");
 // Merge remote catalog and local catalog and print result
 echo str_replace("\/","/",json_encode(array_merge(json_decode($remote_catalog, true),json_decode($local_catalog, true)),JSON_PRETTY_PRINT));
-
 ?>
