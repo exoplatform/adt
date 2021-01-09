@@ -321,6 +321,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
+      configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -1353,6 +1354,13 @@ do_deploy() {
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
       echo_error "Keycloak deployment is enabled, the exo-saml addon must be specified on the addon list."
+      exit 1
+    fi
+  fi  
+
+  if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+    if [[ ! "${PRODUCT_VERSION}" =~ .*-M(BL|LT)$ ]]; then
+      echo_error "Continuous deployment is enabled and product version must ends with -MLT or -MBL!"
       exit 1
     fi
   fi  

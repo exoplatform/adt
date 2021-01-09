@@ -170,23 +170,39 @@ do_download_maven_artifact() {
     do_curl "$_curlOptions" "$_metadataUrl" "$_metadataFile" "Artifact Metadata"
     local _xpathQuery="";
     _xpathQuery="/metadata/versioning/versions"
-    local plfversionprefix=$(echo $_artifactVersion | grep -oP ^[0-9]+\.[0-9]+\.[0-9]+)
+    local plfversionprefix=$(echo $_artifactVersion | grep -oP ^[0-9]+\.[0-9]+\.[0-9]+)   
     set +e
     if ${DARWIN}; then
-      _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
+      if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+      else 
+        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+      fi
     fi
     if ${LINUX}; then
-      _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
+      if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+      else 
+        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+      fi
     fi
     set -e
     if [ -z "${_artifactTimestampArray}" ] && [ -e "$_metadataFile.bck" ]; then
       echo_warn "Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv ${_metadataFile}.bck ${_metadataFile}
       if ${DARWIN}; then
-        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
+        if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+        else 
+          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+        fi
       fi
       if ${LINUX}; then
-        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
+        if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+        else
+          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+        fi
       fi
     fi
     if [ -z "${_artifactTimestampArray}" ]; then
@@ -208,12 +224,20 @@ do_download_maven_artifact() {
       env_var MILESTONE_PREFIX ""
     else 
       env_var MILESTONE_SUFFIX "$latestmilestonesuffix"
-      env_var MILESTONE_PREFIX "$(echo $latestmilestoneprefix | grep -oP '\-(M|RC|CP|[0-9]+)')"
+      env_var MILESTONE_PREFIX "$(echo $latestmilestoneprefix | grep -oP '\-(M|RC|CP|[0-9]{8})')"
     fi    
 
     echo_info "Latest timestamp : $_artifactTimestamp"
     _artifactDate=""
     _baseUrl=$(echo $_baseUrl | sed "s/$_artifactVersion/$_artifactTimestamp/g" )
+  fi
+
+  if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then 
+    if [ -z "${DEPLOYMENT_ADDONS_CATALOG:-}" ]; then 
+      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/local-catalog.php?plfversion=$_artifactTimestamp"
+    else 
+      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/local-catalog.php?plfversion=$_artifactTimestamp&remote=${DEPLOYMENT_ADDONS_CATALOG##*/}"
+    fi
   fi
 
   #
