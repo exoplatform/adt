@@ -26,7 +26,7 @@ $plf_suffix= preg_replace("/^[0-9].[0-9].[0-9]/", '', $plf_version);
 $local_catalog = str_replace("@exo_plf_version_suffix",$plf_suffix,$local_catalog);
 $local_catalog = str_replace("@exo_plf_version",$plf_version,$local_catalog);
 if(isset($_GET["remote"])){
-    $remote_catalog = file_get_contents($_GET["remote"]);
+    $remote_catalog = file_get_contents('http://'.$_GET["remote"]);
 } else {
     $remote_catalog = file_get_contents("https://www.exoplatform.com/addons/catalog");
 }
