@@ -24,6 +24,28 @@ source "${SCRIPT_DIR}/_functions_core.sh"
 # Download related functions
 # #############################################################################
 
+# Internal: Sort Continuous release according to their suffixes (date)
+do_sort_continuous_releases() {
+    arr=($@)
+    # Well old school to sort array :p 
+    for ((i = 0; i < $#; i++)); do
+        for ((j = 0; j < ${#arr[@]} - i - 1; j++)); do
+            if [ $(date -d $(do_correct_date_format ${arr[j]}) +"%s") -gt $(date -d $(do_correct_date_format ${arr[$((j + 1))]}) +"%s") ]; then
+                temp=${arr[j]}
+                arr[$j]=${arr[$((j + 1))]}
+                arr[$((j + 1))]=$temp
+            fi
+        done
+    done
+    echo ${arr[@]}
+}
+# Internal: Format Continuous release suffix to Date Format
+do_correct_date_format() {
+    local dt=$(echo $1 | cut -d '-' -f2)
+    echo ${dt:4:4}-${dt:2:2}-${dt:0:2}
+}
+
+
 do_curl() {
   if [ $# -lt 4 ]; then
     echo_error "No enough parameters for function do_curl !"
@@ -174,14 +196,14 @@ do_download_maven_artifact() {
     set +e
     if ${DARWIN}; then
       if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
       else 
         _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
       fi
     fi
     if ${LINUX}; then
       if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
       else 
         _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
       fi
@@ -192,14 +214,14 @@ do_download_maven_artifact() {
       mv ${_metadataFile}.bck ${_metadataFile}
       if ${DARWIN}; then
         if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
         else 
           _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
         fi
       fi
       if ${LINUX}; then
         if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | sort -r | xargs))
+          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
         else
           _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
         fi
@@ -210,6 +232,9 @@ do_download_maven_artifact() {
       exit 1;
     fi
     rm -f ${_metadataFile}.bck
+    if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+       _artifactTimestampArray=($(do_sort_continuous_releases ${_artifactTimestampArray[@]})) 
+    fi
     _artifactTimestamp="${_artifactTimestampArray[-1]}"
     if [[ "$_artifactVersion" =~ .*-MBL$ ]] && [ ${#_artifactTimestampArray[@]} -gt 1 ]; then
         _artifactTimestamp="${_artifactTimestampArray[-2]}" 
