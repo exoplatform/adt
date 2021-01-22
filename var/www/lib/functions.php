@@ -279,7 +279,7 @@ function getTranslationBranches($projects)
           $features[$branch][$project]['behind_commits'] = 0;
         else
           $features[$branch][$project]['behind_commits'] = count(explode("\n", $behind_commits_logs));
-        $ahead_commits_logs = $repoObject->git("log " . $baseRemotenameToCompareWith . "/" . $baseBranchToCompareWith ."..origin/integration/" . $branch . " --oneline || echo ''");
+        $ahead_commits_logs = $repoObject->git("log " . $baseRemotenameToCompareWith . "/" . $baseBranchToCompareWith ."..origin/integration/" . $branch . " --oneline");
         if (empty($ahead_commits_logs))
           $features[$branch][$project]['ahead_commits'] = 0;
         else
