@@ -264,7 +264,7 @@ function getTranslationBranches($projects)
           $github_repo = $matches[2];
           if (strpos($baseBranchToCompareWith, 'stable') !== false) {
             $github_org = 'exoplatform';
-            $baseRemotenameToCompareWith = 'blessed';
+            $baseRemotenameToCompareWith = 'origin';
           } else {
             $github_org = $matches[1];
           }
