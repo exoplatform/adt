@@ -213,6 +213,7 @@ function getTranslationBranches($projects)
 
   $projectsToIgnore = array(
       "agenda" => true,
+      "analytics" => true,
       "ecms" => true,
       "app-center" => true,
       "gamification" => true,
