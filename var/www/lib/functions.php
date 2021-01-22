@@ -270,7 +270,6 @@ function getTranslationBranches($projects)
           }
           $github_http_integration_org = $matches[1];
         }
-        echo $github_org . "/" . $github_repo;
         $features[$branch][$project]['http_url'] = "https://github.com/" . $github_http_integration_org . "/" . $github_repo . "/tree/integration/" . $branch;
         // Add link to GitHub diff URL
         $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_http_integration_org . "/" . $github_repo . "/compare/integration/" . $branch."..." . $github_org . ":" . $baseBranchToCompareWith;
