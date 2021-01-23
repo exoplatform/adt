@@ -100,8 +100,10 @@ do_start_onlyoffice() {
     --name ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}
 
   echo_info "${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} container started"
-
-  check_onlyoffice_availability
+  # Hack: Onlyoffice starting from version 6 takes up to 1 minute to boot up. No need to wait it 
+  if [ ${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION%%.*} -lt "6" ]; then
+    check_onlyoffice_availability
+  fi
 }
 
 check_onlyoffice_availability() {
