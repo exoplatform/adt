@@ -103,6 +103,8 @@ do_start_onlyoffice() {
   # Hack: Onlyoffice starting from version 6 takes up to 1 minute to boot up. No need to wait it 
   if [ ${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION%%.*} -lt "6" ]; then
     check_onlyoffice_availability
+  else 
+    echo_info "Onlyoffice DocumentServer ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} up and available"
   fi
 }
 
