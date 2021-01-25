@@ -42,7 +42,7 @@ do_sort_continuous_releases() {
 # Internal: Format Continuous release suffix to Date Format
 do_correct_date_format() {
     local dt=$(echo $1 | cut -d '-' -f2)
-    [ "${dt:2:2}" -gt "12" ] && echo ${dt:4:4}-${dt:2:2}-${dt:0:2} || echo ${dt}
+    date -d ${dt} +"%s" &>/dev/null && echo ${dt} || echo ${dt:4:4}-${dt:2:2}-${dt:0:2}
 }
 
 
