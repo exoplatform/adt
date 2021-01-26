@@ -1492,9 +1492,7 @@ do_deploy() {
       do_create_onlyoffice
       do_create_cmis
       do_create_mailhog
-      if ${DEPLOYMENT_JITSI_ENABLED}; then
-        do_create_jitsi
-      fi
+      do_create_jitsi
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -1513,9 +1511,7 @@ do_deploy() {
         do_create_onlyoffice
         do_create_cmis
         do_create_mailhog
-        if ${DEPLOYMENT_JITSI_ENABLED}; then
-          do_create_jitsi
-        fi
+        do_create_jitsi
       fi
       )
     fi
