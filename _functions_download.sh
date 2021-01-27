@@ -28,21 +28,23 @@ source "${SCRIPT_DIR}/_functions_core.sh"
 do_sort_continuous_releases() {
     arr=($@)
     # Well old school to sort array :p 
+    set +u
     for ((i = 0; i < $#; i++)); do
         for ((j = 0; j < ${#arr[@]} - i - 1; j++)); do
-            if [ $(date -d $(do_correct_date_format ${arr[j]}) +"%s") -gt $(date -d $(do_correct_date_format ${arr[$((j + 1))]}) +"%s") ]; then
+            if [ $(date -d $(do_correct_date_format ${arr[j]}) +"%s") -gt $(date -d $(do_correct_date_format ${arr[$((j + 1))]}) +"%s") ] || [ $((${arr[j]:8:2}+0)) -gt $((${arr[$((j + 1))]:8:2}+0)) ]; then
                 temp=${arr[j]}
                 arr[$j]=${arr[$((j + 1))]}
                 arr[$((j + 1))]=$temp
             fi
         done
     done
+    set -u
     echo ${arr[@]}
 }
 # Internal: Format Continuous release suffix to Date Format
 do_correct_date_format() {
     local dt=$(echo $1 | cut -d '-' -f2)
-    date -d ${dt} +"%s" &>/dev/null && echo ${dt} || echo ${dt:4:4}-${dt:2:2}-${dt:0:2}
+    date -d ${dt:0:8} +"%s" &>/dev/null && echo ${dt:0:8} || echo ${dt:4:4}${dt:2:2}${dt:0:2}
 }
 
 
@@ -196,16 +198,16 @@ do_download_maven_artifact() {
     set +e
     if ${DARWIN}; then
       if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
+        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
       else 
-        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
       fi
     fi
     if ${LINUX}; then
       if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
+        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
       else 
-        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
       fi
     fi
     set -e
@@ -214,16 +216,16 @@ do_download_maven_artifact() {
       mv ${_metadataFile}.bck ${_metadataFile}
       if ${DARWIN}; then
         if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
+          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
         else 
-          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
         fi
       fi
       if ${LINUX}; then
         if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]{8}$ | xargs))
+          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
         else
-          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]{8}$ | xargs))
+          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${plfversionprefix} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
         fi
       fi
     fi
@@ -249,7 +251,7 @@ do_download_maven_artifact() {
       env_var MILESTONE_PREFIX ""
     else 
       env_var MILESTONE_SUFFIX "$latestmilestonesuffix"
-      env_var MILESTONE_PREFIX "$(echo $latestmilestoneprefix | grep -oP '\-(M|RC|CP|[0-9]{8})')"
+      env_var MILESTONE_PREFIX "$(echo $latestmilestoneprefix | grep -oP '\-(M|RC|CP|[0-9]+)')"
     fi    
 
     echo_info "Latest timestamp : $_artifactTimestamp"

@@ -5,7 +5,7 @@ if(!isset($_GET["plfversion"])){
     die();
 }
 // Continous deployment version check
-if(!preg_match('/^[0-9].[0-9].[0-9]-[0-9]{8}$/', $_GET["plfversion"])){
+if(!preg_match('/^[0-9].[0-9].[0-9]-[0-9]{8,10}$/', $_GET["plfversion"])){
     http_response_code(404);
     echo "Error! Invalid PLF version parameter value!";
     die();
