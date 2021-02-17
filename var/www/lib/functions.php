@@ -149,6 +149,7 @@ function getRepositories()
         "platform-private-distributions" => "PLF Private Dist",
         "wiki" => "Wiki",
         "jitsi" => "Jitsi",
+        "jitsi-call" => "Jitsi Call",
         "jcr" => "JCR",
         "ecms" => "ECMS",
         "chat-application" => "CHAT",
@@ -242,6 +243,7 @@ function getTranslationBranches($projects)
       "wcm-template-pack" => true,
       "wiki" => true,
       "jitsi" => true,
+      "jitsi-call" => true,
       "web-conferencing" => true); // Addons with different version than product is ignored, See ACC-144
 
   if (empty($features)) {
