@@ -12,7 +12,7 @@ Mandatory :
 
 Optional :
 
-  * A mysql server with a local configuration (~/.my.cnf) that allows the current system user to create databases and grant rights. You can activate the usage of MySQL with the environment variable : DEPLOYMENT_DATABASE_TYPE=MYSQL
+  * A mysql server with a local configuration (~/.my.cnf) that allows the current system user to create databases and grant rights. You can activate the usage of MySQL with the environment variable : 
   * An apache server (with PHP and its APC module) to display the list of instances and to create a reverse proxy for all instances.
   * An UFW firewall to protect your (ubuntu server). The script will automatically open or close required ports (HTTP, JMX, ...).
   * An awstats instance to keep statistics of usage.
