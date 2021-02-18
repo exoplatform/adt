@@ -12,7 +12,7 @@ Mandatory :
 
 Optional :
 
-  * A mysql server with a local configuration (~/.my.cnf) that allows the current system user to create databases and grant rights. You can activate the usage of MySQL with the environment variable : DEPLOYMENT_DATABASE_TYPE=MYSQL
+  * A mysql server with a local configuration (~/.my.cnf) that allows the current system user to create databases and grant rights. You can activate the usage of MySQL with the environment variable : 
   * An apache server (with PHP and its APC module) to display the list of instances and to create a reverse proxy for all instances.
   * An UFW firewall to protect your (ubuntu server). The script will automatically open or close required ports (HTTP, JMX, ...).
   * An awstats instance to keep statistics of usage.
@@ -158,7 +158,7 @@ Usage
       DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
       DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
 
-      DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE)
+      DEPLOYMENT_DB_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE)
       DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (default: a default version is defined for each eXo version)
 
       DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)

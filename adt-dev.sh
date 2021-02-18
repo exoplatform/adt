@@ -119,7 +119,7 @@ while getopts "n:v:a:C:d:p:ci:l:h" OPTION; do
     v) export PRODUCT_VERSION=$OPTARG;    echo "## VERSION = $OPTARG";;
     a) export DEPLOYMENT_ADDONS=$OPTARG;  echo "## ADDONS  = $OPTARG";;
     C) export DEPLOYMENT_ADDONS_CATALOG=$OPTARG;  echo "## ADDONS CATALOG  = $OPTARG";;
-    d) export DEPLOYMENT_DATABASE_TYPE=$(echo "${OPTARG}" | cut -f1 -d':'); echo "## DATABASE TYPE  = ${DEPLOYMENT_DATABASE_TYPE}"
+    d) export DEPLOYMENT_DB_TYPE=$(echo "${OPTARG}" | cut -f1 -d':'); echo "## DATABASE TYPE  = ${DEPLOYMENT_DB_TYPE}"
        # cut -s to avoid retrieve the database type instead an empty version when there is no ':' on the string
        export DEPLOYMENT_DATABASE_VERSION=$(echo "${OPTARG}" | cut -s -f2 -d':'); echo "## DATABASE VERSION  = ${DEPLOYMENT_DATABASE_VERSION}" ;;
     p) export DEPLOYMENT_PORT_PREFIX=$OPTARG;  echo "## PORT PREFIX  = $OPTARG";;
