@@ -45,7 +45,7 @@ do_configure_jbosseap_jmx() {
 do_configure_jbosseap_datasources() {
   # Patch to reconfigure standalone-exo.xml for database
 
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     MYSQL | DOCKER_MYSQL | DOCKER_MARIADB)
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
@@ -72,7 +72,7 @@ do_configure_jbosseap_datasources() {
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "standalone-exo-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;
     *)
-      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
       exit 1
     ;;

@@ -163,7 +163,7 @@ do_configure_tomcat_ldap() {
 
 do_configure_tomcat_datasources() {
 
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
       # Patch to reconfigure server.xml for database
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
@@ -231,7 +231,7 @@ do_configure_tomcat_datasources() {
       find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;
     *)
-      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
       exit 1
     ;;

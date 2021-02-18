@@ -142,7 +142,7 @@ Environment Variables
   DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
   DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
 
-  DEPLOYMENT_DATABASE_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE | DOCKER_SQLSERVER)
+  DEPLOYMENT_DB_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE | DOCKER_SQLSERVER)
   DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (no default)
 
   DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
@@ -671,7 +671,7 @@ initialize_product_settings() {
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
-          env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
+          env_var DEPLOYMENT_DB_TYPE      "MYSQL"
           env_var DEPLOYMENT_JVM_SIZE_MAX       "3g"
           env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
           env_var DEPLOYMENT_JVM_PERMSIZE_MAX   "512m"
@@ -689,7 +689,7 @@ initialize_product_settings() {
           env_var PLF_BRANCH                    "COMPANY"
           env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
           env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
-          env_var DEPLOYMENT_DATABASE_TYPE      "MYSQL"
+          env_var DEPLOYMENT_DB_TYPE      "MYSQL"
           # Datasets remote location
           env_var DATASET_DATA_VALUES_ARCHIVE   "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-data-values-latest.tar.bz2"
           env_var DATASET_DATA_INDEX_ARCHIVE    "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-data-index-latest.tar.bz2"
@@ -1331,7 +1331,7 @@ do_load_deployment_descriptor() {
 do_deploy() {
   configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
   configurable_env_var "DEPLOYMENT_APACHE_VHOST_ALIAS" ""
-  configurable_env_var "DEPLOYMENT_DATABASE_TYPE" "HSQLDB"
+  configurable_env_var "DEPLOYMENT_DB_TYPE" "HSQLDB"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "2g"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
   configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
@@ -1934,7 +1934,7 @@ do_list() {
       else
         STATUS="${TXT_RED}false${TXT_RESET}"
       fi
-      printf "%-40s %-25s %-25s %-10s %-10s %10s %10s %10s %10s %10s %10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${INSTANCE_ID}" "${DEPLOYMENT_APPSRV_TYPE}" "${DEPLOYMENT_DATABASE_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
+      printf "%-40s %-25s %-25s %-10s %-10s %10s %10s %10s %10s %10s %10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${INSTANCE_ID}" "${DEPLOYMENT_APPSRV_TYPE}" "${DEPLOYMENT_DB_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
       )
     done
   else

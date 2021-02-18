@@ -24,7 +24,7 @@ source "${SCRIPT_DIR}/_functions_docker.sh"
 do_configure_datasource_file() {
   local FILE_TO_PATCH=$1
   local DB_SERVER_PATCH=$2
-  local WORKING_FILE_PREFIX=${FILE_TO_PATCH}-$(tolower "${DEPLOYMENT_DATABASE_TYPE}")
+  local WORKING_FILE_PREFIX=${FILE_TO_PATCH}-$(tolower "${DEPLOYMENT_DB_TYPE}")
   configurable_env_var "DB_DRIVER" ""
 
     # Reconfigure server.xml for Database
@@ -75,7 +75,7 @@ do_get_database_settings() {
     env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
 
     env_var "DEPLOYMENT_DATABASE_HOST" "localhost"
-    case "${DEPLOYMENT_DATABASE_TYPE}" in
+    case "${DEPLOYMENT_DB_TYPE}" in
       MYSQL)
         env_var "DEPLOYMENT_DATABASE_PORT" "3306"
 
@@ -131,7 +131,7 @@ do_get_database_settings() {
         env_var "DATABASE_CMD" "${DOCKER_CMD} logs ${DEPLOYMENT_CONTAINER_NAME}"
       ;;
       *)
-        echo_error "Database type not supported ${DEPLOYMENT_DATABASE_TYPE}"
+        echo_error "Database type not supported ${DEPLOYMENT_DB_TYPE}"
         exit 1
       ;;
     esac
@@ -167,7 +167,7 @@ check_pg_upgrades() {
 # Creates a database for the instance. Don't drop it if it already exists.
 #
 do_create_database() {
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     MYSQL)
       echo_info "Creating MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       if [ ! -e ${HOME}/.my.cnf ]; then
@@ -198,7 +198,7 @@ do_create_database() {
       echo_info "SQL Server image is not yet supporting volume"
     ;;
     *)
-      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
       exit 1
     ;;
@@ -209,7 +209,7 @@ do_create_database() {
 # Drops the database used by the instance.
 #
 do_drop_database() {
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     MYSQL)
       echo_info "Drops MySQL database ${DEPLOYMENT_DATABASE_NAME} ..."
       if [ ! -e ${HOME}/.my.cnf ]; then
@@ -233,7 +233,7 @@ do_drop_database() {
       delete_docker_volume ${DEPLOYMENT_CONTAINER_NAME}
     ;;
     *)
-      echo_error "Invalid database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
       exit 1
     ;;
@@ -245,7 +245,7 @@ do_drop_database() {
 #
 do_stop_database() {
   echo_info "Stopping database instance..."
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     DOCKER_*)
       echo_info "Stopping docker container ${DEPLOYMENT_CONTAINER_NAME}"
       ensure_docker_container_stopped ${DEPLOYMENT_CONTAINER_NAME}
@@ -264,7 +264,7 @@ do_start_database() {
   fi
 
   echo_info "Starting database instance..."
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     DOCKER_MYSQL | DOCKER_MARIADB)
       echo_info "Starting database container ${DEPLOYMENT_CONTAINER_NAME} based on image ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}"
       delete_docker_container ${DEPLOYMENT_CONTAINER_NAME}
@@ -321,7 +321,7 @@ do_start_database() {
         --name ${DEPLOYMENT_CONTAINER_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
     ;;
     DOCKER*)
-      echo_error "Docker database of type ${DEPLOYMENT_DATABASE_TYPE} not yet supported"
+      echo_error "Docker database of type ${DEPLOYMENT_DB_TYPE} not yet supported"
       exit 1
     ;;
     *)
@@ -339,7 +339,7 @@ do_restore_database_dataset() {
   do_drop_database
   do_create_database
 
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     DOCKER_*)
       # add the tmp directory as a volume
       CMD=$(echo "${DATABASE_CMD}" | ${CMD_SED} "s|${DOCKER_CMD} run|${DOCKER_CMD} run  -v ${_tmpdir}:/tmpdir -w /tmpdir|g")
@@ -349,7 +349,7 @@ do_restore_database_dataset() {
     ;;
   esac
 
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL)
       echo_info "Using temporary directory ${_tmpdir}"
       _restorescript="${_tmpdir}/__restoreAllData.sql"
@@ -373,7 +373,7 @@ do_restore_database_dataset() {
       echo_info "Done"
     ;;
     *)
-      echo_error "Dataset restoration isn't supported for database type \"${DEPLOYMENT_DATABASE_TYPE}\""
+      echo_error "Dataset restoration isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
       exit 1
     ;;
@@ -387,7 +387,7 @@ do_restore_database_dataset() {
 check_database_availability() {
   local CHECK_CMD=""
   local valid_result=0
-  case ${DEPLOYMENT_DATABASE_TYPE} in
+  case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES|DOCKER_MARIADB)
       CHECK_CMD="select 1"
     ;;
@@ -398,7 +398,7 @@ check_database_availability() {
       echo "Using docker container logs to check availability"
     ;;
     *)
-      echo_error "Database availability check not supported for ${DEPLOYMENT_DATABASE_TYPE}"
+      echo_error "Database availability check not supported for ${DEPLOYMENT_DB_TYPE}"
       exit 1
     ;;
   esac
@@ -412,7 +412,7 @@ check_database_availability() {
   while [ $count -lt $try -a $RET -ne $valid_result ]; do
     count=$(( $count + 1 ))
     set +e
-    case ${DEPLOYMENT_DATABASE_TYPE} in
+    case ${DEPLOYMENT_DB_TYPE} in
       MYSQL|DOCKER_MYSQL|DOCKER_POSTGRES|DOCKER_MARIADB)
         echo "$CHECK_CMD" | ${DATABASE_CMD} &> /dev/null
         RET=$?
