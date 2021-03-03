@@ -88,6 +88,9 @@ do_start_onlyoffice() {
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}
+  
+  # Check for update
+  ${DOCKER_CMD} pull ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION} 2>/dev/null || true 
 
   ${DOCKER_CMD} run \
     -d \
