@@ -1769,7 +1769,7 @@ do_stop() {
             export CATALINA_HOME=${DEPLOYMENT_DIR}
             export CATALINA_PID=${DEPLOYMENT_PID_FILE}
           fi
-          if ([ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ]) && [ -f "${DEPLOYMENT_PID_FILE}" ]; then 
+          if ([ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ]) && [ -s "${DEPLOYMENT_PID_FILE}" ]; then 
             pid="$(cat ${DEPLOYMENT_PID_FILE})"
             kill -9 ${pid}
           else  
