@@ -90,6 +90,9 @@ if (isDeploymentInCategoryArray($company_instances)) {
   <p>Each deployed Keycloak can be accessed using the Keycloak icon and these credentials :
     <strong><code>root</code></strong> / <strong><code>password</code></strong>
   </p>
+  <p>Each deployed CloudBeaver can be accessed using the CloudBeaver icon and these credentials :
+  <strong><code>acceptance</code></strong> / <strong><code>acceptance@123!</code></strong>
+  </p>
   <p>Each Ldap deployed can be accessed using the URL linked to the ldap url icon and these parameters :
     <strong><code>Base DN:dc=exoplatform,dc=com</code></strong> / <strong><code>User DN:cn=admin,dc=exoplatform,dc=com</code></strong> / <strong><code>password:exo</code></strong>
   </p>

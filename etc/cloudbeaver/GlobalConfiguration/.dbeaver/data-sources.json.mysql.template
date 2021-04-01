@@ -1,0 +1,38 @@
+{
+	"folders": {},
+	"connections": {
+		"mysql8-178923865cf-1e4b93179701451d": {
+			"provider": "mysql",
+			"driver": "mysql8",
+			"name": "MySQL@Acceptance",
+			"save-password": false,
+			"show-system-objects": true,
+			"read-only": true,
+			"configuration": {
+				"host": "host.docker.internal",
+				"port": "3306",
+				"database": "${DEPLOYMENT_DATABASE_NAME}",
+				"url": "jdbc:mysql://host.docker.internal:3306/${DEPLOYMENT_DATABASE_NAME}",
+				"username": "${DEPLOYMENT_DATABASE_USER}",
+				"password": "${DEPLOYMENT_DATABASE_USER}",
+				"type": "dev",
+				"properties": {
+					"allowPublicKeyRetrieval": "true"
+				},
+				"auth-model": "native",
+				"handlers": {}
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"auto-close-transactions": false
+		}
+	}
+}
