@@ -595,7 +595,7 @@ function componentDeploymentActions ($deployment_descriptor) {
       $content.='<img src="/images/keycloak.svg" width="16" height="16" alt="keycloak" class="icon"/></a>';
   }
   // CloudBeaver access
-    if (property_exists($deployment_descriptor, 'DEPLOYMENT_ClOUDBEAVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_ClOUDBEAVER_ENABLED) {
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CLOUDBEAVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_ENABLED) {
       $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.':'.$deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_HTTP_PORT.'" rel="tooltip" title="Cloudbeaver">';
       $content.='<img src="/images/cloudbeaver.png" width="16" height="16" alt="Cloudbeaver" class="icon"/></a>';
   }
