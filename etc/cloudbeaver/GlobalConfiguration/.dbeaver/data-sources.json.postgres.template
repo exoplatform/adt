@@ -7,7 +7,7 @@
 			"name": "PostgreSQL@Acceptance",
 			"save-password": false,
 			"show-system-objects": true,
-			"read-only": true,
+			"read-only": ${DEPLOYMENT_CLOUDBEAVER_READONLY},
 			"configuration": {
 				"host": "host.docker.internal",
 				"port": "5432",
@@ -17,7 +17,7 @@
 				"password": "${DEPLOYMENT_DATABASE_USER}",
 				"type": "dev",
 				"properties": {
-					"readOnly": "true"
+					"readOnly": "${DEPLOYMENT_CLOUDBEAVER_READONLY}"
 				},
 				"auth-model": "native",
 				"handlers": {}

@@ -7,7 +7,7 @@
 			"name": "MySQL@Acceptance",
 			"save-password": false,
 			"show-system-objects": true,
-			"read-only": true,
+			"read-only": ${DEPLOYMENT_CLOUDBEAVER_READONLY},
 			"configuration": {
 				"host": "host.docker.internal",
 				"port": "3306",
