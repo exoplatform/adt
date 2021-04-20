@@ -336,7 +336,7 @@ initialize_product_settings() {
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${APACHE_SSL_CERTIFICATE_FILE}"
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${APACHE_SSL_CERTIFICATE_KEY_FILE}"
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}"
-      configurable_env_var "INSTANCE_DOMAIN" "exoplatform.org"
+      configurable_env_var "INSTANCE_DOMAIN" "" # Default one
 
       configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/cmis-server"
       configurable_env_var "DEPLOYMENT_CMIS_IMAGE_VERSION" "1.0"
@@ -1235,6 +1235,21 @@ do_configure_apache() {
   [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
   unset DOMAIN
   echo_info "Done."
+
+  # Auto extract domain name
+  if [ ! -z "${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" ] && [ -z "${INSTANCE_DOMAIN:-}" ]; then
+    env_var "INSTANCE_DOMAIN" "$(echo ${DEPLOYMENT_APACHE_VHOST_ALIAS} | cut -d'.' -f2,3)"
+  fi  
+  
+  # Selct Certificate according to the domain name
+  case ${INSTANCE_DOMAIN:-} in
+    meeds.io)
+      env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${MEEDSIO_SSL_CERTIFICATE_FILE}"
+      env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${MEEDSIO_SSL_CERTIFICATE_KEY_FILE}"
+      env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${MEEDSIO_SSL_CERTIFICATE_CHAIN_FILE}"
+    ;;
+  esac
+
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
 
