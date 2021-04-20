@@ -1244,6 +1244,7 @@ do_configure_apache() {
   # Selct Certificate according to the domain name
   case ${INSTANCE_DOMAIN:-} in
     meeds.io)
+      # MEEDSIO_XXXXX vars must be set on Jenkins SLAVE or loaded as global envs
       env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${MEEDSIO_SSL_CERTIFICATE_FILE}"
       env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${MEEDSIO_SSL_CERTIFICATE_KEY_FILE}"
       env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${MEEDSIO_SSL_CERTIFICATE_CHAIN_FILE}"
