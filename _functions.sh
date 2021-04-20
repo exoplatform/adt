@@ -333,6 +333,11 @@ initialize_product_settings() {
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
 
+      configurable_env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${APACHE_SSL_CERTIFICATE_FILE}"
+      configurable_env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${APACHE_SSL_CERTIFICATE_KEY_FILE}"
+      configurable_env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}"
+      configurable_env_var "INSTANCE_DOMAIN" "exoplatform.org"
+
       configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/cmis-server"
       configurable_env_var "DEPLOYMENT_CMIS_IMAGE_VERSION" "1.0"
       configurable_env_var "DEPLOYMENT_CMIS_USERS_PASSWORD" ""
@@ -1263,7 +1268,7 @@ do_configure_apache() {
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+        if [ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
             echo_n_info "Deploying Apache instance configuration for HTTPS only..."
             evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
@@ -1273,7 +1278,7 @@ do_configure_apache() {
           fi  
           echo "OK."
         else
-          echo_error "Deploying instance with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
+          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE} (\"${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
           print_usage
           exit 1
         fi
@@ -1285,7 +1290,7 @@ do_configure_apache() {
     ;;
     private)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+        if [ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
             echo_n_info "Deploying Apache instance configuration for HTTPS only..."
             evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
@@ -1295,7 +1300,7 @@ do_configure_apache() {
           fi  
           echo "OK."
         else
-          echo_error "Deploying instance with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
+          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE} (\"${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
           print_usage
           exit 1
         fi
