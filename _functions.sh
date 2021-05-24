@@ -1810,7 +1810,7 @@ do_stop() {
             export CATALINA_HOME=${DEPLOYMENT_DIR}
             export CATALINA_PID=${DEPLOYMENT_PID_FILE}
           fi
-          if ([ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ]) && [ -s "${DEPLOYMENT_PID_FILE}" ]; then 
+          if ([ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ]) && [ -s "${DEPLOYMENT_PID_FILE}" ] && pgrep -fl catalina | grep -q "$(cat ${DEPLOYMENT_PID_FILE})" 2>/dev/null; then 
             pid="$(cat ${DEPLOYMENT_PID_FILE})"
             kill -9 ${pid}
           else  
