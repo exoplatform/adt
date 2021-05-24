@@ -40,7 +40,9 @@ clone_or_fetch_git_repo() {
     # Add remote named blessed for exoplatform organization
     pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
     echo_info "Add blessed remote for exoplatform organization..."
-    git remote add blessed git@github.com:exoplatform/${_repo}.git
+    if git ls-remote --exit-code git@github.com:exoplatform/${_repo}.git &>/dev/null; then 
+      git remote add blessed git@github.com:exoplatform/${_repo}.git  
+    fi  
   else
     pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
     set +e
