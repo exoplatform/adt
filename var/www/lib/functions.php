@@ -125,7 +125,6 @@ function getRepositories()
     $repositories = array(
         "agenda" => "Agenda",
         "analytics" => "Analytics",
-        "gatein-dep" => "GateIn DEP",
         "gatein-wci" => "GateIn WCI",
         "kernel" => "Kernel",
         "core" => "Core",
