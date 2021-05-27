@@ -1104,6 +1104,11 @@ do_init_empty_data(){
     do_create_jitsi
   fi
 
+  if ${DEPLOYMENT_LDAP_ENABLED}; then
+    do_drop_ldap_data
+    do_create_ldap
+  fi
+
   do_init_empty_chat_database
 
   do_drop_es_data

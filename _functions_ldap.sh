@@ -30,6 +30,8 @@ do_drop_ldap_data() {
   if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ] && [ "${USER_DIRECTORY}" == "LDAP" ]; then
     echo_info "Drops Ldap container ${DEPLOYMENT_LDAP_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_LDAP_CONTAINER_NAME}
+    delete_docker_volume ${DEPLOYMENT_LDAP_CONTAINER_NAME}_data
+    delete_docker_volume ${DEPLOYMENT_LDAP_CONTAINER_NAME}_conf
     echo_info "Done."
     echo_info "Ldap data dropped"
   else
@@ -45,6 +47,11 @@ do_stop_ldap() {
   fi
   ensure_docker_container_stopped ${DEPLOYMENT_LDAP_CONTAINER_NAME}
   echo_info "Ldap container ${DEPLOYMENT_LDAP_CONTAINER_NAME} stopped."
+}
+
+do_create_ldap() {
+    ${DOCKER_CMD} volume create --name ${DEPLOYMENT_LDAP_CONTAINER_NAME}_data
+    ${DOCKER_CMD} volume create --name ${DEPLOYMENT_LDAP_CONTAINER_NAME}_conf
 }
 
 do_start_ldap() {
@@ -65,6 +72,8 @@ do_start_ldap() {
     -e SLAPD_PASSWORD=exo  \
     -e SLAPD_DOMAIN=exoplatform.com  \
     -v ${HOME}/.eXo/Platform/LDAP/:/etc/ldap.dist/prepopulate  \
+    -v ${DEPLOYMENT_LDAP_CONTAINER_NAME}_conf:/etc/ldap \
+    -v ${DEPLOYMENT_LDAP_CONTAINER_NAME}_data:/var/lib/ldap \
     --name ${DEPLOYMENT_LDAP_CONTAINER_NAME} ${DEPLOYMENT_LDAP_IMAGE}:${DEPLOYMENT_LDAP_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_LDAP_CONTAINER_NAME} container started"  
 
