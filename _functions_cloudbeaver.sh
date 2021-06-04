@@ -62,7 +62,7 @@ do_start_cloudbeaver() {
   sudo rm -rf /tmp/${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}_cbeaver
   cp -rf ${ETC_DIR}/cloudbeaver ${DEPLOYMENT_DIR}/cloudbeaver 
   case ${DEPLOYMENT_DB_TYPE} in
-    DOCKER_MYSQL)
+    DOCKER_MYSQL | DOCKER_MARIADB)
       evaluate_file_content ${DEPLOYMENT_DIR}/cloudbeaver/GlobalConfiguration/.dbeaver/data-sources.json.mysql.template ${DEPLOYMENT_DIR}/cloudbeaver/GlobalConfiguration/.dbeaver/data-sources.json
     ;;
     DOCKER_POSTGRES)
