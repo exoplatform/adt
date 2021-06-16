@@ -77,6 +77,9 @@ do_start_cloudbeaver() {
   sudo mv ${DEPLOYMENT_DIR}/cloudbeaver /tmp/${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}_cbeaver
   local DB_ADDR=$(${DOCKER_CMD} inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${DEPLOYMENT_CONTAINER_NAME})
 
+  # Check for update
+  ${DOCKER_CMD} pull ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION} 2>/dev/null || true 
+
   ${DOCKER_CMD} run \
   -d \
   -p "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}:8978" \
