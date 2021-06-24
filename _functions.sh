@@ -877,7 +877,7 @@ initialize_product_settings() {
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.2" # Default version for Only Office docker image to use
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.3" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.1) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
