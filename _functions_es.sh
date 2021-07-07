@@ -84,17 +84,29 @@ do_start_es() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
 
-  ${DOCKER_CMD} run \
-    -d \
-    -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
-    -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
-    -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
-    -e "node.name=${INSTANCE_KEY}" \
-    -e "cluster.name=${INSTANCE_KEY}" \
-    -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
-    -e "xpack.security.enabled=false" \
-    -e "network.host=_site_" \
-    --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+  if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[0-9.]+$ ]]; then
+    ${DOCKER_CMD} run \
+      -d \
+      -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
+      -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
+      -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
+      -e "node.name=${INSTANCE_KEY}" \
+      -e "cluster.name=${INSTANCE_KEY}" \
+      -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
+      -e "xpack.security.enabled=false" \
+      -e "network.host=_site_" \
+      --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+  else 
+    ${DOCKER_CMD} run \
+      -d \
+      -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
+      -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
+      -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
+      -e "node.name=${INSTANCE_KEY}" \
+      -e "cluster.name=${INSTANCE_KEY}" \
+      -e "xpack.monitoring.enabled=false" \
+      --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+  fi
 
   echo_info "${DEPLOYMENT_ES_CONTAINER_NAME} container started"
 
@@ -176,9 +188,7 @@ do_upgrade(){
         -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
         -e "node.name=${INSTANCE_KEY}" \
         -e "cluster.name=${INSTANCE_KEY}" \
-        -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
-        -e "xpack.security.enabled=false" \
-        -e "network.host=_site_" \
+        -e "xpack.monitoring.enabled=false" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:1.3.x_latest # FIXME VARIABLIZE IT 
 
       check_es_availability
