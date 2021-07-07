@@ -182,6 +182,7 @@ Environment Variables
 
   DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
   DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
+  DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
 
 EOF
 }
@@ -329,6 +330,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
       configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
+      
+      configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -867,7 +870,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.2) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
