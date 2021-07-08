@@ -1788,7 +1788,7 @@ do_start() {
     echo_info "Elasticsearch Embedded to Standalone migration is successfully done. Please remove DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED property!"
   fi
   if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
-    END_MIGRATION_ES_MSG=""
+    END_MIGRATION_ES_MSG="Indices migration successfully"
     tail -f "${DEPLOYMENT_LOG_PATH}" &
     local _tailPID=$!
     # Check for the end of ES migration
@@ -1804,6 +1804,7 @@ do_start() {
     done
     set -e
     do_drop_es_old
+    echo_info "Elasticsearch 7 Migration is successfully done. Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
   fi
 
 
