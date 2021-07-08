@@ -174,6 +174,9 @@ do_upgrade(){
       echo_info "Elasticsearch migration to version 7 is enabled! Starting..."
       echo_warn "Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED when the migration is done."
       echo_info "Starting old ES..."
+      
+      ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+      delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
   
       local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
       [ -z "${mount_point:-}" ] && return 0
@@ -199,12 +202,11 @@ do_upgrade(){
 
 # Cleanup ES OLD Data and container
 do_drop_es_old(){
-  #ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
-  #delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
-  #local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
-  #[ -z "${mount_point:-}" ] && return 
-  #sudo rm -rf ${mount_point}_old
-  echo Test
+  ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+  delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
+  [ -z "${mount_point:-}" ] && return 
+  sudo rm -rf ${mount_point}_old
 }
 
 # #############################################################################
