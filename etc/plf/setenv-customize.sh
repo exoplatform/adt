@@ -186,5 +186,8 @@ if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dexo.product.developing=true"
   CATALINA_OPTS="${CATALINA_OPTS} -Dignore.unregistered.webapp=false"
   CATALINA_OPTS="${CATALINA_OPTS} -DEXO_DEV=true"
- fi
-
+fi
+# ES7 Upgrade
+if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
+  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es56.server.url=http://127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}"
+fi

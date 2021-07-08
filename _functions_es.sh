@@ -176,53 +176,37 @@ do_upgrade(){
     ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false})
       echo_info "Elasticsearch migration to version 7 is enabled! Starting..."
       echo_warn "Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED when the migration is done."
-      echo_info "1/2) Elasticsearch migration from 5.6 to 6.8 is starting..."
-      
-      ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}
-      delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
+      echo_info "Starting old ES..."
+  
+      local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_CONTAINER_NAME}) || return 0
+      [ -z "${mount_point:-}" ] && return 0
+      sudo mv -v ${mount_point} ${mount_point}_old
 
       ${DOCKER_CMD} run \
         -d \
-        -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
-        -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
+        -p "127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}:9200" \
+        -v ${mount_point}_old:/usr/share/elasticsearch/data \
         -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
         -e "node.name=${INSTANCE_KEY}" \
         -e "cluster.name=${INSTANCE_KEY}" \
         -e "xpack.monitoring.enabled=false" \
-        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:1.3.x_latest # FIXME VARIABLIZE IT 
+        --name ${DEPLOYMENT_ES_CONTAINER_NAME}_old ${DEPLOYMENT_ES_IMAGE}:1.2.2 # FIXME VARIABLIZE IT 
 
       check_es_availability
-
-      echo_info "Elasticsearch migration to 6.8 is successfully finished..."
-      echo_info "2/2) Elasticsearch migration from 6.8 to 7.3 is starting..."
-
-      ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}
-      delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
-
-      ${DOCKER_CMD} run \
-        -d \
-        -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
-        -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
-        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
-        -e "node.name=${INSTANCE_KEY}" \
-        -e "cluster.name=${INSTANCE_KEY}" \
-        -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
-        -e "xpack.security.enabled=false" \
-        -e "network.host=_site_" \
-        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}  
-
-      echo_info "${DEPLOYMENT_ES_CONTAINER_NAME} container started"
-
-      check_es_availability
-
-      echo_info "Elasticsearch migration to 7.13 is successfully finished!"
-
-      # Cleanup 
-      ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}
-      delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
+      do_drop_es_data
+      do_create_es
     ;;
   # Maybe other upgrades to be defined here.
   esac
+}
+
+# Cleanup ES OLD Data and container
+do_drop_es_old(){
+  ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+  delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_CONTAINER_NAME}) || return 0
+  [ -z "${mount_point:-}" ] && return 
+  sudo rm -rf ${mount_point}_old
 }
 
 # #############################################################################
