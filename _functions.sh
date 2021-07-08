@@ -1433,6 +1433,9 @@ do_deploy() {
   # Elasticsearch (ES) ports
   env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}22"
 
+  # Elasticsearch (ES) old ports for migration
+  env_var "DEPLOYMENT_ES_OLD_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}21"
+
   # ONLYOFFICE  port
   env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
 
@@ -1778,6 +1781,25 @@ do_start() {
   fi
   if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
     echo_info "DEV Mode is enabled."
+  fi
+
+  if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
+    END_MIGRATION_ES_MSG=""
+    tail -f "${DEPLOYMENT_LOG_PATH}" &
+    local _tailPID=$!
+    # Check for the end of ES migration
+    set +e
+    while [ true ];
+    do
+      if grep -q "${END_MIGRATION_ES_MSG}" "${DEPLOYMENT_LOG_PATH}"; then
+        kill ${_tailPID}
+        wait ${_tailPID} 2> /dev/null
+        break
+      fi
+      sleep 1
+    done
+    set -e
+    do_drop_es_old
   fi
 
 
