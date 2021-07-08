@@ -81,6 +81,7 @@ do_start_es() {
 
   if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[0-9.]+$ ]]; then
     if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
+      local OLD_ES_DOCKER_IP=$(${DOCKER_CMD} inspect --format '{{ .NetworkSettings.IPAddress }}' ${DEPLOYMENT_ES_CONTAINER_NAME}_old)
       ${DOCKER_CMD} run \
         -d \
         -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
@@ -91,7 +92,7 @@ do_start_es() {
         -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
         -e "xpack.security.enabled=false" \
         -e "network.host=_site_" \
-        -e "reindex.remote.whitelist=127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}" \
+        -e "reindex.remote.whitelist=${OLD_ES_DOCKER_IP}:9200" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
     else 
       ${DOCKER_CMD} run \
