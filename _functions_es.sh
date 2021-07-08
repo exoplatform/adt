@@ -179,7 +179,7 @@ do_upgrade(){
       echo_warn "Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED when the migration is done."
       echo_info "Starting old ES..."
   
-      local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_CONTAINER_NAME}) || return 0
+      local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
       [ -z "${mount_point:-}" ] && return 0
       sudo mv -v ${mount_point} ${mount_point}_old
       sudo chown 1000.1000 -R ${mount_point}_old
@@ -205,7 +205,7 @@ do_upgrade(){
 do_drop_es_old(){
   ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
   delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
-  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_CONTAINER_NAME}) || return 0
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
   [ -z "${mount_point:-}" ] && return 
   sudo rm -rf ${mount_point}_old
 }
