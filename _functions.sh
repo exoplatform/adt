@@ -1805,8 +1805,14 @@ do_start() {
       sleep 1
     done
     set -e
+    echo_info "ES7 Upgrade is finished. Cleaning up ES5..."
     do_drop_es_old
-    echo_info "Elasticsearch 7 Migration is successfully done. Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
+    echo_info "Cleanup finished!"
+    if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}"; then
+      echo_warn "Elasticsearch 7 Migration is done with errors. This operation cannot be repeated! Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
+    elif grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
+      echo_info "Elasticsearch 7 Migration is successfully done. Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
+    fi
   fi
 
 
