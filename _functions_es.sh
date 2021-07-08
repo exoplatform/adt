@@ -85,17 +85,32 @@ do_start_es() {
   delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
 
   if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[0-9.]+$ ]]; then
-    ${DOCKER_CMD} run \
-      -d \
-      -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
-      -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
-      -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
-      -e "node.name=${INSTANCE_KEY}" \
-      -e "cluster.name=${INSTANCE_KEY}" \
-      -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
-      -e "xpack.security.enabled=false" \
-      -e "network.host=_site_" \
-      --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+    if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
+      ${DOCKER_CMD} run \
+        -d \
+        -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
+        -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
+        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
+        -e "node.name=${INSTANCE_KEY}" \
+        -e "cluster.name=${INSTANCE_KEY}" \
+        -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
+        -e "xpack.security.enabled=false" \
+        -e "network.host=_site_" \
+        -e "reindex.remote.whitelist=127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}"
+        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+    else 
+      {DOCKER_CMD} run \
+        -d \
+        -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
+        -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
+        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
+        -e "node.name=${INSTANCE_KEY}" \
+        -e "cluster.name=${INSTANCE_KEY}" \
+        -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
+        -e "xpack.security.enabled=false" \
+        -e "network.host=_site_" \
+        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+    fi  
   else 
     ${DOCKER_CMD} run \
       -d \
