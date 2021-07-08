@@ -109,24 +109,25 @@ do_start_es() {
 }
 
 check_es_availability() {
-  echo_info "Waiting for elasticsearch availability on port ${DEPLOYMENT_ES_HTTP_PORT}"
+  local ES_PORT=${1:-${DEPLOYMENT_ES_HTTP_PORT}}
+  echo_info "Waiting for elasticsearch availability on port ${ES_PORT}"
   local count=0
   local try=600
   local wait_time=1
   local RET=-1
 
-  local temp_file="/tmp/${DEPLOYMENT_ES_CONTAINER_NAME}_${DEPLOYMENT_ES_HTTP_PORT}.txt"
+  local temp_file="/tmp/${DEPLOYMENT_ES_CONTAINER_NAME}_${ES_PORT}.txt"
 
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
 
-    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_ES_HTTP_PORT} > ${temp_file}
+    curl -s -q --max-time ${wait_time} http://localhost:${ES_PORT} > ${temp_file}
     RET=$?
     if [ $RET -ne 0 ]; then
       [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Elasticsearch not yet available (${count} / ${try})..."
     else
-      curl -f -s --max-time ${wait_time} http://localhost:${DEPLOYMENT_ES_HTTP_PORT}/_cluster/health > ${temp_file} 
+      curl -f -s --max-time ${wait_time} http://localhost:${ES_PORT}/_cluster/health > ${temp_file} 
       local status=$(jq -r '.status' ${temp_file})
       if [ "${status}" == "green" ]; then
         RET=0
@@ -160,7 +161,7 @@ do_upgrade(){
       local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_CONTAINER_NAME}) || return 0
       [ -z "${mount_point:-}" ] && return 0
       sudo mv -v ${mount_point} ${mount_point}_old
-
+      sudo chown 1000.1000 -R ${mount_point}_old
       ${DOCKER_CMD} run \
         -d \
         -p "127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}:9200" \
@@ -171,7 +172,7 @@ do_upgrade(){
         -e "xpack.monitoring.enabled=false" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME}_old ${DEPLOYMENT_ES_IMAGE}:1.2.2 # FIXME VARIABLIZE IT 
 
-      check_es_availability
+      check_es_availability ${DEPLOYMENT_ES_OLD_HTTP_PORT}
       do_drop_es_data
       do_create_es
     ;;
