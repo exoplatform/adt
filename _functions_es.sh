@@ -96,10 +96,10 @@ do_start_es() {
         -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
         -e "xpack.security.enabled=false" \
         -e "network.host=_site_" \
-        -e "reindex.remote.whitelist=127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}"
+        -e "reindex.remote.whitelist=127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
     else 
-      {DOCKER_CMD} run \
+      ${DOCKER_CMD} run \
         -d \
         -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
         -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
@@ -218,11 +218,12 @@ do_upgrade(){
 
 # Cleanup ES OLD Data and container
 do_drop_es_old(){
-  ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
-  delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
-  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
-  [ -z "${mount_point:-}" ] && return 
-  sudo rm -rf ${mount_point}_old
+  #ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+  #delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+  #local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
+  #[ -z "${mount_point:-}" ] && return 
+  #sudo rm -rf ${mount_point}_old
+  echo Test
 }
 
 # #############################################################################
