@@ -1791,15 +1791,11 @@ do_start() {
     # Anyway no way to handle the error case. hard luck! We remove container ES5 anyway
     END_MIGRATION_ES_MSG_ERROR="Elasticsearch upgrade failed due to previous errors"
     END_MIGRATION_ES_MSG_SUCCESS="Elasticsearch upgrade proceeded successfully"
-    tail -f "${DEPLOYMENT_LOG_PATH}" &
-    local _tailPID=$!
     # Check for the end of ES migration
     set +e
     while [ true ];
     do
       if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}" || grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
-        kill ${_tailPID}
-        wait ${_tailPID} 2> /dev/null
         break
       fi
       sleep 1
