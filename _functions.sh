@@ -285,7 +285,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
-      configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
       configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
 
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
@@ -918,6 +917,17 @@ initialize_product_settings() {
               exit 1
           fi
 
+          # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
+          if [[ "${PRODUCT_VERSION}" =~ ^(6.2|1.2) ]]; then
+              configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
+              if ${DEPLOYMENT_ES_EMBEDDED}; then 
+                echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
+                exit 1
+              fi
+          else 
+              configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
+          fi
+            
           # For configuration differences between community and enterprise editions
           if [[ "${PRODUCT_NAME}" =~ ^(plfent|plfentrial|plfsales)$ ]]; then
             echo "set"
