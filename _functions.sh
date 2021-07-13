@@ -1778,6 +1778,9 @@ do_start() {
     echo_info "DEV Mode is enabled."
   fi
 
+  if ${DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED-false}; then
+    echo_info "Elasticsearch Embedded to Standalone migration is successfully done. Please remove DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED property!"
+  fi
 
   )
 }
