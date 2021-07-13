@@ -70,8 +70,13 @@ do_start_es() {
   if ${DEPLOYMENT_ES_EMBEDDED}; then
     echo_info "ES embedded mode, standalone es startup skipped"
     return
-  elif ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then 
-    do_upgrade
+  else
+    if ${DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED:-false}; then 
+      do_migrate_embedded
+    fi
+    if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then 
+      do_upgrade
+    fi
   fi
 
   echo_info "Starting elasticsearch container ${DEPLOYMENT_ES_CONTAINER_NAME} based on image ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}"
@@ -207,6 +212,15 @@ do_drop_es_old(){
   local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
   [ -z "${mount_point:-}" ] && return 
   sudo rm -rf ${mount_point}_old
+}
+
+# Migrate ES Embedded to Standalone 
+do_migrate_embedded() {
+  local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
+  do_drop_es_data
+  do_create_es
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
+  sudo mv -v ${path} ${mount_point}
 }
 
 # #############################################################################

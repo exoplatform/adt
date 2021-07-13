@@ -182,6 +182,7 @@ Environment Variables
 
   DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
   DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
+  DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
 
 EOF
 }
