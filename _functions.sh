@@ -181,6 +181,7 @@ Environment Variables
   DEPLOYMENT_CMIS_USERS_PASSWORD    : Which password to use for the cmis users (by default, use the cmis image default)
 
   DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
+  DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
 
 EOF
 }
