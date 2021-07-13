@@ -221,6 +221,7 @@ do_migrate_embedded() {
   do_create_es
   local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
   sudo mv -v ${path} ${mount_point}
+  sudo chown 1000.1000 -R ${mount_point}
 }
 
 # #############################################################################
