@@ -139,12 +139,19 @@ check_es_availability() {
 
 # Migrate ES Embedded to Standalone 
 do_migrate_embedded() {
+  echo_info "Elasticsearch migration from embedded to standalone is enabled! Starting..."
   local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
+  # Check if the folder is empty or not. if it is empty, skip the migration
+  if [ $(ls -al ${path} 2>/dev/null | wc -l) -le 3 ]; then 
+    echo_warn "No ES embedded data found! Skipping the migration..."
+    return 
+  fi
   do_drop_es_data
   do_create_es
   local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
   sudo mv -v ${path}/* ${mount_point}/ > /dev/null
   sudo chown 1000.1000 -R ${mount_point}
+  echo "ES Embedded data have successfuly moved."
 }
 # #############################################################################
 # Env var to not load it several times
