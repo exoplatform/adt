@@ -182,6 +182,7 @@ Environment Variables
 
   DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
   DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
+  DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
 
 EOF
 }
@@ -285,7 +286,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
-      configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
       configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
 
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
@@ -329,6 +329,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
       configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
+      
+      configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -767,7 +769,14 @@ initialize_product_settings() {
         # specific configuration for meeds deployments
         # - Database drivers
         # - Default version for each supported database type
-        if [[ "${PRODUCT_VERSION}" =~ ^(1.1|1.2) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.2) ]]; then
+              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.25" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
+        elif [[ "${PRODUCT_VERSION}" =~ ^(1.1) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.25" # Default version of the mysql server to use
@@ -867,7 +876,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.2) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
@@ -909,6 +918,17 @@ initialize_product_settings() {
               exit 1
           fi
 
+          # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
+          if [[ "${PRODUCT_VERSION}" =~ ^(6.2|1.2) ]]; then
+              configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
+              if ${DEPLOYMENT_ES_EMBEDDED}; then 
+                echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
+                exit 1
+              fi
+          else 
+              configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
+          fi
+            
           # For configuration differences between community and enterprise editions
           if [[ "${PRODUCT_NAME}" =~ ^(plfent|plfentrial|plfsales)$ ]]; then
             echo "set"
@@ -1431,6 +1451,9 @@ do_deploy() {
   # Elasticsearch (ES) ports
   env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}22"
 
+  # Elasticsearch (ES) old ports for migration
+  env_var "DEPLOYMENT_ES_OLD_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}21"
+
   # ONLYOFFICE  port
   env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
 
@@ -1781,6 +1804,30 @@ do_start() {
   if ${DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED:-false}; then
     echo_info "Elasticsearch Embedded to Standalone migration is successfully done. Please remove DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED property!"
   fi
+  if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
+    # Anyway no way to handle the error case. hard luck! We remove container ES5 anyway
+    END_MIGRATION_ES_MSG_ERROR="Elasticsearch upgrade failed due to previous errors"
+    END_MIGRATION_ES_MSG_SUCCESS="Elasticsearch upgrade proceeded successfully"
+    # Check for the end of ES migration
+    set +e
+    while [ true ];
+    do
+      if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}" || grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
+        break
+      fi
+      sleep 1
+    done
+    set -e
+    echo_info "ES7 Upgrade is finished. Cleaning up ES5..."
+    do_drop_es_old
+    echo_info "Cleanup finished!"
+    if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}"; then
+      echo_warn "Elasticsearch 7 Migration is done with errors. This operation cannot be repeated! Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
+    elif grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
+      echo_info "Elasticsearch 7 Migration is successfully done. Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
+    fi
+  fi
+
 
   )
 }
