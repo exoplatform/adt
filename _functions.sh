@@ -764,6 +764,17 @@ initialize_product_settings() {
       else
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
       fi
+
+      # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
+        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|1.2) ]]; then
+          configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
+          if ${DEPLOYMENT_ES_EMBEDDED}; then 
+            echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
+            exit 1
+          fi
+        else 
+          configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
+      fi
       
       if [[ "${PRODUCT_NAME}" =~ ^(meeds) ]]; then
         # specific configuration for meeds deployments
@@ -916,17 +927,6 @@ initialize_product_settings() {
           else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
               exit 1
-          fi
-
-          # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
-          if [[ "${PRODUCT_VERSION}" =~ ^(6.2|1.2) ]]; then
-              configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
-              if ${DEPLOYMENT_ES_EMBEDDED}; then 
-                echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
-                exit 1
-              fi
-          else 
-              configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
           fi
             
           # For configuration differences between community and enterprise editions
