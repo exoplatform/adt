@@ -48,7 +48,7 @@ do_start_admin_mongo() {
     -d \
     -e HOST="0.0.0.0" \
     -e PORT="1234" \
-    -e CONTEXT="adminmongo" \
+    -e PASSWORD="acceptance@123!" \
     -e MONITORING="false" \
     -e CONN_NAME="Acceptance" \
     -e DB_HOST="${mongo_ip_addr}" \

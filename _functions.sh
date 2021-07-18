@@ -1687,6 +1687,10 @@ do_start() {
     do_ufw_open_port ${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT} "CloudBeaver HTTP Port" ${ADT_DEV_MODE}
   fi
 
+  if ${DEPLOYMENT_ADMIN_MONGO_ENABLED:-false} ; then
+    do_ufw_open_port ${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT} "Admin Mongo HTTP Port" ${ADT_DEV_MODE}
+  fi
+
 
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
@@ -1806,6 +1810,10 @@ do_start() {
     echo_info "CloudBeaver URL : http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}"
     echo_info "  Auth: Login: acceptance Password: acceptance@123!"
     echo_info "  Database credentials: Login: ${DEPLOYMENT_DATABASE_USER} Password: ${DEPLOYMENT_DATABASE_USER}"
+  fi
+  if ${DEPLOYMENT_ADMIN_MONGO_ENABLED:-false} ; then
+    echo_info "Admin Mongo URL : http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT}"
+    echo_info "  Auth: Password: acceptance@123!"
   fi
   if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
     echo_info "DEV Mode is enabled."
@@ -2007,6 +2015,7 @@ do_undeploy() {
     # Close debug port
     [ ! -z "${DEPLOYMENT_DEBUG_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
     [ ! -z "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT} "CloudBeaver HTTP Port" ${ADT_DEV_MODE}
+    [ ! -z "${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT} "Admin Mongo HTTP Port" ${ADT_DEV_MODE}
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
       # close firewall port for Onlyoffice documentserver only if addon was deployed
       do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
