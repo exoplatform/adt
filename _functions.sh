@@ -32,6 +32,7 @@ source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
+source "${SCRIPT_DIR}/_functions_adminmongo.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
 source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
 source "${SCRIPT_DIR}/_functions_jitsi.sh"
@@ -306,6 +307,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MAILHOG_ENABLED" false
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
+
+      configurable_env_var "DEPLOYMENT_ADMIN_MONGO_ENABLED" false
+      configurable_env_var "DEPLOYMENT_ADMIN_MONGO_IMAGE" "mrvautin/adminmongo"
+      configurable_env_var "DEPLOYMENT_ADMIN_MONGO_IMAGE_VERSION" "latest"
 
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
@@ -1022,6 +1027,7 @@ initialize_product_settings() {
    do_get_onlyoffice_settings
    do_get_ldap_settings
    do_get_mailhog_settings
+   do_get_admin_mongo_settings
    do_get_keycloak_settings
    do_get_cloudbeaver_settings
    do_get_jitsi_settings
@@ -1464,6 +1470,9 @@ do_deploy() {
   env_var "DEPLOYMENT_MAILHOG_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
   env_var "DEPLOYMENT_MAILHOG_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
 
+  # Admin Mongo port
+  env_var "DEPLOYMENT_ADMIN_MONGO_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}94"
+
   # Keycloak  port
   env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
 
@@ -1660,6 +1669,7 @@ do_start() {
   do_start_onlyoffice
   do_start_ldap
   do_start_mailhog
+  do_start_admin_mongo
   do_start_keycloak
   do_start_jitsi
   do_start_sftp
@@ -1931,6 +1941,7 @@ do_stop() {
       echo_info "Server stopped."
       do_stop_ldap
       do_stop_mailhog
+      do_stop_admin_mongo
       do_stop_keycloak
       do_stop_cloudbeaver
       do_stop_jitsi
