@@ -1669,7 +1669,6 @@ do_start() {
   do_start_onlyoffice
   do_start_ldap
   do_start_mailhog
-  do_start_admin_mongo
   do_start_keycloak
   do_start_jitsi
   do_start_sftp
@@ -1678,6 +1677,7 @@ do_start() {
   do_start_cloudbeaver
   do_start_es
   do_start_chat_server
+  do_start_admin_mongo
 
   if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
     do_ufw_open_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
