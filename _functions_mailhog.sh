@@ -73,10 +73,14 @@ do_start_mailhog() {
     -p "${DEPLOYMENT_MAILHOG_SMTP_PORT}:1025" \
     -p "${DEPLOYMENT_MAILHOG_HTTP_PORT}:8025" \
     -v ${DEPLOYMENT_MAILHOG_CONTAINER_NAME}:/maildir \
+    -e MH_STORAGE=maildir \
+    -e MH_MAILDIR_PATH=/maildir \
     --name ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} ${DEPLOYMENT_MAILHOG_IMAGE}:${DEPLOYMENT_MAILHOG_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_MAILHOG_CONTAINER_NAME} container started"  
-
   check_mailhog_availability
+  # hack: Fix permissions
+  ${DOCKER_CMD} exec -u root ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} chmod 777 -R /maildir
+
 }
 
 check_mailhog_availability() {
