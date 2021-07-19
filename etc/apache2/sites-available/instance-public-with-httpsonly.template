@@ -43,7 +43,12 @@
         </RequireAll>
     </LocationMatch>
 
-        <LocationMatch "^/cmis.*">
+    # Prevent accessing to admin panel of Admin mongo
+    <LocationMatch "^/adminmongo/app/connection_list.*>
+        Deny from all
+    </LocationMatch>
+
+    <LocationMatch "^/cmis.*">
         Require all denied
         AuthName "eXo Employees only"
         AuthType Basic
