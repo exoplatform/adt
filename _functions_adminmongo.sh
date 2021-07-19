@@ -58,9 +58,10 @@ do_start_admin_mongo() {
     --name ${DEPLOYMENT_ADMIN_MONGO_CONTAINER_NAME} ${DEPLOYMENT_ADMIN_MONGO_IMAGE}:${DEPLOYMENT_ADMIN_MONGO_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_ADMIN_MONGO_CONTAINER_NAME} container started"  
   check_admin_mongo_availability
-  # WA
+  # WA: Prevent loading app.json instead of Env Vars Ref: https://github.com/mrvautin/adminMongo/issues/279
   ${DOCKER_CMD} exec ${DEPLOYMENT_ADMIN_MONGO_CONTAINER_NAME} rm /app/user/config/app.json
   ${DOCKER_CMD} restart ${DEPLOYMENT_ADMIN_MONGO_CONTAINER_NAME}
+  # EO WA
 }
 
 check_admin_mongo_availability() {
