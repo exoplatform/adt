@@ -589,6 +589,11 @@ function componentDeploymentActions ($deployment_descriptor) {
     $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/mailhog/" rel="tooltip" title="Mailhog">';
     $content.='<img src="/images/mailhog.svg" width="16" height="16" alt="mailhog" class="icon"/></a>';
   }
+  // Admin Mongo access
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_ADMIN_MONGO_ENABLED') && $deployment_descriptor->DEPLOYMENT_ADMIN_MONGO_ENABLED) {
+    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/adminmongo/" rel="tooltip" title="Admin Mongo">';
+    $content.='<img src="/images/admingmongo.svg" width="16" height="16" alt="Admin Mongo" class="icon"/></a>';
+  }
   // Keycloak admin access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_KEYCLOAK_ENABLED') && $deployment_descriptor->DEPLOYMENT_KEYCLOAK_ENABLED) {
       $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/auth/admin/" rel="tooltip" title="Keycloak">';
