@@ -69,7 +69,6 @@ do_start_mailhog() {
 
   ${DOCKER_CMD} run \
     -d \
-    -e "MH_STORAGE=maildir" \
     -p "${DEPLOYMENT_MAILHOG_SMTP_PORT}:1025" \
     -p "${DEPLOYMENT_MAILHOG_HTTP_PORT}:8025" \
     -v ${DEPLOYMENT_MAILHOG_CONTAINER_NAME}:/maildir \
