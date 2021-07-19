@@ -591,7 +591,7 @@ function componentDeploymentActions ($deployment_descriptor) {
   }
   // Admin Mongo access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_ADMIN_MONGO_ENABLED') && $deployment_descriptor->DEPLOYMENT_ADMIN_MONGO_ENABLED) {
-    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.':'.$deployment_descriptor->DEPLOYMENT_ADMIN_MONGO_HTTP_PORT.'" rel="tooltip" title="Admin Mongo">';
+    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/adminmongo/" rel="tooltip" title="Admin Mongo">';
     $content.='<img src="/images/admingmongo.png" width="16" height="16" alt="Admin Mongo" class="icon"/></a>';
   }
   // Keycloak admin access
