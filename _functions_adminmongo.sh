@@ -35,7 +35,7 @@ do_stop_admin_mongo() {
 do_start_admin_mongo() {
   echo_info "Starting Admin Mongo..."
   # No need to start Admin Mongo when chat service is disabled
-  if ${DEPLOYMENT_CHAT_ENABLED} && [ "${DEPLOYMENT_ADMIN_MONGO_ENABLED}" == "true" ]; then
+  if ! ${DEPLOYMENT_CHAT_ENABLED} && [ "${DEPLOYMENT_ADMIN_MONGO_ENABLED}" == "true" ]; then
     echo_warn "Chat disabled, skipping Admin Mongo creation..."
     return
   fi
