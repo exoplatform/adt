@@ -771,7 +771,7 @@ initialize_product_settings() {
       fi
 
       # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
-        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|1.2) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|6.3|1.2|1.3) ]]; then
           configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
           if ${DEPLOYMENT_ES_EMBEDDED}; then 
             echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
@@ -785,6 +785,13 @@ initialize_product_settings() {
         # specific configuration for meeds deployments
         # - Database drivers
         # - Default version for each supported database type
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
+              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.25" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         if [[ "${PRODUCT_VERSION}" =~ ^(1.2) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
@@ -817,7 +824,7 @@ initialize_product_settings() {
         # - Database drivers
         # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
         # - Default version for each supported database type
-        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2) ]]; then
+        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
@@ -891,6 +898,19 @@ initialize_product_settings() {
           
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
+          elif [[ "${PRODUCT_VERSION}" =~ ^(6.3) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
+              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
+
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.1.0" # Default version of the jdbc postgresql driver addon to use
+
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.25" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
+              
+              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.3" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.2) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
@@ -943,7 +963,7 @@ initialize_product_settings() {
 
           # For configuration differences between tomcat and jboss
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
-            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2) ]]; then
+            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
             else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
