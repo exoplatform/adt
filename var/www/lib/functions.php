@@ -420,6 +420,7 @@ function getLocalAcceptanceInstances()
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="-no-set-";     
               break;       
           }
+          break;
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '6.3.x':
