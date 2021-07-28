@@ -1978,7 +1978,9 @@ do_stop() {
   fi
   
   # Stop Jodconverter Process
-  [ ! -z "${DEPLOYMENT_JOD_CONVERTER_PORTS:-}" ] && lsof -n -i :${DEPLOYMENT_JOD_CONVERTER_PORTS} | grep LISTEN | awk '{print $2}' | xargs --no-run-if-empty kill
+  set +e
+  [ ! -z "${DEPLOYMENT_JOD_CONVERTER_PORTS:-}" ] && lsof -n -i :${DEPLOYMENT_JOD_CONVERTER_PORTS} | grep LISTEN | awk '{print $2}' | xargs --no-run-if-empty kill 
+  set -e 
 }
 
 #
