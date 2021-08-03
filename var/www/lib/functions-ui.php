@@ -587,8 +587,8 @@ function componentDeploymentActions ($deployment_descriptor) {
   $content.='</a>';
   // Elasticsearch access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_ES_ENABLED') && $deployment_descriptor->DEPLOYMENT_ES_ENABLED) {
-    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/elasticsearch" rel="tooltip" title="Elasticearch">';
-    $content.='<img src="/images/elastic.svg" width="16" height="16" alt="elasticearch" class="icon"/></a>';
+    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/elasticsearch" rel="tooltip" title="Elasticsearch">';
+    $content.='<img src="/images/elastic.svg" width="16" height="16" alt="elasticsearch" class="icon"/></a>';
   }
   // Mailhog access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_MAILHOG_ENABLED') && $deployment_descriptor->DEPLOYMENT_MAILHOG_ENABLED) {
