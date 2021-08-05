@@ -17,6 +17,21 @@
         </RequireAll>
     </LocationMatch>
 
+    <LocationMatch "^/mailhog.*">
+        Require all denied
+        AuthName "eXo Employees only"
+        AuthType Basic
+        AuthBasicProvider ldap
+
+        AuthLDAPBindDN          "${LDAP_ACCEPTANCE_BIND_DN}"
+        AuthLDAPBindPassword    ${LDAP_ACCEPTANCE_BIND_PASSWORD}
+        AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn
+        <RequireAll>
+            Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
+            AuthLDAPMaxSubGroupDepth 1
+        </RequireAll>
+    </LocationMatch>
+
     <LocationMatch "^/adminmongo.*">
         Require all denied
         AuthName "eXo Employees only"
