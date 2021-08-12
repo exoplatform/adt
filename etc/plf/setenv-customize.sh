@@ -76,7 +76,7 @@ if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED}; then
     fi
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.host=${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_HOST}"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.schema=${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_SCHEME}"
-    CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.allowedhosts=localhost,${INSTANCE_KEY}.${ACCEPTANCE_HOST},${DEPLOYMENT_APACHE_VHOST_ALIAS}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.allowedhosts=localhost,${INSTANCE_KEY}.${ACCEPTANCE_HOST},${DEPLOYMENT_APACHE_VHOST_ALIAS},${DEPLOYMENT_EXT_HOST}"
     CATALINA_OPTS="${CATALINA_OPTS} -Donlyoffice.documentserver.accessOnly=false"
 fi
 
