@@ -610,6 +610,11 @@ function componentDeploymentActions ($deployment_descriptor) {
       $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.':'.$deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_HTTP_PORT.'" rel="tooltip" title="Cloudbeaver">';
       $content.='<img src="/images/cloudbeaver.png" width="16" height="16" alt="Cloudbeaver" class="icon"/></a>';
   }
+  // PHPLDAPADMIn access
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_PHPLDAPADMIN_ENABLED') && $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_ENABLED) {
+      $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.':'.$deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT.'" rel="tooltip" title="phpLDAPAdmin">';
+      $content.='<img src="/images/phpldapadmin.png" width="16" height="16" alt="phpLDAPAdmin" class="icon"/></a>';
+  }
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_SFTP_ENABLED') && $deployment_descriptor->DEPLOYMENT_SFTP_ENABLED) {
       $content.=' | <a href="'.$deployment_descriptor->DEPLOYMENT_SFTP_LINK.'" rel="tooltip" title="Sftp">';
       $content.='<img src="/images/lecko.svg" width="16" height="16" alt="Lecko" class="icon"/></a>';
