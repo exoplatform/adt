@@ -1167,10 +1167,12 @@ do_init_empty_data(){
   do_drop_es_data
   do_drop_data
   do_drop_mailhog_data
+  do_drop_keycloak_data
 
   do_create_data
   do_create_es
   do_create_mailhog
+  do_create_keycloak
   echo_info "Done"
 }
 
@@ -1603,6 +1605,7 @@ do_deploy() {
       do_create_onlyoffice
       do_create_cmis
       do_create_mailhog
+      do_create_keycloak
       do_create_jitsi
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
@@ -1622,6 +1625,7 @@ do_deploy() {
         do_create_onlyoffice
         do_create_cmis
         do_create_mailhog
+        do_create_keycloak
         do_create_jitsi
       fi
       )
