@@ -1169,6 +1169,7 @@ do_init_empty_data(){
   do_drop_data
   do_drop_mailhog_data
   do_drop_keycloak_data
+  do_drop_phpldapadmin_data
 
   do_create_data
   do_create_es
@@ -1980,6 +1981,7 @@ do_stop() {
       echo_info "Server stopped."
       do_stop_ldap
       do_stop_mailhog
+      do_stop_phpldapadmin
       do_stop_admin_mongo
       do_stop_keycloak
       do_stop_cloudbeaver
@@ -2025,6 +2027,7 @@ do_undeploy() {
     do_drop_ldap_data
     do_drop_mailhog_data
     do_drop_keycloak_data
+    do_drop_phpldapadmin_data
     do_drop_cloudbeaver_data
     do_drop_jitsi_data
     do_drop_sftp_data

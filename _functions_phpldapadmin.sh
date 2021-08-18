@@ -22,6 +22,21 @@ do_get_phpldapadmin_settings() {
   env_var DEPLOYMENT_PHPLDAPADMIN_CONTAINER_NAME "${INSTANCE_KEY}_phpldapadmin"
 }
 
+#
+# Drops all phpLDAPAdmin data used by the instance.
+#
+do_drop_phpldapadmin_data() {
+  echo_info "Dropping phpLDAPAdmin data ..."
+  if [ "${DEPLOYMENT_PHPLDAPADMIN_ENABLED}" == "true" ]; then
+    echo_info "Drops phpLDAPAdmin container ${DEPLOYMENT_PHPLDAPADMIN_CONTAINER_NAME} ..."
+    delete_docker_container ${DEPLOYMENT_PHPLDAPADMIN_CONTAINER_NAME}
+    echo_info "Done."
+    echo_info "phpLDAPAdmin data dropped"
+  else
+    echo_info "Skip Drops phpLDAPAdmin container ..."
+  fi
+}
+
 do_stop_phpldapadmin() {
   echo_info "Stopping phpLDAPAdmin ..."
   if [ "${DEPLOYMENT_PHPLDAPADMIN_ENABLED}" == "false" ]; then
