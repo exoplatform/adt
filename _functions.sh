@@ -373,6 +373,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CHAT_EMBEDDED" true
       configurable_env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
       configurable_env_var "DEPLOYMENT_CHAT_SERVER_IMAGE" "exoplatform/chat-server"
+      configurable_env_var "DEPLOYMENT_CHAT_SERVER_VERSION" "latest"
       if ${DEPLOYMENT_CHAT_EMBEDDED}; then
         configurable_env_var "DEPLOYMENT_CHAT_MONGODB_TYPE" "HOST"
         configurable_env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
