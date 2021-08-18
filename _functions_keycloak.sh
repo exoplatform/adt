@@ -30,11 +30,19 @@ do_drop_keycloak_data() {
   if [ "${DEPLOYMENT_KEYCLOAK_ENABLED}" == "true" ]; then
     echo_info "Drops Keycloak container ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
+    delete_docker_volume ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
     echo_info "Done."
     echo_info "Keycloak data dropped"
   else
     echo_info "Skip Drops Keycloak container ..."
   fi
+}
+
+do_create_keycloak() {
+  if [ "${DEPLOYMENT_KEYCLOAK_ENABLED}" == "true" ]; then
+    echo_info "Creation of the Keycloak Docker volume ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ..."
+    create_docker_volume ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
+  fi  
 }
 
 do_stop_keycloak() {
@@ -66,6 +74,7 @@ do_start_keycloak() {
   -e KEYCLOAK_PASSWORD=password \
   -e PROXY_ADDRESS_FORWARDING=${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false} \
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
+  -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/jboss/keycloak/standalone/data \
   --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} \
   -Djboss.http.port=8080
   echo_info "${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} container started"  
@@ -76,7 +85,7 @@ do_start_keycloak() {
    -d "password=password" \
    -d 'grant_type=password' \
    -d 'client_id=admin-cli' | jq -r '.access_token')
-  curl -s -X POST "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
+  curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
    -H 'Content-type: application/json' \
    -H "Authorization: Bearer ${token}" \
    -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client added"
