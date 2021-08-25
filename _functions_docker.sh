@@ -30,7 +30,11 @@ ensure_docker_container_stopped() {
   set -e
   
   if [ "${running}" == "true" ]; then
-    ${DOCKER_CMD} stop ${container}
+    if [ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ]; then
+      ${DOCKER_CMD} kill ${container} # No need to wait for container shutdown :-)
+    else
+      ${DOCKER_CMD} stop ${container}
+    fi
   fi
 }
 
