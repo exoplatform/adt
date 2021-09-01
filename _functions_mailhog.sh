@@ -66,9 +66,6 @@ do_start_mailhog() {
     --name ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} ${DEPLOYMENT_MAILHOG_IMAGE}:${DEPLOYMENT_MAILHOG_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_MAILHOG_CONTAINER_NAME} container started"  
   check_mailhog_availability
-  # hack: Fix permissions
-  ${DOCKER_CMD} exec -u root ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} chmod 777 -R /maildir
-
 }
 
 check_mailhog_availability() {
