@@ -82,6 +82,8 @@
     SSLProtocol             all -SSLv2 -SSLv3 -TLSv1 -TLSv1.1
     SSLHonorCipherOrder     on
 
+    Header always set Strict-Transport-Security "max-age=63072000"
+
     <FilesMatch "\.(cgi|shtml|phtml|php)$">
         SSLOptions +StdEnvVars
     </FilesMatch>
