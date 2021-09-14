@@ -161,7 +161,8 @@ function getRepositories()
         "spnego-addon" => "SPENEGO",
         "task" => "TASK",
         "web-conferencing" => "Web conferencing",
-        "multifactor-authentication" => "Multifactor Authentication");
+        "multifactor-authentication" => "Multifactor Authentication",
+        "microservices" => "Microservices");
     apc_store('repositories', $repositories);
   }
   return $repositories;
@@ -241,7 +242,8 @@ function getTranslationBranches($projects)
       "jitsi" => true,
       "jitsi-call" => true,
       "web-conferencing" => true,
-      "multifactor-authentication" => true); // Addons with different version than product is ignored, See ACC-144
+      "multifactor-authentication" => true,
+      "microservices" => true); // Addons with different version than product is ignored, See ACC-144
 
   if (empty($features)) {
     $features = array();
