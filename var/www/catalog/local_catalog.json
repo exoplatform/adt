@@ -125,25 +125,6 @@
         "compatibility": "[1.3.0@exo_plf_version_suffix]"
     },
     {
-        "id": "exo-cmis-addon",
-        "version": "@exo_plf_version",
-        "unstable": false,
-        "name": "CMIS Integration",
-        "description": "CMIS support for eXo Patform. Implements atom api endpoint.",
-        "sourceUrl": "https://github.com/exo-addons/cmis-addon",
-        "documentationUrl": "https://www.exoplatform.com/docs/PLF44/eXoAddonsGuide.CMIS.html",
-        "downloadUrl": "http://addons.exoplatform.org/n/exo-addons-releases/org.exoplatform.addons.cmis/cmis-addon-packaging/@exo_plf_version/zip",
-        "vendor": "eXo",
-        "author": "eXo",
-        "authorEmail": "exo-addons@exoplatform.com",
-        "license": "LGPLv3",
-        "licenseUrl": "https://www.gnu.org/licenses/lgpl-3.0.txt",
-        "mustAcceptLicense": false,
-        "supportedDistributions": "enterprise",
-        "supportedApplicationServers": "tomcat,jboss",
-        "compatibility": "[@exo_plf_version]"
-    },
-    {
         "id": "exo-chat",
         "version": "3.3.0@exo_plf_version_suffix",
         "unstable": true,
