@@ -125,6 +125,7 @@ function getRepositories()
     $repositories = array(
         "agenda" => "Agenda",
         "analytics" => "Analytics",
+        "automatic-translation" => "Automatic Translation",
         "gatein-wci" => "GateIn WCI",
         "kernel" => "Kernel",
         "core" => "Core",
@@ -213,6 +214,7 @@ function getTranslationBranches($projects)
   $projectsToIgnore = array(
       "agenda" => true,
       "analytics" => true,
+      "automatic-translation" => true,
       "ecms" => true,
       "app-center" => true,
       "gamification" => true,
