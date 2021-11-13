@@ -1716,10 +1716,6 @@ do_start() {
     do_ufw_open_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
   fi
 
-  if ${DEPLOYMENT_CLOUDBEAVER_ENABLED:-false} ; then
-    do_ufw_open_port ${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT} "CloudBeaver HTTP Port" ${ADT_DEV_MODE}
-  fi
-
   if ${DEPLOYMENT_PHPLDAPADMIN_ENABLED:-false} ; then
     do_ufw_open_port ${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT} "phpLDAPAdmin HTTP Port" ${ADT_DEV_MODE}
   fi
@@ -2047,7 +2043,6 @@ do_undeploy() {
     do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
     # Close debug port
     [ ! -z "${DEPLOYMENT_DEBUG_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
-    [ ! -z "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT} "CloudBeaver HTTP Port" ${ADT_DEV_MODE}
     [ ! -z "${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT} "phpLDAPAdmin HTTP Port" ${ADT_DEV_MODE}
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
       # close firewall port for Onlyoffice documentserver only if addon was deployed

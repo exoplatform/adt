@@ -85,6 +85,9 @@
     ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
     ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
 
+    ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/
+    ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/
+
     ProxyPass               /adminmongo            http://localhost:${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT}/adminmongo
     ProxyPassReverse        /adminmongo            http://localhost:${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT}/adminmongo
 

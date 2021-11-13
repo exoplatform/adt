@@ -607,8 +607,8 @@ function componentDeploymentActions ($deployment_descriptor) {
   }
   // CloudBeaver access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_CLOUDBEAVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_ENABLED) {
-      $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.':'.$deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_HTTP_PORT.'" rel="tooltip" title="Cloudbeaver">';
-      $content.='<img src="/images/cloudbeaver.png" width="16" height="16" alt="Cloudbeaver" class="icon"/></a>';
+    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/cloudbeaver/" rel="tooltip" title="CloudBeaver">';
+    $content.='<img src="/images/cloudbeaver.png" width="16" height="16" alt="CloudBeaver" class="icon"/></a>';
   }
   // PHPLDAPADMIn access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_PHPLDAPADMIN_ENABLED') && $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_ENABLED) {
