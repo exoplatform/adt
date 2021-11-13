@@ -1836,8 +1836,7 @@ do_start() {
     echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT}"
   fi
   if ${DEPLOYMENT_CLOUDBEAVER_ENABLED:-false} ; then
-    echo_info "CloudBeaver URL : http://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}"
-    echo_info "  Auth: Login: acceptance Password: acceptance@123!"
+    echo_info "CloudBeaver URL : http://${DEPLOYMENT_EXT_HOST}/cloudbeaver/"
     echo_info "  Database credentials: Login: ${DEPLOYMENT_DATABASE_USER} Password: ${DEPLOYMENT_DATABASE_USER}"
   fi
   if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
