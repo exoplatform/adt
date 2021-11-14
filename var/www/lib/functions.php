@@ -50,6 +50,11 @@ function isTranslation($branch)
   return strpos($branch, "translation") !== false && strpos($branch, "origin/integration") !== false;
 }
 
+function isBackup($branch)
+{
+  return strpos($branch, "backup") !== false || strpos($branch, "tmp") !== false || strpos($branch, "temp") !== false;
+}
+
 function cmpPLFBranches($a, $b)
 {
   // Branches are A.B.x or UNKNOWN

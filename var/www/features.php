@@ -108,7 +108,7 @@ checkCaches();
                         <tbody>
                         <?php
                         foreach ($features as $feature => $FBProjects) {
-                            if (!in_array($feature, getAcceptanceBranches()) && !str_contains($feature, "backup")) {
+                            if (!in_array($feature, getAcceptanceBranches()) && !isBackup($feature)) {
                                 ?>
                                 <tr>
                                     <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?></td>
