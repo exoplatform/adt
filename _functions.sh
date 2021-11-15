@@ -794,28 +794,28 @@ initialize_product_settings() {
         if [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.2) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.1) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.10"
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
@@ -911,7 +911,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.1.0" # Default version of the jdbc postgresql driver addon to use
 
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
@@ -924,7 +924,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.1.0" # Default version of the jdbc postgresql driver addon to use
 
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
@@ -937,7 +937,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.1.0" # Default version of the jdbc postgresql driver addon to use
 
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
@@ -950,7 +950,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.0.0" # Default version of the jdbc postgresql driver addon to use
 
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.26" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
 
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
