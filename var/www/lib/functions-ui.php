@@ -564,6 +564,10 @@ function componentProductHtmlPopover ($deployment_descriptor) {
  * @return string html markup
  */
 function componentDeploymentActions ($deployment_descriptor) {
+  $deploymentURL=$deployment_descriptor->DEPLOYMENT_EXT_HOST;
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_APACHE_VHOST_ALIAS') && $deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS != "" ) {
+    $deploymentURL=$deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS;
+  }
   $content='<a href="'.$deployment_descriptor->DEPLOYMENT_LOG_APPSRV_URL.'" rel="tooltip" title="Instance logs" target="_blank">';
   $content.='<img src="/images/'.$deployment_descriptor->DEPLOYMENT_APPSRV_TYPE.'.png" width="16" height="16" alt="instance logs" class="icon"/>';
   $content.='</a>';
@@ -592,27 +596,27 @@ function componentDeploymentActions ($deployment_descriptor) {
   }
   // Mailhog access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_MAILHOG_ENABLED') && $deployment_descriptor->DEPLOYMENT_MAILHOG_ENABLED) {
-    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/mailhog/" rel="tooltip" title="Mailhog">';
+    $content.=' | <a href="http://'.$deploymentURL.'/mailhog/" rel="tooltip" title="Mailhog">';
     $content.='<img src="/images/mailhog.svg" width="16" height="16" alt="mailhog" class="icon"/></a>';
   }
   // Admin Mongo access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_ADMIN_MONGO_ENABLED') && $deployment_descriptor->DEPLOYMENT_ADMIN_MONGO_ENABLED) {
-    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/adminmongo/" rel="tooltip" title="Admin Mongo">';
+    $content.=' | <a href="http://'.$deploymentURL.'/adminmongo/" rel="tooltip" title="Admin Mongo">';
     $content.='<img src="/images/adminmongo.svg" width="16" height="16" alt="Admin Mongo" class="icon"/></a>';
   }
   // Keycloak admin access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_KEYCLOAK_ENABLED') && $deployment_descriptor->DEPLOYMENT_KEYCLOAK_ENABLED) {
-      $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/auth/admin/" rel="tooltip" title="Keycloak">';
+      $content.=' | <a href="http://'.$deploymentURL.'/auth/admin/" rel="tooltip" title="Keycloak">';
       $content.='<img src="/images/keycloak.svg" width="16" height="16" alt="keycloak" class="icon"/></a>';
   }
   // CloudBeaver access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_CLOUDBEAVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_ENABLED) {
-    $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.'/cloudbeaver/" rel="tooltip" title="CloudBeaver">';
+    $content.=' | <a href="http://'.$deploymentURL.'/cloudbeaver/" rel="tooltip" title="CloudBeaver">';
     $content.='<img src="/images/cloudbeaver.png" width="16" height="16" alt="CloudBeaver" class="icon"/></a>';
   }
   // PHPLDAPADMIn access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_PHPLDAPADMIN_ENABLED') && $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_ENABLED) {
-      $content.=' | <a href="http://'.$deployment_descriptor->DEPLOYMENT_EXT_HOST.':'.$deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT.'" rel="tooltip" title="phpLDAPAdmin">';
+      $content.=' | <a href="http://'.$deploymentURL.':'.$deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT.'" rel="tooltip" title="phpLDAPAdmin">';
       $content.='<img src="/images/phpldapadmin.png" width="16" height="16" alt="phpLDAPAdmin" class="icon"/></a>';
   }
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_SFTP_ENABLED') && $deployment_descriptor->DEPLOYMENT_SFTP_ENABLED) {
