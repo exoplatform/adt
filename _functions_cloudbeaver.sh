@@ -30,7 +30,6 @@ do_drop_cloudbeaver_data() {
   if [ "${DEPLOYMENT_CLOUDBEAVER_ENABLED}" == "true" ]; then
     echo_info "Drops Cloudbeaver container ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}
-    sudo rm -rf /tmp/${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}_cbeaver
     echo_info "Done."
     echo_info "Cloudbeaver data dropped"
   else
@@ -59,14 +58,12 @@ do_start_cloudbeaver() {
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}
-  sudo rm -rf /tmp/${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}_cbeaver
-  cp -rf ${ETC_DIR}/cloudbeaver ${DEPLOYMENT_DIR}/cloudbeaver 
   case ${DEPLOYMENT_DB_TYPE} in
     DOCKER_MYSQL | DOCKER_MARIADB)
-      evaluate_file_content ${DEPLOYMENT_DIR}/cloudbeaver/GlobalConfiguration/.dbeaver/data-sources.json.mysql.template ${DEPLOYMENT_DIR}/cloudbeaver/GlobalConfiguration/.dbeaver/data-sources.json
+      evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.mysql.template ${DEPLOYMENT_DIR}/data-sources.json
     ;;
     DOCKER_POSTGRES)
-      evaluate_file_content ${DEPLOYMENT_DIR}/cloudbeaver/GlobalConfiguration/.dbeaver/data-sources.json.postgres.template ${DEPLOYMENT_DIR}/cloudbeaver/GlobalConfiguration/.dbeaver/data-sources.json
+      evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.postgres.template ${DEPLOYMENT_DIR}/data-sources.json
     ;;  
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
@@ -74,7 +71,7 @@ do_start_cloudbeaver() {
       exit 1
     ;;
   esac  
-  sudo mv ${DEPLOYMENT_DIR}/cloudbeaver /tmp/${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}_cbeaver
+
   local DB_ADDR=$(${DOCKER_CMD} inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${DEPLOYMENT_CONTAINER_NAME})
 
   # Check for update
@@ -83,7 +80,7 @@ do_start_cloudbeaver() {
   ${DOCKER_CMD} run \
   -d \
   -p "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}:8978" \
-  -v "/tmp/${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}_cbeaver:/opt/cloudbeaver/workspace" \
+  -v "${DEPLOYMENT_DIR}/data-sources.json:/opt/cloudbeaver/workspace/GlobalConfiguration/.dbeaver/data-sources.json" \
   --add-host=host.docker.internal:${DB_ADDR} \
   --name ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION}
 

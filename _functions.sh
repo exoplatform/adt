@@ -318,8 +318,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "latest"
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "dbeaver/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.0.0-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
@@ -1834,11 +1834,6 @@ do_start() {
   fi
   if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
     echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT}"
-  fi
-  if ${DEPLOYMENT_CLOUDBEAVER_ENABLED:-false} ; then
-    echo_info "CloudBeaver URL : http://${DEPLOYMENT_EXT_HOST}/cloudbeaver/"
-    echo_info "  Auth: Login: acceptance Password: acceptance@123!"
-    echo_info "  Database credentials: Login: ${DEPLOYMENT_DATABASE_USER} Password: ${DEPLOYMENT_DATABASE_USER}"
   fi
   if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
     echo_info "DEV Mode is enabled."

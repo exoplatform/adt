@@ -1,23 +1,23 @@
 {
 	"folders": {},
 	"connections": {
-		"postgres-jdbc-17892390b56-2a91ca3795b8218c": {
-			"provider": "postgresql",
-			"driver": "postgres-jdbc",
-			"name": "PostgreSQL@Acceptance",
-			"save-password": false,
+		"mysql8-17d4ceda49d-39fca216982cd38e": {
+			"provider": "mysql",
+			"driver": "mysql8",
+			"name": "MySQL@Acceptance",
+			"save-password": true,
 			"show-system-objects": true,
 			"read-only": ${DEPLOYMENT_CLOUDBEAVER_READONLY},
 			"configuration": {
 				"host": "host.docker.internal",
-				"port": "5432",
+				"port": "3306",
 				"database": "${DEPLOYMENT_DATABASE_NAME}",
-				"url": "jdbc:postgresql://host.docker.internal:5432/${DEPLOYMENT_DATABASE_NAME}",
-				"username": "${DEPLOYMENT_DATABASE_USER}",
+				"url": "jdbc:mysql://host.docker.internal:3306/${DEPLOYMENT_DATABASE_NAME}",
+				"user": "${DEPLOYMENT_DATABASE_USER}",
 				"password": "${DEPLOYMENT_DATABASE_USER}",
 				"type": "dev",
 				"properties": {
-					"readOnly": "${DEPLOYMENT_CLOUDBEAVER_READONLY}"
+					"allowPublicKeyRetrieval": "true"
 				},
 				"auth-model": "native",
 				"handlers": {}
