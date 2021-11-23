@@ -5,7 +5,7 @@
 			"provider": "mysql",
 			"driver": "mysql8",
 			"name": "MySQL@Acceptance",
-			"save-password": false,
+			"save-password": true,
 			"show-system-objects": true,
 			"read-only": ${DEPLOYMENT_CLOUDBEAVER_READONLY},
 			"configuration": {
@@ -13,7 +13,7 @@
 				"port": "3306",
 				"database": "${DEPLOYMENT_DATABASE_NAME}",
 				"url": "jdbc:mysql://host.docker.internal:3306/${DEPLOYMENT_DATABASE_NAME}",
-				"username": "${DEPLOYMENT_DATABASE_USER}",
+				"user": "${DEPLOYMENT_DATABASE_USER}",
 				"password": "${DEPLOYMENT_DATABASE_USER}",
 				"type": "dev",
 				"properties": {
