@@ -265,6 +265,12 @@ do_download_maven_artifact() {
     else 
       env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/local-catalog.php?plfversion=$_artifactTimestamp&remote=${DEPLOYMENT_ADDONS_CATALOG##*/}"
     fi
+  elif [ ! -z "${DEPLOYMENT_EXTRA_CATALOG:-}" ]; then 
+    if [ -z "${DEPLOYMENT_ADDONS_CATALOG:-}" ]; then 
+      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/merge-catalog.php?extra=${DEPLOYMENT_EXTRA_CATALOG##*/}"
+    else 
+      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/merge-catalog.php?remote=${DEPLOYMENT_ADDONS_CATALOG##*/}&extra=${DEPLOYMENT_EXTRA_CATALOG##*/}"
+    fi
   fi
 
   #

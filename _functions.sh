@@ -256,6 +256,7 @@ initialize_product_settings() {
       # Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
       configurable_env_var "DEPLOYMENT_ADDONS" ""
       configurable_env_var "DEPLOYMENT_ADDONS_CATALOG" ""
+      configurable_env_var "DEPLOYMENT_EXTRA_CATALOG" ""
       configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE" "" # used for add-on manager --conflict parameter (default: none) (possible values: fail / skip / overwrite)
       configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE" "" # used for add-on manager --no-compat parameter (default: none) (possible values: true / false)
       configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_UNSTABLE_MODE" "" # used for add-on manager --unstable parameter (default: none) (possible values: true / false)
