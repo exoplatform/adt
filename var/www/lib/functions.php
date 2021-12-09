@@ -174,6 +174,49 @@ function getRepositories()
   return $repositories;
 }
 
+function getModuleCiPrefix($item)
+{
+    // Add here only modules having prefix
+    $modules = array(
+        "agenda" => "addon-",
+        "analytics" => "addon-",
+        "automatic-translation" => "addon-",
+        "gatein-wci" => "meeds-",
+        "kernel" => "meeds-",
+        "core" => "meeds-",
+        "documents" => "addon-",
+        "ws" =>  "meeds-",
+        "gatein-pc" => "meeds-",
+        "gatein-sso" => "meeds-",
+        "gatein-portal" => "meeds-",
+        "maven-depmgt-pom" => "meeds-",
+        "platform-ui" => "meeds-",
+        "commons" => "meeds-",
+        "social" => "meeds-",
+        "gamification" => "meeds-addon-",
+        "wallet" => "meeds-addon-",
+        "app-center" => "meeds-addon-",
+        "kudos" => "meeds-addon-",
+        "perk-store" => "meeds-addon-",
+        "push-notifications" => "meeds-addon-",
+        "notes" => "meeds-addon-",
+        "addons-manager" => "meeds-",
+        "meeds" => "meeds-",
+        "jitsi" => "addon-",
+        "chat-application" => "addon-",
+        "data-upgrade" => "addon-",
+        "digital-workplace" => "addon-",
+        "layout-management" => "addon-",
+        "news" => "addon-",
+        "onlyoffice" => "addon-",
+        "saml2-addon" => "addon-",
+        "spnego-addon" => "addon-",
+        "task" => "addon-",
+        "web-conferencing" => "addon-",
+        "multifactor-authentication" => "addon-");
+  return array_key_exists($item, $modules) ? $modules[$item] : "";
+}
+
 function getFeatureBranches($projects)
 {
   $features = apc_fetch('features');
