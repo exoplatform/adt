@@ -213,6 +213,7 @@ function getModuleCiPrefix($item)
         "spnego-addon" => "addon-",
         "task" => "addon-",
         "web-conferencing" => "addon-",
+        "microservices" => "addon-",
         "multifactor-authentication" => "addon-");
   return array_key_exists($item, $modules) ? $modules[$item] : "";
 }
