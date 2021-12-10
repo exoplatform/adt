@@ -68,7 +68,7 @@ checkCaches();
                         } ?>
                         </tbody>
                     </table>
-                    <h3>Translation Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span></h3>
+                    <!--<h3>Translation Branches deployed on acceptance <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span></h3>
                     <table class="table table-hover table-header-rotated">
                         <thead>
                         <tr>
@@ -94,7 +94,7 @@ checkCaches();
                             </tr>
                         <?php } ?>
                         </tbody>
-                    </table>
+                    </table>-->
                     <h3>Others branches ... <span class="subtitle">(status compared to each project <code>develop</code> branch.)</span><br/>ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP ? </h3>
                     <table class="table  table-hover table-header-rotated">
                         <thead>
