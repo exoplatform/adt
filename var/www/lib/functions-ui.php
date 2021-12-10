@@ -685,7 +685,7 @@ function componentFBScmLabel($deployment_descriptor) {
 function componentFBIssueLabel($deployment_descriptor) {
   $content="-";
   if (!empty($deployment_descriptor->ISSUE_NUM)) {
-    $content='<a href="https://jira.exoplatform.org/browse/';
+    $content='<a href="https://community.exoplatform.com/portal/dw/tasks/taskDetail/';
     $content.=$deployment_descriptor->ISSUE_NUM.'"';
     $content.='rel="tooltip" title="Opened issue where to put your feedbacks on this new feature">';
     $content.=$deployment_descriptor->ISSUE_NUM.'</a>';
