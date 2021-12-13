@@ -1594,7 +1594,7 @@ do_deploy() {
   fi
   if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
     echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
-    _tmpdir="/tmp/archive-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+    _tmpdir="/srv/adt/tmp/archive-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
     mkdir -p "${_tmpdir}"
     echo_info "Using temporary directory ${_tmpdir}"
     if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
