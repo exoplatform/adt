@@ -793,28 +793,28 @@ initialize_product_settings() {
         # - Default version for each supported database type
         if [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.2) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.1) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.18"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.27" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.10"
@@ -893,7 +893,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.3.0.243" # Default version for Only Office docker image to use
 
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.3) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.4.1" # Default version of the mysql driver addon to use
@@ -905,7 +905,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.3) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
@@ -918,7 +918,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.4" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.2) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.0"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
@@ -931,7 +931,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.3" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.1) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
@@ -944,7 +944,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.1" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.0) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.2"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
