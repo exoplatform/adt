@@ -46,6 +46,7 @@ do_start_chat_server() {
         -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
         --name ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ${DEPLOYMENT_CHAT_MONGODB_IMAGE}:${DEPLOYMENT_CHAT_MONGODB_VERSION}
         local major_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+\.[0-9]+')
+        sleep 10
         ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" || true
     fi
 
