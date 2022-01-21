@@ -30,8 +30,7 @@ do_get_tomcat_settings() {
 }
 
 do_configure_tomcat_jmx() {
-  local _skip_download_remote=${1:-false}
-  if [ ! ${_skip_download_remote} -a ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
+  if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
     JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
     if [ ! -e ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename ${JMX_JAR_URL}` ]; then
@@ -352,10 +351,8 @@ do_configure_tomcat_server() {
 
   # Reconfigure the server to use JMX
   # if DEPLOYMENT_APPSRV_VERSION = 9.0+ skip downloading catalina-jmx-remote.jar (Not supported anymore)
-  if [[ "${DEPLOYMENT_APPSRV_VERSION}" =~ ^(9.0) ]]; then
+  if [[ ! "${DEPLOYMENT_APPSRV_VERSION}" =~ ^(9.0) ]]; then
     do_configure_tomcat_jmx true
-  else 
-    do_configure_tomcat_jmx false
   fi
   do_configure_tomcat_email
   do_configure_tomcat_jod
