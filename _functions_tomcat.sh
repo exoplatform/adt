@@ -29,6 +29,19 @@ do_get_tomcat_settings() {
   export DEPLOYMENT_SETTINGS_DIR="${DEPLOYMENT_DIR}/gatein/conf"
 }
 
+do_create_jmx_credentials_files() {
+  # JMX settings
+  echo_info "Creating JMX configuration files ..."
+  cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
+  cp -f ${ETC_DIR}/jmx/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
+  chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
+  echo_info "Done."
+  # Open firewall ports
+  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
+  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
+  DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
+}
+
 do_configure_tomcat_jmx() {
   if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
@@ -65,17 +78,7 @@ do_configure_tomcat_jmx() {
     cp -f ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename ${JMX_JAR_URL}` ${DEPLOYMENT_DIR}/lib/
     echo_info "Done."
   fi
-  # JMX settings
-  echo_info "Creating JMX configuration files ..."
-  cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
-  cp -f ${ETC_DIR}/jmx/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
-  chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
-  echo_info "Done."
-  # Open firewall ports
-  do_ufw_open_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
-  do_ufw_open_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
-  DEPLOYMENT_JMX_URL="service:jmx:rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_SRV_PORT}/jndi/rmi://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_RMI_REG_PORT}/jmxrmi"
-
+  do_create_jmx_credentials_files
   # Patch to reconfigure server.xml for JMX
   find_instance_file JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml.patch" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
 
@@ -350,8 +353,13 @@ do_configure_tomcat_server() {
   tr -d '\015' < ${DEPLOYMENT_DIR}/conf/server.xml.orig > ${DEPLOYMENT_DIR}/conf/server.xml
 
   # Reconfigure the server to use JMX
-  do_configure_tomcat_jmx
-
+  # if DEPLOYMENT_APPSRV_VERSION = 9.0+ skip downloading catalina-jmx-remote.jar (Not supported anymore)
+  if [[ "${DEPLOYMENT_APPSRV_VERSION}" =~ ^(9.0) ]]; then
+    # Juste display the calculated JMX URL
+    do_create_jmx_credentials_files
+  else
+    do_configure_tomcat_jmx
+  fi
   do_configure_tomcat_email
   do_configure_tomcat_jod
   do_configure_tomcat_ldap

@@ -564,8 +564,15 @@ initialize_product_settings() {
           env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var DEPLOYMENT_APPSRV_VERSION "8.5"
           env_var DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON "false"
+          if [[ "${PRODUCT_VERSION}" =~ ^(1.0|1.1|1.2) ]]; then
+            env_var DEPLOYMENT_APPSRV_VERSION "8.5"
+          elif [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
+            env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
+          else 
+            echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
+            exit 1
+          fi
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "Platform CE"
@@ -969,8 +976,10 @@ initialize_product_settings() {
 
           # For configuration differences between tomcat and jboss
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
-            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3) ]]; then
+            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
+            elif [[ "${PRODUCT_VERSION}" =~ ^(6.3) ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
             else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
               exit 1
