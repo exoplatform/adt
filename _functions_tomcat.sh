@@ -352,7 +352,7 @@ do_configure_tomcat_server() {
   # Reconfigure the server to use JMX
   # if DEPLOYMENT_APPSRV_VERSION = 9.0+ skip downloading catalina-jmx-remote.jar (Not supported anymore)
   if [[ ! "${DEPLOYMENT_APPSRV_VERSION}" =~ ^(9.0) ]]; then
-    do_configure_tomcat_jmx true
+    do_configure_tomcat_jmx
   fi
   do_configure_tomcat_email
   do_configure_tomcat_jod
