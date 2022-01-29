@@ -185,6 +185,7 @@ Environment Variables
   DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
   DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
   DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
+  DEPLOYMENT_GZIP_ENABLED           : Enable Gzip Compression on the Tomcat Server
 
 EOF
 }
@@ -341,6 +342,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
       
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
+      configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true

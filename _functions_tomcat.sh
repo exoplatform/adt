@@ -343,6 +343,12 @@ do_configure_tomcat_setenv() {
   fi
 }
 
+do_configure_gzip_compression() {
+  xmlstarlet ed -L -u "/Server/Service/Connector/@compression" -v "on" ${DEPLOYMENT_DIR}/conf/server.xml || {
+    echo_error "Failend to enable GZIP compression on Tomcat Server!"
+  }
+}
+
 #
 # Function that configure the server for ours needs
 #
@@ -374,6 +380,10 @@ do_configure_tomcat_server() {
   fi
 
   do_configure_tomcat_ports
+
+  if ${DEPLOYMENT_GZIP_ENABLED:-false}; then 
+    do_configure_gzip_compression
+  fi
 
   do_configure_tomcat_setenv
 
