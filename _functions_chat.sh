@@ -197,6 +197,31 @@ do_drop_chat_mongo_database() {
   echo_info "Done."
 }
 
+
+do_restore_chat_mongo_dataset() {
+  do_drop_chat_database
+  do_start_chat_server
+  _restorescript="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/chat.dump"
+  case ${DEPLOYMENT_CHAT_MONGODB_TYPE} in
+    DOCKER)
+      if [ ! -e ${_restorescript} ]; then
+        echo_error "Mongo dump file (${_restorescript}) doesn't exist."
+        exit 1
+      fi;
+      ${DOCKER_CMD} cp ${_restorescript} ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/tmp/
+      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongorestore --nsFrom "chat.*" --nsTo "${DEPLOYMENT_CHAT_MONGODB_NAME}.*" --quiet --archive=/tmp/chat.dump
+      do_stop_chat_server
+    ;;
+    *)
+      echo_error "Dataset restoration isn't supported for chat mongo type \"${DEPLOYMENT_CHAT_MONGODB_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+  rm -rf ${_restorescript}
+}
+
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_CHAT_LOADED=true

@@ -1141,20 +1141,20 @@ do_restore_dataset(){
 
   do_drop_data
 
-  mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/
-  echo_info "Loading values ..."
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
-  echo_info "Done"
-  echo_info "Loading indexes ..."
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/ -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
+  mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
+  echo_info "Loading dataset ..."
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}.tar.bz2
+  mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exo/* ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/
   echo_info "Done"
 
   if ${DEPLOYMENT_CHAT_ENABLED}; then
-    do_drop_chat_mongo_database
-    do_create_chat_mongo_database
+    do_restore_chat_mongo_dataset
   fi
 
   do_restore_database_dataset
+
+  do_restore_es_dataset
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
 }
 
 do_init_empty_data(){
@@ -1626,6 +1626,7 @@ do_deploy() {
       # We load its settings from the configuration
       do_load_deployment_descriptor
       if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ]; then
+        rm -rf ${_tmpdir}/*
         mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
         mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}
       else
