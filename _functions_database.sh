@@ -336,18 +336,18 @@ do_start_database() {
 do_restore_database_dataset() {
   do_drop_database
   do_create_database
-  _restorescript="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/backup.sql"
+  local _backupfile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/backup.sql"
   case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL)
-      if [ ! -e ${_restorescript} ]; then
-       echo_error "SQL file (${_restorescript}) doesn't exist."
+      if [ ! -e ${_backupfile} ]; then
+       echo_error "SQL file (${_backupfile}) doesn't exist."
        exit 1
       fi;
       if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
         do_start_database
       fi
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
-      pv -p -t -e -a -r -b ${_restorescript} | ${DATABASE_CMD}
+      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD}
       echo_info "Importation done"
       if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
         do_stop_database
@@ -359,7 +359,7 @@ do_restore_database_dataset() {
       exit 1
     ;;
   esac
-  rm -rf ${_restorescript}
+  rm -rf ${_backupfile}
 }
 
 #

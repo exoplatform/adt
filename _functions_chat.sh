@@ -201,15 +201,17 @@ do_drop_chat_mongo_database() {
 do_restore_chat_mongo_dataset() {
   do_drop_chat_database
   do_start_chat_server
-  _restorescript="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/chat.dump"
+  local _dumpfile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/chat.dump"
   case ${DEPLOYMENT_CHAT_MONGODB_TYPE} in
     DOCKER)
-      if [ ! -e ${_restorescript} ]; then
-        echo_error "Mongo dump file (${_restorescript}) doesn't exist."
+      if [ ! -e ${_dumpfile} ]; then
+        echo_error "Mongo dump file (${_dumpfile}) doesn't exist."
         exit 1
       fi;
-      ${DOCKER_CMD} cp ${_restorescript} ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/tmp/
+      echo_info "Restauring dump file to mongo server..."
+      ${DOCKER_CMD} cp ${_dumpfile} ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/tmp/
       ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongorestore --nsFrom "chat.*" --nsTo "${DEPLOYMENT_CHAT_MONGODB_NAME}.*" --quiet --archive=/tmp/chat.dump
+      echo_info "Done."
       do_stop_chat_server
     ;;
     *)
@@ -218,7 +220,7 @@ do_restore_chat_mongo_dataset() {
       exit 1
     ;;
   esac
-  rm -rf ${_restorescript}
+  rm -rf ${_dumpfile}
 }
 
 

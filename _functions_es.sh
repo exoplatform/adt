@@ -234,20 +234,21 @@ do_drop_es_old(){
 do_restore_es_dataset() {
   do_drop_es_data
   do_create_es
-  _restoreData="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/search"
-  if [ ! -d ${_restoreData} ]; then
+  local _esData="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/search"
+  if [ ! -d ${_esData} ]; then
     echo_error "Elasticsearch data (${_restorescript}) don't exist."
     exit 1
   fi;
   if ${DEPLOYMENT_ES_EMBEDDED}; then
     local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
-    mv ${_restoreData}/* ${path}/
+    mv ${_esData}/* ${path}/
+    sudo chown 1000.1000 -R ${path}
   else
     local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
-    sudo mv -v ${_restoreData}/* ${mount_point}/ >/dev/null
+    sudo mv -v ${_esData}/* ${mount_point}/ >/dev/null
     sudo chown 1000.1000 -R ${mount_point}
   fi
-  rm -rf ${_restoreData}
+  rm -rf ${_esData}
 }
 
 
