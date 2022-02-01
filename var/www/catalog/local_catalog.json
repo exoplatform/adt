@@ -479,5 +479,24 @@
         "supportedDistributions": "community,enterprise",
         "supportedApplicationServers": "tomcat",
         "compatibility": "[@exo_plf_version]"
+    },
+    {
+        "id": "exo-documents",
+        "version": "1.0.0@exo_plf_version_suffix",
+        "unstable": true,
+        "name": "eXo Documents",
+        "description": "eXo Documents",
+        "sourceUrl": "https://github.com/exoplatform/documents",
+        "documentationUrl": "https://github.com/exoplatform/documents",
+        "downloadUrl": "https://repository.exoplatform.org/service/local/artifact/maven/redirect?r=exo-addons-releases&g=org.exoplatform.documents&a=documents-packaging&v=1.0.0@exo_plf_version_suffix&e=zip",
+        "vendor": "eXo",
+        "author": "eXo",
+        "authorEmail": "exo-addons@exoplatform.com",
+        "license": "LGPLv3",
+        "licenseUrl": "https://www.gnu.org/licenses/lgpl-3.0.txt",
+        "mustAcceptLicense": false,
+        "supportedDistributions": "community,enterprise",
+        "supportedApplicationServers": "tomcat",
+        "compatibility": "[@exo_plf_version]"
     }
 ]
