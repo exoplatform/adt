@@ -343,6 +343,7 @@ initialize_product_settings() {
       
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
+      configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -1143,7 +1144,7 @@ do_restore_dataset(){
 
   mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
   echo_info "Loading dataset ..."
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}.tar.bz2
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${DS_DIR}/${DS_FILENAME}.tar.bz2
   mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exo/* ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/
   echo_info "Done"
 
