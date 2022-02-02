@@ -1140,6 +1140,11 @@ do_restore_dataset(){
     env_var "NICE_CMD" "nice -n 20"
   fi
 
+  if [ ! -e "${DS_DIR}/${DS_FILENAME}.tar.bz2" ]; then
+    echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 does not exist!"
+    exit 1
+  fi
+
   do_drop_data
 
   mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
