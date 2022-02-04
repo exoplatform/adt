@@ -201,7 +201,7 @@ do_start_jitsi() {
   ${DOCKER_CMD} run \
     -d \
     -v /dev/shm:/dev/shm \
-    -v ${DEPLOYMENT_DIR}/jibri.conf:/etc/jitsi/jibri/jibri.conf \
+    -v ${DEPLOYMENT_DIR}/jibri.conf:/etc/jitsi/jibri/jibri.conf:ro \
     -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
