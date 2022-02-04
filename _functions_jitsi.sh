@@ -106,13 +106,15 @@ do_start_jitsi() {
   echo_info "${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} container started"
   check_jitsi_call_availability
 
-  echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:stable-6726-1"
+  echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:stable-6826"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
     -e "AUTH_TYPE=jwt" \
+    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "ENABLE_AUTH=1" \
+    -e "ENABLE_XMPP_WEBSOCKET=1" \
     -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -125,8 +127,6 @@ do_start_jitsi() {
     -e "JICOFO_AUTH_PASSWORD=c4f0b969570298d5d77a8545f23dc8ce" \
     -e "JVB_AUTH_USER=jvb" \
     -e "JVB_AUTH_PASSWORD=a2f17f0b494489773ec879bd12ef6a12" \
-    -e "JIGASI_XMPP_USER=jigasi" \
-    -e "JIGASI_XMPP_PASSWORD=bf19cdebc0f1e9f444cc3a4eb4f3612c" \
     -e "JIBRI_XMPP_USER=jibri" \
     -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
     -e "JIBRI_RECORDER_USER=recorder" \
@@ -137,10 +137,10 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:stable-6726-1
+    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:stable-6826
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:stable-6726-1"
+  echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:stable-6826"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}
   ${DOCKER_CMD} run \
@@ -157,22 +157,24 @@ do_start_jitsi() {
     -e "JICOFO_AUTH_USER=focus" \
     -e "JICOFO_AUTH_PASSWORD=c4f0b969570298d5d77a8545f23dc8ce" \
     -e "JVB_BREWERY_MUC=jvbbrewery" \
-    -e "JIGASI_BREWERY_MUC=jigasibrewery" \
+    -e "ENABLE_SCTP=0" \
     -e "JIBRI_BREWERY_MUC=jibribrewery" \
     -e "JIBRI_PENDING_TIMEOUT=90" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:stable-6726-1
+    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:stable-6826
   echo_info "${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi JVB container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} based on image jitsi/jvb:stable-6726-1"
+  echo_info "Starting Jitsi JVB container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} based on image jitsi/jvb:stable-6826"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_JVB_TCP_PORT}:${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
     -p "${DEPLOYMENT_JITSI_JVB_UDP_PORT}:${DEPLOYMENT_JITSI_JVB_UDP_PORT}/udp" \
+    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
+    -e "ENABLE_COLIBRI_WEBSOCKET=1" \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_SERVER=xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -183,27 +185,28 @@ do_start_jitsi() {
     -e "JVB_TCP_HARVESTER_DISABLED=true" \
     -e "JVB_TCP_PORT=${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
     -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
-    -e "JVB_ENABLE_APIS=rest,colibri" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:stable-6726-1
+    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:stable-6826
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi Jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} based on image jitsi/jibri:stable-6726-1"
+  echo_info "Starting Jitsi Jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} based on image jitsi/jibri:stable-6826"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
   chmod +x ${DEPLOYMENT_DIR}/finalize.sh
+  cp -v ${ETC_DIR}/jitsi/jibri/jibri.conf ${DEPLOYMENT_DIR}/jibri.conf
   ${DOCKER_CMD} run \
     -d \
+    -v /dev/shm:/dev/shm \
+    -v ${DEPLOYMENT_DIR}/jibri.conf:/etc/jitsi/jibri/jibri.conf \
     -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
     --device /dev/snd \
     --shm-size=512m \
-    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -224,10 +227,10 @@ do_start_jitsi() {
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:stable-6726-1
+    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:stable-6826
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:stable-6726-1"
+  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:stable-6826"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
@@ -236,7 +239,12 @@ do_start_jitsi() {
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
     -e "ENABLE_AUTH=1" \
     -e "ENABLE_RECORDING=1" \
-    -e "ENABLE_XMPP_WEBSOCKET=0" \
+    -e "ENABLE_XMPP_WEBSOCKET=1" \
+    -e "ENABLE_COLIBRI_WEBSOCKET=1" \
+    -e "ENABLE_SIMULCAST=false" \
+    -e "DESKTOP_SHARING_FRAMERATE_MIN=120" \
+    -e "DESKTOP_SHARING_FRAMERATE_MAX=120" \
+    -e "TESTING_CAP_SCREENSHARE_BITRATE=0" \
     -e "JICOFO_AUTH_USER=focus" \
     -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -255,7 +263,7 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:stable-6726-1
+    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:stable-6826
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
   check_jitsi_web_availability
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
