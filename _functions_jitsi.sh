@@ -197,7 +197,7 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
   chmod +x ${DEPLOYMENT_DIR}/finalize.sh
-  cp -v ${ETC_DIR}/jitsi/jibri/jibri.conf ${DEPLOYMENT_DIR}/jibri.conf
+  evaluate_file_content ${ETC_DIR}/jitsi/jibri/jibri.conf.template ${DEPLOYMENT_DIR}/jibri.conf
   ${DOCKER_CMD} run \
     -d \
     -v /dev/shm:/dev/shm \
