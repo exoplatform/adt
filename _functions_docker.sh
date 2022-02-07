@@ -101,8 +101,12 @@ delete_docker_network() {
 # $1 network name
 create_docker_network() {
   network=${1}
-
-  ${DOCKER_CMD} network create ${network}
+  local network_name=$(${DOCKER_CMD} network inspect ${network} 2>/dev/null | jq -r '.[0].Name')
+  if [ "${network_name}" == "null" ]; then
+    ${DOCKER_CMD} network create ${network}
+  else
+    echo_info "Network ${network} already exists"
+  fi
 }
 
 # #############################################################################
