@@ -74,6 +74,13 @@
     
         ProxyPass /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
         ProxyPassReverse /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
+
+        <Location "/jitsiweb/xmpp-websocket">
+            ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
+        </Location>
+        <Location "/colibri-ws/">
+            ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/colibri-ws/"
+        </Location>
     </IfModule>
 
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
@@ -115,8 +122,7 @@
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
     ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
-    ProxyPass               /xmpp-websocket      http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket
-    ProxyPassReverse        /xmpp-websocket      http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket
+    
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
