@@ -22,7 +22,7 @@ jibri {
         environments = [
             {
                 // A user-friendly name for this environment
-                name = "eXo Hosting"
+                name = "eXo Acceptance"
 
                 // A list of XMPP server hosts to which we'll connect
                 xmpp-server-hosts = [
