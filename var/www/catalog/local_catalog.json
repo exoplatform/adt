@@ -226,14 +226,14 @@
         "compatibility": "[@exo_plf_version]"
     },
     {
-        "id": "exo-analytics",
+        "id": "meeds-analytics",
         "version": "1.2.0@exo_plf_version_suffix",
         "unstable": true,
         "name": "Analytics",
         "description": "An addon that provide tools to display platform usage statistics using charts.",
         "releaseDate": "2021-01-06T23:00:00.000Z",
-        "sourceUrl": "https://github.com/exo-addons/analytics",
-        "documentationUrl": "https://github.com/exo-addons/analytics",
+        "sourceUrl": "https://github.com/Meeds-io/analytics",
+        "documentationUrl": "https://github.com/Meeds-io/analytics",
         "downloadUrl": "http://addons.exoplatform.org/n/exo-addons-releases/org.exoplatform.addons.analytics/analytics-packaging/1.2.0@exo_plf_version_suffix/zip",
         "vendor": "eXo",
         "author": "eXo",
