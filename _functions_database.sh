@@ -334,43 +334,24 @@ do_start_database() {
 }
 
 do_restore_database_dataset() {
-  _tmpdir=`mktemp -d -t db-export.XXXXXXXXXX` || exit 1
-
   do_drop_database
   do_create_database
-
-  case ${DEPLOYMENT_DB_TYPE} in
-    DOCKER_*)
-      # add the tmp directory as a volume
-      CMD=$(echo "${DATABASE_CMD}" | ${CMD_SED} "s|${DOCKER_CMD} run|${DOCKER_CMD} run  -v ${_tmpdir}:/tmpdir -w /tmpdir|g")
-    ;;
-    *)
-      CMD="${DATABASE_CMD}"
-    ;;
-  esac
-
+  local _backupfile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/backup.sql"
   case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL)
-      echo_info "Using temporary directory ${_tmpdir}"
-      _restorescript="${_tmpdir}/__restoreAllData.sql"
-      echo_info "Uncompressing ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2 into ${_tmpdir} ..."
-      display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${_tmpdir} -xf ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
-      echo_info "Done"
-      if [ ! -e ${_restorescript} ]; then
-       echo_error "SQL file (${_restorescript}) doesn't exist."
+      if [ ! -e ${_backupfile} ]; then
+       echo_error "SQL file (${_backupfile}) doesn't exist."
        exit 1
       fi;
-
-      check_database_availability
-
+      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+        do_start_database
+      fi
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
-      pushd ${_tmpdir} > /dev/null 2>&1
-      pv -p -t -e -a -r -b ${_restorescript} | ${CMD}
-      popd > /dev/null 2>&1
-      echo_info "Done"
-      echo_info "Drop if it exists the JCR_CONFIG table from ${DEPLOYMENT_DATABASE_NAME} ..."
-      echo "DROP TABLE IF EXISTS JCR_CONFIG;" | ${CMD}
-      echo_info "Done"
+      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD}
+      echo_info "Importation done"
+      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+        do_stop_database
+      fi
     ;;
     *)
       echo_error "Dataset restoration isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\""
@@ -378,7 +359,7 @@ do_restore_database_dataset() {
       exit 1
     ;;
   esac
-  rm -rf ${_tmpdir}
+  rm -rf ${_backupfile}
 }
 
 #
