@@ -270,6 +270,7 @@ function getTranslationBranches($projects)
   $projectsToIgnore = array(
       "agenda" => true,
       "analytics" => true,
+      "poll" => true,
       "automatic-translation" => true,
       "documents" => true,
       "ecms" => true,
@@ -295,6 +296,7 @@ function getTranslationBranches($projects)
       "saml2-addon" => true,
       "social" => true,
       "spnego-addon" => true,
+      "processes" => true,
       "task" => true,
       "wcm-template-pack" => true,
       "jitsi" => true,
