@@ -341,7 +341,7 @@ do_dump_database_dataset() {
         do_start_database
       fi
       echo_info "Exporting database ${DEPLOYMENT_DATABASE_NAME} content ..."
-      local DATABASE_CMD_DUMP=$(echo "${DATABASE_CMD} --routines --triggers" | sed 's/mysql -h db -u/mysqldump -h db -u/')
+      local DATABASE_CMD_DUMP=$(echo "${DATABASE_CMD} --routines --triggers --no-tablespaces" | sed 's/mysql -h db -u/mysqldump -h db -u/')
       ${DATABASE_CMD_DUMP} > ${_backupfile}
       echo_info "Exportation done"
       if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
