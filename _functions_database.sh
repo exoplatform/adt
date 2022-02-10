@@ -337,10 +337,6 @@ do_dump_database_dataset() {
   local _backupfile="$1/backup.sql"
   case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL)
-      if [ ! -e ${_backupfile} ]; then
-       echo_error "SQL file (${_backupfile}) doesn't exist."
-       exit 1
-      fi;
       if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
         do_start_database
       fi
