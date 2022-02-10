@@ -1637,7 +1637,7 @@ do_deploy() {
     # Stop the server
     do_stop
   fi
-  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
+  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ] || [ "${DEPLOYMENT_MODE}" == "DUMP_DATASET" ] ; then
     echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
     _tmpdir="${TMP_DIR}/archive-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
     mkdir -p "${_tmpdir}"
@@ -1700,6 +1700,13 @@ do_deploy() {
       do_restore_dataset
     ;;
     DUMP_DATASET)
+      echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} to be prepared for dataset dumping..."
+      rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
+      rm -rf ${_tmpdir}
+      echo_info "Done."
       do_dump_dataset
     ;;
     *)
