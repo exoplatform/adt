@@ -1141,7 +1141,19 @@ do_dump_dataset(){
   fi
   
   # To-do
+  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_dump ||:
+  cp -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_dump
+  if ${DEPLOYMENT_CHAT_ENABLED}; then
+    do_dump_chat_mongo_dataset
+  fi
+
+  do_dump_database_dataset
+
+  do_dump_es_dataset
   
+  echo_info "Generating dataset ..."
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_dump -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump search backup.sql
+
 }
 
 do_restore_dataset(){
