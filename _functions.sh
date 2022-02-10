@@ -1151,7 +1151,7 @@ do_dump_dataset(){
   do_dump_database_dataset "${_dumpdir}"
 
   do_dump_es_dataset "${_dumpdir}"
-
+  rm ${DS_DIR}/${DS_FILENAME}.tar.bz2
   echo_info "Generating dataset ..."
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump chat.name search backup.sql
