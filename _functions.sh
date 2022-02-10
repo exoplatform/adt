@@ -1159,6 +1159,7 @@ do_dump_dataset(){
     display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql
   fi
   echo_info "Done."
+  echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
   rm -rf "${_dumpdir}"
 }
 
