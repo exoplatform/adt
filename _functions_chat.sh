@@ -202,15 +202,18 @@ do_restore_chat_mongo_dataset() {
   do_drop_chat_database
   do_start_chat_server
   local _dumpfile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/chat.dump"
+  local _dbnamefile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/chat.name"
   case ${DEPLOYMENT_CHAT_MONGODB_TYPE} in
     DOCKER)
       if [ ! -e ${_dumpfile} ]; then
         echo_error "Mongo dump file (${_dumpfile}) doesn't exist."
         exit 1
       fi;
+      local dbname="chat"
+      [ -f "$_dbnamefile" -a -s "$_dbnamefile" ] && dbname=$(cat $_dbnamefile)
       echo_info "Restauring dump file to mongo server..."
       ${DOCKER_CMD} cp ${_dumpfile} ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/tmp/
-      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongorestore --nsFrom "chat.*" --nsTo "${DEPLOYMENT_CHAT_MONGODB_NAME}.*" --quiet --archive=/tmp/chat.dump
+      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongorestore --nsFrom "${dbname}.*" --nsTo "${DEPLOYMENT_CHAT_MONGODB_NAME}.*" --quiet --archive=/tmp/chat.dump
       echo_info "Done."
       do_stop_chat_server
     ;;
@@ -226,10 +229,12 @@ do_restore_chat_mongo_dataset() {
 do_dump_chat_mongo_dataset() {
   do_start_chat_server
   local _dumpfile="$1/chat.dump"
+  local _dbnamefile="$1/chat.name"
   case ${DEPLOYMENT_CHAT_MONGODB_TYPE} in
     DOCKER)
       echo_info "Generating dump file from mongo server..."
-      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongodump --nsFrom "${DEPLOYMENT_CHAT_MONGODB_NAME}.*" --nsTo "chat.*" --archive > ${_dumpfile}
+      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongodump --archive --db ${DEPLOYMENT_CHAT_MONGODB_NAME} > ${_dumpfile}
+      echo ${DEPLOYMENT_CHAT_MONGODB_NAME} > ${_dbnamefile}
       echo_info "Done."
       do_stop_chat_server
     ;;
