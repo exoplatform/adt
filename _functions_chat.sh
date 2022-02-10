@@ -223,6 +223,24 @@ do_restore_chat_mongo_dataset() {
   rm -rf ${_dumpfile}
 }
 
+do_dump_chat_mongo_dataset() {
+  do_start_chat_server
+  local _dumpfile="$1/chat.dump"
+  case ${DEPLOYMENT_CHAT_MONGODB_TYPE} in
+    DOCKER)
+      echo_info "Generating dump file from mongo server..."
+      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongodump --nsFrom "${DEPLOYMENT_CHAT_MONGODB_NAME}.*" --nsTo "chat.*" --archive > ${_dumpfile}
+      echo_info "Done."
+      do_stop_chat_server
+    ;;
+    *)
+      echo_error "Dataset backup isn't supported for chat mongo type \"${DEPLOYMENT_CHAT_MONGODB_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+}
+
 
 # #############################################################################
 # Env var to not load it several times

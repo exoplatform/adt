@@ -333,6 +333,33 @@ do_start_database() {
   echo_info "Done."
 }
 
+do_dump_database_dataset() {
+  local _backupfile="$1/backup.sql"
+  case ${DEPLOYMENT_DB_TYPE} in
+    MYSQL|DOCKER_MYSQL)
+      if [ ! -e ${_backupfile} ]; then
+       echo_error "SQL file (${_backupfile}) doesn't exist."
+       exit 1
+      fi;
+      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+        do_start_database
+      fi
+      echo_info "Exporting database ${DEPLOYMENT_DATABASE_NAME} content ..."
+      local DATABASE_CMD_DUMP=$(echo "${DATABASE_CMD} --routines --triggers" | sed 's/mysql -h db -u/mysql_dump -h db -u/')
+      ${DATABASE_CMD_DUMP} > ${_backupfile}
+      echo_info "Exportation done"
+      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+        do_stop_database
+      fi
+    ;;
+    *)
+      echo_error "Dataset backup isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+}
+
 do_restore_database_dataset() {
   do_drop_database
   do_create_database

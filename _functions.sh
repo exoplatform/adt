@@ -1139,21 +1139,23 @@ do_dump_dataset(){
     env_var "TAR_BZIP2_COMPRESS_PRG" ""
     env_var "NICE_CMD" "nice -n 20"
   fi
-  
-  # To-do
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_dump ||:
-  cp -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_dump
+
+  local _dumpdir="${TMP_DIR}/dump-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+  [ -d ${_dumpdir} ] && rm -rf ${_dumpdir}
+  mkdir -p ${_dumpdir}/exo
+  cp -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/* ${_dumpdir}/exo
   if ${DEPLOYMENT_CHAT_ENABLED}; then
-    do_dump_chat_mongo_dataset
+    do_dump_chat_mongo_dataset "${_dumpdir}"
   fi
 
-  do_dump_database_dataset
+  do_dump_database_dataset "${_dumpdir}"
 
-  do_dump_es_dataset
-  
+  do_dump_es_dataset "${_dumpdir}"
+
   echo_info "Generating dataset ..."
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_dump -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump search backup.sql
-
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump search backup.sql
+  echo_info "Done."
+  rm -rf "${_dumpdir}"
 }
 
 do_restore_dataset(){
