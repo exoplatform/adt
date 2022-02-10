@@ -219,6 +219,9 @@ case "${ACTION}" in
       RESTORE_DATASET)
         do_restore_dataset
       ;;
+      DUMP_DATASET)
+        do_dump_dataset
+      ;;
       *)
         echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
         print_usage

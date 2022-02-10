@@ -148,7 +148,7 @@ Environment Variables
   DEPLOYMENT_DB_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE | DOCKER_SQLSERVER)
   DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (no default)
 
-  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
+  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET | DUMP_DATASET - The latest dataset - if exists -  is restored)
 
   DEPLOYMENT_LDAP_URL               : LDAP URL to use if the server is using one (default: none)
   DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
@@ -1130,6 +1130,20 @@ do_download_dataset() {
   echo_info "Done"
 }
 
+do_dump_dataset(){
+  # System dependent settings
+  if ${LINUX}; then
+    env_var "TAR_BZIP2_COMPRESS_PRG" "--use-compress-prog=pbzip2"
+    env_var "NICE_CMD" "nice -n 20 ionice -c2 -n7"
+  else
+    env_var "TAR_BZIP2_COMPRESS_PRG" ""
+    env_var "NICE_CMD" "nice -n 20"
+  fi
+  
+  # To-do
+  
+}
+
 do_restore_dataset(){
   # System dependent settings
   if ${LINUX}; then
@@ -1670,6 +1684,9 @@ do_deploy() {
     ;;
     RESTORE_DATASET)
       do_restore_dataset
+    ;;
+    DUMP_DATASET)
+      do_dump_dataset
     ;;
     *)
       echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
