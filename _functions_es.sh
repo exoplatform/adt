@@ -258,11 +258,9 @@ do_dump_es_dataset() {
   if ${DEPLOYMENT_ES_EMBEDDED}; then
     local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
     cp -r ${path}/* ${_esData}/
-    sudo chown 1000.1000 -R ${_esData}
   else
     local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
-    sudo cp -r ${mount_point}/* ${_esData}/
-    sudo chown 1000.1000 -R ${_esData}
+    sudo cp -r ${mount_point}/* ${_esData}/ || true
   fi
 }
 
