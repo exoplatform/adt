@@ -1141,7 +1141,7 @@ do_dump_dataset(){
   fi
 
   local _dumpdir="${TMP_DIR}/dump-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
-  [ -d ${_dumpdir} ] && rm -rf ${_dumpdir}
+  [ -d ${_dumpdir} ] && sudo rm -rf ${_dumpdir}
   mkdir -p ${_dumpdir}/exo
   cp -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/* ${_dumpdir}/exo
   if ${DEPLOYMENT_CHAT_ENABLED}; then
@@ -1160,7 +1160,7 @@ do_dump_dataset(){
   fi
   echo_info "Done."
   echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
-  rm -rf "${_dumpdir}"
+  sudo rm -rf "${_dumpdir}"
 }
 
 do_restore_dataset(){
