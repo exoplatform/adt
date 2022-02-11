@@ -148,7 +148,7 @@ Environment Variables
   DEPLOYMENT_DB_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE | DOCKER_SQLSERVER)
   DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (no default)
 
-  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
+  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET | DUMP_DATASET - The latest dataset - if exists -  is restored)
 
   DEPLOYMENT_LDAP_URL               : LDAP URL to use if the server is using one (default: none)
   DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
@@ -344,6 +344,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
+      configurable_env_var "DS_TARGET_SERVER" ""
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -1130,6 +1131,49 @@ do_download_dataset() {
   echo_info "Done"
 }
 
+do_dump_dataset(){
+  # System dependent settings
+  if ${LINUX}; then
+    env_var "TAR_BZIP2_COMPRESS_PRG" "--use-compress-prog=pbzip2"
+    env_var "NICE_CMD" "nice -n 20 ionice -c2 -n7"
+  else
+    env_var "TAR_BZIP2_COMPRESS_PRG" ""
+    env_var "NICE_CMD" "nice -n 20"
+  fi
+
+  if [ "${DS_FILENAME}" = "${PRODUCT_NAME}-${PRODUCT_BRANCH}" ]; then
+    echo_warn "Dataset file name is set with default name behaviour, It is strictly recommended to define DS_FILENAME parameter containing only file name prefix (no extension)!"
+  fi
+
+  local _dumpdir="${TMP_DIR}/dump-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+  [ -d ${_dumpdir} ] && sudo rm -rf ${_dumpdir}
+  mkdir -p ${_dumpdir}/exo
+  cp -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/* ${_dumpdir}/exo
+  if ${DEPLOYMENT_CHAT_ENABLED}; then
+    do_dump_chat_mongo_dataset "${_dumpdir}"
+  fi
+
+  do_dump_database_dataset "${_dumpdir}"
+
+  do_dump_es_dataset "${_dumpdir}"
+  [ -f ${DS_DIR}/${DS_FILENAME}.tar.bz2 ] && rm ${DS_DIR}/${DS_FILENAME}.tar.bz2
+  echo_info "Generating dataset ..."
+  if ${DEPLOYMENT_CHAT_ENABLED}; then
+    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump chat.name search backup.sql
+  else
+    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql
+  fi
+  echo_info "Done."
+  echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
+  sudo rm -rf "${_dumpdir}"
+  if [ -z "${DS_TARGET_SERVER:-}" ]; then
+    echo_info "DS_TARGET_SERVER is specified to ${DS_TARGET_SERVER}. Starting transfer..."
+    rsync -Pav -e "ssh -o StrictHostKeyChecking=no" ${DS_DIR}/${DS_FILENAME}.tar.bz2 ${DS_TARGET_SERVER}:${DS_DIR}/${DS_FILENAME}.tar.bz2
+    echo_info "Transfer done."
+  fi
+
+}
+
 do_restore_dataset(){
   # System dependent settings
   if ${LINUX}; then
@@ -1609,7 +1653,7 @@ do_deploy() {
     # Stop the server
     do_stop
   fi
-  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ]; then
+  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ] || [ "${DEPLOYMENT_MODE}" == "DUMP_DATASET" ] ; then
     echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
     _tmpdir="${TMP_DIR}/archive-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
     mkdir -p "${_tmpdir}"
@@ -1670,6 +1714,16 @@ do_deploy() {
     ;;
     RESTORE_DATASET)
       do_restore_dataset
+    ;;
+    DUMP_DATASET)
+      echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} to be prepared for dataset dumping..."
+      rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
+      rm -rf ${_tmpdir}
+      echo_info "Done."
+      do_dump_dataset
     ;;
     *)
       echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""

@@ -161,8 +161,7 @@ Usage
       DEPLOYMENT_DB_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE)
       DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (default: a default version is defined for each eXo version)
 
-      DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored)
-
+      DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored) | DUMP_DATASET - Dump instance data
       DEPLOYMENT_LDAP_URL               : LDAP URL to use if the server is using one (default: none)
       DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
       DEPLOYMENT_LDAP_ADMIN_PWD         : LDAP password to use to logon into the LDAP server

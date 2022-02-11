@@ -251,6 +251,20 @@ do_restore_es_dataset() {
   rm -rf ${_esData}
 }
 
+# Dump dataset
+do_dump_es_dataset() {
+  local _esData="$1/search"
+  mkdir -p ${_esData}
+  if ${DEPLOYMENT_ES_EMBEDDED}; then
+    local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
+    cp -r "${path}/nodes" ${_esData}/ || touch ${_esData}/__nofile
+  else
+    local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
+    sudo cp -fr "${mount_point}/nodes" ${_esData}/ || touch ${_esData}/__nofile
+    sudo chown 1000.1000 -R ${mount_point}
+  fi
+}
+
 
 # #############################################################################
 # Env var to not load it several times
