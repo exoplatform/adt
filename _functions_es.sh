@@ -245,7 +245,7 @@ do_restore_es_dataset() {
     sudo chown 1000.1000 -R ${path}
   else
     local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
-    sudo mv -v ${_esData}/* ${mount_point}/ >/dev/null || true
+    sudo mv -v ${_esData}/* ${mount_point}/ >/dev/null
     sudo chown 1000.1000 -R ${mount_point}
   fi
   rm -rf ${_esData}
