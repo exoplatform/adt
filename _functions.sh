@@ -344,6 +344,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
+      configurable_env_var "DS_TARGET_SERVER" ""
 
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-onlyoffice" ]]; then
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
@@ -1140,6 +1141,10 @@ do_dump_dataset(){
     env_var "NICE_CMD" "nice -n 20"
   fi
 
+  if [ "${DS_FILENAME}" = "${PRODUCT_NAME}-${PRODUCT_BRANCH}" ]; then
+    echo_warn "Dataset file name is set with default name behaviour, It is strictly recommended to define DS_FILENAME parameter containing only file name prefix (no extension)!"
+  fi
+
   local _dumpdir="${TMP_DIR}/dump-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
   [ -d ${_dumpdir} ] && sudo rm -rf ${_dumpdir}
   mkdir -p ${_dumpdir}/exo
@@ -1161,6 +1166,12 @@ do_dump_dataset(){
   echo_info "Done."
   echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
   sudo rm -rf "${_dumpdir}"
+  if [ -z "${DS_TARGET_SERVER:-}" ]; then
+    echo_info "DS_TARGET_SERVER is specified to ${DS_TARGET_SERVER}. Starting transfer..."
+    rsync -Pav -e "ssh -o StrictHostKeyChecking=no" ${DS_DIR}/${DS_FILENAME}.tar.bz2 ${DS_TARGET_SERVER}:${DS_DIR}/${DS_FILENAME}.tar.bz2
+    echo_info "Transfer done."
+  fi
+
 }
 
 do_restore_dataset(){
