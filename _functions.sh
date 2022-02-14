@@ -1166,7 +1166,7 @@ do_dump_dataset(){
   echo_info "Done."
   echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
   sudo rm -rf "${_dumpdir}"
-  if [ -z "${DS_TARGET_SERVER:-}" ]; then
+  if [ ! -z "${DS_TARGET_SERVER:-}" ]; then
     echo_info "DS_TARGET_SERVER is specified to ${DS_TARGET_SERVER}. Starting transfer..."
     rsync -Pav -e "ssh -o StrictHostKeyChecking=no" ${DS_DIR}/${DS_FILENAME}.tar.bz2 ${DS_TARGET_SERVER}:${DS_DIR}/${DS_FILENAME}.tar.bz2
     echo_info "Transfer done."
