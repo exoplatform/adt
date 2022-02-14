@@ -1678,7 +1678,11 @@ do_deploy() {
       if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ]; then
         rm -rf ${_tmpdir}/*
         mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
-        mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}
+        if [ -d ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ]; then
+          mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}
+        else
+          mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
+        fi
       else
         mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
         mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
