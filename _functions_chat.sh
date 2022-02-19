@@ -45,9 +45,12 @@ do_start_chat_server() {
         -p "127.0.0.1:${DEPLOYMENT_CHAT_MONGODB_PORT}:27017" -d \
         -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
         --name ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ${DEPLOYMENT_CHAT_MONGODB_IMAGE}:${DEPLOYMENT_CHAT_MONGODB_VERSION}
+        check_mongodb_availability
+        # Update feature compatibility version to support further mongodb upgrades
         local major_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+\.[0-9]+')
-        sleep 10
-        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" || true
+        if ! ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" >/dev/null; then
+          echo_error "Failed to update feature compatibility version to ${major_version}! Continuing anyway..."
+        fi
     fi
 
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
@@ -64,6 +67,32 @@ do_start_chat_server() {
     fi
 
   fi
+}
+
+check_mongodb_availability() {
+  echo_info "Waiting for Mongodb availability on port ${DEPLOYMENT_CHAT_MONGODB_PORT}"
+  local count=0
+  local try=600
+  local wait_time=60
+  local RET=-1
+
+  while [ $count -lt $try -a $RET -ne 0 ]; do
+    count=$(( $count + 1 ))
+    set +e
+    nc -z -w ${wait_time} localhost ${DEPLOYMENT_CHAT_MONGODB_PORT} > /dev/null
+    RET=$?
+    if [ $RET -ne 0 ]; then
+      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Mongodb not yet available (${count} / ${try})..."
+      echo -n "."
+      sleep $wait_time
+    fi
+    set -e
+  done
+  if [ $count -eq $try ]; then
+    echo_error "Mongodb ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
+    exit 1
+  fi
+  echo_info "Mongodb ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} up and available"
 }
 
 do_stop_chat_server() {
