@@ -50,7 +50,7 @@ do_start_chat_server() {
         local major_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+\.[0-9]+')
         set +e
         local RET=$(${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --quiet --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"}.ok)")
-        if [ $RET -eq "0" ];  then
+        if [ $RET -eq "0" ]; then
           echo_error "Failed to update feature compatibility version to ${major_version}! Continuing anyway..."
         fi
         set -e
