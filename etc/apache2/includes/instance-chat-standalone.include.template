@@ -78,8 +78,8 @@
         <Location "/jitsiweb/xmpp-websocket">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
         </Location>
-        <Location "/colibri-ws/">
-            ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/colibri-ws/"
+        <Location "/jitsiweb/colibri-ws/">
+            ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}/colibri-ws/"
         </Location>
     </IfModule>
 
