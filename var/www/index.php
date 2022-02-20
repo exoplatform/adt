@@ -137,7 +137,7 @@ foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
         <td class="col-center"><?= componentFBStatusLabel($descriptor_array) ?></td>
         <td class="col-center"><?= componentFBScmLabel($descriptor_array) ?></td>
         <td class="col-center"><?= componentFBIssueLabel($descriptor_array) ?></td>
-        <td class="col-center"><?= componentFBEditIcon($descriptor_array) ?></td>
+        <td class="col-center"><?= componentFBEditIcon($descriptor_array) ?><?= componentFBDeployIcon($descriptor_array) ?></td>
       <?php } else { ?>
         <td class="col-center" colspan="4"></td>
       <?php } ?>
