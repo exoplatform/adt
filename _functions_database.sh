@@ -386,7 +386,7 @@ do_restore_database_dataset() {
     DOCKER_POSTGRES)
       do_start_database
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
-      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD}
+      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD} >/dev/null
       echo_info "Importation done"
     ;;
     *)
