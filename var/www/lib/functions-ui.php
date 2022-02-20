@@ -720,7 +720,7 @@ function componentFBEditIcon($deployment_descriptor) {
  */
 function componentFBDeployIcon($deployment_descriptor) {
   $content="";
-  if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
+  if(isset($deployment_descriptor->DEPLOYMENT_BUILD_URL)) {
     $content='<a href="'.$descriptor_array->DEPLOYMENT_BUILD_URL.'/build"';
     $content.='rel="tooltip" title="Restart your instance or reset your instance data">';
     $content.='<i class="icon-refresh"></i></a>';
