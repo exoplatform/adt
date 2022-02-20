@@ -1145,8 +1145,8 @@ do_dump_dataset(){
     echo_warn "Dataset file name is set with default name behaviour, It is strictly recommended to define DS_FILENAME parameter containing only file name prefix (no extension)!"
   fi
 
-  if [ -f ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then 
-    echo_warn "A dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 is already exists! You have 10 seconds to cancel this build to save this file. Otherwise, it is going to be removed!"
+  if [ -f ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
+    echo_warn "A dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 already exists! You have 10 seconds to cancel this build to save this file. Otherwise, it is going to be removed!"
     sleep 10
     rm ${DS_DIR}/${DS_FILENAME}.tar.bz2
     echo_info "File ${DS_DIR}/${DS_FILENAME}.tar.bz2 is removed!"
