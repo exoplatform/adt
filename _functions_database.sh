@@ -336,17 +336,24 @@ do_start_database() {
 do_dump_database_dataset() {
   local _backupfile="$1/backup.sql"
   case ${DEPLOYMENT_DB_TYPE} in
-    MYSQL|DOCKER_MYSQL)
-      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+    MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
+      if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
         do_start_database
       fi
       echo_info "Exporting database ${DEPLOYMENT_DATABASE_NAME} content ..."
       local DATABASE_CMD_DUMP=$(echo "${DATABASE_CMD} --routines --triggers --no-tablespaces" | sed 's/mysql -h db -u/mysqldump -h db -u/')
       ${DATABASE_CMD_DUMP} > ${_backupfile}
       echo_info "Exportation done"
-      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+      if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
         do_stop_database
       fi
+    ;;
+    DOCKER_POSTGRES)
+      do_start_database
+      echo_info "Exporting database ${DEPLOYMENT_DATABASE_NAME} content ..."
+      local DATABASE_CMD_DUMP=$(echo "${DATABASE_CMD}" | sed 's/psql/pg_dump/g')
+      ${DATABASE_CMD_DUMP} > ${_backupfile}
+      echo_info "Exportation done"
     ;;
     *)
       echo_error "Dataset backup isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\""
@@ -361,20 +368,26 @@ do_restore_database_dataset() {
   do_create_database
   local _backupfile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/backup.sql"
   case ${DEPLOYMENT_DB_TYPE} in
-    MYSQL|DOCKER_MYSQL)
+    MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
       if [ ! -e ${_backupfile} ]; then
        echo_error "SQL file (${_backupfile}) doesn't exist."
        exit 1
       fi;
-      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+      if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
         do_start_database
       fi
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
       pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD}
       echo_info "Importation done"
-      if [ ${DEPLOYMENT_DB_TYPE} = "DOCKER_MYSQL" ]; then
+      if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
         do_stop_database
       fi
+    ;;
+    DOCKER_POSTGRES)
+      do_start_database
+      echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
+      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD}
+      echo_info "Importation done"
     ;;
     *)
       echo_error "Dataset restoration isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\""
