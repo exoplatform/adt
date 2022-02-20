@@ -712,6 +712,23 @@ function componentFBEditIcon($deployment_descriptor) {
 }
 
 /**
+ * Get markup for a Feature Branch Deploy action icon
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function componentFBDeployIcon($deployment_descriptor) {
+  $content="";
+  if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
+    $content='<a href="'.$descriptor_array->DEPLOYMENT_BUILD_URL.'/build"';
+    $content.='rel="tooltip" title="Restart your instance or reset your instance data">';
+    $content.='<i class="icon-refresh"></i></a>';
+  }
+  return $content;
+}
+
+/**
  * Get markup for a Git repository branch commits status
  *
  * @param $fb_project
