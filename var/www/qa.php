@@ -50,7 +50,7 @@ if (isDeploymentInCategoryArray($qa_instances)) {
                 <?php 
                 if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
                   ?>
-                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
+                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
                   <?php 
                 } else { 
                   ?>
