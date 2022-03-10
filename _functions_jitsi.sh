@@ -173,7 +173,6 @@ do_start_jitsi() {
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_JVB_TCP_PORT}:${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
-    -p "${DEPLOYMENT_JITSI_JVB_UDP_PORT}:${DEPLOYMENT_JITSI_JVB_UDP_PORT}/udp" \
     -p "${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
     -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "ENABLE_COLIBRI_WEBSOCKET=1" \
@@ -183,8 +182,8 @@ do_start_jitsi() {
     -e "JVB_AUTH_USER=jvb" \
     -e "JVB_AUTH_PASSWORD=a2f17f0b494489773ec879bd12ef6a12" \
     -e "JVB_BREWERY_MUC=jvbbrewery" \
-    -e "JVB_PORT=${DEPLOYMENT_JITSI_JVB_UDP_PORT}" \
-    -e "JVB_TCP_HARVESTER_DISABLED=true" \
+    -e "JVB_PORT=${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
+    -e "JVB_TCP_HARVESTER_DISABLED=false" \
     -e "JVB_TCP_PORT=${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
     -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
     -e "TZ=UTC" \
