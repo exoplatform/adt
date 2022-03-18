@@ -350,6 +350,10 @@ initialize_product_settings() {
         env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" true
       fi
 
+      if [ "${DS_FILENAME:-}" = "CURRENT" ]; then
+        env_var "DS_FILENAME" "${INSTANCE_KEY}"
+      fi
+
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${APACHE_SSL_CERTIFICATE_FILE}"
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${APACHE_SSL_CERTIFICATE_KEY_FILE}"
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}"
@@ -1987,9 +1991,10 @@ do_stop() {
             export CATALINA_HOME=${DEPLOYMENT_DIR}
             export CATALINA_PID=${DEPLOYMENT_PID_FILE}
           fi
-          if ([ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ]) && [ -s "${DEPLOYMENT_PID_FILE}" ] && pgrep -fl catalina | grep -q "$(cat ${DEPLOYMENT_PID_FILE})" 2>/dev/null; then 
+          if ([ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ] || [ "${DEPLOYMENT_MODE}" = "RESTORE_DATASET" ]) && [ -s "${DEPLOYMENT_PID_FILE}" ] && pgrep -fl catalina | grep -q "$(cat ${DEPLOYMENT_PID_FILE})" 2>/dev/null; then 
             pid="$(cat ${DEPLOYMENT_PID_FILE})"
             kill -9 ${pid}
+            rm ${DEPLOYMENT_PID_FILE}
           else  
             ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
           fi  
