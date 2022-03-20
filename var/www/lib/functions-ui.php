@@ -13,7 +13,7 @@ function pageHeader ($title="") {
     <meta http-equiv="refresh" content="120">
     <title>Acceptance<?= ( empty($title) ? "" : " - " . $title ) ?></title>
     <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico"/>
-    <link href="//netdna.bootstrapcdn.com/bootswatch/2.3.2/spacelab/bootstrap.min.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/bootswatch/3.4.1/spacelab/bootstrap.min.css" rel="stylesheet">
     <link href="//netdna.bootstrapcdn.com/font-awesome/3.0.2/css/font-awesome.css" rel="stylesheet">
     <link href="./style.css" media="screen" rel="stylesheet" type="text/css"/>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js" type="text/javascript"></script>
@@ -55,7 +55,7 @@ function pageNavigation () {
   $nav["Servers"]="/servers.php";
   ?>
 <!-- navbar ================================================== -->
-<div class="navbar navbar-fixed-top">
+<!-- <div class="navbar navbar-default">
     <div class="navbar-inner">
         <div class="container-fluid">
             <a class="brand" href="/"><?=$_SERVER['SERVER_NAME'] ?></a>
@@ -72,7 +72,46 @@ function pageNavigation () {
             </ul>
         </div>
     </div>
+</div> -->
+
+
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="/"><?=$_SERVER['SERVER_NAME'] ?></a>
+    </div>
+
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <!-- <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="#">Link</a></li> -->
+        <?php
+          foreach ($nav as $label => $url) {
+            if ($url == $_SERVER['REQUEST_URI'] ){
+              echo '<li class="active"><a href='.$url.'>'.$label.'</a></li>';
+            } else {
+              echo '<li><a href='.$url.'>'.$label.'</a></li>';
+            }
+          }
+        ?>
+        </li>
+      </ul>
+      <div class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" id="searchitem" class="form-control" placeholder="Type to search">
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
+
+
 <!-- /navbar -->
   <?php
 }
@@ -91,6 +130,22 @@ Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS -
     $(document).ready(function () {
         $('body').tooltip({ selector: '[rel=tooltip]'});
         $('body').popover({ selector: '[rel=popover]', trigger: 'hover'});
+        $("#searchitem").on("keyup", function() {
+          var value = $(this).val().toLowerCase();
+          if(value.length>0) {
+            $("tr td.category-row").hide();
+          } else {
+            $("tr td.category-row").show();
+          }
+          $("tbody tr").filter(function() {
+            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+          });
+        });
+        $('#logout').click(function(event){
+          if(!confirm('Are you sure you want to log out?')){
+            event.preventDefault();
+          }
+        });
     });
 </script>
   <?php
@@ -367,12 +422,12 @@ function componentDatabaseIcon ($deployment_descriptor) {
   }
   $content="";
   if ($database_icon != "none") {
-  $content.='<img src="/images/'.$database_icon.'.png" witdh="8px" height="8px" alt="'.$database_icon.'"/>&nbsp;';
+  $content.='<img src="/images/'.$database_icon.'.png" height="30px" alt="'.$database_icon.'"/>&nbsp;';
   }
   if (empty($deployment_descriptor->DEPLOYMENT_DATABASE_VERSION)) {
-    $content.='<span class="label">-NC-</span>&nbsp;';
+    $content.='<span>-NC-</span>&nbsp;';
   } else {
-    $content.='<span class="label">'.$deployment_descriptor->DEPLOYMENT_DATABASE_VERSION.'</span>&nbsp;';
+    $content.='<span>'.$deployment_descriptor->DEPLOYMENT_DATABASE_VERSION.'</span>&nbsp;';
   }
   return $content;
 }
@@ -649,7 +704,7 @@ function componentFBStatusLabel($deployment_descriptor) {
   } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA In Progress") {
     $acceptance_state_class = " label-warning";
   } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA Rejected") {
-    $acceptance_state_class = " label-important";
+    $acceptance_state_class = " label-behind";
   } else if ($deployment_descriptor->ACCEPTANCE_STATE === "Validated") {
     $acceptance_state_class = " label-success";
   }
@@ -741,9 +796,9 @@ function componentFBDeployIcon($deployment_descriptor) {
   $content='<a href="'.$fb_project['http_url_behind'].'" target="_blank" title="[behind]">';
   $content.='<span rel="tooltip" title="'.$fb_project['behind_commits'].' commits on the base branch that do not exist on this branch [behind]">';
   if ($fb_project['behind_commits'] > 0) {
-    $content.='<span class="label label-commit label-important">'.$fb_project['behind_commits'].' <i class="icon-arrow-down icon-white"></i></span>';
+    $content.='<span class="label label-commit label-behind">'.$fb_project['behind_commits'].' <i class="icon-arrow-down icon-white"></i></span>';
   } else {
-    $content.='<span class="label label-commit">'.$fb_project['behind_commits'].' <i class="icon-arrow-down"></i></span>';
+    $content.='<span class="label label-nocommit">'.$fb_project['behind_commits'].' <i class="icon-arrow-down"></i></span>';
   }
   $content.='</span></a>';
   $content.='<a href="'.$fb_project['http_url_ahead'].'" target="_blank" title="[ahead]">';
@@ -751,7 +806,7 @@ function componentFBDeployIcon($deployment_descriptor) {
   if ($fb_project['ahead_commits'] > 0) {
     $content.='<span class="label label-commit label-info "><i class="icon-arrow-up icon-white"></i> '.$fb_project['ahead_commits'].'</span>';
   } else {
-    $content.='<span class="label label-commit"><i class="icon-arrow-up"></i> '.$fb_project['ahead_commits'].'</span>';
+    $content.='<span class="label label-nocommit"><i class="icon-arrow-up"></i> '.$fb_project['ahead_commits'].'</span>';
   }
   $content.='</span></a>';
   return $content;
