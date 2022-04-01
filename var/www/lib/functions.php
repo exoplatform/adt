@@ -164,6 +164,7 @@ function getRepositories()
         "news" => "News",
         "onlyoffice" => "Only Office",
         "poll" => "Poll",
+        "gamification-github" => "Gamification Github",
         "processes" => "Processes",
         "saml2-addon" => "SAML2",
         "spnego-addon" => "SPENEGO",
@@ -183,6 +184,7 @@ function getModuleCiPrefix($item)
         "agenda" => "addon-",
         "analytics" => "meeds-addon-",
         "poll" => "meeds-addon-",
+        "gamification-github" => "meeds-addon-",
         "automatic-translation" => "addon-",
         "gatein-wci" => "meeds-",
         "kernel" => "meeds-",
@@ -269,6 +271,7 @@ function getTranslationBranches($projects)
       "agenda" => true,
       "analytics" => true,
       "poll" => true,
+      "gamification-github" => true,
       "automatic-translation" => true,
       "documents" => true,
       "ecms" => true,
@@ -466,7 +469,7 @@ function getLocalAcceptanceInstances()
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '1.3.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github";
               break;
             case '1.2.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes";
