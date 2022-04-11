@@ -229,14 +229,14 @@ do_start_jitsi() {
     --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:stable-7001
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:stable-7001"
+  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image exoplatform/jitsi-web:stable-7001"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
-    -e "TOOLBAR_BUTTONS=desktop,camera,chat,hangup,fullscreen,microphone,mute-everyone,mute-video-everyone,participants-pane,profile,raisehand,recording,settings,security,select-background,tileview,toggle-camera,videoquality,closedcaptions"
+    -e "TOOLBAR_BUTTONS=desktop,camera,chat,hangup,fullscreen,microphone,mute-everyone,mute-video-everyone,participants-pane,profile,raisehand,recording,settings,security,select-background,tileview,toggle-camera,videoquality,closedcaptions" \
     -e "ENABLE_IPV6=0" \
     -e "ENABLE_P2P=false" \
     -e "ENABLE_AUTH=1" \
