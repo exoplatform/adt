@@ -161,7 +161,6 @@ function getRepositories()
         "news" => "News",
         "onlyoffice" => "Only Office",
         "saml2-addon" => "SAML2",
-        "spnego-addon" => "SPENEGO",
         "web-conferencing" => "Web conferencing",
         "jitsi-call" => "Jitsi Call",
         "jitsi" => "Jitsi",
@@ -215,7 +214,6 @@ function getModuleCiPrefix($item)
         "onlyoffice" => "addon-",
         "processes" => "addon-",
         "saml2-addon" => "addon-",
-        "spnego-addon" => "addon-",
         "task" => "meeds-addon-",
         "web-conferencing" => "addon-",
         "microservices" => "addon-",
@@ -294,7 +292,6 @@ function getTranslationBranches($projects)
       "platform-private-distributions" => true,
       "saml2-addon" => true,
       "social" => true,
-      "spnego-addon" => true,
       "processes" => true,
       "task" => true,
       "wcm-template-pack" => true,
@@ -467,6 +464,9 @@ function getLocalAcceptanceInstances()
       switch ($descriptor_array['PRODUCT_NAME']) {
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '1.4.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github";
+              break;
             case '1.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github";
               break;
@@ -486,6 +486,9 @@ function getLocalAcceptanceInstances()
           break;
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '6.4.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
+              break;
             case '6.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
               break;
@@ -521,6 +524,9 @@ function getLocalAcceptanceInstances()
         case 'plfent':
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
+            case '6.4.x':
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
+              break;
             case '6.3.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
               break;
