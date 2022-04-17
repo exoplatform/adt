@@ -107,7 +107,7 @@ do_start_jitsi() {
   echo_info "${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} container started"
   check_jitsi_call_availability
 
-  echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:stable-6826"
+  echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:stable-7001"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
   ${DOCKER_CMD} run \
@@ -138,10 +138,10 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:stable-6826
+    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:stable-7001
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:stable-6826"
+  echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:stable-7001"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}
   ${DOCKER_CMD} run \
@@ -164,15 +164,15 @@ do_start_jitsi() {
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:stable-6826
+    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:stable-7001
   echo_info "${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi JVB container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} based on image jitsi/jvb:stable-6826"
+  echo_info "Starting Jitsi JVB container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} based on image jitsi/jvb:stable-7001"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_JITSI_JVB_TCP_PORT}:${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
+    -p "${DEPLOYMENT_JITSI_JVB_PORT}:${DEPLOYMENT_JITSI_JVB_PORT}/udp" \
     -p "${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
     -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "ENABLE_COLIBRI_WEBSOCKET=1" \
@@ -182,18 +182,16 @@ do_start_jitsi() {
     -e "JVB_AUTH_USER=jvb" \
     -e "JVB_AUTH_PASSWORD=a2f17f0b494489773ec879bd12ef6a12" \
     -e "JVB_BREWERY_MUC=jvbbrewery" \
-    -e "JVB_PORT=${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
-    -e "JVB_TCP_HARVESTER_DISABLED=false" \
-    -e "JVB_TCP_PORT=${DEPLOYMENT_JITSI_JVB_TCP_PORT}" \
+    -e "JVB_PORT=${DEPLOYMENT_JITSI_JVB_PORT}" \
     -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:stable-6826
+    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:stable-7001
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi Jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} based on image jitsi/jibri:stable-6826"
+  echo_info "Starting Jitsi Jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} based on image jitsi/jibri:stable-7001"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
@@ -228,16 +226,19 @@ do_start_jitsi() {
     -e "TZ=UTC" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:stable-6826
+    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:stable-7001
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:stable-6826"
+  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image exoplatform/jitsi-web:stable-7001"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
+    -e "TOOLBAR_BUTTONS=desktop,camera,chat,hangup,fullscreen,microphone,mute-everyone,mute-video-everyone,participants-pane,profile,raisehand,recording,settings,security,select-background,tileview,toggle-camera,videoquality,closedcaptions" \
+    -e "ENABLE_IPV6=0" \
+    -e "ENABLE_P2P=false" \
     -e "ENABLE_AUTH=1" \
     -e "ENABLE_RECORDING=1" \
     -e "ENABLE_XMPP_WEBSOCKET=1" \
@@ -264,7 +265,7 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:stable-6826
+    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} exoplatform/jitsi-web:stable-7001
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
   check_jitsi_web_availability
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
