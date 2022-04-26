@@ -24,7 +24,7 @@ checkCaches();
   </li>
   <li>eXo Tribe :
     <a href="https://community-dev.exoplatform.com/" target="_blank">(development) community-dev.exoplatform.com</a>
-    - <a href="https://community-ppr.exoplatform.com/" target="_blank">(pre-production) community-ppr.exoplatform.com</a>
+    - <a href="https://community-preprod.exoplatform.com/" target="_blank">(pre-production) community-preprod.exoplatform.com</a>
   </li>
   <li>eXo Blog :
     <a href="https://blog-dev.exoplatform.com/" target="_blank">(development) blog-dev.exoplatform.com/</a>

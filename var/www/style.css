@@ -19,7 +19,7 @@ a:link, a:visited, a:hover, a:active {
 
 #main {
   overflow       : auto;
-  padding-top    : 65px;
+  padding-top    : 60px;
   padding-bottom : 84px;
 }
 
@@ -283,7 +283,7 @@ a[name] {
 }
 
 a {
-  color: #0b6aa2;
+  color: #558bc4;
 }
 
 h3 .subtitle {
@@ -301,8 +301,8 @@ pre {
 }
 
 td.category-row {
-  background-color: #ffffff;
-  color: #49763f;
+  background-color: #363636;
+  color: #FBAD18;
   letter-spacing: 2px;
 }
 
@@ -310,22 +310,12 @@ td.category-row {
   font-size: 9px;
 }
 
-.label-behind {
-  background-color: #cd0200;
-}
-
-.label-nocommit {
-  font-size: 9px;
-  background-color: #ccc;
-}
-
-
 .label-addon, .label-label {
   font-size: 11px;
 }
 
 .label-addon {
-  background-color: #488cb5;
+  background-color: #548bc4c7;
 }
 
 /* Make the table header 45 deg rotated */

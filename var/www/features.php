@@ -58,7 +58,7 @@ checkCaches();
                                         <td class="col-center">
                                             <?php if (array_key_exists($project, $FBProjects)) { ?>
                                                 <?= componentFeatureRepoBrancheStatus($FBProjects[$project]);?>
-                                                <a href='https://ci.exoplatform.org/job/FB/job/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$feature?>-fb-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img width="30px" src='https://ci.exoplatform.org/buildStatus/icon?job=fb/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$feature?>-fb-ci'></a>
+                                                <a href='https://ci.exoplatform.org/job/FB/job/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$feature?>-fb-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=fb/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$feature?>-fb-ci'></a>
                                             <?php }?>
                                         </td>
                                     <?php } ?>
