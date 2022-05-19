@@ -236,7 +236,6 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
-    -e "TOOLBAR_BUTTONS=desktop,camera,chat,hangup,fullscreen,microphone,mute-everyone,mute-video-everyone,participants-pane,profile,raisehand,recording,settings,security,select-background,tileview,toggle-camera,videoquality,closedcaptions" \
     -e "ENABLE_IPV6=0" \
     -e "ENABLE_P2P=false" \
     -e "ENABLE_AUTH=1" \
