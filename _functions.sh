@@ -1685,7 +1685,7 @@ do_deploy() {
       # The server have been already deployed.
       # We load its settings from the configuration
       do_load_deployment_descriptor
-      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ] && [ $(ls -A "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}") ]; then
+      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ] && [ ! -z "$(ls -A ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})" ]; then
         rm -rf ${_tmpdir}/*
         mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
         if [ -d ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ]; then
