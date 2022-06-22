@@ -154,7 +154,10 @@ function getRepositories()
         "meeds" => "Meeds Distribution",
         "jcr" => "JCR",
         "ecms" => "ECMS",
+        "mail-integration" => "Mail Integration",
+        "dlp" => "Data Leak Prevention",
         "agenda" => "Agenda",
+        "agenda-connectors" => "Agenda Connectors",
         "chat-application" => "Chat application",
         "digital-workplace" => "Digital Workplace",
         "layout-management" => "Layout Management",
@@ -168,6 +171,8 @@ function getRepositories()
         "documents" => "Documents",
         "processes" => "Processes",
         "automatic-translation" => "Automatic Translation",
+        "anti-bruteforce" => "Anti Brute Force",
+        "anti-malware" => "Anti Malware",
         "data-upgrade" => "Data upgrade",
         "platform-private-distributions" => "PLF Private Dist");
     apc_store('repositories', $repositories);
@@ -180,6 +185,11 @@ function getModuleCiPrefix($item)
     // Add here only modules having prefix
     $modules = array(
         "agenda" => "addon-",
+        "agenda-connectors" => "addon-",
+        "dlp" => "addon-",
+        "mail-integration" => "addon-",
+        "anti-bruteforce" => "addon-",
+        "anti-malware" => "addon-",
         "analytics" => "meeds-addon-",
         "poll" => "meeds-addon-",
         "gamification-github" => "meeds-addon-",
@@ -266,6 +276,11 @@ function getTranslationBranches($projects)
 
   $projectsToIgnore = array(
       "agenda" => true,
+      "agenda-connectors" => true,
+      "dlp" => true,
+      "mail-integration" => true,
+      "anti-bruteforce" => true,
+      "anti-malware" => true,
       "analytics" => true,
       "poll" => true,
       "gamification-github" => true,
