@@ -243,20 +243,21 @@ function getFeatureBranches($projects)
                                             array_filter(explode("\n", $repoObject->git('branch -r')), 'isFeature')));
       foreach ($branches as $branch) {
         $fetch_url = $repoObject->git('config --get remote.origin.url');
+        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($project, 'feature/'.$branch);
         if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
           $github_org = $matches[1];
           $github_repo = $matches[2];
         }
         $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
         // Add link to GitHub diff URL
-        $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/feature/" . $branch."...develop";
-        $features[$branch][$project]['http_url_ahead'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/develop" ."...feature/".$branch;
-        $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/develop --oneline");
+        $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/feature/" . $branch . "..." . $baseBranchToCompareWith;
+        $features[$branch][$project]['http_url_ahead'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/" . $baseBranchToCompareWith . "...feature/".$branch;
+        $behind_commits_logs = $repoObject->git("log origin/feature/" . $branch . "..origin/" . $baseBranchToCompareWith . " --oneline");
         if (empty($behind_commits_logs))
           $features[$branch][$project]['behind_commits'] = 0;
         else
           $features[$branch][$project]['behind_commits'] = count(explode("\n", $behind_commits_logs));
-        $ahead_commits_logs = $repoObject->git("log origin/develop..origin/feature/" . $branch . " --oneline");
+        $ahead_commits_logs = $repoObject->git("log origin/" . $baseBranchToCompareWith . "..origin/feature/" . $branch . " --oneline");
         if (empty($ahead_commits_logs))
           $features[$branch][$project]['ahead_commits'] = 0;
         else
@@ -331,7 +332,8 @@ function getTranslationBranches($projects)
                                             //print "</pre>";
       foreach ($branches as $branch) {
         $baseRemotenameToCompareWith = 'origin';
-        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($project, $branch);
+        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($project, 'integration/'. $branch);
+
         $fetch_url = $repoObject->git('config --get remote.origin.url');
         if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
           $github_repo = $matches[2];
@@ -1210,23 +1212,20 @@ function human_filesize($bytes, $decimals = 2)
  *
  * @param      $project               project name
  * @param      $branch                Integration branch to display
- * @param      $plfDevelopVersion     Current PLF version on develop branch
  *
  * @return string
  */
-function getGitBaseBranchToCompareWith($project, $branch, $plfDevelopVersion = '5.3')
+function getGitBaseBranchToCompareWith($project, $branch)
 {
-  if (strpos($branch, $plfDevelopVersion) !== false) {
-    return 'develop';
-  } else {
-    $plfVersion = explode('-', $branch);
-    $plfMajorVersion = substr($branch, 0, 1);
-    // gatein-portal project version before 5.0.x are suffixed by -PLF identifier
-    if (strpos($project, "gatein-portal") !== false && ($plfMajorVersion === '3' || $plfMajorVersion === '4')) {
-      return 'stable/' . $plfVersion[0] . '-PLF';
-    }
-    return 'stable/' . $plfVersion[0];
+  $fbBaseBranch = array(
+    "feature/meedsv2" => "develop-meed"
+  );
+
+  if(isset($fbBaseBranch[$branch])) {
+    return $fbBaseBranch[$branch];
   }
+  return 'develop';
+
 }
 
 ?>
