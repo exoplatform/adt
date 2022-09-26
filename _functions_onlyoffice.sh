@@ -93,7 +93,7 @@ do_start_onlyoffice() {
   ${DOCKER_CMD} pull ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION} 2>/dev/null || true 
 
   local ONLYOFFICE_IMAGE_VERSION_MAJOR=$(echo $DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION | cut -d '.' -f1)
-  if [[ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" =~ ^[0-9]$ ]] && [ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" -lt "7" ] && [ "${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}" != "latest" ]; then 
+  if [[ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" =~ ^[0-9]$ ]] && [ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" -lt "7" ]; then 
     ${DOCKER_CMD} run \
       -d \
       -p "${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
