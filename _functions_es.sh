@@ -110,6 +110,7 @@ do_start_es() {
         -e "cluster.name=${INSTANCE_KEY}" \
         -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
         -e "xpack.security.enabled=false" \
+        -e "ingest.geoip.downloader.enabled=false" \
         -e "network.host=_site_" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
     fi  
