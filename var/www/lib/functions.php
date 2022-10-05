@@ -243,11 +243,11 @@ function getFeatureBranches($projects)
                                             array_filter(explode("\n", $repoObject->git('branch -r')), 'isFeature')));
       foreach ($branches as $branch) {
         $fetch_url = $repoObject->git('config --get remote.origin.url');
-        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($project, 'feature/'.$branch);
         if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
           $github_org = $matches[1];
           $github_repo = $matches[2];
         }
+        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($github_org, $github_repo, 'feature/'.$branch);
         $features[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/feature/" . $branch;
         // Add link to GitHub diff URL
         $features[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/feature/" . $branch . "..." . $baseBranchToCompareWith;
@@ -332,9 +332,12 @@ function getTranslationBranches($projects)
                                             //print "</pre>";
       foreach ($branches as $branch) {
         $baseRemotenameToCompareWith = 'origin';
-        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($project, 'integration/'. $branch);
-
         $fetch_url = $repoObject->git('config --get remote.origin.url');
+        if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
+          $github_org = $matches[1];
+          $github_repo = $matches[2];
+        }
+        $baseBranchToCompareWith = getGitBaseBranchToCompareWith($github_org, $github_repo, 'integration/'.$branch);
         if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
           $github_repo = $matches[2];
           if (strpos($baseBranchToCompareWith, 'stable') !== false) {
@@ -1210,12 +1213,13 @@ function human_filesize($bytes, $decimals = 2)
 /**
  * Return the git base branch to compare with integration translation branch.
  *
- * @param      $project               project name
+ * @param      $org                   organization name
+ * @param      $repo                  repository name
  * @param      $branch                Integration branch to display
  *
  * @return string
  */
-function getGitBaseBranchToCompareWith($project, $branch)
+function getGitBaseBranchToCompareWith($org, $repo, $branch)
 {
   $fbBaseBranch = array(
     "feature/meedsv2" => "develop-meed"
@@ -1223,6 +1227,9 @@ function getGitBaseBranchToCompareWith($project, $branch)
 
   if(isset($fbBaseBranch[$branch])) {
     return $fbBaseBranch[$branch];
+  }
+  if (strtolower($org) == "meeds-io") {
+    return "develop-exo";
   }
   return 'develop';
 
