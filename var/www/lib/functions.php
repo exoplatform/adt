@@ -1222,7 +1222,8 @@ function human_filesize($bytes, $decimals = 2)
 function getGitBaseBranchToCompareWith($org, $repo, $branch)
 {
   $fbBaseBranch = array(
-    "feature/meedsv2" => "develop-meed"
+    "feature/meedsv2" => "develop-meed",
+    "feature/mips" => "develop"
   );
 
   if(isset($fbBaseBranch[$branch])) {
