@@ -293,6 +293,7 @@ initialize_product_settings() {
 
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_LINK_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
 
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"

@@ -110,7 +110,7 @@ do_start_onlyoffice() {
       -p "${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
       -e JWT_ENABLED="true" \
       -e JWT_SECRET="${DEPLOYMENT_ONLYOFFICE_SECRET}" \
-      -e SECURE_LINK_SECRET=$(uuidgen | sha256sum | awk '{ print $1 }') \
+      -e SECURE_LINK_SECRET=${DEPLOYMENT_ONLYOFFICE_LINK_SECRET} \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs:/var/log/onlyoffice  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
