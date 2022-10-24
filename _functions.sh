@@ -292,7 +292,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
 
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
-      configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" ""
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_LINK_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
 
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
