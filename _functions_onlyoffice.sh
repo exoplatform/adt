@@ -94,6 +94,7 @@ do_start_onlyoffice() {
 
   local ONLYOFFICE_IMAGE_VERSION_MAJOR=$(echo $DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION | cut -d '.' -f1)
   if [[ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" =~ ^[0-9]+$ ]] && [ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" -lt "7" ]; then 
+    evaluate_file_content ${ETC_DIR}/onlyoffice/local.json.template ${DEPLOYMENT_DIR}/local.json
     ${DOCKER_CMD} run \
       -d \
       -p "${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
@@ -101,7 +102,7 @@ do_start_onlyoffice() {
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db:/var/lib/postgresql  \
-      -v ${HOME}/.eXo/Platform/local.json:/etc/onlyoffice/documentserver/local.json  \
+      -v ${DEPLOYMENT_DIR}/local.json:/etc/onlyoffice/documentserver/local.json  \
       --name ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}
   else 
     ${DOCKER_CMD} run \
