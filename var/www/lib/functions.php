@@ -1223,7 +1223,8 @@ function getGitBaseBranchToCompareWith($org, $repo, $branch)
 {
   $fbBaseBranch = array(
     "feature/meedsv2" => "develop-meed",
-    "feature/mips" => "develop"
+    "feature/mips" => "develop",
+    "feature/security-fix" => "develop-exo"
   );
 
   if(isset($fbBaseBranch[$branch])) {
