@@ -330,7 +330,8 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
-      configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-7001"
 
       configurable_env_var "DEPLOYMENT_PG_UPGRADE_IMAGE" "tianon/postgres-upgrade"
 
