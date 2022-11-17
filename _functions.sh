@@ -321,7 +321,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.0.9-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.0.10-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
@@ -330,7 +330,8 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
-      configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-7001"
 
       configurable_env_var "DEPLOYMENT_PG_UPGRADE_IMAGE" "tianon/postgres-upgrade"
 
@@ -920,7 +921,20 @@ initialize_product_settings() {
           
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.3|6.4) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(6.4) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
+              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
+
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.3" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.2.0" # Default version of the jdbc postgresql driver addon to use
+
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
+              
+              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.2" # Default version for Only Office docker image to use
+          elif [[ "${PRODUCT_VERSION}" =~ ^(6.3) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
 
