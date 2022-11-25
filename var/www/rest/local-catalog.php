@@ -5,7 +5,7 @@ if(!isset($_GET["plfversion"])){
     die();
 }
 // Continous deployment version check
-if(!preg_match('/^[0-9].[0-9].[0-9]-[0-9]{8,10}$/', $_GET["plfversion"])){
+if(!preg_match('/^[0-9].[0-9].[0-9](-(exo|meed))?-[0-9]{8,10}$/', $_GET["plfversion"])){
     http_response_code(404);
     echo "Error! Invalid PLF version parameter value!";
     die();
@@ -22,7 +22,7 @@ if ($local_catalog === false) {
     die();
 }
 $plf_version=$_GET["plfversion"];
-$plf_suffix= preg_replace("/^[0-9].[0-9].[0-9]/", '', $plf_version);
+$plf_suffix= preg_replace("/^[0-9].[0-9].[0-9](-(exo|meed))?/", '', $plf_version);
 $local_catalog = str_replace("@exo_plf_version_suffix",$plf_suffix,$local_catalog);
 $local_catalog = str_replace("@exo_plf_version",$plf_version,$local_catalog);
 if(isset($_GET["remote"])){
