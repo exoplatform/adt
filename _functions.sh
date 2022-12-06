@@ -808,7 +808,14 @@ initialize_product_settings() {
         # specific configuration for meeds deployments
         # - Database drivers
         # - Default version for each supported database type
-        if [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.4) ]]; then
+              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.31" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.3.3"
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.31"
+        elif [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
@@ -925,10 +932,10 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
 
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.3" # Default version of the mysql driver addon to use
+              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.4" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.2.0" # Default version of the jdbc postgresql driver addon to use
 
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.31" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
