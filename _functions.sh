@@ -814,7 +814,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.31" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.3.3"
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.31"
+              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.30"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
