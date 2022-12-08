@@ -174,6 +174,9 @@ do_configure_tomcat_datasources() {
       # Deploy the Mysql driver
       if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then 
         local addon="exo-jdbc-driver-mysql:${DEPLOYMENT_MYSQL_ADDON_VERSION}"
+        if [ "${PRODUCT_NAME}" = "meeds" ]; then 
+          addon="meeds-jdbc-driver-mysql:${DEPLOYMENT_MYSQL_ADDON_VERSION}"
+        fi
         echo_info "Using ${addon} addon as jdbc driver"
         env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
       else 
@@ -199,6 +202,9 @@ do_configure_tomcat_datasources() {
 
       if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then
         local addon="exo-jdbc-driver-postgresql:${DEPLOYMENT_POSTGRESQL_ADDON_VERSION}"
+        if [ "${PRODUCT_NAME}" = "meeds" ]; then 
+          addon="meeds-jdbc-driver-postgresql:${DEPLOYMENT_POSTGRESQL_ADDON_VERSION}"
+        fi
         echo_info "Using ${addon} addon as jdbc driver"
         env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS},${addon}"
       else
