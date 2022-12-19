@@ -110,8 +110,13 @@ do_start_jitsi() {
   echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
+  cp -v ${ETC_DIR}/jitsi/algorithm.cfg.lua ${DEPLOYMENT_DIR}/algorithm.cfg.lua
   ${DOCKER_CMD} run \
     -d \
+    -v ${DEPLOYMENT_DIR}/algorithm.cfg.lua:/config/config.d/algorithm.cfg.lua:ro \
+    -p "5222:5222" \
+    -p "5347:5347" \
+    -p "5280:5280" \
     -e "AUTH_TYPE=jwt" \
     -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "ENABLE_AUTH=1" \
@@ -122,7 +127,6 @@ do_start_jitsi() {
     -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_CROSS_DOMAIN=true" \
     -e "JICOFO_COMPONENT_SECRET=2024eb12115fccc435ac8382e347d5d9" \
     -e "JICOFO_AUTH_USER=focus" \
     -e "JICOFO_AUTH_PASSWORD=c4f0b969570298d5d77a8545f23dc8ce" \
@@ -135,10 +139,16 @@ do_start_jitsi() {
     -e "JWT_APP_ID=exo-jitsi" \
     -e "JWT_APP_SECRET=nQzPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx" \
     -e "TZ=UTC" \
+    -e "XMPP_PORT=5222" \
+    -e "ENABLE_IPV6=0" \
+    -e "JWT_ENABLE_DOMAIN_VERIFICATION=0" \
+    -e "JWT_TOKEN_AUTH_MODULE=token_verification" \
+    -e "ENABLE_RECORDING=1" \
+    -e "LOG_LEVEL=debug" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:stable-7001
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -162,6 +172,8 @@ do_start_jitsi() {
     -e "JIBRI_BREWERY_MUC=jibribrewery" \
     -e "JIBRI_PENDING_TIMEOUT=90" \
     -e "TZ=UTC" \
+    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_PORT=5222" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -185,6 +197,7 @@ do_start_jitsi() {
     -e "JVB_PORT=${DEPLOYMENT_JITSI_JVB_PORT}" \
     -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
     -e "TZ=UTC" \
+    -e "XMPP_PORT=5222" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
@@ -224,6 +237,9 @@ do_start_jitsi() {
     -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.n_wKXsF5lydXN2QEWdgwNshO5EBosirSalZGtd8Y43E" \
     -e "DISPLAY=:0" \
     -e "TZ=UTC" \
+    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
+    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_PORT=5222" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -251,10 +267,10 @@ do_start_jitsi() {
     -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_BOSH_URL_BASE=http://xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}:5280" \
     -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    -e "XMPP_BOSH_URL_BASE=http://xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}:5280" \
     -e "TZ=UTC" \
     -e "JIBRI_BREWERY_MUC=jibribrewery" \
     -e "JIBRI_PENDING_TIMEOUT=90" \
@@ -262,6 +278,8 @@ do_start_jitsi() {
     -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
     -e "JIBRI_RECORDER_USER=recorder" \
     -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
+    -e "XMPP_PORT=5222" \
+    -e "ENABLE_SERVICE_RECORDING=true" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
