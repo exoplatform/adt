@@ -114,9 +114,6 @@ do_start_jitsi() {
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/algorithm.cfg.lua:/config/config.d/algorithm.cfg.lua:ro \
-    -p "5222:5222" \
-    -p "5347:5347" \
-    -p "5280:5280" \
     -e "AUTH_TYPE=jwt" \
     -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
     -e "ENABLE_AUTH=1" \
