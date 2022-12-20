@@ -77,7 +77,7 @@ jibri {
       }
 
     ffmpeg {
-      {% if 8 == jitsi_major_version %}
+      {% if '8' == jitsi_major_version %}
       audio-source = "pulse"
       audio-device = "default"
       {% endif %}
