@@ -80,15 +80,9 @@
 
         <Location "/jitsiweb/xmpp-websocket">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
-            ProxyPassReverse "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
-            RewriteEngine on
-            ProxyPreserveHost on
         </Location>
         <Location "/jitsiweb/colibri-ws/">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}/colibri-ws/"
-            ProxyPassReverse "ws://localhost:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}/colibri-ws/"
-            RewriteEngine on
-            ProxyPreserveHost on
         </Location>
     </IfModule>
 
