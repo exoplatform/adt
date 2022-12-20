@@ -90,7 +90,7 @@ do_start_jitsi() {
     return
   fi
   export jitsi_major_version=$(echo ${DEPLOYMENT_JITSI_IMAGE_VERSION} | grep -oP [0-9] | head -n 1)
-  export DEPLOYMENT_URL
+  export DEPLOYMENT_URL DEPLOYMENT_JITSI_NETWORK_NAME DEPLOYMENT_JITSI_JVB_PORT
   evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version:-8}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION}"
   # Ensure there is no container with the same name
