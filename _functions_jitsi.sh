@@ -85,7 +85,7 @@ do_stop_jitsi() {
 
 do_start_jitsi() {
   echo_info "Starting Jitsi..."
-  local jitsi_major_version=$(echo ${DEPLOYMENT_JITSI_IMAGE_VERSION} | grep -oP [0-9] | head -n 1)
+  export jitsi_major_version=$(echo ${DEPLOYMENT_JITSI_IMAGE_VERSION} | grep -oP [0-9] | head -n 1)
   evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version:-8}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     echo_info "Jitsi not specified, skiping its containers startup"
@@ -149,7 +149,7 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
   chmod +x ${DEPLOYMENT_DIR}/finalize.sh
-  evaluate_file_content ${ETC_DIR}/jitsi/jibri/jibri.conf.template ${DEPLOYMENT_DIR}/jibri.conf
+  evaluate_file_content ${ETC_DIR}/jitsi/jibri/jibri.conf.j2 ${DEPLOYMENT_DIR}/jibri.conf
   ${DOCKER_CMD} run \
     -d \
     -v /dev/shm:/dev/shm \
