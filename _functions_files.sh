@@ -51,17 +51,35 @@ find_file() {
 }
 
 #
+# Apply Jinja2 template from $1 file
+#
+j2() {
+  if ! which j2 &>/dev/null; then 
+    local tmpfile=$(mktemp)
+    env > $tmpfile
+    ${DOCKER_CMD} run --env-file $tmpfile --rm -v "$2":"$2" ${DEPLOYMENT_J2CLI_IMAGE}:${DEPLOYMENT_J2CLI_VERSION} $1 $2
+    rm $tmpfile
+  else 
+    j2 $1 $2
+  fi
+}
+
+#
 # Replace in file $1 all environment variables (${XXX}) and push the result in $2
 #
 evaluate_file_content() {
   local _file_in=$1
   local _file_out=$2
-  awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < ${_file_in} > ${_file_out}
-  # escape any single quote
-  if ${LINUX}; then
-    replace_in_file ${_file_out} "'" "\\\'"
-  else
-    replace_in_file ${_file_out} "\'" "\\\'"
+  if [ ${_file_in##*.} = "j2" ]; then 
+    j2 --undefined ${_file_in} > ${_file_out}
+  else 
+    awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < ${_file_in} > ${_file_out}
+    # escape any single quote
+    if ${LINUX}; then
+      replace_in_file ${_file_out} "'" "\\\'"
+    else
+      replace_in_file ${_file_out} "\'" "\\\'"
+    fi
   fi
 }
 

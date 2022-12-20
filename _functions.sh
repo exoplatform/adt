@@ -342,6 +342,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
       configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
+
+      configurable_env_var "DEPLOYMENT_J2CLI_IMAGE" "exoplatform/j2cli"
+      configurable_env_var "DEPLOYMENT_J2CLI_VERSION" "1.0.0"
+
       
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
