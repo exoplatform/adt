@@ -89,6 +89,11 @@ do_start_jitsi() {
     echo_info "Jitsi not specified, skiping its containers startup"
     return
   fi
+  # TL;DR: export All envrionment variables included on this template
+  jitsi_major_version=$(echo ${DEPLOYMENT_JITSI_IMAGE_VERSION} | grep -oP [0-9] | head -n 1)
+  [[ "${jitsi_major_version:-}" =~ ^[78]$ ]] || jitsi_major_version="8" # latest version
+  export DEPLOYMENT_URL DEPLOYMENT_JITSI_NETWORK_NAME DEPLOYMENT_JITSI_JVB_PORT jitsi_major_version
+  evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
@@ -97,11 +102,7 @@ do_start_jitsi() {
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
-    -e "EXO_JWT_SECRET=MAPPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx" \
-    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
-    -e "JWT_APP_SECRET=nQzPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx" \
-    -e "JWT_APP_ID=exo-jitsi" \
-    -e "EXO_FILE_UPLOAD_URL=${DEPLOYMENT_URL}/portal/rest/jitsi/upload" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --name ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} container started"
@@ -110,35 +111,15 @@ do_start_jitsi() {
   echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
+  cp -v ${ETC_DIR}/jitsi/algorithm.cfg.lua ${DEPLOYMENT_DIR}/algorithm.cfg.lua
   ${DOCKER_CMD} run \
     -d \
-    -e "AUTH_TYPE=jwt" \
-    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
-    -e "ENABLE_AUTH=1" \
-    -e "ENABLE_XMPP_WEBSOCKET=1" \
-    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_CROSS_DOMAIN=true" \
-    -e "JICOFO_COMPONENT_SECRET=2024eb12115fccc435ac8382e347d5d9" \
-    -e "JICOFO_AUTH_USER=focus" \
-    -e "JICOFO_AUTH_PASSWORD=c4f0b969570298d5d77a8545f23dc8ce" \
-    -e "JVB_AUTH_USER=jvb" \
-    -e "JVB_AUTH_PASSWORD=a2f17f0b494489773ec879bd12ef6a12" \
-    -e "JIBRI_XMPP_USER=jibri" \
-    -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
-    -e "JIBRI_RECORDER_USER=recorder" \
-    -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
-    -e "JWT_APP_ID=exo-jitsi" \
-    -e "JWT_APP_SECRET=nQzPudDBpSAqUwM0FY2r86gNAd6be5tN1xqwdFDOb4Us1DT4Tx" \
-    -e "TZ=UTC" \
+    -v ${DEPLOYMENT_DIR}/algorithm.cfg.lua:/config/config.d/algorithm.cfg.lua:ro \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -146,22 +127,7 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    -e "AUTH_TYPE=jwt" \
-    -e "ENABLE_AUTH=1" \
-    -e "ENABLE_RECORDING=1" \
-    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_SERVER=xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "JICOFO_COMPONENT_SECRET=2024eb12115fccc435ac8382e347d5d9" \
-    -e "JICOFO_AUTH_USER=focus" \
-    -e "JICOFO_AUTH_PASSWORD=c4f0b969570298d5d77a8545f23dc8ce" \
-    -e "JVB_BREWERY_MUC=jvbbrewery" \
-    -e "ENABLE_SCTP=0" \
-    -e "JIBRI_BREWERY_MUC=jibribrewery" \
-    -e "JIBRI_PENDING_TIMEOUT=90" \
-    -e "TZ=UTC" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -174,17 +140,7 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_JVB_PORT}:${DEPLOYMENT_JITSI_JVB_PORT}/udp" \
     -p "${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
-    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
-    -e "ENABLE_COLIBRI_WEBSOCKET=1" \
-    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_SERVER=xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "JVB_AUTH_USER=jvb" \
-    -e "JVB_AUTH_PASSWORD=a2f17f0b494489773ec879bd12ef6a12" \
-    -e "JVB_BREWERY_MUC=jvbbrewery" \
-    -e "JVB_PORT=${DEPLOYMENT_JITSI_JVB_PORT}" \
-    -e "JVB_STUN_SERVERS=meet-jit-si-turnrelay.jitsi.net:443" \
-    -e "TZ=UTC" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
@@ -196,7 +152,7 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
   chmod +x ${DEPLOYMENT_DIR}/finalize.sh
-  evaluate_file_content ${ETC_DIR}/jitsi/jibri/jibri.conf.template ${DEPLOYMENT_DIR}/jibri.conf
+  evaluate_file_content ${ETC_DIR}/jitsi/jibri/jibri.conf.j2 ${DEPLOYMENT_DIR}/jibri.conf
   ${DOCKER_CMD} run \
     -d \
     -v /dev/shm:/dev/shm \
@@ -206,24 +162,7 @@ do_start_jitsi() {
     --cap-add NET_BIND_SERVICE \
     --device /dev/snd \
     --shm-size=512m \
-    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_INTERNAL_MUC_DOMAIN=internal-muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_SERVER=xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "JIBRI_XMPP_USER=jibri" \
-    -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
-    -e "JIBRI_BREWERY_MUC=jibribrewery" \
-    -e "JIBRI_RECORDER_USER=recorder" \
-    -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
-    -e "JIBRI_RECORDING_DIR=/config/recordings" \
-    -e "JIBRI_FINALIZE_RECORDING_SCRIPT_PATH=/tmp/finalize.sh" \
-    -e "JIBRI_STRIP_DOMAIN_JID=muc" \
-    -e "JIBRI_LOGS_DIR=/config/logs" \
-    -e "CALL_APP_URL=${DEPLOYMENT_URL}/jitsicall" \
-    -e "EXO_JWT_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhY3Rpb24iOiJleHRlcm5hbF9hdXRoIn0.n_wKXsF5lydXN2QEWdgwNshO5EBosirSalZGtd8Y43E" \
-    -e "DISPLAY=:0" \
-    -e "TZ=UTC" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
     --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -236,32 +175,7 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
-    -e "ENABLE_IPV6=0" \
-    -e "ENABLE_P2P=false" \
-    -e "ENABLE_AUTH=1" \
-    -e "ENABLE_RECORDING=1" \
-    -e "ENABLE_XMPP_WEBSOCKET=1" \
-    -e "ENABLE_COLIBRI_WEBSOCKET=1" \
-    -e "ENABLE_SIMULCAST=false" \
-    -e "DISABLE_DEEP_LINKING=true" \
-    -e "DESKTOP_SHARING_FRAMERATE_MIN=120" \
-    -e "DESKTOP_SHARING_FRAMERATE_MAX=120" \
-    -e "TESTING_CAP_SCREENSHARE_BITRATE=0" \
-    -e "JICOFO_AUTH_USER=focus" \
-    -e "PUBLIC_URL=${DEPLOYMENT_URL}/jitsiweb" \
-    -e "XMPP_DOMAIN=${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_AUTH_DOMAIN=auth.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_BOSH_URL_BASE=http://xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}:5280" \
-    -e "XMPP_GUEST_DOMAIN=guest.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_MUC_DOMAIN=muc.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "XMPP_RECORDER_DOMAIN=recorder.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    -e "TZ=UTC" \
-    -e "JIBRI_BREWERY_MUC=jibribrewery" \
-    -e "JIBRI_PENDING_TIMEOUT=90" \
-    -e "JIBRI_XMPP_USER=jibri" \
-    -e "JIBRI_XMPP_PASSWORD=9e40f754c897f55d83e6d51ba544be5e" \
-    -e "JIBRI_RECORDER_USER=recorder" \
-    -e "JIBRI_RECORDER_PASSWORD=682869f8ad2910a94e99f631bf597726" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
