@@ -179,7 +179,7 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
-    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} exoplatform/jitsi-web:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} jitsi/web:stable-8138-1
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
   check_jitsi_web_availability
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
