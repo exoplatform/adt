@@ -168,7 +168,7 @@ do_start_jitsi() {
     --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
-  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image jitsi/web:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image exoplatform/jitsi-web:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
