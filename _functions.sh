@@ -580,7 +580,7 @@ initialize_product_settings() {
           env_var DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON "false"
           if [[ "${PRODUCT_VERSION}" =~ ^(1.0|1.1|1.2) ]]; then
             env_var DEPLOYMENT_APPSRV_VERSION "8.5"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4|1.5) ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
           else 
             echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
@@ -797,7 +797,7 @@ initialize_product_settings() {
       fi
 
       # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
-        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|6.3|6.4|1.2|1.3|1.4) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|6.3|6.4|6.5|1.2|1.3|1.4|1.5) ]]; then
           configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
           if ${DEPLOYMENT_ES_EMBEDDED}; then 
             echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
@@ -811,7 +811,7 @@ initialize_product_settings() {
         # specific configuration for meeds deployments
         # - Database drivers
         # - Default version for each supported database type
-        if [[ "${PRODUCT_VERSION}" =~ ^(1.4) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.4|1.5) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.31" # Default version of the mysql server to use
@@ -857,7 +857,7 @@ initialize_product_settings() {
         # - Database drivers
         # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
         # - Default version for each supported database type
-        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3|6.4) ]]; then
+        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3|6.4|6.5) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
@@ -931,7 +931,7 @@ initialize_product_settings() {
           
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.4) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(6.4|6.5) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
 
@@ -1015,7 +1015,7 @@ initialize_product_settings() {
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
             if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
-            elif [[ "${PRODUCT_VERSION}" =~ ^(6.3|6.4) ]]; then
+            elif [[ "${PRODUCT_VERSION}" =~ ^(6.3|6.4|6.5) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
             else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
