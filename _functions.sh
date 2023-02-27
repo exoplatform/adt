@@ -321,7 +321,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.1.0-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.1.3-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
