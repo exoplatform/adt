@@ -53,7 +53,7 @@ checkCaches();
                             if (in_array($feature, getAcceptanceBranches()) && ! isTranslation ($feature)) {
                                 ?>
                                 <tr>
-                                    <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?><br/><a href='https://ci.exoplatform.org/job/exo-<?=$feature?>-fb-rebase-branch/' target="_blank" title="Rebase FB" rel="tooltip"><i class="icon-refresh"></i></a><br/><img src='https://ci.exoplatform.org/buildStatus/icon?job=exo-<?=$feature?>-fb-rebase-branch'></td>
+                                    <td><a name="<?=str_replace(array("/", "."), "-", $feature)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$feature?><br/><a href='https://ci.exoplatform.org/job/exo-<?=$feature?>-fb-rebase-branch/' target="_blank" title="Rebase FB" rel="tooltip"><i class="icon-refresh"></i></a><br/><img src='https://ci.exoplatform.org/buildStatus/icon?job=exo-<?=$feature?>-fb-rebase-branch' style="height:15px; width: 85px;"></td>
                                     <?php foreach ($projects as $project) { ?>
                                         <td class="col-center">
                                             <?php if (array_key_exists($project, $FBProjects)) { ?>
