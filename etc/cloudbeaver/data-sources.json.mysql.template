@@ -1,7 +1,7 @@
 {
 	"folders": {},
 	"connections": {
-		"mysql8-17d4ceda49d-39fca216982cd38e": {
+		"mysql8-18823545840-4c316f51e9ff0ee": {
 			"provider": "mysql",
 			"driver": "mysql8",
 			"name": "MySQL@Acceptance",
@@ -15,6 +15,7 @@
 				"url": "jdbc:mysql://host.docker.internal:3306/${DEPLOYMENT_DATABASE_NAME}",
 				"user": "${DEPLOYMENT_DATABASE_USER}",
 				"password": "${DEPLOYMENT_DATABASE_USER}",
+				"configurationType": "MANUAL",
 				"type": "dev",
 				"properties": {
 					"allowPublicKeyRetrieval": "true"

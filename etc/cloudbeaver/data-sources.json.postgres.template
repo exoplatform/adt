@@ -1,7 +1,7 @@
 {
 	"folders": {},
 	"connections": {
-		"postgres-jdbc-17d4cedffbc-7d53fd1e34ea814d": {
+		"postgres-jdbc-1882354e194-49822a460cd9ce75": {
 			"provider": "postgresql",
 			"driver": "postgres-jdbc",
 			"name": "PostgreSQL@Acceptance",
@@ -15,6 +15,7 @@
 				"url": "jdbc:postgresql://host.docker.internal:5432/${DEPLOYMENT_DATABASE_NAME}",
 				"user": "${DEPLOYMENT_DATABASE_USER}",
 				"password": "${DEPLOYMENT_DATABASE_USER}",
+				"configurationType": "MANUAL",
 				"type": "dev",
 				"properties": {
 					"readOnly": "${DEPLOYMENT_CLOUDBEAVER_READONLY}"
