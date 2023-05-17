@@ -152,6 +152,8 @@ function getRepositories()
         "gamification-github" => "Gamification Github",
         "addons-manager" => "Addons Manager",
         "meeds" => "Meeds Distribution",
+        "maven-exo-depmgt-pom" => "DEPMGT POM EXO",
+        "commons-exo" => "Commons eXo",
         "jcr" => "JCR",
         "ecms" => "ECMS",
         "mail-integration" => "Mail Integration",
