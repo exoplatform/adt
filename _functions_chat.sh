@@ -79,7 +79,11 @@ check_mongodb_availability() {
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
-    nc -z -w ${wait_time} localhost ${DEPLOYMENT_CHAT_MONGODB_PORT} > /dev/null
+    if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
+      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)"
+    else 
+      nc -z -w ${wait_time} localhost ${DEPLOYMENT_CHAT_MONGODB_PORT} > /dev/null
+    fi
     RET=$?
     if [ $RET -ne 0 ]; then
       [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Mongodb not yet available (${count} / ${try})..."
