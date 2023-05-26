@@ -80,7 +80,7 @@ check_mongodb_availability() {
     count=$(( $count + 1 ))
     set +e
     if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
-      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)"
+      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} timeout ${wait_time} mongo --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)" &>/dev/null
     else 
       nc -z -w ${wait_time} localhost ${DEPLOYMENT_CHAT_MONGODB_PORT} > /dev/null
     fi
