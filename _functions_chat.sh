@@ -48,8 +48,13 @@ do_start_chat_server() {
         check_mongodb_availability
         # Update feature compatibility version to support further mongodb upgrades
         local major_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+\.[0-9]+')
+        local ga_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+')
         set +e
-        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --quiet --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" &>/dev/null
+        if [ "${ga_version}" -ge "6" ]; then 
+          ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongosh --quiet --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" &>/dev/null
+        else 
+          ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --quiet --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" &>/dev/null
+        fi
         set -e
     fi
 
