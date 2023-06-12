@@ -40,7 +40,7 @@ do_start_chat_server() {
     if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
       echo_info "Starting chat server database ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ..."
       delete_docker_container ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
-
+      check_mongodb_intermediate_upgrades
       ${DOCKER_CMD} run \
         -p "127.0.0.1:${DEPLOYMENT_CHAT_MONGODB_PORT}:27017" -d \
         -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
@@ -80,12 +80,18 @@ check_mongodb_availability() {
   local try=600
   local wait_time=60
   local RET=-1
+  local VERSION=${1:-${DEPLOYMENT_CHAT_MONGODB_VERSION}}
 
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
     if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
-      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} timeout ${wait_time} mongo --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)" &>/dev/null
+      local ga_version=$(echo ${VERSION} | grep -oP '^[1-9]+')
+      if [ "${ga_version}" -ge "6" ]; then 
+        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} timeout ${wait_time} mongosh --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)" &>/dev/null
+      else
+        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} timeout ${wait_time} mongo --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)" &>/dev/null
+      fi
     else 
       nc -z -w ${wait_time} localhost ${DEPLOYMENT_CHAT_MONGODB_PORT} > /dev/null
     fi
@@ -102,6 +108,39 @@ check_mongodb_availability() {
     exit 1
   fi
   echo_info "Mongodb ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} up and available"
+}
+
+check_mongodb_intermediate_upgrades() {
+  echo_info "Checking for intermediate mongodb upgrades"
+  if [ -z "${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS:-}" ]; then 
+    echo_info "No intermediate upgrade is required. Skipped!"
+    return 0
+  fi
+  echo_info "Starting intermediate Upgrades"
+  local counter=0 
+  local upgrades_length=$(echo ${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS} | wc -w)
+  for mongoversion in ${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS}; do 
+    counter=$((counter+1))
+    echo_info "Upgrade ($counter/$upgrades_length) to $mongoversion"
+    ${DOCKER_CMD} run \
+      -p "127.0.0.1:${DEPLOYMENT_CHAT_MONGODB_PORT}:27017" -d \
+      -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
+      --name ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ${DEPLOYMENT_CHAT_MONGODB_IMAGE}:${mongoversion}
+      check_mongodb_availability $mongoversion
+      # Update feature compatibility version to support further mongodb upgrades
+      local major_version=$mongoversion
+      local ga_version=$(echo ${mongoversion} | grep -oP '^[1-9]+')
+      set +e
+      if [ "${ga_version}" -ge "6" ]; then 
+        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongosh --quiet --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" &>/dev/null
+      else 
+        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongo --quiet --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" &>/dev/null
+      fi
+      set -e
+      delete_docker_container ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
+      echo_info "$mongoversion upgrade done."
+  done 
+  echo_info "Mongo intermediate upgrades done."
 }
 
 do_stop_chat_server() {

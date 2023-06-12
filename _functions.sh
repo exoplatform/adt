@@ -176,6 +176,7 @@ Environment Variables
   DEPLOYMENT_CHAT_MONGODB_TYPE      : Type of mongodb deployment (default: DOCKER if chat embedded is true, HOST otherwise, values: HOST|DOCKER) 
   DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
   DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
+  DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS   : Which versions of mongodb to use with the chat server during mongo upgrade
 
   DEPLOYMENT_CMISSERVER_ENABLED     : Enable the deployment of a dedicated CMIS server, as exo-cloud-drive is not only about CMIS, it can be deloyed without a CMIS server when this param isn't set to true. (default: false; values: true|false)
   DEPLOYMENT_CMIS_IMAGE             : Which docker image to use for the cmis server (default: exoplatform/cmis-server)
@@ -345,6 +346,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_J2CLI_IMAGE" "exoplatform/j2cli"
       configurable_env_var "DEPLOYMENT_J2CLI_VERSION" "1.0.0"
 
+      configurable_env_var "DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS" ""
       
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
@@ -940,7 +942,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.5) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.1.0"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "5.0"
+              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.5" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.4.0" # Default version of the jdbc postgresql driver addon to use
@@ -1696,6 +1698,17 @@ do_deploy() {
       exit 1
     fi
     DEPLOYMENT_SFTP_LINK="sftp://root:password@${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_SFTP_PORT}//upload"   
+  fi
+
+  if [ ! -z "${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS:-}" ]; then 
+    if [[ ! "${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS}" =~  ^([1-9]\.[0-9] ?)+$ ]]; then 
+      echo_error "Invalid intermediate mongo upgrade version!. Should contain only a list of major version eg 6.0 6.1 ..."
+      exit 1
+    fi
+    if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} != "DOCKER" ]; then 
+      echo_error "Intermediate Mongo Upgrade is only supported for Docker mongo type!"
+      exit 1
+    fi
   fi      
 
   echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
