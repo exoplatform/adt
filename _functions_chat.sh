@@ -80,12 +80,18 @@ check_mongodb_availability() {
   local try=600
   local wait_time=60
   local RET=-1
+  local VERSION=${1:-${DEPLOYMENT_CHAT_MONGODB_VERSION}}
 
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
     if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
-      ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} timeout ${wait_time} mongo --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)" &>/dev/null
+      local ga_version=$(echo ${VERSION} | grep -oP '^[1-9]+')
+      if [ "${ga_version}" -ge "6" ]; then 
+        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} timeout ${wait_time} mongosh --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)" &>/dev/null
+      else
+        ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} timeout ${wait_time} mongo --quiet --eval "quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)" &>/dev/null
+      fi
     else 
       nc -z -w ${wait_time} localhost ${DEPLOYMENT_CHAT_MONGODB_PORT} > /dev/null
     fi
@@ -120,7 +126,7 @@ check_mongodb_intermediate_upgrades() {
       -p "127.0.0.1:${DEPLOYMENT_CHAT_MONGODB_PORT}:27017" -d \
       -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
       --name ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ${DEPLOYMENT_CHAT_MONGODB_IMAGE}:${mongoversion}
-      check_mongodb_availability
+      check_mongodb_availability $mongoversion
       # Update feature compatibility version to support further mongodb upgrades
       local major_version=$mongoversion
       local ga_version=$(echo ${mongoversion} | grep -oP '^[1-9]+')
