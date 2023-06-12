@@ -1705,6 +1705,10 @@ do_deploy() {
       echo_error "Invalid intermediate mongo upgrade version!. Should contain only a list of major version eg 6.0 6.1 ..."
       exit 1
     fi
+    if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} != "DOCKER" ]; then 
+      echo_error "Intermediate Mongo Upgrade is only supported for Docker mongo type!"
+      exit 1
+    fi
   fi      
 
   echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
