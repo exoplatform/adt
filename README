@@ -188,4 +188,6 @@ Usage
       DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
 
       DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
+      DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
+
 
