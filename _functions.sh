@@ -1217,6 +1217,11 @@ do_dump_dataset(){
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     do_dump_chat_mongo_dataset "${_dumpdir}"
   fi
+  if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
+    mkdir -p ${_dumpdir}/codec
+    cp -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ${_dumpdir}/codec
+  fi
+  
 
   do_dump_database_dataset "${_dumpdir}"
 
@@ -1259,6 +1264,10 @@ do_restore_dataset(){
   echo_info "Loading dataset ..."
   display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${DS_DIR}/${DS_FILENAME}.tar.bz2
   mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exo/* ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/
+  if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ]; then
+    mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
+    mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
+  fi
   echo_info "Done"
 
   if ${DEPLOYMENT_CHAT_ENABLED}; then
