@@ -1217,9 +1217,11 @@ do_dump_dataset(){
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     do_dump_chat_mongo_dataset "${_dumpdir}"
   fi
+  mkdir -p ${_dumpdir}/codec
   if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
-    mkdir -p ${_dumpdir}/codec
+    echo_info "Backing up codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
     cp -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ${_dumpdir}/codec
+    echo_info "Done."
   fi
   
 
@@ -1228,9 +1230,9 @@ do_dump_dataset(){
   do_dump_es_dataset "${_dumpdir}"
   echo_info "Generating dataset ..."
   if ${DEPLOYMENT_CHAT_ENABLED}; then
-    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump chat.name search backup.sql
+    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump chat.name search backup.sql codec
   else
-    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql
+    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql codec
   fi
   echo_info "Done."
   echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
@@ -1265,8 +1267,10 @@ do_restore_dataset(){
   display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${DS_DIR}/${DS_FILENAME}.tar.bz2
   mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exo/* ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/
   if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ]; then
+    echo_info "Restoring codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
     mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
     mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
+    echo_info "Done."
   fi
   echo_info "Done"
 
