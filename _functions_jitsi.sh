@@ -186,6 +186,13 @@ do_start_jitsi() {
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3"
 }
+  docker run -d \
+      --name jitsi-excalidraw-backend \
+      -p 3002:80 \
+      -e "stdin_open=true" \
+      --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+      --network-alias excalidraw-whiteboard \
+      --name exo-excalidraw-backend:1.0
 
 check_jitsi_call_availability() {
   echo_info "Waiting for Jitsi Call availability on port ${DEPLOYMENT_JITSI_CALL_HTTP_PORT}"
