@@ -1150,11 +1150,11 @@ do_download_server() {
 
   if ! ${ADT_OFFLINE}; then
     # Downloads the product from Nexus
+    echo "${REPOSITORY_PASSWORD}dsdedf ${REPOSITORY_USERNAME}"
     do_download_maven_artifact  \
    "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}"  \
    "${ARTIFACT_GROUPID}" "${ARTIFACT_ARTIFACTID}" "${PRODUCT_VERSION}" "${ARTIFACT_PACKAGING}" "${ARTIFACT_CLASSIFIER}"  \
    "${DL_DIR}" "${PRODUCT_NAME}" "PRODUCT"
-   echo "${REPOSITORY_PASSWORD}dsdedf ${REPOSITORY_USERNAME}"
   else
     echo_warn "ADT is offline and won't try to download the server !"
   fi
