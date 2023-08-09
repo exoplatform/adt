@@ -175,6 +175,8 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
+    -e "WHITEBOARD_ENABLED=1" \
+    -e "WHITEBOARD_COLLAB_SERVER_PUBLIC_URL=${DEPLOYMENT_URL}" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
