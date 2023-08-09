@@ -175,8 +175,6 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
-    -e "WHITEBOARD_ENABLED=1" \
-    -e "WHITEBOARD_COLLAB_SERVER_PUBLIC_URL=${DEPLOYMENT_URL}" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -188,6 +186,7 @@ do_start_jitsi() {
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3"
   
+  delete_docker_container jitsi-excalidraw-backend
   ${DOCKER_CMD} run \
     -d \
     --name jitsi-excalidraw-backend \
