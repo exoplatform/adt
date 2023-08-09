@@ -73,10 +73,10 @@
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}/colibri-ws/"
         </Location>
         <Location "/whiteboard/">
-            ProxyPass "ws://exo_excalidraw"
+            ProxyPass "ws://localhost:3333/exo_excalidraw"
         </Location>
         <Location "/socket.io/">
-            ProxyPass "ws://exo_excalidraw/socket.io/?$args"
+            ProxyPass "ws://localhost:3333/exo_excalidraw/socket.io/?$args"
         </Location>
     </IfModule>
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
@@ -100,7 +100,7 @@
     ProxyPass               /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
-    ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind  
 
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}

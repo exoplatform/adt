@@ -80,10 +80,10 @@
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}/colibri-ws/"
         </Location>
         <Location "/whiteboard/">
-            ProxyPass "ws://exo_excalidraw"
+            ProxyPass "ws://localhost:3333/exo_excalidraw"
         </Location>
         <Location "/socket.io/">
-            ProxyPass "ws://exo_excalidraw/socket.io/?$args"
+            ProxyPass "ws://localhost:3333/exo_excalidraw/socket.io/?$args"
         </Location>
     </IfModule>
 
