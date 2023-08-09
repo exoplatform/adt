@@ -71,7 +71,7 @@ do_start_keycloak() {
   ${DOCKER_CMD} run \
   -d \
   -e KEYCLOAK_USER=root \
-  -e KEYCLOAK_PASSWORD=password1234 \
+  -e KEYCLOAK_PASSWORD=password \
   -e PROXY_ADDRESS_FORWARDING=${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false} \
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
   -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/jboss/keycloak/standalone/data \
@@ -82,7 +82,7 @@ do_start_keycloak() {
   local token=$(curl -X POST "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/realms/master/protocol/openid-connect/token" \
    -H "Content-Type: application/x-www-form-urlencoded" \
    -d "username=root" \
-   -d "password=password1234" \
+   -d "password=password" \
    -d 'grant_type=password' \
    -d 'client_id=admin-cli' | jq -r '.access_token')
   curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
