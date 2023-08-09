@@ -25,6 +25,7 @@ do_get_jitsi_settings() {
   env_var DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jicofo"
   env_var DEPLOYMENT_JITSI_JVB_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jvb"
   env_var DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jibri"
+  env_var DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_excalidraw_backend"
   env_var DEPLOYMENT_JITSI_NETWORK_NAME "$(tolower "${INSTANCE_KEY}").jitsi"
 }
 
@@ -48,6 +49,8 @@ do_drop_jitsi_data() {
     delete_docker_container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}
     echo_info "Drops Jitsi jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
+    echo_info "Drops Jitsi excalidraw brackend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} ..."
+    delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
     echo_info "Done."
     echo_info "Jitsi data dropped"
   else
@@ -80,6 +83,8 @@ do_stop_jitsi() {
   echo_info "Jitsi container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} stopped."
   ensure_docker_container_stopped ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   echo_info "Jitsi container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} stopped."
+  ensure_docker_container_stopped ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
+  echo_info "Jitsi container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} stopped."
   echo_info "Done."
 }
 
@@ -186,12 +191,13 @@ do_start_jitsi() {
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3"
   
-  delete_docker_container jitsi-excalidraw-backend
+  echo_info "Starting Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} based on image XXXXXXXXXXXX"
+
+  delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    --name jitsi-excalidraw-backend \
-    -p "3002:80" \
-    -e "stdin_open=true" \
+    --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} \
+    -p "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}:80" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     exo-excalidraw-backend:1.0
