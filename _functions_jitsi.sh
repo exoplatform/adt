@@ -196,10 +196,11 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} exoplatform/exo-excalidraw-backend:"${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}" \
     -p "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}:80" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
-    --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" 
+    --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} exoplatform/exo-excalidraw-backend:"${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"  
   echo_info "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} container started"
 }
 
