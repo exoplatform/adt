@@ -333,6 +333,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
       configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.0"
 
       configurable_env_var "DEPLOYMENT_PG_UPGRADE_IMAGE" "tianon/postgres-upgrade"
 
@@ -951,7 +952,6 @@ initialize_product_settings() {
 
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.33" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.0"
               configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-8719"
 
               
