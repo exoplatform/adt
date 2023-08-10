@@ -951,7 +951,9 @@ initialize_product_settings() {
 
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.33" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
+              env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.0"
               configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-8044-1"
+
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
@@ -1655,6 +1657,7 @@ do_deploy() {
   env_var "DEPLOYMENT_JITSI_WEB_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}83"
   env_var "DEPLOYMENT_JITSI_JVB_PORT" "${DEPLOYMENT_PORT_PREFIX}84"
   env_var "DEPLOYMENT_JITSI_JVB_COLIBRI_PORT" "${DEPLOYMENT_PORT_PREFIX}86"
+  env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT" "${DEPLOYMENT_PORT_PREFIX}87"
 
   # SFTP port
   env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"

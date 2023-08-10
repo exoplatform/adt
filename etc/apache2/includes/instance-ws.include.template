@@ -79,6 +79,12 @@
         <Location "/jitsiweb/colibri-ws/">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}/colibri-ws/"
         </Location>
+        <Location "/whiteboard/">
+            ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}/"
+        </Location>
+        <Location "/socket.io/">
+            ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}/socket.io/"
+        </Location>
     </IfModule>
 
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
