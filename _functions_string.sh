@@ -62,6 +62,11 @@ do_build_url() {
   echo ${_result}
 }
 
+# $1 : string length (default: 12)
+getrandomstring() {
+  /usr/bin/cat /dev/urandom | tr -dc '[:alpha:][0-9]$' | /usr/bin/fold -w ${1:-${1:-12}} | /usr/bin/head -n 1
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_STRING_LOADED=true

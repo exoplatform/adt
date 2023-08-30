@@ -33,7 +33,7 @@ do_create_jmx_credentials_files() {
   # JMX settings
   echo_info "Creating JMX configuration files ..."
   cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
-  cp -f ${ETC_DIR}/jmx/jmxremote.password ${DEPLOYMENT_DIR}/conf/jmxremote.password
+  evaluate_file_content ${ETC_DIR}/jmx/jmxremote.password.template ${DEPLOYMENT_DIR}/conf/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo_info "Done."
   # Open firewall ports
