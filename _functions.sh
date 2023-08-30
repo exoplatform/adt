@@ -2004,7 +2004,7 @@ do_start() {
   echo_info "JMX  :"
   echo_info " - URL              : ${DEPLOYMENT_JMX_URL}"
   echo_info " - Read only access : acceptanceMonitor/${DEPLOYMENT_JMX_READONLY_PASSWORD}"
-  echo_info " - write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
+  echo_info " - Write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
   if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
     echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
   fi
