@@ -81,8 +81,7 @@ if (isDeploymentInCategoryArray($cp_instances)) {
 ?>
     </tbody>
 </table>
-<p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and these credentials :
-    <strong><code>acceptanceMonitor</code></strong> / <strong><code>monitorAcceptance!</code></strong>
+<p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and these credentials can be found on CI Build.
 </p>
 <p>Each deployed Keycloak can be accessed using the Keycloak icon and these credentials :
     <strong><code>root</code></strong> / <strong><code>password</code></strong>

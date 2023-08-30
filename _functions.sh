@@ -297,6 +297,9 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_LINK_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
 
+      configurable_env_var "DEPLOYMENT_JMX_READONLY_PASSWORD" "$(getrandomstring)"
+      configurable_env_var "DEPLOYMENT_JMX_READWRITE_PASSWORD" "$(getrandomstring)"
+
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "latest"
@@ -1998,7 +2001,10 @@ do_start() {
   echo_info "Server started"
   echo_info "URL  : ${DEPLOYMENT_URL}"
   echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
-  echo_info "JMX  : ${DEPLOYMENT_JMX_URL}"
+  echo_info "JMX  :"
+  echo_info " - URL              : ${DEPLOYMENT_JMX_URL}"
+  echo_info " - Read only access : acceptanceMonitor/${DEPLOYMENT_JMX_READONLY_PASSWORD}"
+  echo_info " - write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
   if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
     echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
   fi

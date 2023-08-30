@@ -33,7 +33,7 @@ do_configure_jbosseap_jmx() {
   # JMX settings
   echo_info "Creating JMX configuration files ..."
   cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.access
-  cp -f ${ETC_DIR}/jmx/jmxremote.password ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
+  evaluate_file_content ${ETC_DIR}/jmx/jmxremote.password.template ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
   echo_info "Done."
   # Open firewall ports
