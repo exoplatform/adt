@@ -335,7 +335,6 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
-      configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
       configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.0"
 
       configurable_env_var "DEPLOYMENT_PG_UPGRADE_IMAGE" "tianon/postgres-upgrade"
@@ -1005,6 +1004,7 @@ initialize_product_settings() {
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.3" # Default version for Only Office docker image to use
+              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.1_latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.1) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
@@ -1019,6 +1019,7 @@ initialize_product_settings() {
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.1" # Default version for Only Office docker image to use
+              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.0_latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.0) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
