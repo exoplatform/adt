@@ -99,7 +99,7 @@ do_start_jitsi() {
   [[ "${jitsi_major_version:-}" =~ ^[78]$ ]] || jitsi_major_version="8" # latest version
   export DEPLOYMENT_URL DEPLOYMENT_JITSI_NETWORK_NAME DEPLOYMENT_JITSI_JVB_PORT jitsi_major_version
   evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
-  echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION}"
+  echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
   create_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
