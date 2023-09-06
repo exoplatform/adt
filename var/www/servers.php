@@ -177,6 +177,13 @@ checkCaches();
                     <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance10.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 1.2To NVMe</td>
                   </tr>
+                  <tr>
+                    <td class="col-center">acceptance12.exoplatform.org</td>
+                    <td class="col-center">acc02</td>
+                    <td class="col-center"><?=$servers_counter["acceptance12.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance12.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance12.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = AMD Ryzen 9 5900X @ 3.7GHz/4.8GHz (12 cores + hyperthreading = 24 threads) <br /> Disks = 2 x 1.92To NVMe</td>
+                  </tr>
                 </tbody>
               </table>
             </div>
