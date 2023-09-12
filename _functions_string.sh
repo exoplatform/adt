@@ -64,7 +64,7 @@ do_build_url() {
 
 # $1 : string length (default: 12)
 getrandomstring() {
-  cat /dev/urandom | tr -dc '[:alpha:][0-9]$' | fold -w ${1:-12} | head -n 1
+  cat /dev/urandom | tr -dc '[:alpha:][0-9]' | fold -w ${1:-12} | head -n 1
 }
 
 # #############################################################################
