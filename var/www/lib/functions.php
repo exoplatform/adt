@@ -1235,6 +1235,7 @@ function getGitBaseBranchToCompareWith($org, $repo, $branch)
   $fbBaseBranch = array(
     "feature/meedsv2" => "develop-meed",
     "feature/meeds-qaui" => "develop-meed",
+    "feature/whitepaper" => "develop-meed",
     "feature/mips" => "develop"
   );
 
