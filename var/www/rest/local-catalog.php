@@ -10,12 +10,16 @@ if(!preg_match('/^[0-9].[0-9].[0-9](-(exo|meed))?-[0-9]{8,10}$/', $_GET["plfvers
     echo "Error! Invalid PLF version parameter value!";
     die();
 }
-if (!file_exists("../catalog/local_catalog.json")) {
-    http_response_code(500);
-    echo "Error! Could not find local catalog file!";
+$exo_plf_major_version="";
+if ( preg_match('/^[0-9].[0-9]/', $_GET["plfversion"], $matches) ) {
+    $exo_plf_major_version=$matches[1];
+}
+if (!file_exists("../catalog/".$exo_plf_major_version."/local_catalog.json")) {
+    http_response_code(404);
+    echo "Error! Could not find local catalog file for ".$exo_plf_major_version." version!";
     die();
 }
-$local_catalog = file_get_contents("../catalog/local_catalog.json");
+$local_catalog = file_get_contents("../catalog/".$exo_plf_major_version."/local_catalog.json");
 if ($local_catalog === false) {
     http_response_code(500);
     echo "Error! Could not parse local catalog file!";

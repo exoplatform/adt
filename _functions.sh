@@ -188,6 +188,7 @@ Environment Variables
   DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
   DEPLOYMENT_GZIP_ENABLED           : Enable Gzip Compression on the Tomcat Server
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
+  DEPLOYMENT_STAGING_ENABLED        : Enable Staging nexus repositories deployment 
 
 EOF
 }
@@ -355,6 +356,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
+      configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
+
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
 
@@ -423,7 +426,11 @@ initialize_product_settings() {
       env_var "ARTIFACT_CLASSIFIER" ""
       env_var "ARTIFACT_PACKAGING" "zip"
 
-      env_var "ARTIFACT_REPO_GROUP" "public"
+      if ${DEPLOYMENT_STAGING_ENABLED}; then
+        env_var ARTIFACT_REPO_GROUP "staging"
+      else
+        env_var ARTIFACT_REPO_GROUP "public"
+      fi
 
       # They are set by the script
       env_var "ARTIFACT_DATE" ""
@@ -635,7 +642,11 @@ initialize_product_settings() {
         ;;
         plfent|plfentdemo)
           env_var PRODUCT_DESCRIPTION "Platform EE"
-          env_var ARTIFACT_REPO_GROUP "private"
+          if ${DEPLOYMENT_STAGING_ENABLED}; then
+            env_var ARTIFACT_REPO_GROUP "staging"
+          else
+            env_var ARTIFACT_REPO_GROUP "private"
+          fi
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
