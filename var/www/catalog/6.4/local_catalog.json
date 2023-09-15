@@ -154,23 +154,5 @@
         "supportedDistributions": "enterprise",
         "supportedApplicationServers": "tomcat",
         "compatibility": "[@exo_plf_version]"
-    },
-    {
-        "id": "meeds-deeds-tenant",
-        "version": "1.0.0@exo_plf_version_suffix",
-        "unstable": true,
-        "name": "deeds-tenant",
-        "description": "Deeds tenant Addon",
-        "releaseDate": "2022-04-06T22:00:00.000Z",
-        "sourceUrl": "https://github.com/Meeds-io/deeds-tenant",
-        "downloadUrl": "http://addons.exoplatform.org/n/meeds-releases/io.meeds.deeds-tenant/deeds-tenant-packaging/1.0.0@exo_plf_version_suffix/zip",
-        "vendor": "Meeds.io",
-        "author": "Meeds.io",
-        "license": "LGPLv3",
-        "licenseUrl": "https://www.gnu.org/licenses/lgpl-3.0.txt",
-        "mustAcceptLicense": false,
-        "supportedDistributions": "community,enterprise",
-        "supportedApplicationServers": "tomcat",
-        "compatibility": "[@exo_plf_version]"
     }
 ]
