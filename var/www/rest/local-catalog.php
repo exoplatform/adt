@@ -17,14 +17,14 @@ if(!isset($_GET["plfversion"])){
 $stagingCatalog = isset($_GET["staging"]) && $_GET["staging"] === 'true'; 
 $targetCatalog = $stagingCatalog ? 'staging' : 'local';
 // Continous deployment version check
-if(!preg_match('/^[0-9].[0-9].[0-9](-(exo|meed))?-[0-9]{8,10}$/', $_GET["plfversion"])){
+if(!preg_match('/^[0-9].[0-9].[0-9](-(exo|meed))?(-([0-9]{8,10}|(M|RC|CP)[0-9]{2}))?$/', $_GET["plfversion"])){
     http_response_code(404);
     echo "Error! Invalid PLF version parameter value!";
     die();
 }
 $exo_plf_major_version="";
 if ( preg_match('/^[0-9].[0-9]/', $_GET["plfversion"], $matches) ) {
-    $exo_plf_major_version=$matches[1];
+    $exo_plf_major_version=$matches[0];
 }
 if (!file_exists("../catalog/".$exo_plf_major_version."/".$targetCatalog."_catalog.json")) {
     http_response_code(404);
