@@ -136,23 +136,5 @@
         "supportedDistributions": "community,enterprise",
         "supportedApplicationServers": "tomcat",
         "compatibility": "[@exo_plf_version]"
-    },
-    {
-        "id": "cust-tribe",
-        "version": "@exo_plf_version",
-        "unstable": true,
-        "name": "Tribe extension",
-        "description": "Tribe extension",
-        "sourceUrl": "https://github.com/exoplatform/community-website",
-        "downloadUrl": "http://addons.exoplatform.org/n/cp-cwi-releases/org.exoplatform.community/exo-community-packaging/@exo_plf_version/zip",
-        "vendor": "eXo",
-        "author": "eXo",
-        "authorEmail": "support@exoplatform.com",
-        "license": "AGPLv3",
-        "licenseUrl": "https://www.gnu.org/licenses/agpl-3.0.txt",
-        "mustAcceptLicense": false,
-        "supportedDistributions": "enterprise",
-        "supportedApplicationServers": "tomcat",
-        "compatibility": "[@exo_plf_version]"
     }
 ]
