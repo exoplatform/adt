@@ -14,7 +14,7 @@ if(!isset($_GET["plfversion"])){
     echo "Error! Missing PLF version parameter!";
     die();
 }
-$stagingCatalog = isset($_GET["staging"]) && $_GET["staging"] === 'true'; 
+$stagingCatalog = isset($_GET["staging"]) && $_GET["staging"] == 'true'; 
 $targetCatalog = $stagingCatalog ? 'staging' : 'local';
 // Continous deployment version check
 if(!preg_match('/^[0-9].[0-9].[0-9](-(exo|meed))?(-([0-9]{8,10}|(M|RC|CP)[0-9]{2}))?$/', $_GET["plfversion"])){
