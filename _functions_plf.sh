@@ -167,7 +167,7 @@ do_install_addons() {
 
   if [ ! -z "${DEPLOYMENT_ADDONS_CATALOG:-}" ]; then
     echo "The add-on manager catalog url was overriden with : ${DEPLOYMENT_ADDONS_CATALOG}"
-    _addons_manager_option_catalog="--catalog=${DEPLOYMENT_ADDONS_CATALOG}"
+    _addons_manager_option_catalog="--catalog=\"${DEPLOYMENT_ADDONS_CATALOG}\""
   fi
 
   if [ ! -z "${DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE:-}" ]; then
