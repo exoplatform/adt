@@ -259,11 +259,11 @@ do_download_maven_artifact() {
     _baseUrl=$(echo $_baseUrl | sed "s/$_artifactVersion/$_artifactTimestamp/g" )
   fi
 
-  if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then 
+  if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false} || ${DEPLOYMENT_STAGING_ENABLED:-false} ; then 
     if [ -z "${DEPLOYMENT_ADDONS_CATALOG:-}" ]; then 
-      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/local-catalog.php?plfversion=$_artifactTimestamp"
+      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/local-catalog.php?plfversion=$_artifactTimestamp&staging=${DEPLOYMENT_STAGING_ENABLED:-false}"
     else 
-      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/local-catalog.php?plfversion=$_artifactTimestamp&remote=${DEPLOYMENT_ADDONS_CATALOG##*/}"
+      env_var "DEPLOYMENT_ADDONS_CATALOG" "https://${ACCEPTANCE_HOST}/rest/local-catalog.php?plfversion=$_artifactTimestamp&staging=${DEPLOYMENT_STAGING_ENABLED:-false}&remote=${DEPLOYMENT_ADDONS_CATALOG##*/}"
     fi
   fi
 
