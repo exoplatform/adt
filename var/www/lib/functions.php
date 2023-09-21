@@ -1177,7 +1177,7 @@ function getAcceptanceBranches()
 
 function clearCaches()
 {
-  apc_clear_cache('user');
+  $GLOBALS['memcache']->flush();
 }
 
 function checkCaches()

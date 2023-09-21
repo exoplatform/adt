@@ -22,7 +22,7 @@ checkCaches();
           </ul>
 <?php
 
-echo debug_var(apc_cache_info('user'), true);
+echo debug_var(memcache_flush(), true);
 ?>
         </div>
       </div>
