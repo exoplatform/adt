@@ -5,9 +5,10 @@ require_once(dirname(__FILE__) . '/functions-debug.php');
 date_default_timezone_set('UTC');
 
 global $memcache;
-$memcache = new Memcache();
-$memcache->connect('localhost', 11211) or die ("Could not connect");
-
+if (extension_loaded('memcache')) {
+  $memcache = new Memcache();
+  $memcache->connect('localhost', 11211) or die ("Could not connect");
+}
 // this method will return the current page full url
 function currentPageURL()
 {
@@ -128,7 +129,11 @@ function processIsRunning($pid)
  */
 function getRepositories()
 {
-  $repositories = $GLOBALS['memcache']->get('repositories');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $repositories = apc_fetch('repositories');
+  } elseif (extension_loaded('memcache')) {
+    $repositories = $GLOBALS['memcache']->get('repositories');
+  }
 
   if (empty($features)) {
     $repositories = array(
@@ -181,7 +186,11 @@ function getRepositories()
         "anti-malware" => "Anti Malware",
         "data-upgrade" => "Data upgrade",
         "platform-private-distributions" => "PLF Private Dist");
-    $GLOBALS['memcache']->set('repositories', $repositories);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('repositories', $repositories);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('repositories', $repositories);
+    }
   }
   return $repositories;
 }
@@ -239,7 +248,11 @@ function getModuleCiPrefix($item)
 
 function getFeatureBranches($projects)
 {
-  $features = $GLOBALS['memcache']->get('features');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $features = apc_fetch('features');
+  } elseif (extension_loaded('memcache')) {
+    $features = $GLOBALS['memcache']->get('features');
+  }
 
   if (empty($features)) {
     $features = array();
@@ -279,8 +292,11 @@ function getFeatureBranches($projects)
 
 function getTranslationBranches($projects)
 {
-  $features = $GLOBALS['memcache']->get('translation');
-
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $features = apc_fetch('translation');
+  } elseif (extension_loaded('memcache')) {
+    $features = $GLOBALS['memcache']->get('translation');
+  }
   $projectsToIgnore = array(
       "agenda" => true,
       "agenda-connectors" => true,
@@ -379,7 +395,11 @@ function getTranslationBranches($projects)
 
 function getLocalAcceptanceInstances()
 {
-  $instances = $GLOBALS['memcache']->get('local_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('local_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('local_instances');
+  }
 
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $instances = array();
@@ -684,7 +704,11 @@ function getLocalAcceptanceInstances()
  */
 function getGlobalAcceptanceInstances()
 {
-  $instances = $GLOBALS['memcache']->get('all_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('all_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('all_instances');
+  }
 
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $instances = array();
@@ -710,7 +734,11 @@ function getGlobalAcceptanceInstances()
  * @return array
  */
 function getGlobalDevInstances() {
-  $instances = $GLOBALS['memcache']->get('dev_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('dev_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('dev_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -735,7 +763,11 @@ function getGlobalDevInstances() {
  */
 function getGlobalSalesUserInstances()
 {
-  $instances = $GLOBALS['memcache']->get('sales_user_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('sales_user_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('sales_user_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -760,7 +792,11 @@ function getGlobalSalesUserInstances()
  */
 function getGlobalSalesDemoInstances()
 {
-  $instances = $GLOBALS['memcache']->get('sales_demo_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('sales_demo_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('sales_demo_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -785,7 +821,11 @@ function getGlobalSalesDemoInstances()
  */
 function getGlobalSalesEvalInstances()
 {
-  $instances = $GLOBALS['memcache']->get('sales_eval_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('sales_eval_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('sales_eval_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -809,7 +849,11 @@ function getGlobalSalesEvalInstances()
  * @return array
  */
 function getGlobalQAInstances() {
-  $instances = $GLOBALS['memcache']->get('qa_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('qa_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('qa_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -833,7 +877,11 @@ function getGlobalQAInstances() {
  * @return array
  */
 function getGlobalQAUserInstances() {
-  $instances = $GLOBALS['memcache']->get('qa_user_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('qa_user_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('qa_user_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalQAInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -857,7 +905,11 @@ function getGlobalQAUserInstances() {
  * @return array
  */
 function getGlobalQAAutoInstances() {
-  $instances = $GLOBALS['memcache']->get('qa_auto_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('qa_auto_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('qa_auto_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalQAInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -881,7 +933,11 @@ function getGlobalQAAutoInstances() {
  * @return array
  */
  function getGlobalCPInstances() {
-  $instances = $GLOBALS['memcache']->get('cp_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('cp_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('cp_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -905,7 +961,11 @@ function getGlobalQAAutoInstances() {
  * @return array
  */
 function getGlobalCompanyInstances() {
-  $instances = $GLOBALS['memcache']->get('company_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('company_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('company_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -929,7 +989,11 @@ function getGlobalCompanyInstances() {
  * @return array
  */
 function getGlobalDocInstances() {
-  $instances = $GLOBALS['memcache']->get('doc_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('doc_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('doc_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -953,7 +1017,11 @@ function getGlobalDocInstances() {
  * @return array
  */
 function getGlobalTranslationInstances() {
-  $instances = $GLOBALS['memcache']->get('translation_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('translation_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('translation_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -1158,8 +1226,11 @@ function filterInstancesWithoutLabels($descriptor_arrays, $labels, $all_labels =
 
 function getAcceptanceBranches()
 {
-  $branches = $GLOBALS['memcache']->get('acceptance_branches');
-
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $branches = apc_fetch('acceptance_branches');
+  } elseif (extension_loaded('memcache')) {
+    $branches = $GLOBALS['memcache']->get('acceptance_branches');
+  }
   if (empty($branches) || getenv('ADT_DEV_MODE')) {
     $branches = array();
     foreach (getGlobalAcceptanceInstances() as $descriptor_arrays) {
