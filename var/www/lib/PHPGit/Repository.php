@@ -145,7 +145,7 @@ class PHPGit_Repository
         $output = $this->git('branch');
 
         foreach(explode("\n", $this->git('branch')) as $branchLine) {
-            if('*' === $branchLine{0}) {
+            if('*' === $branchLine[0]) {
                 return substr($branchLine, 2);
             }
         }
