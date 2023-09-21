@@ -285,7 +285,11 @@ function getFeatureBranches($projects)
     }
     uksort($features, 'strcasecmp');
     // Feature branches will be cached for 5 min
-    $GLOBALS['memcache']->set('features', $features, 0, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('features', $features, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('features', $features, 0, 300);
+    }
   }
   return $features;
 }
@@ -388,7 +392,11 @@ function getTranslationBranches($projects)
     }
     uksort($features, 'strcasecmp');
     // Translation branches will be cached for 5 min
-    $GLOBALS['memcache']->set('translation', $features, 0, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('translation', $features, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('translation', $features, 0, 300);
+    }
   }
   return $features;
 }
@@ -692,7 +700,11 @@ function getLocalAcceptanceInstances()
         $instances[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('local_instances', $instances, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('local_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('local_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -723,7 +735,11 @@ function getGlobalAcceptanceInstances()
       }
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('all_instances', $instances, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('all_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('all_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -751,7 +767,11 @@ function getGlobalDevInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('dev_instances', $instances, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('dev_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('dev_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -780,7 +800,11 @@ function getGlobalSalesUserInstances()
       $instances=array();
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('sales_user_instances', $instances, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('sales_user_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('sales_user_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -809,7 +833,11 @@ function getGlobalSalesDemoInstances()
       $instances=array();
     }
     // Instances will be cached for 5 min
-    $GLOBALS['memcache']->set('sales_demo_instances', $instances, 0, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('sales_demo_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('sales_demo_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -838,7 +866,11 @@ function getGlobalSalesEvalInstances()
       $instances=array();
     }
     // Instances will be cached for 5 min
-    $GLOBALS['memcache']->set('sales_eval_instances', $instances, 0, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('sales_eval_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('sales_eval_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -866,7 +898,11 @@ function getGlobalQAInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('qa_instances', $instances, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('qa_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('qa_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -894,7 +930,11 @@ function getGlobalQAUserInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('qa_user_instances', $instances, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('qa_user_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('qa_user_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -922,7 +962,11 @@ function getGlobalQAAutoInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('qa_auto_instances', $instances, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('qa_auto_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('qa_auto_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -950,7 +994,11 @@ function getGlobalQAAutoInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    $GLOBALS['memcache']->set('cp_instances', $instances, 0, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('cp_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('cp_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -978,7 +1026,11 @@ function getGlobalCompanyInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    $GLOBALS['memcache']->set('company_instances', $instances, 500);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('company_instances', $instances, 500);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('company_instances', $instances, 0, 500);
+    }
   }
   return $instances;
 }
@@ -1006,7 +1058,11 @@ function getGlobalDocInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    $GLOBALS['memcache']->set('doc_instances', $instances, 0, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('doc_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('doc_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -1034,7 +1090,11 @@ function getGlobalTranslationInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    $GLOBALS['memcache']->set('translation_instances', $instances, 0, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('translation_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('translation_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -1241,14 +1301,22 @@ function getAcceptanceBranches()
       }
     }
     // Instances will be cached for 2 min
-    $GLOBALS['memcache']->set('acceptance_branches', $branches, 0, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('acceptance_branches', $branches, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('acceptance_branches', $branches, 0, 120);
+    }
   }
   return $branches;
 }
 
 function clearCaches()
 {
-  $GLOBALS['memcache']->flush();
+  if (extension_loaded('apc') && function_exists('apc_clear_cache')) {
+    apc_clear_cache('user');
+  } elseif (extension_loaded('memcache')) {
+    $GLOBALS['memcache']->flush();
+  }
 }
 
 function checkCaches()
