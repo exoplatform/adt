@@ -255,7 +255,8 @@ do_restore_es_dataset() {
 do_dump_es_dataset() {
   local _esData="$1/search"
   mkdir -p ${_esData}
-  if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[1-9.]+$ ]]; then
+  if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[1-9].+$ ]]; then
+  echo "condition 1"
     if ${DEPLOYMENT_ES_EMBEDDED}; then
       local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
       cp -r "${path}" ${_esData}/ || touch ${_esData}/__nofile
@@ -266,6 +267,7 @@ do_dump_es_dataset() {
     fi
   else
     if ${DEPLOYMENT_ES_EMBEDDED}; then
+    echo "condition 2"
       local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
       cp -r "${path}" ${_esData}/nodes || touch ${_esData}/__nofile
     else
