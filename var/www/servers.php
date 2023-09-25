@@ -58,6 +58,9 @@ checkCaches();
                         $servers_counter = array();
                         foreach ($descriptor_arrays as $descriptor_array) {
                             // Compute the number of deployed instances per acceptance server
+                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb'])) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=0;
+                            }
                             $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']+1;
                             // Compute the minimum amount of JVM size allocated per acceptance server
                             if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min'])) {
