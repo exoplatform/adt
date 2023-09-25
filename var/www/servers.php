@@ -60,6 +60,9 @@ checkCaches();
                             // Compute the number of deployed instances per acceptance server
                             $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']+1;
                             // Compute the minimum amount of JVM size allocated per acceptance server
+                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min'])) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=0;
+                            }
                             if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'g')) {
                               $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN);
                             } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'m')) {
@@ -69,6 +72,9 @@ checkCaches();
                             }
 
                             // Compute the maximum amount of JVM size allocated per acceptance server
+                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max'])) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=0;
+                            }
                             if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'g')) {
                               $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX);
                             } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'m')) {
@@ -113,6 +119,8 @@ checkCaches();
                                     $host_html_color = "color-acceptance9";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance10.exoplatform.org") {
                                     $host_html_color = "color-acceptance10";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance12.exoplatform.org") {
+                                    $host_html_color = "color-acceptance12";
                                 } else {
                                     $host_html_color = "color-acceptanceX";
                                 }
