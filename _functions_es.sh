@@ -254,7 +254,9 @@ do_restore_es_dataset() {
 # Dump dataset
 do_dump_es_dataset() {
   local _esData="$1/search"
-  mkdir -p ${_esData}
+  if [ ! -d "${_esData}" ]; then
+    mkdir -p "${_esData}"
+  fi
   if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[1-9].+$ ]]; then
     if ${DEPLOYMENT_ES_EMBEDDED}; then
       local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
