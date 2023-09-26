@@ -254,26 +254,14 @@ do_restore_es_dataset() {
 # Dump dataset
 do_dump_es_dataset() {
   local _esData="$1/search"
-  mkdir -p "${_esData}"
-  echo "${_esData}"
-  if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[1-9].+$ ]]; then
-    if ${DEPLOYMENT_ES_EMBEDDED}; then
-      local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
-      cp -r "${path}" ${_esData} || touch ${_esData}/__nofile
-    else
-      local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
-      sudo cp -fTr "${mount_point}/" ${_esData}/ || touch ${_esData}/__nofile
-      sudo chown 1000.1000 -R ${mount_point} 
-    fi
+  mkdir -p ${_esData}
+  if ${DEPLOYMENT_ES_EMBEDDED}; then
+    local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
+    cp -fTr "${path}/" ${_esData}/ || touch ${_esData}/__nofile
   else
-    if ${DEPLOYMENT_ES_EMBEDDED}; then
-      local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
-      cp -r "${path}" ${_esData}/nodes || touch ${_esData}/__nofile
-    else
-      local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
-      sudo cp -fr "${mount_point}/nodes" ${_esData}/ || touch ${_esData}/__nofile
-      sudo chown 1000.1000 -R ${mount_point}
-    fi
+    local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
+    sudo chown 1000.1000 -R ${mount_point}
+    sudo cp -fTr "${mount_point}/" ${_esData}/ || touch ${_esData}/__nofile
   fi
 }
 
