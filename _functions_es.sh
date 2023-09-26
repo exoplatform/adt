@@ -254,16 +254,14 @@ do_restore_es_dataset() {
 # Dump dataset
 do_dump_es_dataset() {
   local _esData="$1/search"
-  if [ ! -d "${_esData}" ]; then
-    mkdir -p "${_esData}"
-  fi
+  mkdir -p "${_esData}"
   if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[1-9].+$ ]]; then
     if ${DEPLOYMENT_ES_EMBEDDED}; then
       local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
-      cp -r "${path}" ${_esData}/ || touch ${_esData}/__nofile
+      cp -r "${path}"/* ${_esData}/ || touch ${_esData}/__nofile
     else
       local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
-      sudo cp -fr "${mount_point}/" ${_esData}/ || touch ${_esData}/__nofile
+      sudo cp -fr "${mount_point}/"* ${_esData}/ || touch ${_esData}/__nofile
       sudo chown 1000.1000 -R ${mount_point}
     fi
   else
