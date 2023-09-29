@@ -50,6 +50,7 @@
 
     RewriteEngine on 
     RewriteRule ^/mailhog$ /mailhog/ [R]
+    RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
 
     ProxyRequests           Off
@@ -97,6 +98,9 @@
 
     ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
     ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+
+    ProxyPass               /livelogs/            http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
+    ProxyPassReverse        /livelogs/            http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
 
     ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
