@@ -60,7 +60,7 @@ do_start_frontail() {
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_FRONTAIL_HTTP_PORT}:9001" \
-    -v "$(basename ${DEPLOYMENT_LOG_PATH}):/logs" \
+    -v "$(dirname ${DEPLOYMENT_LOG_PATH}):/logs" \
     --name ${DEPLOYMENT_FRONTAIL_CONTAINER_NAME} ${DEPLOYMENT_FRONTAIL_IMAGE}:${DEPLOYMENT_FRONTAIL_IMAGE_VERSION} --disable-usage-stats --url-path /livelogs /logs/${DEPLOYMENT_SERVER_LOG_FILE}
   echo_info "${DEPLOYMENT_FRONTAIL_CONTAINER_NAME} container started"  
   check_frontail_availability
