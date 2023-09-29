@@ -74,8 +74,12 @@
         ProxyPass /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
         ProxyPassReverse /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
 
-        ProxyPass /livelogs/socket.io ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io
-        ProxyPassReverse /livelogs/socket.io ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io
+        <Location "/livelogs/">
+            RewriteCond %{HTTP:Connection} Upgrade [NC]
+            RewriteCond %{HTTP:Upgrade} websocket [NC]
+            RewriteRule /livelogs/socket.io/(.*) ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/$1  [P,L]
+            ProxyPass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
+        </Location>
  
         # Proxify of websocket url pattern for only office
         ProxyPassMatch    (.*)(\/websocket)$                            ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2  disablereuse=on flushpackets=on
@@ -110,9 +114,6 @@
 
     ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
     ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
-
-    ProxyPass               /livelogs/            http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
-    ProxyPassReverse        /livelogs/            http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
 
     ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
