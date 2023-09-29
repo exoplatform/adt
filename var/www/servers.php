@@ -113,8 +113,6 @@ checkCaches();
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_HOST === "acceptance7.exoplatform.org") {
                                     $host_html_color = "color-acceptance7";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance8.exoplatform.org") {
-                                    $host_html_color = "color-acceptance8";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance9.exoplatform.org") {
                                     $host_html_color = "color-acceptance9";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance10.exoplatform.org") {
@@ -163,14 +161,7 @@ checkCaches();
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['nb']?></td> 
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance7.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)</td> 
-                  </tr>                 
-                  <tr>
-                    <td class="col-center">acceptance8.exoplatform.org</td>
-                    <td class="col-center">prd06</td>
-                    <td class="col-center"><?=$servers_counter["acceptance8.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance8.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance8.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB30 / sdb = INTEL SSDSC2BB30 / sdc = INTEL SSDSC2BB30)</td>
-                  </tr>                 
+                  </tr>
                   <tr>
                     <td class="col-center">acceptance9.exoplatform.org</td>
                     <td class="col-center">prd07</td>
