@@ -1549,9 +1549,6 @@ do_configure_apache() {
     ;;
   esac
   DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOG_FILE}
-  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then
-    DEPLOYMENT_LIVE_LOG_URL=${DEPLOYMENT_URL}/livelogs
-  fi
   echo_info "Done."
   echo_info "Rotate Apache logs ..."
 
@@ -1910,6 +1907,9 @@ do_start() {
     do_ufw_open_port ${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT} "phpLDAPAdmin HTTP Port" ${ADT_DEV_MODE}
   fi
 
+  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then
+    DEPLOYMENT_LIVE_LOG_URL=${DEPLOYMENT_URL}/livelogs
+  fi
 
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
