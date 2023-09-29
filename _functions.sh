@@ -32,6 +32,7 @@ source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
+source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_adminmongo.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
 source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
@@ -316,6 +317,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
 
+      configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
+      configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "mthenw/frontail"
+      configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "latest"
+
       configurable_env_var "DEPLOYMENT_ADMIN_MONGO_ENABLED" false
       configurable_env_var "DEPLOYMENT_ADMIN_MONGO_IMAGE" "mrvautin/adminmongo"
       configurable_env_var "DEPLOYMENT_ADMIN_MONGO_IMAGE_VERSION" "latest"
@@ -432,6 +437,7 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_DATE" ""
       env_var "DEPLOYMENT_DIR" ""
       env_var "DEPLOYMENT_LOG_URL" ""
+      env_var "DEPLOYMENT_LIVE_LOG_URL" ""
       env_var "DEPLOYMENT_LOG_PATH" ""
       env_var "DEPLOYMENT_JMX_URL" ""
       env_var "DEPLOYMENT_PID_FILE" ""
@@ -1133,6 +1139,7 @@ initialize_product_settings() {
    do_get_onlyoffice_settings
    do_get_ldap_settings
    do_get_mailhog_settings
+   do_get_frontail_settings
    do_get_admin_mongo_settings
    do_get_keycloak_settings
    do_get_cloudbeaver_settings
@@ -1315,6 +1322,7 @@ do_init_empty_data(){
   do_drop_es_data
   do_drop_data
   do_drop_mailhog_data
+  do_drop_frontail_data
   do_drop_keycloak_data
   do_drop_phpldapadmin_data
 
@@ -1646,6 +1654,9 @@ do_deploy() {
   env_var "DEPLOYMENT_MAILHOG_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
   env_var "DEPLOYMENT_MAILHOG_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
 
+  # Frontail port
+  env_var "DEPLOYMENT_FRONTAIL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}36"
+
   # Admin Mongo port
   env_var "DEPLOYMENT_ADMIN_MONGO_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}94"
 
@@ -1876,6 +1887,7 @@ do_start() {
   do_start_onlyoffice
   do_start_ldap
   do_start_mailhog
+  do_start_frontail
   do_start_keycloak
   do_start_jitsi
   do_start_sftp
@@ -1895,6 +1907,9 @@ do_start() {
     do_ufw_open_port ${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT} "phpLDAPAdmin HTTP Port" ${ADT_DEV_MODE}
   fi
 
+  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then
+    DEPLOYMENT_LIVE_LOG_URL=${DEPLOYMENT_URL}/livelogs
+  fi
 
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
@@ -2003,6 +2018,9 @@ do_start() {
   echo_info "Server started"
   echo_info "URL  : ${DEPLOYMENT_URL}"
   echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
+  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then 
+    echo_info "Live logs : ${DEPLOYMENT_LIVE_LOG_URL}"
+  fi
   echo_info "JMX  :"
   echo_info " - URL              : ${DEPLOYMENT_JMX_URL}"
   echo_info " - Read only access : acceptanceMonitor/${DEPLOYMENT_JMX_READONLY_PASSWORD}"
@@ -2148,6 +2166,7 @@ do_stop() {
       echo_info "Server stopped."
       do_stop_ldap
       do_stop_mailhog
+      do_stop_frontail
       do_stop_phpldapadmin
       do_stop_admin_mongo
       do_stop_keycloak
@@ -2193,6 +2212,7 @@ do_undeploy() {
     do_drop_onlyoffice_data
     do_drop_ldap_data
     do_drop_mailhog_data
+    do_drop_frontail_data
     do_drop_keycloak_data
     do_drop_phpldapadmin_data
     do_drop_cloudbeaver_data
