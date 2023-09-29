@@ -1890,6 +1890,7 @@ do_start() {
   do_start_onlyoffice
   do_start_ldap
   do_start_mailhog
+  do_start_frontail
   do_start_keycloak
   do_start_jitsi
   do_start_sftp
@@ -2165,6 +2166,7 @@ do_stop() {
       echo_info "Server stopped."
       do_stop_ldap
       do_stop_mailhog
+      do_stop_frontail
       do_stop_phpldapadmin
       do_stop_admin_mongo
       do_stop_keycloak
