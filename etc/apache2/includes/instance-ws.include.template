@@ -75,6 +75,10 @@
         
         ProxyPass /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
         ProxyPassReverse /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
+            
+        ProxyPass /livelogs/socket.io ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io
+        ProxyPassReverse /livelogs/socket.io ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io
+        
         <Location "/jitsiweb/xmpp-websocket">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
         </Location>
