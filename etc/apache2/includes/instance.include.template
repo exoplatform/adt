@@ -101,7 +101,9 @@
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
     ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind  
-
+    #iframely standalone
+    ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
 
