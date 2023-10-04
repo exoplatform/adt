@@ -2271,7 +2271,6 @@ do_undeploy() {
     fi
     if [ "${DEPLOYMENT_IFRAMELY_ENABLED}" == "true" ]; then
       # Close firewall port for IFRAMELY
-      do_ufw_close_port ${DEPLOYMENT_IFRAMELY_PORT} "IFRAMELY Port" ${ADT_DEV_MODE}
     fi
     if [ "${DEPLOYMENT_SFTP_ENABLED}" == "true" ]; then
       do_ufw_close_port ${DEPLOYMENT_SFTP_PORT} "Sftp Port" ${ADT_DEV_MODE}
