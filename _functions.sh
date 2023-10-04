@@ -2269,9 +2269,6 @@ do_undeploy() {
       # Close firewall port for LDAPS
       do_ufw_close_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
     fi
-    if [ "${DEPLOYMENT_IFRAMELY_ENABLED}" == "true" ]; then
-      # Close firewall port for IFRAMELY
-    fi
     if [ "${DEPLOYMENT_SFTP_ENABLED}" == "true" ]; then
       do_ufw_close_port ${DEPLOYMENT_SFTP_PORT} "Sftp Port" ${ADT_DEV_MODE}
     fi
