@@ -131,6 +131,9 @@
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
     ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    #iframely standalone
+    ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
