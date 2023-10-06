@@ -120,6 +120,11 @@ section>ul li {
   color       : orange;
 }
 
+.color-acceptance13 {
+  font-weight : normal;
+  color       : rgb(0, 255, 200);
+}
+
 /* logs */
 .code p {
   white-space : nowrap;
