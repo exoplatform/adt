@@ -29,7 +29,8 @@
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
-        allow from all
+        Allow from all
+        Require all granted
     </Directory>
 
     Alias /icons/ "/usr/share/apache2/icons/"
