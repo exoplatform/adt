@@ -355,6 +355,27 @@ do_configure_gzip_compression() {
   }
 }
 
+do_configure_logback_loggers() {
+  if [ ! -z "${DEPLOYMENT_LOGBACK_LOGGERS:-}" ]; then 
+    # Add new loggers (just before the end of configuration)
+    loggersList=$(echo ${DEPLOYMENT_LOGBACK_LOGGERS} | sed 's/,/ /g')
+    for logger in $loggersList; do 
+      echo_info "Registering ${logger} package to logback.xml file with ${DEPLOYMENT_LOGBACK_LOGGERS_LEVEL:-DEBUG} level..."
+      xmlstarlet ed -L -s "/configuration" -t elem -n "loggerTMP" -v "" \
+        -i "//loggerTMP" -t attr -n "name" -v "${logger}" \
+        -i "//loggerTMP" -t attr -n "level" -v "${DEPLOYMENT_LOGBACK_LOGGERS_LEVEL:-DEBUG}" \
+        -r "//loggerTMP" -v logger \
+        ${DEPLOYMENT_DIR}/conf/logback.xml || {
+          echo_error "ERROR during xmlstarlet processing (adding ${DEPLOYMENT_LOGBACK_LOGGERS_LEVEL:-DEBUG} logback loggers)"
+          exit 1
+        }
+      echo_info "Done."
+    done
+  else 
+    echo_info "No custom logback loggers defined."
+  fi
+}
+
 #
 # Function that configure the server for ours needs
 #
@@ -390,6 +411,8 @@ do_configure_tomcat_server() {
   if ${DEPLOYMENT_GZIP_ENABLED:-false}; then 
     do_configure_gzip_compression
   fi
+
+  do_configure_logback_loggers
 
   do_configure_tomcat_setenv
 
