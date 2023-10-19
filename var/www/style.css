@@ -125,6 +125,11 @@ section>ul li {
   color       : rgb(0, 255, 200);
 }
 
+.color-acceptance14 {
+  font-weight : normal;
+  color       : rgb(127, 158, 224);
+}
+
 /* logs */
 .code p {
   white-space : nowrap;
