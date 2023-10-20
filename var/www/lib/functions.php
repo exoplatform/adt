@@ -694,10 +694,14 @@ function getLocalAcceptanceInstances()
       $descriptor_array['ACCEPTANCE_APACHE_VERSION'] = getenv('ADT_APACHE_VERSION');
       $descriptor_array['ACCEPTANCE_APACHE_VERSION_MINOR'] = getenv('ADT_APACHE_VERSION_MINOR');
       // Add it in the list
-      if (empty($descriptor_array['PLF_BRANCH']))
-        $instances['UNKNOWN'][] = $descriptor_array;
-      else
+      // FIX-ME: Hide Unkown instances
+      // if (empty($descriptor_array['PLF_BRANCH']))
+      //   $instances['UNKNOWN'][] = $descriptor_array;
+      // else
+      //   $instances[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
+      if (!empty($descriptor_array['PLF_BRANCH']))
         $instances[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
+      // END OF FIX-ME
     }
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
