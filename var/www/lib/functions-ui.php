@@ -640,7 +640,7 @@ function componentDeploymentActions ($deployment_descriptor) {
     $content.='<img src="/images/cmis.png" width="16" height="16" alt="cmis" class="icon"/></a>';
   }
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_FRONTAIL_ENABLED') && $deployment_descriptor->DEPLOYMENT_FRONTAIL_ENABLED) {
-    $content='<a href="http://'.$deploymentURL.'/livelogs/" rel="tooltip" title="Instance Live logs" target="_blank">';
+    $content.=' | <a href="http://'.$deploymentURL.'/livelogs/" rel="tooltip" title="Instance Live logs" target="_blank">';
     $content.='<img src="/images/frontail.png" width="16" height="16" alt="live logs" class="icon"/></a>';
   }
 
