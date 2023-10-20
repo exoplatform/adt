@@ -101,6 +101,11 @@
         </Location>
     </IfModule>
 
+    <IfModule http2_module>
+        # Conflicting with preload and prefetch headers; H2 Push needs to be disabled; https://httpd.apache.org/docs/2.4/howto/http2.html#server-push
+        H2Push Off
+    </IfModule>
+
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
 
