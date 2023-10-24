@@ -306,7 +306,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
-      configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "2.4.44"
       # USER_DIRECTORY should have LDAP/MSAD as values
       configurable_env_var "USER_DIRECTORY" "LDAP"
       configurable_env_var "DEPLOYMENT_AD_HOST" "localhost"
