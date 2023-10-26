@@ -163,6 +163,9 @@
     ProxyPassMatch    "^\/(cache\/.*)$"                                 http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(web-apps\/.*)$"                              http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(coauthoring\/.*)$"                           http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+    # OO Healthcheck
+    ProxyPass               /oohealthcheck               http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck
+    ProxyPassReverse        /oohealthcheck               http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck
 
     # Add header for X-Forwarded-For / X-Forwarded-Host / X-Forwarded-Server
     ProxyAddHeaders On
