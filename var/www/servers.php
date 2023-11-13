@@ -116,8 +116,6 @@ checkCaches();
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_HOST === "acceptance7.exoplatform.org") {
                                     $host_html_color = "color-acceptance7";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance10.exoplatform.org") {
-                                    $host_html_color = "color-acceptance10";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance12.exoplatform.org") {
                                     $host_html_color = "color-acceptance12";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance13.exoplatform.org") {
@@ -169,13 +167,6 @@ checkCaches();
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance7.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)</td> 
                   </tr>                
-                  <tr>
-                    <td class="col-center">acceptance10.exoplatform.org</td>
-                    <td class="col-center">acc01</td>
-                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance10.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 1.2To NVMe</td>
-                  </tr>
                   <tr>
                     <td class="col-center">acceptance12.exoplatform.org</td>
                     <td class="col-center">acc02</td>
