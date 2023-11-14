@@ -306,7 +306,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
-      configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "2.4.44"
       # USER_DIRECTORY should have LDAP/MSAD as values
       configurable_env_var "USER_DIRECTORY" "LDAP"
       configurable_env_var "DEPLOYMENT_AD_HOST" "localhost"
@@ -338,7 +338,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.3.0-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.3.2-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
@@ -975,7 +975,7 @@ initialize_product_settings() {
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.3" # Default version for Only Office docker image to use
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.5" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.4) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"

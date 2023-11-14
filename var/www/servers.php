@@ -116,14 +116,14 @@ checkCaches();
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_HOST === "acceptance7.exoplatform.org") {
                                     $host_html_color = "color-acceptance7";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance10.exoplatform.org") {
-                                    $host_html_color = "color-acceptance10";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance12.exoplatform.org") {
                                     $host_html_color = "color-acceptance12";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance13.exoplatform.org") {
                                     $host_html_color = "color-acceptance13";
                                 } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance14.exoplatform.org") {
                                     $host_html_color = "color-acceptance14";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance15.exoplatform.org") {
+                                    $host_html_color = "color-acceptance15";
                                 } else {
                                     $host_html_color = "color-acceptanceX";
                                 }
@@ -168,13 +168,6 @@ checkCaches();
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)</td> 
                   </tr>                
                   <tr>
-                    <td class="col-center">acceptance10.exoplatform.org</td>
-                    <td class="col-center">acc01</td>
-                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance10.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 1.2To NVMe</td>
-                  </tr>
-                  <tr>
                     <td class="col-center">acceptance12.exoplatform.org</td>
                     <td class="col-center">acc02</td>
                     <td class="col-center"><?=$servers_counter["acceptance12.exoplatform.org"]['nb']?></td>
@@ -193,6 +186,13 @@ checkCaches();
                     <td class="col-center">acc04</td>
                     <td class="col-center"><?=$servers_counter["acceptance14.exoplatform.org"]['nb']?></td>
                     <td class="col-center"><?=$servers_counter["acceptance14.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance14.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
+                  </tr>
+                  <tr>
+                    <td class="col-center">acceptance15.exoplatform.org</td>
+                    <td class="col-center">acc05</td>
+                    <td class="col-center"><?=$servers_counter["acceptance15.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance15.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance15.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
                   </tr>
                 </tbody>
