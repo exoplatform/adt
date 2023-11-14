@@ -74,8 +74,12 @@
     <IfModule mod_proxy_wstunnel.c>
         ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
         
-        ProxyPass /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
-        ProxyPassReverse /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
+        <Location "/mailhog/">
+            RewriteCond %{HTTP:Connection} Upgrade [NC]
+            RewriteCond %{HTTP:Upgrade} websocket [NC]
+            RewriteRule /mailhog/api/v2/websocket(.*) ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket$1  [P,L]
+            ProxyPass http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+        </Location>
             
         <Location "/livelogs/">
             RewriteCond %{HTTP:Connection} Upgrade [NC]
@@ -108,9 +112,6 @@
 
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
-
-    ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
-    ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
 
     ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
