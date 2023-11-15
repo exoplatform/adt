@@ -1777,8 +1777,12 @@ do_deploy() {
   fi
 
   do_download_server
-
-  
+ 
+  if [ "${DEPLOYMENT_MODE}" == "RESTORE_DATASET" ] && [ ! -e ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
+     echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 does not exist! Abort!"
+     exit 1
+  fi
+    
   if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
     do_stop
