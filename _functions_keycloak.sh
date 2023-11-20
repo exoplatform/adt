@@ -89,6 +89,14 @@ do_start_keycloak() {
    -d "password=password" \
    -d 'grant_type=password' \
    -d 'client_id=admin-cli' | jq -r '.access_token')
+
+  local keycloakRootUserId=$(curl -fssL "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users" -H 'Content-Type: application/json' -H  "Authorization: Bearer $token" | jq -r '.[]| select(.username == "root") | .id')
+
+  curl -s -X PUT --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users/${keycloakRootUserId}" \
+   -H 'Content-type: application/json' \
+   -H "Authorization: Bearer ${token}" \
+   -d 'email=root@gtn.com' -d 'firstName=Root' -d 'lastName=Root'  && echo_info "Keycloak root user updated"
+
   curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
    -H 'Content-type: application/json' \
    -H "Authorization: Bearer ${token}" \
