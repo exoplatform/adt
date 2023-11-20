@@ -125,7 +125,7 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
       -d "username=root" -d "password=password" -d 'grant_type=password' -d 'client_id=admin-cli' | jq -r '.access_token')
     keycloakClientId=$(curl -fssL "${DEP_URL}/auth/admin/realms/master/clients" -H 'Content-Type: application/json' -H  "Authorization: Bearer $keycloakAdminToken" | jq -r '.[]| select(.clientId == "exooidc") | .id')
     keycloakClientSecret=$(curl -fssL  "${DEP_URL}/auth/admin/realms/master/clients/${keycloakClientId}/client-secret" -H 'Content-Type: application/json' -H  "Authorization: Bearer $keycloakAdminToken" | jq -r '.value')
-    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.clientId=${keycloakClientId}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.clientId=exooidc"
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.clientSecret=${keycloakClientSecret}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.redirectURL=${DEP_URL}/portal/openidAuth"
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.wellKnownConfigurationUrl=${DEP_URL}/auth/realms/master/.well-known/openid-configuration"
