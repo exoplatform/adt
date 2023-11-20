@@ -1623,8 +1623,12 @@ do_deploy() {
     fi
   fi
 
-  if ${DEPLOYMENT_KEYCLOAK_ENABLED} && [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ]; then
-    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
+  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
+    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID)$ ]]; then 
+        echo_error "Keycloak deployment mode should be SAML or OPENID."
+        exit 1
+    fi
+    if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ] && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
       echo_error "Keycloak deployment with saml2 mode is enabled, the exo-saml addon must be specified on the addon list."
       exit 1
     fi
