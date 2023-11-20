@@ -67,7 +67,11 @@ do_start_keycloak() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
   env_var DEP_URL "$(echo ${DEPLOYMENT_URL} | sed -e 's/\(.*\)/\L\1/')"
-  evaluate_file_content ${ETC_DIR}/keycloak/client_def.json.template ${DEPLOYMENT_DIR}/client_def.json
+  if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ]; then 
+    evaluate_file_content ${ETC_DIR}/keycloak/client_saml_def.json.template ${DEPLOYMENT_DIR}/client_def.json
+  else
+    evaluate_file_content ${ETC_DIR}/keycloak/client_openid_def.json.template ${DEPLOYMENT_DIR}/client_def.json
+  fi
   ${DOCKER_CMD} run \
   -d \
   -e KEYCLOAK_USER=root \
