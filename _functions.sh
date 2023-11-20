@@ -334,7 +334,8 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
-      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "11.0.2"
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_MODE" "SAML"
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
@@ -1623,8 +1624,12 @@ do_deploy() {
   fi
 
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
-      echo_error "Keycloak deployment is enabled, the exo-saml addon must be specified on the addon list."
+    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID)$ ]]; then 
+        echo_error "Keycloak deployment mode should be SAML or OPENID."
+        exit 1
+    fi
+    if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ] && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
+      echo_error "Keycloak deployment with saml2 mode is enabled, the exo-saml addon must be specified on the addon list."
       exit 1
     fi
   fi  
