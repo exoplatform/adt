@@ -91,12 +91,14 @@ do_start_keycloak() {
    -d 'client_id=admin-cli' | jq -r '.access_token')
 
   local keycloakRootUserId=$(curl -fssL "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users" -H 'Content-Type: application/json' -H  "Authorization: Bearer $token" | jq -r '.[]| select(.username == "root") | .id')
+  local keycloakCreatedTimestamp=$(curl -fssL "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users" -H 'Content-Type: application/json' -H  "Authorization: Bearer $token" | jq -r '.[]| select(.username == "root") | .createdTimestamp')
 
   curl -s -X PUT --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users/${keycloakRootUserId}" \
    -H 'Content-type: application/json' \
    -H "Authorization: Bearer ${token}" \
-   -d 'email=root@gtn.com' -d 'firstName=Root' -d 'lastName=Root'  && echo_info "Keycloak root user updated"
-
+   -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":"root@gtn.com",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
+    && echo_info "Keycloak root user updated"
+  
   curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
    -H 'Content-type: application/json' \
    -H "Authorization: Bearer ${token}" \
