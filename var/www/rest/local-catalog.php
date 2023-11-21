@@ -38,8 +38,8 @@ if ($local_catalog === false) {
     die();
 }
 $plf_version=$_GET["plfversion"];
-preg_match("/^[0-9].[0-9].([0-9])/", $plf_version, $plf_minor_metch);
-$plf_minor_version= $plf_minor_version[1];
+preg_match("/^[0-9].[0-9].([0-9])/", $plf_version, $plf_minor_match);
+$plf_minor_version = $plf_minor_match[1];
 $plf_suffix= preg_replace("/^[0-9].[0-9].[0-9](-(exo|meed))?/", '', $plf_version);
 $local_catalog = str_replace("@exo_plf_version_suffix",$plf_suffix,$local_catalog);
 $local_catalog = str_replace("@exo_plf_version",$plf_version,$local_catalog);
