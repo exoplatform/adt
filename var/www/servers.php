@@ -58,8 +58,14 @@ checkCaches();
                         $servers_counter = array();
                         foreach ($descriptor_arrays as $descriptor_array) {
                             // Compute the number of deployed instances per acceptance server
+                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb'])) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=0;
+                            }
                             $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']+1;
                             // Compute the minimum amount of JVM size allocated per acceptance server
+                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min'])) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=0;
+                            }
                             if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'g')) {
                               $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN);
                             } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'m')) {
@@ -69,6 +75,9 @@ checkCaches();
                             }
 
                             // Compute the maximum amount of JVM size allocated per acceptance server
+                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max'])) {
+                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=0;
+                            }
                             if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'g')) {
                               $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX);
                             } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'m')) {
@@ -108,12 +117,14 @@ checkCaches();
                                 <?php
                                 if ($descriptor_array->ACCEPTANCE_HOST === "acceptance7.exoplatform.org") {
                                     $host_html_color = "color-acceptance7";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance8.exoplatform.org") {
-                                    $host_html_color = "color-acceptance8";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance9.exoplatform.org") {
-                                    $host_html_color = "color-acceptance9";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance10.exoplatform.org") {
-                                    $host_html_color = "color-acceptance10";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance12.exoplatform.org") {
+                                    $host_html_color = "color-acceptance12";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance13.exoplatform.org") {
+                                    $host_html_color = "color-acceptance13";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance14.exoplatform.org") {
+                                    $host_html_color = "color-acceptance14";
+                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance15.exoplatform.org") {
+                                    $host_html_color = "color-acceptance15";
                                 } else {
                                     $host_html_color = "color-acceptanceX";
                                 }
@@ -156,34 +167,34 @@ checkCaches();
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['nb']?></td> 
                     <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance7.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)</td> 
-                  </tr>                 
-                  <tr>
-                    <td class="col-center">acceptance8.exoplatform.org</td>
-                    <td class="col-center">prd06</td>
-                    <td class="col-center"><?=$servers_counter["acceptance8.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance8.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance8.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB30 / sdb = INTEL SSDSC2BB30 / sdc = INTEL SSDSC2BB30)</td>
-                  </tr>                 
-                  <tr>
-                    <td class="col-center">acceptance9.exoplatform.org</td>
-                    <td class="col-center">prd07</td>
-                    <td class="col-center"><?=$servers_counter["acceptance9.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance9.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance9.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 450GB NVMe</td>
-                  </tr>                 
-                  <tr>
-                    <td class="col-center">acceptance10.exoplatform.org</td>
-                    <td class="col-center">acc01</td>
-                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance10.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance10.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v4 @ 3.60GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 2 x 1.2To NVMe</td>
-                  </tr>
+                  </tr>                
                   <tr>
                     <td class="col-center">acceptance12.exoplatform.org</td>
                     <td class="col-center">acc02</td>
                     <td class="col-center"><?=$servers_counter["acceptance12.exoplatform.org"]['nb']?></td>
                     <td class="col-center"><?=$servers_counter["acceptance12.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance12.exoplatform.org"]['jvm-max']?>GB</td>
                     <td>RAM = 128GB <br /> CPU = AMD Ryzen 9 5900X @ 3.7GHz/4.8GHz (12 cores + hyperthreading = 24 threads) <br /> Disks = 2 x 1.92To NVMe</td>
+                  </tr>
+                  <tr>
+                    <td class="col-center">acceptance13.exoplatform.org</td>
+                    <td class="col-center">acc03</td>
+                    <td class="col-center"><?=$servers_counter["acceptance13.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance13.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance13.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
+                  </tr>
+                  <tr>
+                    <td class="col-center">acceptance14.exoplatform.org</td>
+                    <td class="col-center">acc04</td>
+                    <td class="col-center"><?=$servers_counter["acceptance14.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance14.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance14.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
+                  </tr>
+                  <tr>
+                    <td class="col-center">acceptance15.exoplatform.org</td>
+                    <td class="col-center">acc05</td>
+                    <td class="col-center"><?=$servers_counter["acceptance15.exoplatform.org"]['nb']?></td>
+                    <td class="col-center"><?=$servers_counter["acceptance15.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance15.exoplatform.org"]['jvm-max']?>GB</td>
+                    <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
                   </tr>
                 </tbody>
               </table>

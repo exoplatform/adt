@@ -81,7 +81,10 @@ check_mongodb_availability() {
   local wait_time=60
   local RET=-1
   local VERSION=${1:-${DEPLOYMENT_CHAT_MONGODB_VERSION}}
-
+  if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
+    try=100
+    wait_time=10
+  fi
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e

@@ -31,7 +31,9 @@ source "${SCRIPT_DIR}/_functions_es.sh"
 source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
+source "${SCRIPT_DIR}/_functions_iframely.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
+source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_adminmongo.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
 source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
@@ -187,6 +189,8 @@ Environment Variables
   DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
   DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
   DEPLOYMENT_GZIP_ENABLED           : Enable Gzip Compression on the Tomcat Server
+  DEPLOYMENT_LOGBACK_LOGGERS  : Enable Debug logging for java packages (comma seperated)
+  DEPLOYMENT_LOGBACK_LOGGERS_LEVEL  : Customize Logback logging level (INFO, DEBUG, ERROR): Default: DEBUG
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
   DEPLOYMENT_STAGING_ENABLED        : Enable Staging nexus repositories deployment 
 
@@ -303,7 +307,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
-      configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_LDAP_IMAGE_VERSION" "2.4.44"
       # USER_DIRECTORY should have LDAP/MSAD as values
       configurable_env_var "USER_DIRECTORY" "LDAP"
       configurable_env_var "DEPLOYMENT_AD_HOST" "localhost"
@@ -312,10 +316,18 @@ initialize_product_settings() {
       configurable_env_var "GROUP_DIRECTORY_BASE_DN" ""
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
+      # Iframely
+      configurable_env_var "DEPLOYMENT_IFRAMELY_ENABLED" false
+      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE" "jolt/iframely"
+      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE_VERSION" "v2.2.1"
 
       configurable_env_var "DEPLOYMENT_MAILHOG_ENABLED" false
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
+
+      configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
+      configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "mthenw/frontail"
+      configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "latest"
 
       configurable_env_var "DEPLOYMENT_ADMIN_MONGO_ENABLED" false
       configurable_env_var "DEPLOYMENT_ADMIN_MONGO_IMAGE" "mrvautin/adminmongo"
@@ -323,11 +335,12 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
-      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "11.0.2"
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_MODE" "SAML"
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.3.0-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "1.3.2-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
@@ -355,6 +368,8 @@ initialize_product_settings() {
       
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
+      configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS" ""
+      configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS_LEVEL" "DEBUG"
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
 
@@ -439,10 +454,12 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_DATE" ""
       env_var "DEPLOYMENT_DIR" ""
       env_var "DEPLOYMENT_LOG_URL" ""
+      env_var "DEPLOYMENT_LIVE_LOG_URL" ""
       env_var "DEPLOYMENT_LOG_PATH" ""
       env_var "DEPLOYMENT_JMX_URL" ""
       env_var "DEPLOYMENT_PID_FILE" ""
       env_var "DEPLOYMENT_LDAP_LINK" ""
+      env_var "DEPLOYMENT_IFRAMELY_LINK" ""
       env_var "DEPLOYMENT_SFTP_LINK" ""
 
 
@@ -970,7 +987,7 @@ initialize_product_settings() {
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.3" # Default version for Only Office docker image to use
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.5" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.4) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
@@ -1143,7 +1160,9 @@ initialize_product_settings() {
    do_get_cmis_settings
    do_get_onlyoffice_settings
    do_get_ldap_settings
+   do_get_iframely_settings
    do_get_mailhog_settings
+   do_get_frontail_settings
    do_get_admin_mongo_settings
    do_get_keycloak_settings
    do_get_cloudbeaver_settings
@@ -1320,12 +1339,16 @@ do_init_empty_data(){
     do_drop_ldap_data
     do_create_ldap
   fi
-
+  if ${DEPLOYMENT_IFRAMELY_ENABLED}; then
+    do_drop_iframely_data
+    do_create_iframely
+  fi
   do_init_empty_chat_database
 
   do_drop_es_data
   do_drop_data
   do_drop_mailhog_data
+  do_drop_frontail_data
   do_drop_keycloak_data
   do_drop_phpldapadmin_data
 
@@ -1612,8 +1635,12 @@ do_deploy() {
   fi
 
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
-      echo_error "Keycloak deployment is enabled, the exo-saml addon must be specified on the addon list."
+    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID)$ ]]; then 
+        echo_error "Keycloak deployment mode should be SAML or OPENID."
+        exit 1
+    fi
+    if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ] && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
+      echo_error "Keycloak deployment with saml2 mode is enabled, the exo-saml addon must be specified on the addon list."
       exit 1
     fi
   fi  
@@ -1653,9 +1680,15 @@ do_deploy() {
   # LDAP  port
   env_var "DEPLOYMENT_LDAP_PORT" "${DEPLOYMENT_PORT_PREFIX}89"
 
+  # IFRAMELY  port
+  env_var "DEPLOYMENT_IFRAMELY_PORT" "${DEPLOYMENT_PORT_PREFIX}76"
+
   # Mailhog  port
   env_var "DEPLOYMENT_MAILHOG_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
   env_var "DEPLOYMENT_MAILHOG_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
+
+  # Frontail port
+  env_var "DEPLOYMENT_FRONTAIL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}36"
 
   # Admin Mongo port
   env_var "DEPLOYMENT_ADMIN_MONGO_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}94"
@@ -1728,6 +1761,10 @@ do_deploy() {
     DEPLOYMENT_LDAP_LINK="ldap://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_LDAP_PORT}"   
   fi
 
+  if [ "${DEPLOYMENT_IFRAMELY_ENABLED}" == "true" ]; then
+    DEPLOYMENT_IFRAMELY_LINK="${DEPLOYMENT_URL}/oembed"
+  fi
+
   if ${DEPLOYMENT_SFTP_ENABLED}; then
     if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-lecko.* ]]; then
       echo_error "SFTP deployment is enabled, the exo-lecko addon must be specified on the addon list."
@@ -1756,8 +1793,12 @@ do_deploy() {
   fi
 
   do_download_server
-
-  
+ 
+  if [ "${DEPLOYMENT_MODE}" == "RESTORE_DATASET" ] && [ ! -e ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
+     echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 does not exist! Abort!"
+     exit 1
+  fi
+    
   if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # Stop the server
     do_stop
@@ -1886,7 +1927,9 @@ do_start() {
 
   do_start_onlyoffice
   do_start_ldap
+  do_start_iframely
   do_start_mailhog
+  do_start_frontail
   do_start_keycloak
   do_start_jitsi
   do_start_sftp
@@ -1906,6 +1949,9 @@ do_start() {
     do_ufw_open_port ${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT} "phpLDAPAdmin HTTP Port" ${ADT_DEV_MODE}
   fi
 
+  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then
+    DEPLOYMENT_LIVE_LOG_URL=${DEPLOYMENT_URL}/livelogs
+  fi
 
   # We need this variable for the setenv
   export DEPLOYMENT_CHAT_SERVER_PORT
@@ -2014,12 +2060,18 @@ do_start() {
   echo_info "Server started"
   echo_info "URL  : ${DEPLOYMENT_URL}"
   echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
+  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then 
+    echo_info "Live logs : ${DEPLOYMENT_LIVE_LOG_URL}"
+  fi
   echo_info "JMX  :"
   echo_info " - URL              : ${DEPLOYMENT_JMX_URL}"
   echo_info " - Read only access : acceptanceMonitor/${DEPLOYMENT_JMX_READONLY_PASSWORD}"
   echo_info " - Write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
   if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
     echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
+  fi
+  if [ ! -z "${DEPLOYMENT_IFRAMELY_LINK}" ]; then
+    echo_info "IFRAMELY URL  : ${DEPLOYMENT_IFRAMELY_LINK}"
   fi
   if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
     echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT}"
@@ -2158,7 +2210,9 @@ do_stop() {
       esac
       echo_info "Server stopped."
       do_stop_ldap
+      do_stop_iframely
       do_stop_mailhog
+      do_stop_frontail
       do_stop_phpldapadmin
       do_stop_admin_mongo
       do_stop_keycloak
@@ -2203,7 +2257,9 @@ do_undeploy() {
     fi
     do_drop_onlyoffice_data
     do_drop_ldap_data
+    do_drop_iframely_data
     do_drop_mailhog_data
+    do_drop_frontail_data
     do_drop_keycloak_data
     do_drop_phpldapadmin_data
     do_drop_cloudbeaver_data
@@ -2237,7 +2293,6 @@ do_undeploy() {
       # Close firewall port for LDAPS
       do_ufw_close_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
     fi
-    
     if [ "${DEPLOYMENT_SFTP_ENABLED}" == "true" ]; then
       do_ufw_close_port ${DEPLOYMENT_SFTP_PORT} "Sftp Port" ${ADT_DEV_MODE}
     fi

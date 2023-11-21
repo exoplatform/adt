@@ -29,7 +29,8 @@
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
-        allow from all
+        Allow from all
+        Require all granted
     </Directory>
 
     Alias /icons/ "/usr/share/apache2/icons/"
@@ -79,6 +80,12 @@
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}/socket.io/"
         </Location>
     </IfModule>
+
+    <IfModule http2_module>
+        # Conflicting with preload and prefetch headers; H2 Push needs to be disabled; https://httpd.apache.org/docs/2.4/howto/http2.html#server-push
+        H2Push Off
+    </IfModule>
+
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
 
@@ -101,7 +108,9 @@
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
     ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind  
-
+    #iframely standalone
+    ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
 

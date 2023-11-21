@@ -27,50 +27,37 @@ clone_or_fetch_git_repo() {
   local _orga=$(echo $1 | cut -d: -f1)
   local _repo=$(echo $1 | cut -d: -f2)
   local _src_dir=$2
+  echo_info "Updating repository ${_repo} in ${_src_dir} ..."
   if [ -d ${_src_dir}/${_repo}.git -a ! -d ${_src_dir}/${_repo}.git/.git ]; then
-    echo_info "Remove invalid repository ${_repo} from ${_src_dir} ..."
     rm -rf ${_src_dir}/${_repo}.git
-    echo_info "Removal done ..."
   fi
   if [ ! -d ${_src_dir}/${_repo}.git ]; then
-    echo_info "Cloning repository ${_repo} into ${_src_dir} ..."
     git clone -v git@github.com:${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
-    echo_info "Clone done ..."
-
     # Add remote named blessed for exoplatform organization if exists
-    pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
-    echo_info "Add blessed remote for exoplatform organization..."
     if git ls-remote --exit-code git@github.com:exoplatform/${_repo}.git &>/dev/null; then 
-      git remote add blessed git@github.com:exoplatform/${_repo}.git  
+      git -C ${_src_dir}/${_repo}.git remote add blessed git@github.com:exoplatform/${_repo}.git  
     fi  
   else
-    pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
     set +e
     status=0
-    git remote set-url origin git@github.com:${_orga}/${_repo}.git
+    git -C ${_src_dir}/${_repo}.git remote set-url origin git@github.com:${_orga}/${_repo}.git
     if git ls-remote --exit-code git@github.com:exoplatform/${_repo}.git &>/dev/null; then 
-      echo_info "Add blessed remote for exoplatform organization..."
-      git remote add blessed git@github.com:exoplatform/${_repo}.git
+      if git -C ${_src_dir}/${_repo}.git remote | grep -q blessed; then
+        git -C ${_src_dir}/${_repo}.git remote set-url blessed git@github.com:exoplatform/${_repo}.git 
+      else 
+        git -C ${_src_dir}/${_repo}.git remote add blessed git@github.com:exoplatform/${_repo}.git
+      fi
     fi
     set +e
-    echo_info "Updating repository ${_repo} in ${_src_dir} ..."
-    git remote update --prune
+    git -C ${_src_dir}/${_repo}.git remote update --prune >/dev/null
     status=$?
     set -e
     if [ ${status} -ne 0 ]; then
-      popd > /dev/null 2>&1
-      echo_info "Remove invalid repository ${_repo} from ${_src_dir} ..."
       rm -rf ${_src_dir}/${_repo}.git
-      echo_info "Removal done ..."
-      echo_info "Cloning repository ${_repo} into ${_src_dir} ..."
       git clone -v git@github.com:${_orga}/${_repo}.git ${_src_dir}/${_repo}.git
-      echo_info "Clone done ..."
-      pushd ${_src_dir}/${_repo}.git > /dev/null 2>&1
       set +e
-      git remote update --prune
+      git -C ${_src_dir}/${_repo}.git remote update --prune >/dev/null
     fi
-    echo_info "Update done ..."
-    popd > /dev/null 2>&1
   fi
 }
 
@@ -88,8 +75,9 @@ clone_or_fetch_git_repos() {
     # Initialize sources repositories
     for _repo in ${_repositories}
     do
-      clone_or_fetch_git_repo "${_repo}" "${_src_dir}"
+      clone_or_fetch_git_repo "${_repo}" "${_src_dir}" &
     done
+    wait < <(jobs -p)
     _GIT_REPOS_UPDATED=true
   fi
 }

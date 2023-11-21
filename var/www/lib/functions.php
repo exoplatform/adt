@@ -4,6 +4,11 @@ require_once(dirname(__FILE__) . '/functions-debug.php');
 
 date_default_timezone_set('UTC');
 
+global $memcache;
+if (extension_loaded('memcache')) {
+  $memcache = new Memcache();
+  $memcache->connect('localhost', 11211) or die ("Could not connect");
+}
 // this method will return the current page full url
 function currentPageURL()
 {
@@ -124,7 +129,11 @@ function processIsRunning($pid)
  */
 function getRepositories()
 {
-  $repositories = apc_fetch('repositories');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $repositories = apc_fetch('repositories');
+  } elseif (extension_loaded('memcache')) {
+    $repositories = $GLOBALS['memcache']->get('repositories');
+  }
 
   if (empty($features)) {
     $repositories = array(
@@ -177,7 +186,11 @@ function getRepositories()
         "anti-malware" => "Anti Malware",
         "data-upgrade" => "Data upgrade",
         "platform-private-distributions" => "PLF Private Dist");
-    apc_store('repositories', $repositories);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('repositories', $repositories);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('repositories', $repositories);
+    }
   }
   return $repositories;
 }
@@ -235,7 +248,11 @@ function getModuleCiPrefix($item)
 
 function getFeatureBranches($projects)
 {
-  $features = apc_fetch('features');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $features = apc_fetch('features');
+  } elseif (extension_loaded('memcache')) {
+    $features = $GLOBALS['memcache']->get('features');
+  }
 
   if (empty($features)) {
     $features = array();
@@ -268,15 +285,22 @@ function getFeatureBranches($projects)
     }
     uksort($features, 'strcasecmp');
     // Feature branches will be cached for 5 min
-    apc_store('features', $features, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('features', $features, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('features', $features, 0, 300);
+    }
   }
   return $features;
 }
 
 function getTranslationBranches($projects)
 {
-  $features = apc_fetch('translation');
-
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $features = apc_fetch('translation');
+  } elseif (extension_loaded('memcache')) {
+    $features = $GLOBALS['memcache']->get('translation');
+  }
   $projectsToIgnore = array(
       "agenda" => true,
       "agenda-connectors" => true,
@@ -368,14 +392,22 @@ function getTranslationBranches($projects)
     }
     uksort($features, 'strcasecmp');
     // Translation branches will be cached for 5 min
-    apc_store('translation', $features, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('translation', $features, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('translation', $features, 0, 300);
+    }
   }
   return $features;
 }
 
 function getLocalAcceptanceInstances()
 {
-  $instances = apc_fetch('local_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('local_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('local_instances');
+  }
 
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $instances = array();
@@ -668,7 +700,11 @@ function getLocalAcceptanceInstances()
         $instances[$descriptor_array['PLF_BRANCH']][] = $descriptor_array;
     }
     // Instances will be cached for 2 min
-    apc_store('local_instances', $instances, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('local_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('local_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -680,7 +716,11 @@ function getLocalAcceptanceInstances()
  */
 function getGlobalAcceptanceInstances()
 {
-  $instances = apc_fetch('all_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('all_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('all_instances');
+  }
 
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $instances = array();
@@ -695,7 +735,11 @@ function getGlobalAcceptanceInstances()
       }
     }
     // Instances will be cached for 2 min
-    apc_store('all_instances', $instances, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('all_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('all_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -706,7 +750,11 @@ function getGlobalAcceptanceInstances()
  * @return array
  */
 function getGlobalDevInstances() {
-  $instances = apc_fetch('dev_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('dev_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('dev_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -719,7 +767,11 @@ function getGlobalDevInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    apc_store('dev_instances', $instances, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('dev_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('dev_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -731,7 +783,11 @@ function getGlobalDevInstances() {
  */
 function getGlobalSalesUserInstances()
 {
-  $instances = apc_fetch('sales_user_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('sales_user_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('sales_user_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -744,7 +800,11 @@ function getGlobalSalesUserInstances()
       $instances=array();
     }
     // Instances will be cached for 2 min
-    apc_store('sales_user_instances', $instances, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('sales_user_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('sales_user_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -756,7 +816,11 @@ function getGlobalSalesUserInstances()
  */
 function getGlobalSalesDemoInstances()
 {
-  $instances = apc_fetch('sales_demo_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('sales_demo_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('sales_demo_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -769,7 +833,11 @@ function getGlobalSalesDemoInstances()
       $instances=array();
     }
     // Instances will be cached for 5 min
-    apc_store('sales_demo_instances', $instances, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('sales_demo_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('sales_demo_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -781,7 +849,11 @@ function getGlobalSalesDemoInstances()
  */
 function getGlobalSalesEvalInstances()
 {
-  $instances = apc_fetch('sales_eval_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('sales_eval_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('sales_eval_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -794,7 +866,11 @@ function getGlobalSalesEvalInstances()
       $instances=array();
     }
     // Instances will be cached for 5 min
-    apc_store('sales_eval_instances', $instances, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('sales_eval_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('sales_eval_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -805,7 +881,11 @@ function getGlobalSalesEvalInstances()
  * @return array
  */
 function getGlobalQAInstances() {
-  $instances = apc_fetch('qa_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('qa_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('qa_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -818,7 +898,11 @@ function getGlobalQAInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    apc_store('qa_instances', $instances, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('qa_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('qa_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -829,7 +913,11 @@ function getGlobalQAInstances() {
  * @return array
  */
 function getGlobalQAUserInstances() {
-  $instances = apc_fetch('qa_user_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('qa_user_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('qa_user_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalQAInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -842,7 +930,11 @@ function getGlobalQAUserInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    apc_store('qa_user_instances', $instances, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('qa_user_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('qa_user_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -853,7 +945,11 @@ function getGlobalQAUserInstances() {
  * @return array
  */
 function getGlobalQAAutoInstances() {
-  $instances = apc_fetch('qa_auto_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('qa_auto_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('qa_auto_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalQAInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -866,7 +962,11 @@ function getGlobalQAAutoInstances() {
       $instances=array();
     }
     // Instances will be cached for 2 min
-    apc_store('qa_auto_instances', $instances, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('qa_auto_instances', $instances, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('qa_auto_instances', $instances, 0, 120);
+    }
   }
   return $instances;
 }
@@ -877,7 +977,11 @@ function getGlobalQAAutoInstances() {
  * @return array
  */
  function getGlobalCPInstances() {
-  $instances = apc_fetch('cp_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('cp_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('cp_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -890,7 +994,11 @@ function getGlobalQAAutoInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    apc_store('cp_instances', $instances, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('cp_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('cp_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -901,7 +1009,11 @@ function getGlobalQAAutoInstances() {
  * @return array
  */
 function getGlobalCompanyInstances() {
-  $instances = apc_fetch('company_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('company_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('company_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -914,7 +1026,11 @@ function getGlobalCompanyInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    apc_store('company_instances', $instances, 500);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('company_instances', $instances, 500);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('company_instances', $instances, 0, 500);
+    }
   }
   return $instances;
 }
@@ -925,7 +1041,11 @@ function getGlobalCompanyInstances() {
  * @return array
  */
 function getGlobalDocInstances() {
-  $instances = apc_fetch('doc_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('doc_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('doc_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -938,7 +1058,11 @@ function getGlobalDocInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    apc_store('doc_instances', $instances, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('doc_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('doc_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -949,7 +1073,11 @@ function getGlobalDocInstances() {
  * @return array
  */
 function getGlobalTranslationInstances() {
-  $instances = apc_fetch('translation_instances');
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $instances = apc_fetch('translation_instances');
+  } elseif (extension_loaded('memcache')) {
+    $instances = $GLOBALS['memcache']->get('translation_instances');
+  }
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
     $all_instances=getGlobalAcceptanceInstances();
     foreach ($all_instances as $plf_branch => $descriptor_arrays) {
@@ -962,7 +1090,11 @@ function getGlobalTranslationInstances() {
       $instances=array();
     }
     // Instances will be cached for 5 min
-    apc_store('translation_instances', $instances, 300);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('translation_instances', $instances, 300);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('translation_instances', $instances, 0, 300);
+    }
   }
   return $instances;
 }
@@ -1154,8 +1286,11 @@ function filterInstancesWithoutLabels($descriptor_arrays, $labels, $all_labels =
 
 function getAcceptanceBranches()
 {
-  $branches = apc_fetch('acceptance_branches');
-
+  if (extension_loaded('apc') && function_exists('apc_fetch')) {
+    $branches = apc_fetch('acceptance_branches');
+  } elseif (extension_loaded('memcache')) {
+    $branches = $GLOBALS['memcache']->get('acceptance_branches');
+  }
   if (empty($branches) || getenv('ADT_DEV_MODE')) {
     $branches = array();
     foreach (getGlobalAcceptanceInstances() as $descriptor_arrays) {
@@ -1166,14 +1301,22 @@ function getAcceptanceBranches()
       }
     }
     // Instances will be cached for 2 min
-    apc_store('acceptance_branches', $branches, 120);
+    if (extension_loaded('apc') && function_exists('apc_store')) {
+      apc_store('acceptance_branches', $branches, 120);
+    } elseif (extension_loaded('memcache')) {
+      $GLOBALS['memcache']->set('acceptance_branches', $branches, 0, 120);
+    }
   }
   return $branches;
 }
 
 function clearCaches()
 {
-  apc_clear_cache('user');
+  if (extension_loaded('apc') && function_exists('apc_clear_cache')) {
+    apc_clear_cache('user');
+  } elseif (extension_loaded('memcache')) {
+    $GLOBALS['memcache']->flush();
+  }
 }
 
 function checkCaches()

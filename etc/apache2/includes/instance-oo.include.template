@@ -29,7 +29,8 @@
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
-        allow from all
+        Allow from all
+        Require all granted
     </Directory>
 
     Alias /icons/ "/usr/share/apache2/icons/"
@@ -50,6 +51,7 @@
     
     RewriteEngine on 
     RewriteRule ^/mailhog$ /mailhog/ [R]
+    RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
 
     ProxyRequests           Off
@@ -71,11 +73,26 @@
 
     # Proxify of websocket url pattern
     <IfModule mod_proxy_wstunnel.c>
-    ProxyPass /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
-    ProxyPassReverse /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
- 
-    ProxyPassMatch    (.*)(\/websocket)$    ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2  disablereuse=on flushpackets=on
+
+    <Location "/mailhog/">
+        RewriteCond %{HTTP:Connection} Upgrade [NC]
+        RewriteCond %{HTTP:Upgrade} websocket [NC]
+        RewriteRule /mailhog/api/v2/websocket(.*) ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket$1  [P,L]
+        ProxyPass http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+    </Location>
+
+    <Location "/livelogs/">
+        RewriteCond %{HTTP:Connection} Upgrade [NC]
+        RewriteCond %{HTTP:Upgrade} websocket [NC]
+        RewriteRule /livelogs/socket.io/(.*) ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/$1  [P,L]
+        ProxyPass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
+    </Location>
     
+        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io)/
+        RewriteCond %{HTTP:Upgrade} websocket [NC]
+        RewriteCond %{HTTP:Connection} upgrade [NC]
+        RewriteRule ^/?(.*) "ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2" [P,L]
+
     <Location "/jitsiweb/xmpp-websocket">
         ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
     </Location>
@@ -84,14 +101,16 @@
     </Location>
     </IfModule>
 
+    <IfModule http2_module>
+        # Conflicting with preload and prefetch headers; H2 Push needs to be disabled; https://httpd.apache.org/docs/2.4/howto/http2.html#server-push
+        H2Push Off
+    </IfModule>
+
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
 
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
-    
-    ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
-    ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
 
     ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
@@ -118,6 +137,9 @@
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
     ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    #iframely standalone
+    ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
 
     # Forward request to OnlyOffice when the url start with the version scheme (see in side the Docker container for it)
     # ex: /v5.2.8-24/* OR /5.3.0-243/* 
@@ -127,6 +149,9 @@
     ProxyPassMatch    "^\/(cache\/.*)$"                                 http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(web-apps\/.*)$"                              http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(coauthoring\/.*)$"                           http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+    # OO Healthcheck
+    ProxyPass               /oohealthcheck               http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck
+    ProxyPassReverse        /oohealthcheck               http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck
 
     # Add header for X-Forwarded-For / X-Forwarded-Host / X-Forwarded-Server
     ProxyAddHeaders On

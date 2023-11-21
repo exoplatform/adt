@@ -105,6 +105,14 @@
         Allow from all
     </Directory>
 
+    Alias /datasets/ "${ADT_DATA}/datasets/"
+    <Directory "${ADT_DATA}/datasets/">
+        Options Indexes MultiViews
+        AllowOverride None
+        Order allow,deny
+        Allow from all
+    </Directory>
+
     Alias /logs/ "${ADT_DATA}/var/log/apache2/"
     <Directory "${ADT_DATA}/var/log/apache2/">
         Options Indexes MultiViews

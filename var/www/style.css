@@ -105,24 +105,24 @@ section>ul li {
   color       : #B90CDA
 }
 
-.color-acceptance8 {
-  font-weight : normal;
-  color       : #14CECE
-}
-
-.color-acceptance9 {
-  font-weight : normal;
-  color       : #0202FF
-}
-
-.color-acceptance10 {
-  font-weight : normal;
-  color       : green;
-}
-
 .color-acceptance12 {
   font-weight : normal;
   color       : orange;
+}
+
+.color-acceptance13 {
+  font-weight : normal;
+  color       : rgb(0, 255, 200);
+}
+
+.color-acceptance14 {
+  font-weight : normal;
+  color       : rgb(127, 158, 224);
+}
+
+.color-acceptance15 {
+  font-weight : normal;
+  color       : rgb(68, 34, 100);
 }
 
 /* logs */

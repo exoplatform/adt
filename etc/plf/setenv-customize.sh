@@ -99,25 +99,38 @@ fi
 if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
   # Make URL to lowercase to avoid Keycloak matching conflicts
   DEP_URL="$(echo ${EXO_DEPLOYMENT_URL} | sed -e 's/\(.*\)/\L\1/')"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.enabled=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.sp.enabled=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.callback.enabled=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.enabled=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.class=org.gatein.sso.agent.login.SAML2IntegrationLoginModule"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.enabled=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.class=org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.login.sso.url=/portal/dologin"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.initiatelogin.enabled=false"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.enabled=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.class=org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.sp.url=${DEP_URL}/portal/dologin"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.url=${DEP_URL}/portal/dologin?GLO=true"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.host=$(echo ${DEP_URL} | sed -e 's|^[^/]*//||' -e 's|/.*$||')"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url=${DEP_URL}/auth/realms/master/protocol/saml"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.alias=master"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
+  if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ]; then
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.sp.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.callback.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.class=org.gatein.sso.agent.login.SAML2IntegrationLoginModule"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.class=org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.login.sso.url=/portal/dologin"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.initiatelogin.enabled=false"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.class=org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.sp.url=${DEP_URL}/portal/dologin"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.url=${DEP_URL}/portal/dologin?GLO=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.host=$(echo ${DEP_URL} | sed -e 's|^[^/]*//||' -e 's|/.*$||')"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url=${DEP_URL}/auth/realms/master/protocol/saml"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.alias=master"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
+  else
+    # Fetch admin token, then acquire exooidc client Id, then get client Secret; adminToken has short life
+    keycloakAdminToken=$(curl -X POST "${DEP_URL}/auth/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" \
+      -d "username=root" -d "password=password" -d 'grant_type=password' -d 'client_id=admin-cli' | jq -r '.access_token')
+    keycloakClientId=$(curl -fssL "${DEP_URL}/auth/admin/realms/master/clients" -H 'Content-Type: application/json' -H  "Authorization: Bearer $keycloakAdminToken" | jq -r '.[]| select(.clientId == "exooidc") | .id')
+    keycloakClientSecret=$(curl -fssL  "${DEP_URL}/auth/admin/realms/master/clients/${keycloakClientId}/client-secret" -H 'Content-Type: application/json' -H  "Authorization: Bearer $keycloakAdminToken" | jq -r '.value')
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.clientId=exooidc"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.clientSecret=${keycloakClientSecret}"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.redirectURL=${DEP_URL}/portal/openidAuth"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.wellKnownConfigurationUrl=${DEP_URL}/auth/realms/master/.well-known/openid-configuration"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.oauth.openid.enabled=true"
+  fi
 fi
 
 #Jitsi integration

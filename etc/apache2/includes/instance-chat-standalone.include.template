@@ -29,7 +29,8 @@
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
         Order allow,deny
-        allow from all
+        Allow from all
+        Require all granted
     </Directory>
 
     Alias /icons/ "/usr/share/apache2/icons/"
@@ -50,6 +51,7 @@
 
     RewriteEngine on 
     RewriteRule ^/mailhog$ /mailhog/ [R]
+    RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
 
     ProxyRequests           Off
@@ -72,9 +74,20 @@
     <IfModule mod_proxy_wstunnel.c>
         ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
         ProxyPass /chatServer/cometd ws://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
-    
-        ProxyPass /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
-        ProxyPassReverse /mailhog/api/v2/websocket ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket
+        
+        <Location "/mailhog/">
+            RewriteCond %{HTTP:Connection} Upgrade [NC]
+            RewriteCond %{HTTP:Upgrade} websocket [NC]
+            RewriteRule /mailhog/api/v2/websocket(.*) ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket$1  [P,L]
+            ProxyPass http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+        </Location>
+
+        <Location "/livelogs/">
+            RewriteCond %{HTTP:Connection} Upgrade [NC]
+            RewriteCond %{HTTP:Upgrade} websocket [NC]
+            RewriteRule /livelogs/socket.io/(.*) ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/$1  [P,L]
+            ProxyPass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
+        </Location>
 
         <Location "/jitsiweb/xmpp-websocket">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
@@ -89,6 +102,12 @@
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}/socket.io/"
         </Location>
     </IfModule>
+    
+    <IfModule http2_module>
+        # Conflicting with preload and prefetch headers; H2 Push needs to be disabled; https://httpd.apache.org/docs/2.4/howto/http2.html#server-push
+        H2Push Off
+    </IfModule>
+
 
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
@@ -100,9 +119,6 @@
 
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
-  
-    ProxyPass               /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
-    ProxyPassReverse        /mailhog/            http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
 
     ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
@@ -129,7 +145,9 @@
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
     ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
-    
+    #iframely standalone
+    ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
