@@ -63,6 +63,7 @@ if (isDeploymentInCategoryArray($qa_instances)) {
                 </span>
                 <br/><?= componentUpgradeEligibility($descriptor_array); ?>
                 <?= componentDevModeEnabled($descriptor_array); ?>
+                <?= componentStagingModeEnabled($descriptor_array); ?>
                 <?= componentDebugModeEnabled($descriptor_array); ?>
                 <?= componentAddonsTags($descriptor_array); ?>
             </td>
@@ -131,6 +132,7 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
                 </span>
                 <br/><?= componentUpgradeEligibility($descriptor_array); ?>
                 <?= componentDevModeEnabled($descriptor_array); ?>
+                <?= componentStagingModeEnabled($descriptor_array); ?>
                 <?= componentDebugModeEnabled($descriptor_array); ?>
                 <?= componentAddonsTags($descriptor_array); ?>
             </td>

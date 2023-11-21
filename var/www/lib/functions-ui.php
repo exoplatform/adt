@@ -256,6 +256,25 @@ function componentUpgradeEligibility($deployment_descriptor, $is_label_addon = t
 }
 
 /**
+ * Return the markup for staging instance
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function componentStagingModeEnabled($deployment_descriptor, $is_label_addon = true) {
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_STAGING_ENABLED') && $deployment_descriptor->DEPLOYMENT_STAGING_ENABLED) {
+    if (!$is_label_addon) {
+      $content='<span rel="tooltip" data-original-title="This instance is enabled with Staging mode."><i class="icon-fire"></i></span>';  
+    } else {  
+      $content='<span class="label label-addon" rel="tooltip" data-original-title="This instance is enabled with Staging mode."><i class="icon-fire"></i></span>';
+    }
+      return $content;
+  }
+  return '';
+}
+
+/**
  * Return the markup for instance dev mode availability
  *
  * @param $deployment_descriptor

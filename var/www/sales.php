@@ -62,6 +62,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
               </span>
               <br/><?= componentUpgradeEligibility($descriptor_array); ?>
               <?= componentDevModeEnabled($descriptor_array); ?>
+              <?= componentStagingModeEnabled($descriptor_array); ?>
               <?= componentDebugModeEnabled($descriptor_array); ?>
               <?= componentAddonsTags($descriptor_array); ?>
             </td>
@@ -126,6 +127,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
           </span>
           <br/><?= componentUpgradeEligibility($descriptor_array); ?>
           <?= componentDevModeEnabled($descriptor_array); ?>
+          <?= componentStagingModeEnabled($descriptor_array); ?>
           <?= componentDebugModeEnabled($descriptor_array); ?>
           <?= componentAddonsTags($descriptor_array); ?>
         </td>
@@ -177,6 +179,7 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
           </span>
           <br/><?= componentUpgradeEligibility($descriptor_array); ?>
           <?= componentDevModeEnabled($descriptor_array); ?>
+          <?= componentStagingModeEnabled($descriptor_array); ?>
           <?= componentDebugModeEnabled($descriptor_array); ?>
           <?= componentAddonsTags($descriptor_array); ?>
         </td>

@@ -48,6 +48,7 @@ if (isDeploymentInCategoryArray($cp_instances)) {
               <?= componentProductOpenLink($descriptor_array); ?>
               <br/><?= componentUpgradeEligibility($descriptor_array); ?>
               <?= componentDevModeEnabled($descriptor_array); ?>
+              <?= componentStagingModeEnabled($descriptor_array); ?>
               <?= componentDebugModeEnabled($descriptor_array); ?>
               <?= componentAddonsTags($descriptor_array); ?>
               <span class="pull-right">

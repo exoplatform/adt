@@ -192,6 +192,7 @@ Environment Variables
   DEPLOYMENT_LOGBACK_LOGGERS  : Enable Debug logging for java packages (comma seperated)
   DEPLOYMENT_LOGBACK_LOGGERS_LEVEL  : Customize Logback logging level (INFO, DEBUG, ERROR): Default: DEBUG
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
+  DEPLOYMENT_STAGING_ENABLED        : Enable Staging nexus repositories deployment 
 
 EOF
 }
@@ -370,6 +371,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS" ""
       configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS_LEVEL" "DEBUG"
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
+      configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
+
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
 
@@ -438,7 +441,11 @@ initialize_product_settings() {
       env_var "ARTIFACT_CLASSIFIER" ""
       env_var "ARTIFACT_PACKAGING" "zip"
 
-      env_var "ARTIFACT_REPO_GROUP" "public"
+      if ${DEPLOYMENT_STAGING_ENABLED}; then
+        env_var ARTIFACT_REPO_GROUP "staging"
+      else
+        env_var ARTIFACT_REPO_GROUP "public"
+      fi
 
       # They are set by the script
       env_var "ARTIFACT_DATE" ""
@@ -652,7 +659,11 @@ initialize_product_settings() {
         ;;
         plfent|plfentdemo)
           env_var PRODUCT_DESCRIPTION "Platform EE"
-          env_var ARTIFACT_REPO_GROUP "private"
+          if ${DEPLOYMENT_STAGING_ENABLED}; then
+            env_var ARTIFACT_REPO_GROUP "staging"
+          else
+            env_var ARTIFACT_REPO_GROUP "private"
+          fi
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
