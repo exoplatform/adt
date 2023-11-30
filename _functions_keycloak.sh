@@ -74,13 +74,13 @@ do_start_keycloak() {
   fi
   ${DOCKER_CMD} run \
   -d \
-  -e KEYCLOAK_USER=root \
-  -e KEYCLOAK_PASSWORD=password \
+  -e KEYCLOAK_ADMIN=root \
+  -e KEYCLOAK_ADMIN_PASSWORD=password \
   -e PROXY_ADDRESS_FORWARDING=${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false} \
+  -e KC_HTTP_RELATIVE_PATH=/auth \
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
-  -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/jboss/keycloak/standalone/data \
-  --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} \
-  -Djboss.http.port=8080
+  -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/keycloak/data \
+  --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} start-dev
   echo_info "${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} container started"  
   check_keycloak_availability
   local token=$(curl -X POST "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/realms/master/protocol/openid-connect/token" \
