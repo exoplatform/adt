@@ -96,7 +96,7 @@ do_start_keycloak() {
   curl -s -X PUT --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users/${keycloakRootUserId}" \
    -H 'Content-type: application/json' \
    -H "Authorization: Bearer ${token}" \
-   -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":\"root@gtn.com\",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
+   -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":\"root@gatein.com\",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
     && echo_info "Keycloak root user updated"
   
   curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
