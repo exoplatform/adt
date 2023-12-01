@@ -72,6 +72,10 @@ do_start_keycloak() {
   else
     evaluate_file_content ${ETC_DIR}/keycloak/client_openid_def.json.template ${DEPLOYMENT_DIR}/client_def.json
   fi
+  local _startArgs=""
+  if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false}; then 
+    _startArgs="--proxy edge --hostname-strict=false"
+  fi
   ${DOCKER_CMD} run \
   -d \
   -e KEYCLOAK_ADMIN=root \
@@ -80,7 +84,7 @@ do_start_keycloak() {
   -e KC_HTTP_RELATIVE_PATH=/auth \
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
   -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/keycloak/data \
-  --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} start-dev
+  --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} start-dev ${_startArgs}
   echo_info "${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} container started"  
   check_keycloak_availability
   local token=$(curl -X POST "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/realms/master/protocol/openid-connect/token" \
