@@ -49,6 +49,13 @@
         Allow from all
     </Directory>
 
+    <Location "/deeds-dapp/api/hubs/">
+        Header always set Access-Control-Allow-Origin "*"
+        Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Header always set Access-Control-Allow-Headers "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range"
+        Header always set Access-Control-Expose-Headers "Content-Length,Content-Range"
+    </Location>
+
     RewriteEngine on 
     RewriteRule ^/mailhog$ /mailhog/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
