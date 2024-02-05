@@ -1,0 +1,30 @@
+name: Auto Bump Cloudbeaver version for Acceptance
+on:
+  schedule:
+    - cron: "0 11 * * 0-4" # Everyday at 11 AM UTC from Sunday to Thursday
+  workflow_dispatch:
+env:
+  BASE_IMAGE: exoplatform/cloudbeaver
+jobs:
+  cb-bumper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Looking for Cloubdeaver updates
+        run: |
+          latestTag=$(curl -fsSL "https://hub.docker.com/v2/repositories/${{ env.BASE_IMAGE }}/tags/?page_size=1000" | jq -r '.results | .[] | .name' | grep -P '^23\.[0-9]+\.[0-9]+-acc$' | head -1)
+          if [ -z "${latestTag}" ]; then
+            echo "Error: Could not get latest tag of ${{ env.BASE_IMAGE }} image! Abort!"
+            exit 1
+          fi
+          sed -Ei "s|configurable_env_var \"DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION\".*|configurable_env_var \"DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION\" \"${latestTag}\"|g" _functions.sh
+          git add _functions.sh
+          if git diff-index --quiet HEAD; then
+            echo "Nothing to commit!"
+          else
+            git config --global user.email "exo-swf@exoplatform.com"
+            git config --global user.name "exo-swf"
+            git commit -m "Bump cloudbeaver version to ${latestTag}"
+            git push origin HEAD
+          fi
