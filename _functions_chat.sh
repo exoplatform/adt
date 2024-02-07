@@ -41,14 +41,22 @@ do_start_chat_server() {
       echo_info "Starting chat server database ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ..."
       delete_docker_container ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
       check_mongodb_intermediate_upgrades
+      local major_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+\.[0-9]+')
+      local ga_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+')
+      local mongo_cmd="mongo"
+      if [ "${ga_version}" -ge "6" ]; then
+        mongo_cmd="mongosh"
+      fi
       ${DOCKER_CMD} run \
         -p "127.0.0.1:${DEPLOYMENT_CHAT_MONGODB_PORT}:27017" -d \
         -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
+        --health-cmd="${mongo_cmd} --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)' || exit 1" \
+        --health-interval=30s \
+        --health-timeout=30s \
+        --health-retries=3 \
         --name ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ${DEPLOYMENT_CHAT_MONGODB_IMAGE}:${DEPLOYMENT_CHAT_MONGODB_VERSION}
         check_mongodb_availability
         # Update feature compatibility version to support further mongodb upgrades
-        local major_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+\.[0-9]+')
-        local ga_version=$(echo ${DEPLOYMENT_CHAT_MONGODB_VERSION} | grep -oP '^[1-9]+')
         set +e
         if [ "${ga_version}" -ge "6" ]; then 
           ${DOCKER_CMD} exec ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} mongosh --quiet --eval "db.adminCommand({setFeatureCompatibilityVersion: \"$major_version\"})" &>/dev/null
