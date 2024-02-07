@@ -115,6 +115,11 @@ do_start_onlyoffice() {
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_db:/var/lib/postgresql  \
+      -h "onlyoffice" \
+      --health-cmd="curl --silent --fail onlyoffice/healthcheck || exit 1" \
+      --health-interval=30s \
+      --health-timeout=30s \
+      --health-retries=3 \
       --name ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} ${DEPLOYMENT_ONLYOFFICE_IMAGE}:${DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION}
   fi 
   echo_info "${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME} container started"
