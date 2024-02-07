@@ -292,6 +292,10 @@ do_start_database() {
         -e POSTGRES_DB=${DEPLOYMENT_DATABASE_NAME} \
         -e POSTGRES_USER=${DEPLOYMENT_DATABASE_USER} \
         -e POSTGRES_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
+        --health-cmd="sh -c 'pg_isready -U ${DEPLOYMENT_DATABASE_USER} -d ${DEPLOYMENT_DATABASE_NAME}'" \
+        --health-interval=30s \
+        --health-timeout=30s \
+        --health-retries=3 \
         --name ${DEPLOYMENT_CONTAINER_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
     ;;
     DOCKER_ORACLE)
