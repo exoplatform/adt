@@ -276,6 +276,10 @@ do_start_database() {
         -e MYSQL_DATABASE=${DEPLOYMENT_DATABASE_NAME} \
         -e MYSQL_USER=${DEPLOYMENT_DATABASE_USER} \
         -e MYSQL_PASSWORD=${DEPLOYMENT_DATABASE_USER} \
+        --health-cmd="mysqladmin -h 'localhost' -u ${DEPLOYMENT_DATABASE_USER} -p${DEPLOYMENT_DATABASE_USER} ping --silent" \
+        --health-interval=30s \
+        --health-timeout=30s \
+        --health-retries=3 \
         --name ${DEPLOYMENT_CONTAINER_NAME} ${DEPLOYMENT_DATABASE_IMAGE}:${DEPLOYMENT_DATABASE_VERSION}
     ;;
     DOCKER_POSTGRES)
