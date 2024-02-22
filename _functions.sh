@@ -985,7 +985,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.5" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.4.0" # Default version of the jdbc postgresql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.4.1" # Default version of the jdbc postgresql driver addon to use
 
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.33" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
@@ -1001,7 +1001,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.5" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.4.0" # Default version of the jdbc postgresql driver addon to use
+              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.4.1" # Default version of the jdbc postgresql driver addon to use
 
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.33" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
