@@ -63,6 +63,10 @@ do_start_mailhog() {
     -d \
     -p "${DEPLOYMENT_MAILHOG_SMTP_PORT}:1025" \
     -p "${DEPLOYMENT_MAILHOG_HTTP_PORT}:8025" \
+    --health-cmd="printf 'EHLO healthcheck\n' | nc 127.0.0.1 1025 | grep -qE '^220.*ESMTP MailHog' || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} ${DEPLOYMENT_MAILHOG_IMAGE}:${DEPLOYMENT_MAILHOG_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_MAILHOG_CONTAINER_NAME} container started"  
   check_mailhog_availability

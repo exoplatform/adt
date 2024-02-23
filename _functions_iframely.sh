@@ -67,6 +67,11 @@ do_start_iframely() {
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_IFRAMELY_PORT}:8061" \
+    -h 'iframely' \
+    --health-cmd='wget -qO- http://iframely:8061 &> /dev/null || exit 1' \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_IFRAMELY_CONTAINER_NAME} ${DEPLOYMENT_IFRAMELY_IMAGE}:${DEPLOYMENT_IFRAMELY_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_IFRAMELY_CONTAINER_NAME} container started"
 

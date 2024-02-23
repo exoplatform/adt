@@ -76,6 +76,7 @@
             Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
             AuthLDAPMaxSubGroupDepth 1
         </RequireAll>
+        Header set Cache-Control "max-age=63072000, public"
     </LocationMatch>
 
     <LocationMatch "^/adminmongo.*">

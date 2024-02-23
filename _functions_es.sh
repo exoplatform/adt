@@ -99,6 +99,11 @@ do_start_es() {
         -e "xpack.security.enabled=false" \
         -e "network.host=_site_" \
         -e "reindex.remote.whitelist=${DEPLOYMENT_ES_OLD_INTERNAL_ADDR}:9200" \
+        -h 'search' \
+        --health-cmd='curl --silent --fail search:9200/_cluster/health || exit 1' \
+        --health-interval=30s \
+        --health-timeout=30s \
+        --health-retries=3 \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
     else 
       ${DOCKER_CMD} run \
@@ -111,6 +116,11 @@ do_start_es() {
         -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
         -e "xpack.security.enabled=false" \
         -e "network.host=_site_" \
+        -h 'search' \
+        --health-cmd='curl --silent --fail search:9200/_cluster/health || exit 1' \
+        --health-interval=30s \
+        --health-timeout=30s \
+        --health-retries=3 \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
     fi  
   else 
@@ -122,6 +132,11 @@ do_start_es() {
       -e "node.name=${INSTANCE_KEY}" \
       -e "cluster.name=${INSTANCE_KEY}" \
       -e "xpack.monitoring.enabled=false" \
+      -h 'search' \
+      --health-cmd='curl --silent --fail search:9200/_cluster/health || exit 1' \
+      --health-interval=30s \
+      --health-timeout=30s \
+      --health-retries=3 \
       --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
   fi
 
@@ -211,6 +226,11 @@ do_upgrade(){
         -e "node.name=${INSTANCE_KEY}" \
         -e "cluster.name=${INSTANCE_KEY}" \
         -e "xpack.monitoring.enabled=false" \
+        -h 'search-old' \
+        --health-cmd='curl --silent --fail search-old:9200/_cluster/health || exit 1' \
+        --health-interval=30s \
+        --health-timeout=30s \
+        --health-retries=3 \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME}_old ${DEPLOYMENT_ES_IMAGE}:1.2.2 # FIXME VARIABLIZE IT 
 
       check_es_availability ${DEPLOYMENT_ES_OLD_HTTP_PORT}
