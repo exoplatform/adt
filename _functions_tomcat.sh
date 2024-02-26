@@ -43,9 +43,10 @@ do_create_jmx_credentials_files() {
 }
 
 do_configure_tomcat_jmx() {
+  local DEPLOYMENT_APPSRV_MAJOR_VERSION=$(echo ${DEPLOYMENT_APPSRV_VERSION} | cut -d '.' -f1)
   if [ ! -f ${DEPLOYMENT_DIR}/lib/catalina-jmx-remote*.jar -a ! -f ${DEPLOYMENT_DIR}/lib/tomcat-catalina-jmx-remote*.jar ]; then
     # Install jmx jar
-    JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_VERSION:0:1}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
+    JMX_JAR_URL="http://archive.apache.org/dist/tomcat/tomcat-${DEPLOYMENT_APPSRV_MAJOR_VERSION}/v${DEPLOYMENT_APPSRV_VERSION}/bin/extras/catalina-jmx-remote.jar"
     if [ ! -e ${DL_DIR}/${DEPLOYMENT_APPSRV_TYPE}/${DEPLOYMENT_APPSRV_VERSION}/`basename ${JMX_JAR_URL}` ]; then
       if ${ADT_OFFLINE}; then
         echo_error "ADT is offine and the JMX remote lib isn't available locally"
@@ -80,7 +81,7 @@ do_configure_tomcat_jmx() {
   fi
   do_create_jmx_credentials_files
   # Patch to reconfigure server.xml for JMX
-  find_instance_file JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-jmx.xml.patch" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
+  find_instance_file JMX_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "server-jmx.xml.patch" "${JMX_SERVER_PATCH_PRODUCT_NAME}"
 
   # Reconfigure server.xml for JMX
   if [ "${JMX_SERVER_PATCH}" != "UNSET" ]; then
@@ -165,11 +166,11 @@ do_configure_tomcat_ldap() {
 }
 
 do_configure_tomcat_datasources() {
-
+  local DEPLOYMENT_APPSRV_MAJOR_VERSION=$(echo ${DEPLOYMENT_APPSRV_VERSION} | cut -d '.' -f1)
   case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
       # Patch to reconfigure server.xml for database
-      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "server-mysql.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       # Deploy the Mysql driver
       if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then 
@@ -198,7 +199,7 @@ do_configure_tomcat_datasources() {
     ;;
     DOCKER_POSTGRES)
       # Patch to reconfigure server.xml for database
-      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-postgres.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "server-postgres.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then
         local addon="exo-jdbc-driver-postgresql:${DEPLOYMENT_POSTGRESQL_ADDON_VERSION}"
@@ -213,7 +214,7 @@ do_configure_tomcat_datasources() {
     ;;
     DOCKER_ORACLE)
       # Patch to reconfigure server.xml for database
-      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-oracle.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "server-oracle.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then
         local addon="exo-jdbc-driver-oracle:${DEPLOYMENT_ORACLE_ADDON_VERSION}"
@@ -225,7 +226,7 @@ do_configure_tomcat_datasources() {
     ;;
     DOCKER_SQLSERVER)
       # Patch to reconfigure server.xml for database
-      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-sqlserver.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "server-sqlserver.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
 
       if ${DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON}; then
         local addon="exo-jdbc-driver-sqlserver:${DEPLOYMENT_SQLSERVER_ADDON_VERSION}"
@@ -237,7 +238,7 @@ do_configure_tomcat_datasources() {
     ;;
     HSQLDB)
       # Patch to reconfigure server.xml for database
-      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
+      find_instance_file DB_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "server-hsqldb.xml.patch" "${DB_SERVER_PATCH_PRODUCT_NAME}"
     ;;
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
@@ -296,8 +297,9 @@ do_patch_tomcat_datasources() {
 # Function that configure the tomcat server ports
 #
 do_configure_tomcat_ports() {
+  local DEPLOYMENT_APPSRV_MAJOR_VERSION=$(echo ${DEPLOYMENT_APPSRV_VERSION} | cut -d '.' -f1)
   # Patch to reconfigure server.xml to change ports
-  find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "server-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
+  find_instance_file PORTS_SERVER_PATCH "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "server-ports.xml.patch" "${PORTS_SERVER_PATCH_PRODUCT_NAME}"
 
   # Tomcat Specific ports
   env_var "DEPLOYMENT_SHUTDOWN_PORT" "${DEPLOYMENT_PORT_PREFIX}00"
@@ -319,8 +321,9 @@ do_configure_tomcat_ports() {
 }
 
 do_configure_tomcat_setenv() {
+  local DEPLOYMENT_APPSRV_MAJOR_VERSION=$(echo ${DEPLOYMENT_APPSRV_VERSION} | cut -d '.' -f1)
   # setenv.xml
-  find_instance_file TOMCAT_SETENV_SCRIPT "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_VERSION:0:1}" "setenv.sh" "${TOMCAT_SETENV_SCRIPT_PRODUCT_NAME}"
+  find_instance_file TOMCAT_SETENV_SCRIPT "${ETC_DIR}/${DEPLOYMENT_APPSRV_TYPE}${DEPLOYMENT_APPSRV_MAJOR_VERSION}" "setenv.sh" "${TOMCAT_SETENV_SCRIPT_PRODUCT_NAME}"
 
   # Use a specific setenv.sh
   if [ "${TOMCAT_SETENV_SCRIPT}" != "UNSET" ]; then
@@ -387,7 +390,7 @@ do_configure_tomcat_server() {
 
   # Reconfigure the server to use JMX
   # if DEPLOYMENT_APPSRV_VERSION = 9.0+ skip downloading catalina-jmx-remote.jar (Not supported anymore)
-  if [[ "${DEPLOYMENT_APPSRV_VERSION}" =~ ^(9.0) ]]; then
+  if [[ "${DEPLOYMENT_APPSRV_VERSION}" =~ ^(9.0|10.0) ]]; then
     # Juste display the calculated JMX URL
     do_create_jmx_credentials_files
   else

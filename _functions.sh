@@ -611,8 +611,10 @@ initialize_product_settings() {
           env_var DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON "false"
           if [[ "${PRODUCT_VERSION}" =~ ^(1.0|1.1|1.2) ]]; then
             env_var DEPLOYMENT_APPSRV_VERSION "8.5"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4|1.5|1.6) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4|1.5) ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
+          elif [[ "${PRODUCT_VERSION}" =~ ^(1.6) ]]; then
+            env_var "DEPLOYMENT_APPSRV_VERSION" "10.0"
           else 
             echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
             exit 1
@@ -1100,8 +1102,10 @@ initialize_product_settings() {
           if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
             if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
-            elif [[ "${PRODUCT_VERSION}" =~ ^(6.3|6.4|6.5|6.6) ]]; then
+            elif [[ "${PRODUCT_VERSION}" =~ ^(6.3|6.4|6.5) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
+            elif [[ "${PRODUCT_VERSION}" =~ ^(6.6) ]]; then
+              env_var "DEPLOYMENT_APPSRV_VERSION" "10.0"
             else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
               exit 1
