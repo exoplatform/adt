@@ -103,7 +103,7 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.enabled=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.sp.enabled=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.callback.enabled=true"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.enabled=false"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.class=org.gatein.sso.agent.login.SAML2IntegrationLoginModule"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.enabled=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.class=org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"
