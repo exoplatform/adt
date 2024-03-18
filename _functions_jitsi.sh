@@ -109,6 +109,7 @@ do_start_jitsi() {
     -p "${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --memory "${DEPLOYMENT_JITSI_MEM_LIMIT}" \
     --name ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}
   echo_info "${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} container started"
   check_jitsi_call_availability
@@ -176,6 +177,7 @@ do_start_jitsi() {
     -v /dev/shm:/dev/shm \
     -v ${DEPLOYMENT_DIR}/jibri.conf:/etc/jitsi/jibri/jibri.conf:ro \
     -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
+    --memory "${DEPLOYMENT_JITSI_MEM_LIMIT}" \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
     --device /dev/snd \
