@@ -80,6 +80,7 @@ do_start_cloudbeaver() {
   ${DOCKER_CMD} run \
   -d \
   -p "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}:8978" \
+  -e JAVA_OPTS="-Xms2048m -Xmx2048m" \
   -v "${DEPLOYMENT_DIR}/data-sources.json:/opt/cloudbeaver/workspace/GlobalConfiguration/.dbeaver/data-sources.json" \
   --add-host=host.docker.internal:${DB_ADDR} \
   --name ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION}
