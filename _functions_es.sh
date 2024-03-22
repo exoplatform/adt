@@ -99,6 +99,7 @@ do_start_es() {
         -e "xpack.security.enabled=false" \
         -e "network.host=_site_" \
         -e "reindex.remote.whitelist=${DEPLOYMENT_ES_OLD_INTERNAL_ADDR}:9200" \
+        --security-opt="seccomp=unconfined" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
     else 
       ${DOCKER_CMD} run \
@@ -111,6 +112,7 @@ do_start_es() {
         -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
         -e "xpack.security.enabled=false" \
         -e "network.host=_site_" \
+        --security-opt="seccomp=unconfined" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
     fi  
   else 
@@ -122,6 +124,7 @@ do_start_es() {
       -e "node.name=${INSTANCE_KEY}" \
       -e "cluster.name=${INSTANCE_KEY}" \
       -e "xpack.monitoring.enabled=false" \
+      --security-opt="seccomp=unconfined" \
       --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
   fi
 
