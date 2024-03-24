@@ -168,7 +168,7 @@ do_start_jitsi() {
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
     --device /dev/snd \
-    --shm-size=512m \
+    --shm-size=2gb \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
