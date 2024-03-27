@@ -115,6 +115,7 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.url=${DEP_URL}/portal/dologin?GLO=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.host=$(echo ${DEP_URL} | sed -e 's|^[^/]*//||' -e 's|/.*$||')"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url=${DEP_URL}/auth/realms/master/protocol/saml"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url.logout=${DEP_URL}/auth/realms/master/protocol/saml"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.alias=master"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
