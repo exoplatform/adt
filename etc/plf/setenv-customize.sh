@@ -217,3 +217,9 @@ CATALINA_OPTS="${CATALINA_OPTS} -Dexo.social.activity.uploadLimit=${DEPLOYMENT_U
 CATALINA_OPTS="${CATALINA_OPTS} -Dexo.social.composer.maxFileSizeInMB=${DEPLOYMENT_UPLOAD_MAX_FILE_SIZE}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dwiki.attachment.uploadLimit=${DEPLOYMENT_UPLOAD_MAX_FILE_SIZE}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dexo.uploadLimit=${DEPLOYMENT_UPLOAD_MAX_FILE_SIZE}"
+
+# Custom Keystore
+if [ -f "${DEPLOYMENT_DIR}/exo.jks" ]; then
+  CATALINA_OPTS="${CATALINA_OPTS:-} -Djavax.net.ssl.trustStore=${DEPLOYMENT_DIR}/exo.jks"
+  CATALINA_OPTS="${CATALINA_OPTS:-} -Djavax.net.ssl.trustStorePassword=changeit"
+fi
