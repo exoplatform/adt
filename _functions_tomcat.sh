@@ -384,12 +384,12 @@ do_configure_logback_loggers() {
 #
 do_configure_custom_keystore {
   local _custKeyStoreFile=${DEPLOYMENT_DIR}/exo.jks
-  if [ -z ${JAVA_HOME:-} ]; then
-    echo_info "JAVA_HOME isn't specified to use the suitable keytool!. Abort"
-  fi
   if [ -z "${DEPLOYMENT_SELFSIGNEDCERTS_HOSTS:-}" ]; then
     echo_info "Selfsigned hosts weren't specified, skiping custom keystore creation!"
   else
+    if [ -z ${JAVA_HOME:-} ]; then
+      echo_info "JAVA_HOME isn't specified to use the suitable keytool!. Abort"
+    fi
     echo_info "Copying JDK cacerts keystore to custom one to be used for self-signed certificates import..."
     cp -vf $JAVA_HOME/lib/security/cacerts $_custKeyStoreFile
     echo_info "Importing self-signed certificates from DEPLOYMENT_SELFSIGNEDCERTS_HOSTS environment variable:"
