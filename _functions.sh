@@ -373,6 +373,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS_LEVEL" "DEBUG"
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
+      configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
+
 
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
