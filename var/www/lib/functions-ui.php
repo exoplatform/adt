@@ -262,6 +262,25 @@ function componentUpgradeEligibility($deployment_descriptor, $is_label_addon = t
 }
 
 /**
+ * Return the markup for instance patch installation
+ *
+ * @param $deployment_descriptor
+ *
+ * @return string html markup
+ */
+function componentPatchInstallation($deployment_descriptor, $is_label_addon = true) {
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_PATCHES') && $deployment_descriptor->DEPLOYMENT_PATCHES) {
+    if (!$is_label_addon) {
+      $content='<span rel="tooltip" data-original-title="'.$deployment_descriptor->DEPLOYMENT_PATCHES.' is installed on this instance."><i class="icon-plus"></i></span>';  
+    } else {  
+      $content='<span class="label label-addon" rel="tooltip" data-original-title="'.$deployment_descriptor->DEPLOYMENT_PATCHES.' is installed on this instance."><i class="icon-plus"></i></span>';
+    }
+      return $content;
+  }
+  return '';
+}
+
+/**
  * Return the markup for staging instance
  *
  * @param $deployment_descriptor

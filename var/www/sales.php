@@ -61,6 +61,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
                 <?= componentEditNoteIcon($descriptor_array) ?>
               </span>
               <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+              <?= componentPatchInstallation($descriptor_array); ?>
               <?= componentDevModeEnabled($descriptor_array); ?>
               <?= componentStagingModeEnabled($descriptor_array); ?>
               <?= componentDebugModeEnabled($descriptor_array); ?>
@@ -126,6 +127,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
             <?= componentEditNoteIcon($descriptor_array) ?>
           </span>
           <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+          <?= componentPatchInstallation($descriptor_array); ?>
           <?= componentDevModeEnabled($descriptor_array); ?>
           <?= componentStagingModeEnabled($descriptor_array); ?>
           <?= componentDebugModeEnabled($descriptor_array); ?>
@@ -178,6 +180,7 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
             <?= componentEditNoteIcon($descriptor_array) ?>
           </span>
           <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+          <?= componentPatchInstallation($descriptor_array); ?>
           <?= componentDevModeEnabled($descriptor_array); ?>
           <?= componentStagingModeEnabled($descriptor_array); ?>
           <?= componentDebugModeEnabled($descriptor_array); ?>

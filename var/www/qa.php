@@ -131,6 +131,7 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
                 </a>
                 </span>
                 <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+                <?= componentPatchInstallation($descriptor_array); ?>
                 <?= componentDevModeEnabled($descriptor_array); ?>
                 <?= componentStagingModeEnabled($descriptor_array); ?>
                 <?= componentDebugModeEnabled($descriptor_array); ?>
