@@ -1653,6 +1653,23 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
   configurable_env_var "DEPLOYMENT_SMTP_PORT" "25"  
 
+  # Check DEPLOYMENT_PORT_PREFIX if it is inside the ephermal (client) ports range (specified by net.ipv4.ip_local_port_range)
+  if [ -z "$(sysctl net.ipv4.ip_local_port_range)" ]; then 
+    echo_warn "net.ipv4.ip_local_port_range isn't specified. See below comments in source code for more info."
+    # We need to adjust net.ipv4.ip_local_port_range (with root)
+    # $> sysctl -w net.ipv4.ip_local_port_range=min_value max_value
+  else
+    local _epthermal_ports_min=$(sysctl net.ipv4.ip_local_port_range | awk '{print $3}')
+    local _epthermal_ports_max=$(sysctl net.ipv4.ip_local_port_range | awk '{print $4}')
+    local _deployment_ports_min="${DEPLOYMENT_PORT_PREFIX}00"
+    if [[ "${_deployment_ports_min}" -ge "${_epthermal_ports_min}" && "${_deployment_ports_min}" -lt "${_epthermal_ports_max}" ]]; then 
+      echo_warn "Port ${DEPLOYMENT_PORT_PREFIX}XX is inside the server ephermal ports range (${_epthermal_ports_min} - ${_epthermal_ports_max})"
+      echo_warn "This increases the risk of deployment failures. DEPLOYMENT_PORT_PREFIX or ip_local_port_range needs to be reviewed!"
+    else 
+      echo_info "Port ${DEPLOYMENT_PORT_PREFIX}XX is outside the server ephermal ports range (${_epthermal_ports_min} - ${_epthermal_ports_max})."
+    fi
+  fi
+
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then 
         if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-chat-client.* ]]; then
