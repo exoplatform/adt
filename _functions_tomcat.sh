@@ -382,7 +382,7 @@ do_configure_logback_loggers() {
 #
 # Function that configure a custom keystore to trust self signed certs
 #
-do_configure_custom_keystore {
+do_configure_custom_keystore() {
   local _custKeyStoreFile=${DEPLOYMENT_DIR}/exo.jks
   if [ -z "${DEPLOYMENT_SELFSIGNEDCERTS_HOSTS:-}" ]; then
     echo_info "Selfsigned hosts weren't specified, skiping custom keystore creation!"
