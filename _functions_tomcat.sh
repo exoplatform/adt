@@ -391,7 +391,8 @@ do_configure_custom_keystore() {
       echo_info "JAVA_HOME isn't specified to use the suitable keytool!. Abort"
     fi
     echo_info "Copying JDK cacerts keystore to custom one to be used for self-signed certificates import..."
-    cp -vf $JAVA_HOME/lib/security/cacerts $_custKeyStoreFile
+    local _cacertsfile=$(find $JAVA_HOME -name cacerts)
+    cp -vf ${_cacertsfile} $_custKeyStoreFile
     echo_info "Importing self-signed certificates from DEPLOYMENT_SELFSIGNEDCERTS_HOSTS environment variable:"
     echo ${DEPLOYMENT_SELFSIGNEDCERTS_HOSTS} | tr ',' '\n' | while read _selfsignedcerthost ; do
       if [ -n "${_selfsignedcerthost}" ]; then
