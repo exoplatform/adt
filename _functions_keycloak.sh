@@ -84,10 +84,6 @@ do_start_keycloak() {
   -e KC_HTTP_RELATIVE_PATH=/auth \
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
   -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/keycloak/data \
-  --health-cmd="timeout 2 /bin/bash -c '</dev/tcp/localhost/8080' || exit 1" \
-  --health-interval=30s \
-  --health-timeout=30s \
-  --health-retries=3 \
   --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} start-dev ${_startArgs}
   echo_info "${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} container started"  
   check_keycloak_availability

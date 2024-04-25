@@ -380,6 +380,43 @@ do_configure_logback_loggers() {
 }
 
 #
+# Function that configure a custom keystore to trust self signed certs
+#
+do_configure_custom_keystore() {
+  local _custKeyStoreFile=${DEPLOYMENT_DIR}/exo.jks
+  if [ -z "${DEPLOYMENT_SELFSIGNEDCERTS_HOSTS:-}" ]; then
+    echo_info "Selfsigned hosts weren't specified, skiping custom keystore creation!"
+  else
+    if [ -z ${JAVA_HOME:-} ]; then
+      echo_info "JAVA_HOME isn't specified to use the suitable keytool!. Abort"
+    fi
+    echo_info "Copying JDK cacerts keystore to custom one to be used for self-signed certificates import..."
+    local _cacertsfile=$(find $JAVA_HOME -name cacerts)
+    cp -vf ${_cacertsfile} $_custKeyStoreFile
+    echo_info "Importing self-signed certificates from DEPLOYMENT_SELFSIGNEDCERTS_HOSTS environment variable:"
+    echo ${DEPLOYMENT_SELFSIGNEDCERTS_HOSTS} | tr ',' '\n' | while read _selfsignedcerthost ; do
+      if [ -n "${_selfsignedcerthost}" ]; then
+        # Authorize self-signed certificate
+        _sslPort=':443'
+        if echo "${_selfsignedcerthost}" | grep -q ':'; then
+          _sslPort=''
+        fi
+        _sanitizedhostname=$(echo "${_selfsignedcerthost}" | cut -d ':' -f1)
+        echo "Importing ${_selfsignedcerthost} self-signed certificate to java custom keystore..."
+        echo -n | openssl s_client -connect "${_selfsignedcerthost}${_sslPort}" | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p' > "/tmp/${_sanitizedhostname}.crt"
+        $JAVA_HOME/bin/keytool -import -trustcacerts -keystore ${_custKeyStoreFile} -storepass changeit -noprompt -alias "${_sanitizedhostname}" -file "/tmp/${_sanitizedhostname}.crt"
+        if [ $? != 0 ]; then
+          echo_error "Cannot import self-signed certificate of Host: [${_selfsignedcerthost}]! Abort!"
+          exit 1
+        fi
+        rm "/tmp/${_sanitizedhostname}.crt"
+      fi
+    done
+    echo_info "Custom keystore ${_custKeyStoreFile} has been created."
+  fi
+}
+
+#
 # Function that configure the server for ours needs
 #
 do_configure_tomcat_server() {
@@ -416,6 +453,8 @@ do_configure_tomcat_server() {
   fi
 
   do_configure_logback_loggers
+
+  do_configure_custom_keystore
 
   do_configure_tomcat_setenv
 

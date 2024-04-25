@@ -115,6 +115,7 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.url=${DEP_URL}/portal/dologin?GLO=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.host=$(echo ${DEP_URL} | sed -e 's|^[^/]*//||' -e 's|/.*$||')"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url=${DEP_URL}/auth/realms/master/protocol/saml"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url.logout=${DEP_URL}/auth/realms/master/protocol/saml"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.alias=master"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
@@ -216,3 +217,9 @@ CATALINA_OPTS="${CATALINA_OPTS} -Dexo.social.activity.uploadLimit=${DEPLOYMENT_U
 CATALINA_OPTS="${CATALINA_OPTS} -Dexo.social.composer.maxFileSizeInMB=${DEPLOYMENT_UPLOAD_MAX_FILE_SIZE}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dwiki.attachment.uploadLimit=${DEPLOYMENT_UPLOAD_MAX_FILE_SIZE}"
 CATALINA_OPTS="${CATALINA_OPTS} -Dexo.uploadLimit=${DEPLOYMENT_UPLOAD_MAX_FILE_SIZE}"
+
+# Custom Keystore
+if [ -f "${DEPLOYMENT_DIR}/exo.jks" ]; then
+  CATALINA_OPTS="${CATALINA_OPTS:-} -Djavax.net.ssl.trustStore=${DEPLOYMENT_DIR}/exo.jks"
+  CATALINA_OPTS="${CATALINA_OPTS:-} -Djavax.net.ssl.trustStorePassword=changeit"
+fi

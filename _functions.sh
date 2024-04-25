@@ -340,7 +340,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "24.0.0-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "24.0.3-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
@@ -348,6 +348,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_IMAGE_VERSION" "latest"
 
       configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
+      configurable_env_var "DEPLOYMENT_JITSI_MEM_LIMIT" 4g
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
       configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.0"
 
@@ -372,6 +373,8 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS_LEVEL" "DEBUG"
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
+      configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
+
 
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
@@ -613,7 +616,7 @@ initialize_product_settings() {
             env_var DEPLOYMENT_APPSRV_VERSION "8.5"
           elif [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4|1.5) ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(1.6) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(1.6|7.0) ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "10.0"
           else 
             echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
@@ -834,7 +837,7 @@ initialize_product_settings() {
       fi
 
       # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
-        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|6.3|6.4|6.5|6.6|1.2|1.3|1.4|1.5|1.6) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|6.3|6.4|6.5|6.6|1.2|1.3|1.4|1.5|1.6|7.0) ]]; then
           configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
           if ${DEPLOYMENT_ES_EMBEDDED}; then 
             echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
@@ -848,10 +851,10 @@ initialize_product_settings() {
         # specific configuration for meeds deployments
         # - Database drivers
         # - Default version for each supported database type
-        if [[ "${PRODUCT_VERSION}" =~ ^(1.6) ]]; then
+        if [[ "${PRODUCT_VERSION}" =~ ^(1.6|7.0) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.32" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.33" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.4" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.3.0" # Default version of the jdbc postgresql driver addon to use
@@ -908,7 +911,7 @@ initialize_product_settings() {
         # - Database drivers
         # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
         # - Default version for each supported database type
-        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3|6.4|6.5|6.6) ]]; then
+        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3|6.4|6.5|6.6|7.0) ]]; then
           env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
           env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
@@ -982,7 +985,7 @@ initialize_product_settings() {
           
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.6) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(6.6|7.0) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.1.0"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
@@ -1104,7 +1107,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
             elif [[ "${PRODUCT_VERSION}" =~ ^(6.3|6.4|6.5) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
-            elif [[ "${PRODUCT_VERSION}" =~ ^(6.6) ]]; then
+            elif [[ "${PRODUCT_VERSION}" =~ ^(6.6|7.0) ]]; then
               env_var "DEPLOYMENT_APPSRV_VERSION" "10.0"
             else 
               echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
@@ -1651,6 +1654,23 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
   configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
   configurable_env_var "DEPLOYMENT_SMTP_PORT" "25"  
+
+  # Check DEPLOYMENT_PORT_PREFIX if it is inside the ephermal (client) ports range (specified by net.ipv4.ip_local_port_range)
+  if [ -z "$(sysctl net.ipv4.ip_local_port_range)" ]; then 
+    echo_warn "net.ipv4.ip_local_port_range isn't specified. See below comments in source code for more info."
+    # We need to adjust net.ipv4.ip_local_port_range (with root)
+    # $> sysctl -w net.ipv4.ip_local_port_range=min_value max_value
+  else
+    local _epthermal_ports_min=$(sysctl net.ipv4.ip_local_port_range | awk '{print $3}')
+    local _epthermal_ports_max=$(sysctl net.ipv4.ip_local_port_range | awk '{print $4}')
+    local _deployment_ports_min="${DEPLOYMENT_PORT_PREFIX}00"
+    if [[ "${_deployment_ports_min}" -ge "${_epthermal_ports_min}" && "${_deployment_ports_min}" -lt "${_epthermal_ports_max}" ]]; then 
+      echo_warn "Port ${DEPLOYMENT_PORT_PREFIX}XX is inside the server ephermal ports range (${_epthermal_ports_min} - ${_epthermal_ports_max})"
+      echo_warn "This increases the risk of deployment failures. DEPLOYMENT_PORT_PREFIX or ip_local_port_range needs to be reviewed!"
+    else 
+      echo_info "Port ${DEPLOYMENT_PORT_PREFIX}XX is outside the server ephermal ports range (${_epthermal_ports_min} - ${_epthermal_ports_max})."
+    fi
+  fi
 
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then 

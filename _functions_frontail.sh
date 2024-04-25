@@ -61,11 +61,6 @@ do_start_frontail() {
     -d \
     -p "${DEPLOYMENT_FRONTAIL_HTTP_PORT}:9001" \
     -v "$(dirname ${DEPLOYMENT_LOG_PATH}):/logs" \
-    -h 'frontail' \
-    --health-cmd="timeout 2 /bin/bash -c '</dev/tcp/frontail/9001' || exit 1" \
-    --health-interval=30s \
-    --health-timeout=30s \
-    --health-retries=3 \
     --name ${DEPLOYMENT_FRONTAIL_CONTAINER_NAME} ${DEPLOYMENT_FRONTAIL_IMAGE}:${DEPLOYMENT_FRONTAIL_IMAGE_VERSION} --disable-usage-stats --url-path /livelogs /logs/${DEPLOYMENT_SERVER_LOG_FILE}
   echo_info "${DEPLOYMENT_FRONTAIL_CONTAINER_NAME} container started"  
   check_frontail_availability

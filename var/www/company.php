@@ -59,6 +59,7 @@ if (isDeploymentInCategoryArray($company_instances)) {
         <td>
           <?= componentProductInfoIcon($descriptor_array) ?>&nbsp;
           <?= componentUpgradeEligibility($descriptor_array, false); ?>
+          <?= componentPatchInstallation($descriptor_array, false); ?>
           <?= componentDevModeEnabled($descriptor_array, false); ?>
           <?= componentStagingModeEnabled($descriptor_array, false); ?>
           <?= componentDebugModeEnabled($descriptor_array, false); ?>
