@@ -120,6 +120,7 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.config.file=${DEPLOYMENT_DIR}/gatein/conf/saml2/picketlink-sp.xml"
   else
     # Fetch admin token, then acquire exooidc client Id, then get client Secret; adminToken has short life
     keycloakAdminToken=$(curl -X POST "${DEP_URL}/auth/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" \
