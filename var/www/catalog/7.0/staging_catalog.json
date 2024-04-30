@@ -299,26 +299,6 @@
         "compatibility": "[@exo_plf_version]"
     },
     {
-        "id": "exo-layout-management",
-        "version": "@exo_plf_version",
-        "unstable": true,
-        "name": "Layout management add-on",
-        "description": "Layout management add-on",
-        "releaseDate": "2023-09-13T22:00:00.000Z",
-        "sourceUrl": "https://github.com/exoplatform/layout-management",
-        "documentationUrl": "https://github.com/exoplatform/layout-management",
-        "downloadUrl": "http://addons.exoplatform.org/n/staging/org.exoplatform.addons.layout-management/layout-management-packaging/@exo_plf_version/zip",
-        "vendor": "eXo",
-        "author": "eXo",
-        "authorEmail": "support@exoplatform.com",
-        "license": "AGPLv3",
-        "licenseUrl": "https://www.gnu.org/licenses/agpl-3.0.txt",
-        "mustAcceptLicense": false,
-        "supportedDistributions": "exo_community,community,enterprise",
-        "supportedApplicationServers": "tomcat",
-        "compatibility": "[@exo_plf_version]"
-    },
-    {
         "id": "exo-mail-integration",
         "version": "@exo_plf_version",
         "unstable": true,
