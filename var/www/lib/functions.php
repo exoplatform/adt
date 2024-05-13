@@ -157,7 +157,7 @@ function getRepositories()
         "app-center" => "App Center",
         "analytics" => "Analytics",
         "notes" => "Notes",
-        "content" => "meeds-addon-",
+        "content" => "Content",
         "poll" => "Poll",
         "task" => "TASK",
         "gamification-github" => "Gamification Github",
