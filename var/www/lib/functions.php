@@ -157,6 +157,7 @@ function getRepositories()
         "app-center" => "App Center",
         "analytics" => "Analytics",
         "notes" => "Notes",
+        "content" => "Content",
         "poll" => "Poll",
         "task" => "TASK",
         "gamification-github" => "Gamification Github",
@@ -233,6 +234,7 @@ function getModuleCiPrefix($item)
         "perk-store" => "meeds-addon-",
         "push-notifications" => "meeds-addon-",
         "notes" => "meeds-addon-",
+        "content" => "meeds-addon-",
         "addons-manager" => "meeds-",
         "meeds" => "meeds-",
         "jitsi" => "addon-",
@@ -328,6 +330,7 @@ function getTranslationBranches($projects)
       "perk-store" => true,
       "push-notifications" => true,
       "notes" => true,
+      "content" => true,
       "commons" => true,
       "chat-application" => true,
       "digital-workplace" => true,
@@ -525,7 +528,7 @@ function getLocalAcceptanceInstances()
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '7.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter / meeds-content";
               break;
             case '1.6.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter";
