@@ -181,6 +181,7 @@ function getRepositories()
         "web-conferencing" => "Web conferencing",
         "jitsi-call" => "Jitsi Call",
         "jitsi" => "Jitsi",
+        "external-visio-connector" => "Ext Visio Connector",
         "multifactor-authentication" => "Multifactor Authentication",
         "documents" => "Documents",
         "processes" => "Processes",
@@ -238,6 +239,7 @@ function getModuleCiPrefix($item)
         "addons-manager" => "meeds-",
         "meeds" => "meeds-",
         "jitsi" => "addon-",
+        "external-visio-connector" => "addon-",
         "chat-application" => "addon-",
         "data-upgrade" => "addon-",
         "digital-workplace" => "addon-",
@@ -349,6 +351,7 @@ function getTranslationBranches($projects)
       "jitsi" => true,
       "jitsi-call" => true,
       "web-conferencing" => true,
+      "external-visio-connector" => true,
       "multifactor-authentication" => true,
       "microservices" => true); // Addons with different version than product is ignored, See ACC-144
 
@@ -606,7 +609,7 @@ function getLocalAcceptanceInstances()
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '7.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-layout / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-news / exo-onlyoffice / exo-chat / exo-documents / exo-external-visio-connector / meeds-app-center / meeds-gamification / meeds-layout / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
               break;
             case '6.6.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
