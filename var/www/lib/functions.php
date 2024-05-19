@@ -148,7 +148,7 @@ function getRepositories()
         "platform-ui" => "PLF UI",
         "commons" => "Commons",
         "social" => "Social",
-        "layout" => "Layout Management",
+        "layout" => "Layout",
         "gamification" => "Gamification",
         "kudos" => "Kudos",
         "perk-store" => "Perk store",
