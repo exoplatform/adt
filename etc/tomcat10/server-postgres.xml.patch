@@ -9,7 +9,7 @@
                testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
                timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
                removeAbandonedOnBorrow="true" removeAbandonedOnMaintenance="true" removeAbandonedTimeout="300" logAbandoned="false"
--              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/@DB_IDM_DEFAULT_NAME@;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
 +              username="@DB_IDM_USR@" password="@DB_IDM_PWD@" driverClassName="org.postgresql.Driver" url="jdbc:postgresql://@DB_IDM_HOST@:@DB_IDM_PORT@/@DB_IDM_NAME@" />
  
      <!-- eXo JCR Datasource for portal -->
@@ -21,7 +21,7 @@
                testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
                timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
                removeAbandonedOnBorrow="true" removeAbandonedOnMaintenance="true" removeAbandonedTimeout="300" logAbandoned="false"
--              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/@DB_JCR_DEFAULT_NAME@;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
 +              username="@DB_JCR_USR@" password="@DB_JCR_PWD@" driverClassName="org.postgresql.Driver" url="jdbc:postgresql://@DB_JCR_HOST@:@DB_JCR_PORT@/@DB_JCR_NAME@" />
  
      <!-- eXo JPA Datasource for portal -->
@@ -33,7 +33,7 @@
                testWhileIdle="true" testOnBorrow="true" testOnReturn="false"
                timeBetweenEvictionRunsMillis="30000" minEvictableIdleTimeMillis="60000"
                removeAbandonedOnBorrow="true" removeAbandonedOnMaintenance="true" removeAbandonedTimeout="300" logAbandoned="false"
--              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/exo-plf;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
+-              username="sa" password="" driverClassName="org.hsqldb.jdbcDriver" url="jdbc:hsqldb:file:${exo.data.dir}/hsql/@DB_JPA_DEFAULT_NAME@;shutdown=true;hsqldb.write_delay=false;hsqldb.tx=mvcc;" />
 +              username="@DB_JPA_USR@" password="@DB_JPA_PWD@" driverClassName="org.postgresql.Driver" url="jdbc:postgresql://@DB_JPA_HOST@:@DB_JPA_PORT@/@DB_JPA_NAME@" />
  
    </GlobalNamingResources>

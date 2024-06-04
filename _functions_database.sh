@@ -33,6 +33,9 @@ do_configure_datasource_file() {
     cp ${DB_SERVER_PATCH} ${WORKING_FILE_PREFIX}.patch
     echo_info "Applying on ${FILE_TO_PATCH} the patch $DB_SERVER_PATCH ..."
     cp ${FILE_TO_PATCH} ${WORKING_FILE_PREFIX}.ori
+    replace_in_file ${WORKING_FILE_PREFIX}.patch "@DB_IDM_DEFAULT_NAME@" "${DEPLOYMENT_DB_IDM_DEFAULT_NAME}"
+    replace_in_file ${WORKING_FILE_PREFIX}.patch "@DB_JCR_DEFAULT_NAME@" "${DEPLOYMENT_DB_JCR_DEFAULT_NAME}"
+    replace_in_file ${WORKING_FILE_PREFIX}.patch "@DB_JPA_DEFAULT_NAME@" "${DEPLOYMENT_DB_JPA_DEFAULT_NAME}"
     patch -l -p0 ${FILE_TO_PATCH} < ${WORKING_FILE_PREFIX}.patch
     cp ${FILE_TO_PATCH} ${WORKING_FILE_PREFIX}.patched
 
