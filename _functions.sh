@@ -280,9 +280,9 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
-      configurable_env_var "DEPLOYMENT_DB_IDM_DEFAULT_NAME" "exo-plf"
-      configurable_env_var "DEPLOYMENT_DB_JCR_DEFAULT_NAME" "exo-plf"
-      configurable_env_var "DEPLOYMENT_DB_JPA_DEFAULT_NAME" "exo-plf"
+      configurable_env_var "DEPLOYMENT_DB_IDM_DEFAULT_NAME" "idm"
+      configurable_env_var "DEPLOYMENT_DB_JCR_DEFAULT_NAME" "jcr"
+      configurable_env_var "DEPLOYMENT_DB_JPA_DEFAULT_NAME" "jpa"
       env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
       env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
       env_var "DEPLOYMENT_SERVER_LOG_FILE" "catalina.out"
