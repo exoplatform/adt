@@ -339,25 +339,6 @@
         "compatibility": "[@exo_plf_version]"
     },
     {
-        "id": "exo-news",
-        "version": "@exo_plf_version",
-        "unstable": true,
-        "name": "News add-on",
-        "description": "Add article publication and sharing across the platform",
-        "releaseDate": "2023-09-13T22:00:00.000Z",
-        "sourceUrl": "https://github.com/exo-addons/news",
-        "downloadUrl": "http://addons.exoplatform.org/n/staging/org.exoplatform.addons.news/news-packaging/@exo_plf_version/zip",
-        "vendor": "eXo",
-        "author": "eXo",
-        "authorEmail": "exo-addons@exoplatform.com",
-        "license": "AGPLv3",
-        "licenseUrl": "https://www.gnu.org/licenses/agpl-3.0.txt",
-        "mustAcceptLicense": false,
-        "supportedDistributions": "enterprise",
-        "supportedApplicationServers": "tomcat",
-        "compatibility": "[@exo_plf_version]"
-    },
-    {
         "id": "exo-onlyoffice",
         "version": "@exo_plf_version",
         "unstable": true,
