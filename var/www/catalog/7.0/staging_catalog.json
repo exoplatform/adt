@@ -9,7 +9,7 @@
         "sourceUrl": "https://github.com/exoplatform/addons-manager",
         "screenshotUrl": "http://storage.exoplatform.org/public/Addons/exo-addons-manager/img/addon-manager-1_0_2.png",
         "documentationUrl": "https://www.exoplatform.com/docs/PLF43/PLFAdminGuide.AddonsManagement.html",
-        "downloadUrl": "http://addons.exoplatform.org/n/staging/org.exoplatform.platform/addons-manager/@exo_plf_version/zip",
+        "downloadUrl": "http://addons.exoplatform.org/n/staging/io.meeds.platform/addons-manager/@exo_plf_version/zip",
         "vendor": "eXo",
         "author": "eXo",
         "authorEmail": "exo-addons@exoplatform.com",
