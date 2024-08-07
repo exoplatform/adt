@@ -299,7 +299,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CRASH_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
-      configurable_env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
 
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
@@ -856,13 +855,15 @@ initialize_product_settings() {
         # - Default version for each supported database type
         if [[ "${PRODUCT_VERSION}" =~ ^(1.6|7.0) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
+              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.33" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.4" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.3.0" # Default version of the jdbc postgresql driver addon to use
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.5) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.32" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
@@ -870,6 +871,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.3.0" # Default version of the jdbc postgresql driver addon to use
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.4) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.31" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
@@ -877,6 +879,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.3.0" # Default version of the jdbc postgresql driver addon to use
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
@@ -884,6 +887,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.28"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.2) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
@@ -891,6 +895,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.21"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.1) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
@@ -898,6 +903,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.28"
         elif [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
@@ -926,6 +932,7 @@ initialize_product_settings() {
 
           # for differences between 5.0 / 5.1 / 5.2 / 5.3 (tomcat and jboss)
           if [[ "${PRODUCT_VERSION}" =~ ^(5.0) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.4"
 
@@ -942,6 +949,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2014express" # Default version of the sqlserver server to use
 
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.6"
 
@@ -958,6 +966,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2017-CU2" # Default version of the sqlserver server to use
 
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.2) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.1"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
@@ -977,6 +986,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.3.0.243" # Default version for Only Office docker image to use
 
           elif [[ "${PRODUCT_VERSION}" =~ ^(5.3) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
@@ -989,7 +999,8 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.6|7.0) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.1.0"
+              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.5" # Default version of the mysql driver addon to use
@@ -1005,6 +1016,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.5" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.5) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.1.0"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
@@ -1021,6 +1033,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.5" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.4) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
 
@@ -1036,6 +1049,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.2" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.3_latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.3) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
 
@@ -1051,6 +1065,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.0" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.2_latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.2) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.2"
 
@@ -1066,6 +1081,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.3" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.1_latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.1) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
@@ -1081,6 +1097,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.1" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.0_latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.0) ]]; then
+              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
 
