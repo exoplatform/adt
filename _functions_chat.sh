@@ -61,7 +61,7 @@ do_start_chat_server() {
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
       echo_info "Starting chat server standalone..."
       delete_docker_container ${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}
-
+      ${DOCKER_CMD} pull ${DEPLOYMENT_CHAT_SERVER_IMAGE}:${DEPLOYMENT_CHAT_SERVER_VERSION}     
       ${DOCKER_CMD} run \
         --link ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:mongo \
         -p "127.0.0.1:${DEPLOYMENT_CHAT_SERVER_PORT}:8080" -d \
