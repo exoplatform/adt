@@ -41,6 +41,7 @@ do_start_chat_server() {
       echo_info "Starting chat server database ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME} ..."
       delete_docker_container ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
       check_mongodb_intermediate_upgrades
+      ${DOCKER_CMD} pull ${DEPLOYMENT_CHAT_MONGODB_IMAGE}:${DEPLOYMENT_CHAT_MONGODB_VERSION}   
       ${DOCKER_CMD} run \
         -p "127.0.0.1:${DEPLOYMENT_CHAT_MONGODB_PORT}:27017" -d \
         -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
@@ -61,7 +62,6 @@ do_start_chat_server() {
     if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
       echo_info "Starting chat server standalone..."
       delete_docker_container ${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}
-      ${DOCKER_CMD} pull ${DEPLOYMENT_CHAT_SERVER_IMAGE}:${DEPLOYMENT_CHAT_SERVER_VERSION}     
       ${DOCKER_CMD} run \
         --link ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:mongo \
         -p "127.0.0.1:${DEPLOYMENT_CHAT_SERVER_PORT}:8080" -d \
@@ -125,6 +125,7 @@ check_mongodb_intermediate_upgrades() {
   for mongoversion in ${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS}; do 
     counter=$((counter+1))
     echo_info "Upgrade ($counter/$upgrades_length) to $mongoversion"
+    ${DOCKER_CMD} pull ${DEPLOYMENT_CHAT_MONGODB_IMAGE}:${mongoversion}
     ${DOCKER_CMD} run \
       -p "127.0.0.1:${DEPLOYMENT_CHAT_MONGODB_PORT}:27017" -d \
       -v ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}:/data/db \
