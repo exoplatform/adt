@@ -121,7 +121,8 @@ do_start_es() {
       -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
       -e "node.name=${INSTANCE_KEY}" \
       -e "cluster.name=${INSTANCE_KEY}" \
-      -e "xpack.monitoring.enabled=false" \
+      -e "cluster.initial_master_nodes=${INSTANCE_KEY}-1" \
+      -e "xpack.security.enabled=false" \
       --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
   fi
 
@@ -210,7 +211,6 @@ do_upgrade(){
         -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
         -e "node.name=${INSTANCE_KEY}" \
         -e "cluster.name=${INSTANCE_KEY}" \
-        -e "xpack.monitoring.enabled=false" \
         --name ${DEPLOYMENT_ES_CONTAINER_NAME}_old ${DEPLOYMENT_ES_IMAGE}:1.2.2 # FIXME VARIABLIZE IT 
 
       check_es_availability ${DEPLOYMENT_ES_OLD_HTTP_PORT}
