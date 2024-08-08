@@ -125,6 +125,11 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
+    -h "jitsi-prosody" \
+    --health-cmd="timeout 2 /bin/bash -c '</dev/tcp/jitsi-prosody/5222' && timeout 2 /bin/bash -c '</dev/tcp/jitsi-prosody/5280' || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
 
@@ -136,6 +141,10 @@ do_start_jitsi() {
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
+    --health-cmd="wget -qO /dev/null http://127.0.0.1:8888/about/health?list_jvb=true || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} container started"
 
@@ -150,6 +159,10 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
+    --health-cmd="curl --silent --fail http://127.0.0.1:8080/about/health || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
@@ -172,6 +185,10 @@ do_start_jitsi() {
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
+    --health-cmd="curl --silent --fail http://127.0.0.1:2222/jibri/api/v1.0/health | jq -e '.status.health.healthStatus == \"HEALTHY\"' || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
@@ -186,6 +203,10 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
+    --health-cmd="wget -qO /dev/null 127.0.0.1 || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} exoplatform/jitsi-web:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
   check_jitsi_web_availability
@@ -202,6 +223,11 @@ do_start_jitsi() {
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
+    -h "jitsi-excalidraw-backend" \
+    --health-cmd='wget -qO- http://jitsi-excalidraw-backend &> /dev/null || exit 1' \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} exoplatform/exo-excalidraw-backend:"${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"  
   echo_info "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} container started"
 }
