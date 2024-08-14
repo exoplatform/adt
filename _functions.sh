@@ -1559,6 +1559,9 @@ do_configure_apache() {
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
       evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
       echo_info "used template is : instance-ws-oo.include.template"
+    elif [ "${PRODUCT_NAME:-}" = "meeds" ];then 
+      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-meeds.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      echo_info "used template is : instance-ws-meeds.include.template"
     else
       evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
       echo_info "used template is : instance-ws.include.template"
