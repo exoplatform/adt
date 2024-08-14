@@ -84,7 +84,7 @@ do_start_es() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
 
-  if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[0-9.]+$ ]]; then
+  if [[ ! "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^1.[0-9.]+$ ]]; then
     if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
       # Need to get the docker internal ip address of the container to ensure ES trust mechanism works fine.
       env_var DEPLOYMENT_ES_OLD_INTERNAL_ADDR $(${DOCKER_CMD} inspect --format '{{ .NetworkSettings.IPAddress }}' ${DEPLOYMENT_ES_CONTAINER_NAME}_old)
