@@ -84,7 +84,7 @@ do_start_es() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
 
-  if [[ "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^2.[0-9.]+$ ]]; then
+  if [[ ! "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^1.[0-9.]+$ ]]; then
     if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
       # Need to get the docker internal ip address of the container to ensure ES trust mechanism works fine.
       env_var DEPLOYMENT_ES_OLD_INTERNAL_ADDR $(${DOCKER_CMD} inspect --format '{{ .NetworkSettings.IPAddress }}' ${DEPLOYMENT_ES_CONTAINER_NAME}_old)
@@ -131,7 +131,7 @@ do_start_es() {
       -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
       -e "node.name=${INSTANCE_KEY}" \
       -e "cluster.name=${INSTANCE_KEY}" \
-      -e "cluster.initial_master_nodes=${INSTANCE_KEY}-1" \
+      -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
       -e "xpack.security.enabled=false" \
       -h 'search' \
       --health-cmd='curl --silent --fail search:9200/_cluster/health || exit 1' \
