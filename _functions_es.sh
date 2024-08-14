@@ -131,7 +131,7 @@ do_start_es() {
       -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
       -e "node.name=${INSTANCE_KEY}" \
       -e "cluster.name=${INSTANCE_KEY}" \
-      -e "cluster.initial_master_nodes=${INSTANCE_KEY}-1" \
+      -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
       -e "xpack.security.enabled=false" \
       -h 'search' \
       --health-cmd='curl --silent --fail search:9200/_cluster/health || exit 1' \
