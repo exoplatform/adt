@@ -165,7 +165,7 @@ function getRepositories()
         "gamification-crowdin" => "Gamification Crowdin",
         "gamification-evm" => "Gamification EVM",
         "pwa" => "Progressive Web App",
-        "ide" => "Integrated Dev Environment",
+        "ide" => "Integrated Dev Env",
         "addons-manager" => "Addons Manager",
         "meeds" => "Meeds Distribution",
         "maven-exo-depmgt-pom" => "DEPMGT POM EXO",
