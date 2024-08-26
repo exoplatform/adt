@@ -131,6 +131,8 @@ function getRepositories()
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $repositories = apc_fetch('repositories');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $repositories = apcu_fetch('repositories');
   } elseif (extension_loaded('memcache')) {
     $repositories = $GLOBALS['memcache']->get('repositories');
   }
@@ -194,6 +196,8 @@ function getRepositories()
         "platform-private-distributions" => "PLF Private Dist");
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('repositories', $repositories);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('repositories', $repositories);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('repositories', $repositories);
     }
@@ -262,6 +266,8 @@ function getFeatureBranches($projects)
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $features = apc_fetch('features');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $features = apcu_fetch('features');
   } elseif (extension_loaded('memcache')) {
     $features = $GLOBALS['memcache']->get('features');
   }
@@ -299,6 +305,8 @@ function getFeatureBranches($projects)
     // Feature branches will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('features', $features, 300);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('features', $features, 300);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('features', $features, 0, 300);
     }
@@ -310,6 +318,8 @@ function getTranslationBranches($projects)
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $features = apc_fetch('translation');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $features = apcu_fetch('translation');
   } elseif (extension_loaded('memcache')) {
     $features = $GLOBALS['memcache']->get('translation');
   }
@@ -412,6 +422,8 @@ function getTranslationBranches($projects)
     // Translation branches will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('translation', $features, 300);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('translation', $features, 300);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('translation', $features, 0, 300);
     }
@@ -423,6 +435,8 @@ function getLocalAcceptanceInstances()
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('local_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('local_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('local_instances');
   }
@@ -738,6 +752,8 @@ function getLocalAcceptanceInstances()
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('local_instances', $instances, 120);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('local_instances', $instances, 120);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('local_instances', $instances, 0, 120);
     }
@@ -754,6 +770,8 @@ function getGlobalAcceptanceInstances()
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('all_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('all_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('all_instances');
   }
@@ -773,6 +791,8 @@ function getGlobalAcceptanceInstances()
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('all_instances', $instances, 120);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('all_instances', $instances, 120);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('all_instances', $instances, 0, 120);
     }
@@ -788,6 +808,8 @@ function getGlobalAcceptanceInstances()
 function getGlobalDevInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('dev_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('dev_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('dev_instances');
   }
@@ -805,6 +827,8 @@ function getGlobalDevInstances() {
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('dev_instances', $instances, 120);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('dev_instances', $instances, 120);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('dev_instances', $instances, 0, 120);
     }
@@ -821,6 +845,8 @@ function getGlobalSalesUserInstances()
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('sales_user_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('sales_user_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('sales_user_instances');
   }
@@ -838,6 +864,8 @@ function getGlobalSalesUserInstances()
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('sales_user_instances', $instances, 120);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('sales_user_instances', $instances, 120);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('sales_user_instances', $instances, 0, 120);
     }
@@ -854,6 +882,8 @@ function getGlobalSalesDemoInstances()
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('sales_demo_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('sales_demo_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('sales_demo_instances');
   }
@@ -871,6 +901,8 @@ function getGlobalSalesDemoInstances()
     // Instances will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('sales_demo_instances', $instances, 300);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('sales_demo_instances', $instances, 300);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('sales_demo_instances', $instances, 0, 300);
     }
@@ -887,6 +919,8 @@ function getGlobalSalesEvalInstances()
 {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('sales_eval_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('sales_eval_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('sales_eval_instances');
   }
@@ -904,6 +938,8 @@ function getGlobalSalesEvalInstances()
     // Instances will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('sales_eval_instances', $instances, 300);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('sales_eval_instances', $instances, 300);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('sales_eval_instances', $instances, 0, 300);
     }
@@ -919,6 +955,8 @@ function getGlobalSalesEvalInstances()
 function getGlobalQAInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('qa_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('qa_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('qa_instances');
   }
@@ -936,6 +974,8 @@ function getGlobalQAInstances() {
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('qa_instances', $instances, 120);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('qa_instances', $instances, 120);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('qa_instances', $instances, 0, 120);
     }
@@ -951,6 +991,8 @@ function getGlobalQAInstances() {
 function getGlobalQAUserInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('qa_user_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('qa_user_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('qa_user_instances');
   }
@@ -968,6 +1010,8 @@ function getGlobalQAUserInstances() {
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('qa_user_instances', $instances, 120);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('qa_user_instances', $instances, 120);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('qa_user_instances', $instances, 0, 120);
     }
@@ -983,6 +1027,8 @@ function getGlobalQAUserInstances() {
 function getGlobalQAAutoInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('qa_auto_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('qa_auto_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('qa_auto_instances');
   }
@@ -1000,6 +1046,8 @@ function getGlobalQAAutoInstances() {
     // Instances will be cached for 2 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('qa_auto_instances', $instances, 120);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('qa_auto_instances', $instances, 120);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('qa_auto_instances', $instances, 0, 120);
     }
@@ -1015,6 +1063,8 @@ function getGlobalQAAutoInstances() {
  function getGlobalCPInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('cp_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('cp_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('cp_instances');
   }
@@ -1032,6 +1082,8 @@ function getGlobalQAAutoInstances() {
     // Instances will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('cp_instances', $instances, 300);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('cp_instances', $instances, 300);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('cp_instances', $instances, 0, 300);
     }
@@ -1047,6 +1099,8 @@ function getGlobalQAAutoInstances() {
 function getGlobalCompanyInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('company_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('company_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('company_instances');
   }
@@ -1064,6 +1118,8 @@ function getGlobalCompanyInstances() {
     // Instances will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('company_instances', $instances, 500);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('company_instances', $instances, 500);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('company_instances', $instances, 0, 500);
     }
@@ -1079,6 +1135,8 @@ function getGlobalCompanyInstances() {
 function getGlobalDocInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('doc_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('doc_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('doc_instances');
   }
@@ -1096,6 +1154,8 @@ function getGlobalDocInstances() {
     // Instances will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('doc_instances', $instances, 300);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('doc_instances', $instances, 300);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('doc_instances', $instances, 0, 300);
     }
@@ -1111,6 +1171,8 @@ function getGlobalDocInstances() {
 function getGlobalTranslationInstances() {
   if (extension_loaded('apc') && function_exists('apc_fetch')) {
     $instances = apc_fetch('translation_instances');
+  } elseif (extension_loaded('apcu') && function_exists('apcu_fetch')) {
+    $instances = apcu_fetch('translation_instances');
   } elseif (extension_loaded('memcache')) {
     $instances = $GLOBALS['memcache']->get('translation_instances');
   }
@@ -1128,6 +1190,8 @@ function getGlobalTranslationInstances() {
     // Instances will be cached for 5 min
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('translation_instances', $instances, 300);
+    } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
+      apcu_store('translation_instances', $instances, 300);
     } elseif (extension_loaded('memcache')) {
       $GLOBALS['memcache']->set('translation_instances', $instances, 0, 300);
     }

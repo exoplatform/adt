@@ -23,6 +23,8 @@ checkCaches();
 <?php
 if (extension_loaded('apc') && function_exists('apc_cache_info')) {
   echo debug_var(apc_cache_info('user'), true);
+} elseif (extension_loaded('apcu') && function_exists('apcu_cache_info')) {
+  echo debug_var(apcu_cache_info('user'), true);
 } elseif (extension_loaded('memcache') && function_exists('memcache_flush')) {
   echo debug_var(memcache_flush(), true);
 }
