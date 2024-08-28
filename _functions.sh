@@ -351,6 +351,8 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
       configurable_env_var "DEPLOYMENT_JITSI_MEM_LIMIT" 4g
+      configurable_env_var "DEPLOYMENT_JITSI_JICOFO_XMX" 1g
+      configurable_env_var "DEPLOYMENT_JITSI_JVB_XMX" 1g
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
       configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.0"
 
