@@ -138,6 +138,7 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
+    -e JICOFO_MAX_MEMORY="${DEPLOYMENT_JITSI_JICOFO_XMX}" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
@@ -155,6 +156,7 @@ do_start_jitsi() {
     -d \
     -p "${DEPLOYMENT_JITSI_JVB_PORT}:${DEPLOYMENT_JITSI_JVB_PORT}/udp" \
     -p "${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
+    -e VIDEOBRIDGE_MAX_MEMORY="${DEPLOYMENT_JITSI_JVB_XMX}" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
