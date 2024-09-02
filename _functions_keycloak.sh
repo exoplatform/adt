@@ -140,6 +140,29 @@ check_keycloak_availability() {
   echo_info "Keycloak ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} up and available"
 }
 
+# Restore dataset
+do_restore_keycloak_dataset() {
+  do_drop_keycloak_data
+  do_create_keycloak
+  local _keycloakData="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/keycloak"
+  if [ ! -d ${_keycloakData} ]; then
+    echo_warn "Keycloak data (${_keycloakData}) don't exist."
+    return 0
+  fi
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME})
+  sudo mv -v ${_keycloakData}/* ${mount_point}/ >/dev/null
+  rm -rf ${_keycloakData}
+}
+
+# Dump dataset
+do_dump_keycloak_dataset() {
+  local _keycloakData="$1/keycloak"
+  mkdir -p ${_keycloakData}
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME})
+  sudo cp -fTr "${mount_point}/" ${_keycloakData}/ || touch ${_keycloakData}/__nofile
+}
+
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_KEYCLOAK_LOADED=true

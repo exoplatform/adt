@@ -256,7 +256,7 @@ do_restore_es_dataset() {
   do_create_es
   local _esData="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/search"
   if [ ! -d ${_esData} ]; then
-    echo_error "Elasticsearch data (${_restorescript}) don't exist."
+    echo_error "Elasticsearch data (${_esData}) don't exist."
     exit 1
   fi;
   if ${DEPLOYMENT_ES_EMBEDDED}; then

@@ -1308,6 +1308,9 @@ do_dump_dataset(){
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     do_dump_chat_mongo_dataset "${_dumpdir}"
   fi
+  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
+    do_dump_keycloak_dataset "${_dumpdir}"
+  fi
   mkdir -p ${_dumpdir}/codec
   if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
     echo_info "Backing up codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
@@ -1320,11 +1323,16 @@ do_dump_dataset(){
 
   do_dump_es_dataset "${_dumpdir}"
   echo_info "Generating dataset ..."
+
+  local _bakcupExt=""
   if ${DEPLOYMENT_CHAT_ENABLED}; then
-    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo chat.dump chat.name search backup.sql codec
-  else
-    display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql codec
-  fi
+    _bakcupExt="${_bakcupExt} chat.dump chat.name"
+  fi 
+  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
+    _bakcupExt="${_bakcupExt} keycloak"
+  fi 
+  _bakcupExt="$(echo ${_bakcupExt} | xargs -r)"
+  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql codec ${_bakcupExt}
   echo_info "Done."
   echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
   sudo rm -rf "${_dumpdir}"
@@ -1367,6 +1375,10 @@ do_restore_dataset(){
 
   if ${DEPLOYMENT_CHAT_ENABLED}; then
     do_restore_chat_mongo_dataset
+  fi
+
+  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
+    do_restore_keycloak_dataset
   fi
 
   do_restore_database_dataset
