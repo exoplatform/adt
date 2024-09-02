@@ -201,7 +201,7 @@ do_migrate_embedded() {
   do_create_es
   local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
   sudo mv -v ${path}/* ${mount_point}/ > /dev/null
-  sudo chown 1000.1000 -R ${mount_point}
+  sudo chown 1000:1000 -R ${mount_point}
   echo "ES Embedded data have successfuly moved."
 }
 # Perform Elasticsearch Upgrade
@@ -262,11 +262,11 @@ do_restore_es_dataset() {
   if ${DEPLOYMENT_ES_EMBEDDED}; then
     local path="${DEPLOYMENT_DIR}/${DEPLOYMENT_ES_PATH_DATA}"
     mv ${_esData}/* ${path}/
-    sudo chown 1000.1000 -R ${path}
+    sudo chown 1000:1000 -R ${path}
   else
     local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
     sudo mv -v ${_esData}/* ${mount_point}/ >/dev/null
-    sudo chown 1000.1000 -R ${mount_point}
+    sudo chown 1000:1000 -R ${mount_point}
   fi
   rm -rf ${_esData}
 }
@@ -280,7 +280,7 @@ do_dump_es_dataset() {
     cp -fTr "${path}/" ${_esData}/ || touch ${_esData}/__nofile
   else
     local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME})
-    sudo chown 1000.1000 -R ${mount_point}
+    sudo chown 1000:1000 -R ${mount_point}
     sudo cp -fTr "${mount_point}/" ${_esData}/ || touch ${_esData}/__nofile
   fi
 }

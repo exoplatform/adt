@@ -151,6 +151,7 @@ do_restore_keycloak_dataset() {
   fi
   local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME})
   sudo mv -v ${_keycloakData}/* ${mount_point}/ >/dev/null
+  sudo chown 1000:1000 -R ${mount_point}
   rm -rf ${_keycloakData}
 }
 
@@ -159,6 +160,7 @@ do_dump_keycloak_dataset() {
   local _keycloakData="$1/keycloak"
   mkdir -p ${_keycloakData}
   local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME})
+  sudo chown 1000:1000 -R ${mount_point}
   sudo cp -fTr "${mount_point}/" ${_keycloakData}/ || touch ${_keycloakData}/__nofile
 }
 
