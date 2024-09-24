@@ -73,7 +73,11 @@ evaluate_file_content() {
   if [ ${_file_in##*.} = "j2" ]; then 
     j2 --undefined ${_file_in} > ${_file_out}
   else 
-    awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < ${_file_in} > ${_file_out}
+    if which perl; then 
+      perl -pe 's/\$\{([^}]+)\}/$ENV{$1} || ""/ge' < ${_file_in} > ${_file_out}
+    else 
+      awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' 
+    fi
     # escape any single quote
     if ${LINUX}; then
       replace_in_file ${_file_out} "'" "\\\'"
