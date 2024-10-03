@@ -125,6 +125,43 @@ checkCaches();
                         } ?>
                         </tbody>
                     </table>
+                    <h3>Meeds-io Development Branches <span class="subtitle">(status compared to each project code base branch.)</span></h3>
+                    <?php
+                    //List all projects
+                    $projectsNames = getMeedsRepositories();
+                    $projects = array_keys($projectsNames);
+                    $baseBranches = getBaseBranches($projects);
+                    ?>
+                    <table class="table table-hover table-header-rotated">
+                        <thead>
+                        <tr>
+                            <th class="col-left"><div><span>base branch</span></div></th>
+                            <?php foreach ($projects as $project) { ?>
+                                <th class="col-center rotate-45"><div><span><?=$projectsNames[$project]?></span></div></th>
+                            <?php } ?>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <?php
+                        foreach ($baseBranches as $baseBranch => $BaseProjects) {
+                                $ciView = getBaseBranchView($baseBranch);
+                                $rebaseJobName = getRebaseJobName($baseBranch);
+                                ?>
+                                <tr>
+                                    <td><a name="<?=str_replace(array("/", "."), "-", $baseBranch)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $baseBranch)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$baseBranch?><br/><a href='https://ci.exoplatform.org/job/<?=$rebaseJobName?>' target="_blank" title="Rebase FB" rel="tooltip"><i class="icon-refresh"></i></a><br/><img src='https://ci.exoplatform.org/buildStatus/icon?job=<?=$rebaseJobName?>' style="height:15px; width: 85px;"></td>
+                                    <?php foreach ($projects as $project) { ?>
+                                        <td class="col-center">
+                                            <?php if (array_key_exists($project, $BaseProjects)) { ?>
+                                                <?= componentFeatureRepoBrancheStatus($BaseProjects[$project]);?>
+                                                <a href='https://ci.exoplatform.org/job/<?=$ciView?>/job/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$baseBranch?>-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=<?=$ciView?>/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$baseBranch?>-ci'></a>
+                                            <?php }?>
+                                        </td>
+                                    <?php } ?>
+                                </tr>
+                            <?php
+                        } ?>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
