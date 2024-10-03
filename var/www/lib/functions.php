@@ -53,8 +53,7 @@ function isFeature($branch)
 function isBaseBranch($branch)
 {
   // All brase branches must be on the origin (see bug: SWF-2520)
-  // TO-DO Add develop-exo
-  return strpos($branch, "origin/develop-meed") !== false ;
+  return strpos($branch, "origin/develop-meed") !== false || strpos($branch, "origin/develop-exo") !== false ;
 }
 
 function isTranslation($branch)
@@ -361,6 +360,11 @@ function getBaseBranches($projects)
           $basebranches[$branch][$project]['ahead_commits'] = 0;
         else
           $basebranches[$branch][$project]['ahead_commits'] = count(explode("\n", $ahead_commits_logs));
+        $cherry_commits_logs = $repoObject->git("log --cherry origin/" . $branch . "..origin/" . $baseBranchToCompareWith . " --oneline");
+        if (empty($cherry_commits_logs))
+          $basebranches[$branch][$project]['cherry_commits'] = 0;
+        else
+          $basebranches[$branch][$project]['cherry_commits'] = count(explode("\n", $cherry_commits_logs));
       }
     }
     uksort($basebranches, 'strcasecmp');
@@ -1611,6 +1615,26 @@ function getRebaseJobName($branch) {
     return $rebaseJobName[$branch];
   }
   return null;  
+}
+
+/**
+ * Return if cherry commits compare is required
+ *
+ * @param      $branch                  base branch name
+ *
+ * @return boolean
+ */
+
+function isCherryCompare($branch) {
+  
+  $rebaseJobName = array(
+    "develop-exo" => true,
+    "develop-meed" => false
+  );
+  if(isset($rebaseJobName[$branch])) {
+    return $rebaseJobName[$branch];
+  }
+  return false;  
 }
 
 ?>

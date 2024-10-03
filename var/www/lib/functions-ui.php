@@ -789,11 +789,23 @@ function componentFBDeployIcon($deployment_descriptor) {
  * Get markup for a Git repository branch commits status
  *
  * @param $fb_project
+ * @param $cherry_commits_display
  *
  * @return string html markup
  */
- function componentFeatureRepoBrancheStatus($fb_project) {
+ function componentFeatureRepoBrancheStatus($fb_project, $cherry_commits_display = false) {
   $content="";
+  
+  if($cherry_commits_display) {
+    $content.='<span rel="tooltip" title="Some commits on the base branch that do not exist on this branch [cherry-compare]">';
+    if ($fb_project['cherry_commits'] > 0) {
+      $content.='<span class="label label-commit label-important"><i class="icon-arrow-down icon-white"></i></span>';
+    } else {
+      $content.='<span class="label label-commit"><i class="icon-arrow-down"></i></span>';
+    }
+    $content.='</span>';
+    return $content;
+  }
 
   $content='<a href="'.$fb_project['http_url_behind'].'" target="_blank" title="[behind]">';
   $content.='<span rel="tooltip" title="'.$fb_project['behind_commits'].' commits on the base branch that do not exist on this branch [behind]">';

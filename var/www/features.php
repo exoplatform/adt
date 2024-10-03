@@ -146,13 +146,14 @@ checkCaches();
                         foreach ($baseBranches as $baseBranch => $BaseProjects) {
                                 $ciView = getBaseBranchView($baseBranch);
                                 $rebaseJobName = getRebaseJobName($baseBranch);
+                                $cherryCompare = isCherryCompare($baseBranch);
                                 ?>
                                 <tr>
                                     <td><a name="<?=str_replace(array("/", "."), "-", $baseBranch)?>"/><a href="<?=currentPageURL() . "#" . str_replace(array("/", "."), "-", $baseBranch)?>"><i class="icon-bookmark"></i></a>&nbsp;<?=$baseBranch?><br/><a href='https://ci.exoplatform.org/job/<?=$rebaseJobName?>' target="_blank" title="Rebase FB" rel="tooltip"><i class="icon-refresh"></i></a><br/><img src='https://ci.exoplatform.org/buildStatus/icon?job=<?=$rebaseJobName?>' style="height:15px; width: 85px;"></td>
                                     <?php foreach ($projects as $project) { ?>
                                         <td class="col-center">
                                             <?php if (array_key_exists($project, $BaseProjects)) { ?>
-                                                <?= componentFeatureRepoBrancheStatus($BaseProjects[$project]);?>
+                                                <?= componentFeatureRepoBrancheStatus($BaseProjects[$project], $cherryCompare);?>
                                                 <a href='https://ci.exoplatform.org/job/<?=$ciView?>/job/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$baseBranch?>-ci/' target="_blank" title="CI" rel="tooltip" title="Continuous integration job"><img src='https://ci.exoplatform.org/buildStatus/icon?job=<?=$ciView?>/<?=getModuleCiPrefix($project)?><?=$project?>-<?=$baseBranch?>-ci'></a>
                                             <?php }?>
                                         </td>
