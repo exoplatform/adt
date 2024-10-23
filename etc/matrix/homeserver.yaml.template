@@ -1,0 +1,135 @@
+# Configuration file for Synapse.
+#
+# This is a YAML file: see [1] for a quick introduction. Note in particular
+# that *indentation is important*: all the elements of a list or dictionary
+# should have the same indentation.
+#
+# [1] https://docs.ansible.com/ansible/latest/reference_appendices/YAMLSyntax.html
+#
+# For more information on how to configure Synapse, including a complete accounting of
+# each option, go to docs/usage/configuration/config_documentation.md or
+# https://element-hq.github.io/synapse/latest/usage/configuration/config_documentation.html
+server_name: <%= @matrix_server_name %>
+pid_file: /data/homeserver.pid
+listeners:
+  - port: 8008
+    tls: false
+    type: http
+    x_forwarded: true
+    resources:
+      - names: [client, federation]
+        compress: false
+database:
+  name: sqlite3
+  args:
+    database: DATADIR/homeserver.db
+log_config: /data/matrix.log.config
+media_store_path: /data/media_store
+registration_shared_secret: "<%= @registration_shared_secret %>"
+report_stats: true
+macaroon_secret_key: "<%= @macaroon_secret_key %>"
+form_secret: "<%= @form_secret %>"
+signing_key_path: "/data/matrix.host.signing.key"
+trusted_key_servers:
+  - server_name: "matrix.org"
+
+<% if @oidc_matrix_enabled %>
+serve_server_wellknown: true
+oidc_providers:
+ - idp_id: keycloak
+   idp_name: "My KeyCloak server"
+   issuer: <%= @matrix_oidc_issuer %>
+   client_id: <%= @matrix_oidc_client_id %> # client ID added in Keycloak
+   client_secret: <%= @matrix_oidc_client_secret %> # The client secret from Keycloak
+   scopes: ["openid", "profile"]
+   user_mapping_provider:
+     config:
+       localpart_template: "{{ user.preferred_username }}"  # Maps Keycloak username to Matrix
+       display_name_template: "{{ user.name }}"  # Maps Keycloak full name to Matrix display name
+   backchannel_logout_enabled: true  # Optional, handles OIDC logout via backchannel
+<% end %>
+enable_3pid_changes: true  # Allows users to update their email and phone number
+
+<% if @smtp_matrix_enabled %>
+email:
+  <%- if @environment != 'production' or @is_testing_environment -%>
+  smtp_host: mailhog
+  smtp_port: 1025
+  force_tls: false
+  require_transport_security: false
+  enable_tls: false
+  <%- elsif @custom_smtp_enabled == true -%>
+  smtp_host: "<%= scope['hosting::custom_smtp_host'] %>"
+  smtp_port: <%= scope['hosting::custom_smtp_port'] %>
+  force_tls: <%= scope['hosting::custom_smtp_starttls'] == "true" ? true : false %>
+  require_transport_security: <%= scope['hosting::custom_smtp_starttls'] == "true" ? true : false %>
+  enable_tls: <%= scope['hosting::custom_smtp_starttls'] %>
+  ssl_protocols: "<%= scope['hosting::custom_smtp_protocols'].join(' ') %>"
+  username: "<%= scope['hosting::custom_smtp_username'] %>"
+  password: "<%= scope['hosting::custom_smtp_password'] %>"
+  <%- elsif @local_smtp_enabled == true -%>
+  smtp_host: smtp
+  smtp_port: 25
+  force_tls: false
+  require_transport_security: false
+  enable_tls: false
+  <%- else -%>
+  smtp_host: smtp-relay.gmail.com
+  smtp_port: 587
+  force_tls: true
+  require_transport_security: true
+  enable_tls: true
+  ssl_protocols: "TLSv1.2"
+  <%- end -%>
+  notif_from: "Your Friendly [%(app)s] homeserver <%= @exo_mail_from %>"
+  app_name: eXo Matrix Chat # Name of the server that will appear in notifications
+  enable_notifs: true
+  notif_for_new_users: true
+  validation_token_lifetime: 15m
+  subjects:
+    message_from_person_in_room: "[%(app)s] You have a message on %(app)s from %(person)s in the %(room)s room..."
+    message_from_person: "[%(app)s] You have a message on %(app)s from %(person)s..."
+    messages_from_person: "[%(app)s] You have messages on %(app)s from %(person)s..."
+    messages_in_room: "[%(app)s] You have messages on %(app)s in the %(room)s room..."
+    messages_in_room_and_others: "[%(app)s] You have messages on %(app)s in the %(room)s room and others..."
+    messages_from_person_and_others: "[%(app)s] You have messages on %(app)s from %(person)s and others..."
+    invite_from_person_to_room: "[%(app)s] %(person)s has invited you to join the %(room)s room on %(app)s..."
+    invite_from_person: "[%(app)s] %(person)s has invited you to chat on %(app)s..."
+    password_reset: "[%(server_name)s] Password reset"
+    email_validation: "[%(server_name)s] Validate your email"
+<% end %>
+default_power_level_content_override:
+  private_chat:
+    "events":
+      "m.room.avatar": 50
+      "m.room.canonical_alias": 50
+      "m.room.encryption": 999
+      "m.room.history_visibility": 100
+      "m.room.name": 50
+      "m.room.power_levels": 100
+      "m.room.server_acl": 100
+      "m.room.tombstone": 100
+    "events_default": 0
+  trusted_private_chat:
+    "events":
+      "m.room.avatar": 50
+      "m.room.canonical_alias": 50
+      "m.room.encryption": 999
+      "m.room.history_visibility": 100
+      "m.room.name": 50
+      "m.room.power_levels": 100
+      "m.room.server_acl": 100
+      "m.room.tombstone": 100
+    "events_default": 0
+  public_chat:
+    "events":
+      "m.room.avatar": 50
+      "m.room.canonical_alias": 50
+      "m.room.encryption": 999
+      "m.room.history_visibility": 100
+      "m.room.name": 50
+      "m.room.power_levels": 100
+      "m.room.server_acl": 100
+      "m.room.tombstone": 100
+    "events_default": 0
+encryption_enabled_by_default_for_room_type: "off"

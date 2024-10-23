@@ -1,0 +1,106 @@
+#!/bin/bash -eu
+
+# Don't load it several times
+set +u
+
+
+# if the script was started from the base directory, then the
+# expansion returns a period
+if test "${SCRIPT_DIR}" == "."; then
+  SCRIPT_DIR="$PWD"
+  # if the script was not called with an absolute path, then we need to add the
+  # current working directory to the relative path of the script
+elif test "${SCRIPT_DIR:0:1}" != "/"; then
+  SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
+fi
+
+# Function to generate a random string of specified length
+generate_secret() {
+    local length=$1
+    echo "$(openssl rand -base64 $length | tr -dc 'a-zA-Z0-9' | cut -c1-$length)"
+}
+
+do_get_matrix_settings() {
+  if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
+    return;
+  fi
+  env_var DEPLOYMENT_MATRIX_CONTAINER_NAME "${INSTANCE_KEY}_matrix"
+}
+
+do_drop_matrix_data() {
+  echo_info "Dropping matrix data ..."
+  if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ] ; then
+    echo_info "Drops matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
+    delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
+    echo_info "Done."
+    echo_info "matrix data dropped"
+  else
+    echo_info "Skip Drops matrix container ..."
+  fi
+}
+
+do_stop_matrix() {
+  echo_info "Stopping matrix ..."
+  if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
+    echo_info "matrix wasn't specified, skiping its server container shutdown"
+    return
+  fi
+  ensure_docker_container_stopped ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
+  echo_info "matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} stopped."
+}
+
+do_create_matrix() {
+  if ! ${DEPLOYMENT_MATRIX_EMBEDDED}; then
+    echo_info "Creation of the MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
+    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
+    echo_info "MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} created"
+  fi
+}
+
+do_start_matrix() {
+  echo_info "Starting matrix..."
+  if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ]; then
+    echo_info "matrix not specified, skiping its containers startup"
+    return
+  fi
+
+  # Generate secrets
+  local registration_shared_secret=$(generate_secret 32)
+  local macaroon_secret_key=$(generate_secret 64)
+  local form_secret=$(generate_secret 32)
+
+  echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
+
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
+  ${DOCKER_CMD} pull ${DEPLOYMENT_MATRIX_IMAGE}
+
+    # Create a temporary environment file for secrets
+    {
+      echo "REGISTRATION_SHARED_SECRET=${registration_shared_secret}"
+      echo "MACAROON_SECRET_KEY=${macaroon_secret_key}"
+      echo "FORM_SECRET=${form_secret}"
+    } > "${DEPLOYMENT_DIR}/temp_secrets.env"
+
+  ${DOCKER_CMD} run \
+    -d \
+    -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
+    -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
+    --env-file ${DEPLOYMENT_DIR}/matrix.log.config \
+    --env-file ${DEPLOYMENT_DIR}/homeserver.yaml \
+    --env-file ${DEPLOYMENT_DIR}/secrets.yaml \
+    --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
+    --health-interval=15s \
+    --health-timeout=5s \
+    --health-retries=3 \
+    --health-start-period=5s \
+    --name ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ${DEPLOYMENT_MATRIX_IMAGE}
+
+  echo_info "${DEPLOYMENT_MATRIX_CONTAINER_NAME} container started"
+
+    # Clean up the temporary secrets file after starting the container
+    rm -f "${DEPLOYMENT_DIR}/temp_secrets.env"
+
+  check_matrix_availability
+}
+
