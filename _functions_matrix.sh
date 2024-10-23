@@ -104,3 +104,30 @@ do_start_matrix() {
   check_matrix_availability
 }
 
+check_matrix_availability() {
+  echo_info "Waiting for Matrix availability on port ${DEPLOYMENT_MATRIX_HTTP_PORT}"
+  local count=0
+  local try=600
+  local RET=-1
+
+  while [ $count -lt $try -a $RET -ne 0 ]; do
+    count=$((count + 1))
+    set +e
+    curl -fSs http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/health > /dev/null
+    RET=$?
+    if [ $RET -ne 0 ]; then
+      [ $((count % 10)) -eq 0 ] && echo_info "Matrix not yet available (${count} / ${try})..."
+      echo -n "."
+      sleep 1
+    fi
+    set -e
+  done
+
+  if [ $count -eq $try ]; then
+    echo_error "Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} not available after $((count)) retries."
+    exit 1
+  fi
+
+  echo_info "Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} up and available."
+}
+

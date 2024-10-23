@@ -1410,6 +1410,11 @@ do_init_empty_data(){
     do_drop_iframely_data
     do_create_iframely
   fi
+  if ${DEPLOYMENT_MATRIX_ENABLED}; then
+    do_drop_iframely_data
+    do_create_iframely
+  fi
+
   do_init_empty_chat_database
 
   do_drop_es_data
