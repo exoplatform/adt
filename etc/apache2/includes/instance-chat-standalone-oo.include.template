@@ -178,3 +178,30 @@
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/
+
+    # Matrix configuration
+    <If "%{ENV:DEPLOYMENT_MATRIX_ENABLED}">
+        # Proxying Matrix server traffic
+        <LocationMatch "^(/_matrix/.*|/_synapse/.*|/.well-known/matrix/server)">
+            ProxyPass http://matrix:8008
+            ProxyPassReverse http://matrix:8008
+            RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}s"
+            RequestHeader set X-Forwarded-Proto "%{SCHEME}s"
+            RequestHeader set Host "%{HTTP_HOST}s"
+            LimitRequestBody 52428800
+            ProxyPreserveHost On
+            ProxyVia On
+            ProxyRequests Off
+        </LocationMatch>
+
+        # Handling /.well-known/matrix/ directory
+        <LocationMatch "^(/.well-known/matrix/)">
+            Alias /srv/matrix/
+            SetHandler default-handler
+            Header set Content-Type "application/json"
+            Header always set Access-Control-Allow-Origin "https://app.element.io"
+            Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+            Header always set Access-Control-Allow-Headers "Origin, Content-Type, Accept"
+            Header always set Access-Control-Max-Age "1728000"
+        </LocationMatch>
+    </If>
