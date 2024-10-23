@@ -379,6 +379,9 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
 
+      # Matrix
+      configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
+      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse:v1.108.0"
 
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
@@ -1793,6 +1796,10 @@ do_deploy() {
   env_var "DEPLOYMENT_JITSI_JVB_PORT" "${DEPLOYMENT_PORT_PREFIX}84"
   env_var "DEPLOYMENT_JITSI_JVB_COLIBRI_PORT" "${DEPLOYMENT_PORT_PREFIX}86"
   env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT" "${DEPLOYMENT_PORT_PREFIX}87"
+
+  # Matrix port
+  env_var "DEPLOYMENT_MATRIX_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}47"
+  env_var "DEPLOYMENT_MATRIX_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}48"
 
   # SFTP port
   env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
