@@ -380,7 +380,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
 
       # Matrix
-      configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
+      configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" true
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse:v1.108.0"
 
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
