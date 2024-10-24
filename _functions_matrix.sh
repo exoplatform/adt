@@ -15,6 +15,7 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
 fi
 
 # Function to generate a random string of specified length
+echo "Begin Matrix script"
 generate_secret() {
     local length=$1
     echo "$(openssl rand -base64 $length | tr -dc 'a-zA-Z0-9' | cut -c1-$length)"
