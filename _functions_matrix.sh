@@ -2,6 +2,8 @@
 
 # Don't load it several times
 set +u
+${_FUNCTIONS_MATRIX_LOADED:-false} && return
+set -u
 
 
 # if the script was started from the base directory, then the
@@ -131,4 +133,7 @@ check_matrix_availability() {
 
   echo_info "Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} up and available."
 }
-
+# #############################################################################
+# Env var to not load it several times
+_FUNCTIONS_MATRIX_LOADED=true
+echo_debug "_function_matrix.sh Loaded"
