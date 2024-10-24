@@ -67,7 +67,7 @@ do_start_matrix() {
     return
   fi
 
-  evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml.template
+  evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml
 
   # Generate secrets
   local registration_shared_secret=$(generate_secret 32)
