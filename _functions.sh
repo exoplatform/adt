@@ -33,6 +33,7 @@ source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_iframely.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
+source "${SCRIPT_DIR}/_functions_matrix.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_adminmongo.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
@@ -380,7 +381,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
 
       # Matrix
-      configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" true
+      configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse:v1.108.0"
 
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
