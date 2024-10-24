@@ -67,6 +67,8 @@ do_start_matrix() {
     return
   fi
 
+  evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml.template
+
   # Generate secrets
   local registration_shared_secret=$(generate_secret 32)
   local macaroon_secret_key=$(generate_secret 64)
@@ -91,13 +93,14 @@ do_start_matrix() {
 
   echo "DEPLOYMENT_MATRIX_HTTP_PORT is set to: ${DEPLOYMENT_MATRIX_HTTP_PORT}"
   echo "DEPLOYMENT_MATRIX_HTTPS_PORT is set to: ${DEPLOYMENT_MATRIX_HTTPS_PORT}"
+
+  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   ${DOCKER_CMD} run \
     -d \
+    -v ${DEPLOYMENT_DIR}/matrix.log.config:/data/matrix.log.config:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
-    --env-file ${DEPLOYMENT_DIR}/matrix.log.config \
     --env-file ${DEPLOYMENT_DIR}/homeserver.yaml \
-    --env-file ${DEPLOYMENT_DIR}/secrets.yaml \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \
     --health-timeout=5s \
