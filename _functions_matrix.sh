@@ -3,8 +3,7 @@
 # Don't load it several times
 set +u
 
-# Ensure SCRIPT_DIR is initialized
-SCRIPT_DIR=${SCRIPT_DIR:-"."}
+
 # if the script was started from the base directory, then the
 # expansion returns a period
 if test "${SCRIPT_DIR}" == "."; then
