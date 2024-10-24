@@ -1218,6 +1218,7 @@ initialize_product_settings() {
    do_get_ldap_settings
    do_get_iframely_settings
    do_get_mailhog_settings
+   do_get_matrix_settings
    do_get_frontail_settings
    do_get_admin_mongo_settings
    do_get_keycloak_settings
@@ -1412,8 +1413,8 @@ do_init_empty_data(){
     do_create_iframely
   fi
   if ${DEPLOYMENT_MATRIX_ENABLED}; then
-    do_drop_iframely_data
-    do_create_iframely
+    do_drop_matrix_data
+    do_create_matrix
   fi
 
   do_init_empty_chat_database
@@ -2026,6 +2027,7 @@ do_start() {
   do_start_ldap
   do_start_iframely
   do_start_mailhog
+  do_start_matrix
   do_start_frontail
   do_start_keycloak
   do_start_jitsi
@@ -2309,6 +2311,7 @@ do_stop() {
       do_stop_ldap
       do_stop_iframely
       do_stop_mailhog
+      do_stop_matrix
       do_stop_frontail
       do_stop_phpldapadmin
       do_stop_admin_mongo
@@ -2356,6 +2359,7 @@ do_undeploy() {
     do_drop_ldap_data
     do_drop_iframely_data
     do_drop_mailhog_data
+    do_drop_matrix_data
     do_drop_frontail_data
     do_drop_keycloak_data
     do_drop_phpldapadmin_data
