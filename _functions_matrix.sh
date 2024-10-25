@@ -97,14 +97,12 @@ do_start_matrix() {
 #  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
-  docker run --rm -v ${DEPLOYMENT_DIR}/data:/data alpine \
-      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
+#  docker run --rm -v ${DEPLOYMENT_DIR}/data:/data alpine \
+#      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
-    -v ${DEPLOYMENT_DIR}/media_store:/data/media_store \
-    -v ${DEPLOYMENT_DIR}/data:/data \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
