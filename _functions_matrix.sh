@@ -99,6 +99,7 @@ do_start_matrix() {
 
   ${DOCKER_CMD} run \
     -d \
+    -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
