@@ -107,7 +107,6 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/data:/data \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
-    --user 991:991 \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \
     --health-timeout=5s \

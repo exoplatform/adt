@@ -22,7 +22,7 @@ listeners:
 database:
   name: sqlite3
   args:
-    database: DATADIR/homeserver.db
+    database: /data/homeserver.db
 media_store_path: /data/media_store
 registration_shared_secret: "U4mf8a4Nsm*#inyR;o4pFh~V,@U-JBYY#1KryurFx3T-~f_ahf"
 report_stats: true
