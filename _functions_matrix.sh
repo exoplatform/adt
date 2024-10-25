@@ -67,7 +67,7 @@ do_start_matrix() {
     return
   fi
 
-  evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/data/homeserver.yaml
+  evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml
 
   # Generate secrets
   local registration_shared_secret=$(generate_secret 32)
@@ -94,16 +94,19 @@ do_start_matrix() {
   echo "DEPLOYMENT_MATRIX_HTTP_PORT is set to: ${DEPLOYMENT_MATRIX_HTTP_PORT}"
   echo "DEPLOYMENT_MATRIX_HTTPS_PORT is set to: ${DEPLOYMENT_MATRIX_HTTPS_PORT}"
 
-#  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/data/matrix.log.config
-  cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/data/matrix.host.signing.key
+#  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
+  cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
 #  chown -R 991:991 "${DEPLOYMENT_DIR}/data"
 
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_DIR}/data:/data \
+    -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
+    -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
+    -v ${DEPLOYMENT_DIR}/media_store:/data/media_store \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
+    --user 991:991 \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \
     --health-timeout=5s \
