@@ -94,13 +94,12 @@ do_start_matrix() {
   echo "DEPLOYMENT_MATRIX_HTTP_PORT is set to: ${DEPLOYMENT_MATRIX_HTTP_PORT}"
   echo "DEPLOYMENT_MATRIX_HTTPS_PORT is set to: ${DEPLOYMENT_MATRIX_HTTPS_PORT}"
 
-  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
+#  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
-    -v ${DEPLOYMENT_DIR}/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/media_store:/data/media_store \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
