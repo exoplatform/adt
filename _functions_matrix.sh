@@ -97,7 +97,7 @@ do_start_matrix() {
 #  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
-  chown -R 991:991 "${DEPLOYMENT_DIR}/data"
+#  chown -R 991:991 "${DEPLOYMENT_DIR}/data"
 
   ${DOCKER_CMD} run \
     -d \
