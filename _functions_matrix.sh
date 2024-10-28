@@ -16,12 +16,11 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
-# Function to generate a random string of specified length
-echo "Begin Matrix script"
-generate_secret() {
-    local length=$1
-    echo "$(openssl rand -base64 $length | tr -dc 'a-zA-Z0-9' | cut -c1-$length)"
-}
+## Function to generate a random string of specified length
+#generate_secret() {
+#    local length=$1
+#    echo "$(openssl rand -base64 $length | tr -dc 'a-zA-Z0-9' | cut -c1-$length)"
+#}
 
 do_get_matrix_settings() {
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
@@ -70,9 +69,9 @@ do_start_matrix() {
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml
 
   # Generate secrets
-  local registration_shared_secret=$(generate_secret 32)
-  local macaroon_secret_key=$(generate_secret 64)
-  local form_secret=$(generate_secret 32)
+#  local registration_shared_secret=$(generate_secret 32)
+#  local macaroon_secret_key=$(generate_secret 64)
+#  local form_secret=$(generate_secret 32)
 
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
@@ -81,11 +80,11 @@ do_start_matrix() {
   ${DOCKER_CMD} pull ${DEPLOYMENT_MATRIX_IMAGE}
 
     # Create a temporary environment file for secrets
-    {
-      echo "REGISTRATION_SHARED_SECRET=${registration_shared_secret}"
-      echo "MACAROON_SECRET_KEY=${macaroon_secret_key}"
-      echo "FORM_SECRET=${form_secret}"
-    } > "${DEPLOYMENT_DIR}/temp_secrets.env"
+#    {
+#      echo "REGISTRATION_SHARED_SECRET=${registration_shared_secret}"
+#      echo "MACAROON_SECRET_KEY=${macaroon_secret_key}"
+#      echo "FORM_SECRET=${form_secret}"
+#    } > "${DEPLOYMENT_DIR}/temp_secrets.env"
 
   # Ensure that the DEPLOYMENT_MATRIX_HTTP_PORT and DEPLOYMENT_MATRIX_HTTPS_PORT are set
   DEPLOYMENT_MATRIX_HTTP_PORT="${DEPLOYMENT_MATRIX_HTTP_PORT:-8008}"
@@ -117,7 +116,7 @@ do_start_matrix() {
   echo_info "${DEPLOYMENT_MATRIX_CONTAINER_NAME} container started"
 
     # Clean up the temporary secrets file after starting the container
-    rm -f "${DEPLOYMENT_DIR}/temp_secrets.env"
+#    rm -f "${DEPLOYMENT_DIR}/temp_secrets.env"
 
   check_matrix_availability
 }
