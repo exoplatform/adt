@@ -140,7 +140,10 @@
     #iframely standalone
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
-
+    ProxyPass               /_matrix             http://localhost:8008/_matrix
+    ProxyPassReverse        /_matrix             http://localhost:8008/_matrix
+    ProxyPass               /_synapse            http://localhost:8008/_synapse
+    ProxyPassReverse        /_synapse            http://localhost:8008/_synapse
     # Forward request to OnlyOffice when the url start with the version scheme (see in side the Docker container for it)
     # ex: /v5.2.8-24/* OR /5.3.0-243/* 
     ProxyPassMatch    "^\/(v?[\d]+\.[\d]+\.[\d]+[\.|-][\d]+\/.*)$"      http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30

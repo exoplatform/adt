@@ -148,7 +148,10 @@
     #iframely standalone
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
-    
+    ProxyPass               /_matrix             http://localhost:8008/_matrix
+    ProxyPassReverse        /_matrix             http://localhost:8008/_matrix
+    ProxyPass               /_synapse            http://localhost:8008/_synapse
+    ProxyPassReverse        /_synapse            http://localhost:8008/_synapse
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on

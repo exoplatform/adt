@@ -113,6 +113,10 @@
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
+    ProxyPass               /_matrix             http://localhost:8008/_matrix
+    ProxyPassReverse        /_matrix             http://localhost:8008/_matrix
+    ProxyPass               /_synapse            http://localhost:8008/_synapse
+    ProxyPassReverse        /_synapse            http://localhost:8008/_synapse
 
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30
     ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/
