@@ -99,7 +99,7 @@ do_start_matrix() {
 
   docker run --rm -v ${DEPLOYMENT_DIR}/data:/data alpine \
 #      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
-      sh -c "mkdir -p /data/media_store"
+#      sh -c "mkdir -p /data/media_store"
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
