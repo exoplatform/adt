@@ -43,7 +43,7 @@ do_drop_matrix_data() {
 
 do_stop_matrix() {
   echo_info "Stopping matrix ..."
-  chown -R prdacc:prdacc ${DEPLOYMENT_DIR}/data/
+#  chown -R prdacc:prdacc ${DEPLOYMENT_DIR}/data/
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
     echo_info "matrix wasn't specified, skiping its server container shutdown"
     return
