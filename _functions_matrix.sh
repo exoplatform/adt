@@ -98,7 +98,8 @@ do_start_matrix() {
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
   docker run --rm -v ${DEPLOYMENT_DIR}/data:/data alpine \
-      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
+#      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
+      sh -c "mkdir -p /data/media_store"
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
