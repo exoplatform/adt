@@ -146,8 +146,8 @@
     <IfModule mod_proxy.c>
         # Proxying Matrix server traffic
         <LocationMatch "^(/_matrix/.*|/_synapse/.*|/.well-known/matrix/server)">
-            ProxyPass http://localhost:8008
-            ProxyPassReverse http://localhost:8008
+            ProxyPass http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}
+            ProxyPassReverse http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}
             RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}s"
             RequestHeader set X-Forwarded-Proto "%{SCHEME}s"
             RequestHeader set Host "%{HTTP_HOST}s"

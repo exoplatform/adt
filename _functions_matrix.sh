@@ -88,11 +88,11 @@ do_start_matrix() {
 #    } > "${DEPLOYMENT_DIR}/temp_secrets.env"
 
   # Ensure that the DEPLOYMENT_MATRIX_HTTP_PORT and DEPLOYMENT_MATRIX_HTTPS_PORT are set
-  DEPLOYMENT_MATRIX_HTTP_PORT="${DEPLOYMENT_MATRIX_HTTP_PORT:-8008}"
-  DEPLOYMENT_MATRIX_HTTPS_PORT="${DEPLOYMENT_MATRIX_HTTPS_PORT:-8448}"
-
-  echo "DEPLOYMENT_MATRIX_HTTP_PORT is set to: ${DEPLOYMENT_MATRIX_HTTP_PORT}"
-  echo "DEPLOYMENT_MATRIX_HTTPS_PORT is set to: ${DEPLOYMENT_MATRIX_HTTPS_PORT}"
+#  DEPLOYMENT_MATRIX_HTTP_PORT="${DEPLOYMENT_MATRIX_HTTP_PORT:-8008}"
+#  DEPLOYMENT_MATRIX_HTTPS_PORT="${DEPLOYMENT_MATRIX_HTTPS_PORT:-8448}"
+#
+#  echo "DEPLOYMENT_MATRIX_HTTP_PORT is set to: ${DEPLOYMENT_MATRIX_HTTP_PORT}"
+#  echo "DEPLOYMENT_MATRIX_HTTPS_PORT is set to: ${DEPLOYMENT_MATRIX_HTTPS_PORT}"
 
 #  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
@@ -105,8 +105,8 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/media_store:/data/media_store \
     -v ${DEPLOYMENT_DIR}/data:/data \
-    -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
-    -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
+    -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:${DEPLOYMENT_MATRIX_HTTP_PORT}" \
+    -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:${DEPLOYMENT_MATRIX_HTTPS_PORT}" \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \
     --health-timeout=5s \
