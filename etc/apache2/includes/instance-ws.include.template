@@ -142,8 +142,32 @@
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
 
-    ProxyPassMatch    "^/_matrix/client/(.*)$"                          http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix/client/$1
-    ProxyPassMatch    "^/_synapse/(.*)$"                                http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse/$1
+    # Matrix configuration
+    <IfModule mod_proxy.c>
+        # Proxying Matrix server traffic
+        <LocationMatch "^(/_matrix/.*|/_synapse/.*|/.well-known/matrix/server)">
+            ProxyPass http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}
+            ProxyPassReverse http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}
+            RequestHeader set X-Forwarded-For "%{REMOTE_ADDR}s"
+            RequestHeader set X-Forwarded-Proto "%{SCHEME}s"
+            RequestHeader set Host "%{HTTP_HOST}s"
+            LimitRequestBody 52428800
+            ProxyPreserveHost On
+            ProxyVia On
+            ProxyRequests Off
+        </LocationMatch>
+
+        # Handling /.well-known/matrix/ directory
+        <LocationMatch "^(/.well-known/matrix/)">
+            Alias /srv/matrix/
+            SetHandler default-handler
+            Header set Content-Type "application/json"
+            Header always set Access-Control-Allow-Origin "https://app.element.io"
+            Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+            Header always set Access-Control-Allow-Headers "Origin, Content-Type, Accept"
+            Header always set Access-Control-Max-Age "1728000"
+        </LocationMatch>
+    </IfModule>
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
