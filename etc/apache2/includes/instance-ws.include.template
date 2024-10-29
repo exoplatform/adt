@@ -141,6 +141,10 @@
     #iframely standalone
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    # Proxy for Matrix paths
+    RedirectMatch           /_matrix             https://matrix-dev.exoplatform.org/_matrix
+    # Proxy for synapse paths
+    RedirectMatch               /_synapse            https://matrix-dev.exoplatform.org/_synapse
     
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13

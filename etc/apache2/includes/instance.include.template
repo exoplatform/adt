@@ -107,7 +107,13 @@
     ProxyPass               /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPassReverse        /lang/               http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/
     ProxyPass               /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
-    ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind  
+    ProxyPassReverse        /http-bind           http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind
+    # Proxy for Matrix paths
+    ProxyPass               /_matrix             https://matrix-dev.exoplatform.org/_matrix
+    ProxyPassReverse        /_matrix             https://matrix-dev.exoplatform.org/_matrix
+    # Proxy for synapse paths
+    ProxyPass               /_synapse            https://matrix-dev.exoplatform.org/_synapse
+    ProxyPassReverse        /_synapse            https://matrix-dev.exoplatform.org/_synapse
     #iframely standalone
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed

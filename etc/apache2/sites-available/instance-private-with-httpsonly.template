@@ -2,13 +2,6 @@
     ServerName  ${DEPLOYMENT_EXT_HOST}
     ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
 
-    # Proxy for Matrix paths
-    ProxyPass "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
-    ProxyPassReverse "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
-    # Proxy for synapse paths
-    ProxyPass "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
-    ProxyPassReverse "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
-
     RewriteEngine On 
     RewriteCond %{HTTPS}  !=on 
     RewriteRule ^/?(.*) https://%{SERVER_NAME}/$1 [R,L] 
@@ -22,13 +15,6 @@
     AllowEncodedSlashes NoDecode
     ProxyPreserveHost On
     Include ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-
-    # Proxy for Matrix paths
-    ProxyPass "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
-    ProxyPassReverse "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
-    # Proxy for synapse paths
-    ProxyPass "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
-    ProxyPassReverse "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
 
     # No security for gadgets
     <ProxyMatch "^.*/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)/.*$">
