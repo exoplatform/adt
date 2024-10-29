@@ -2,6 +2,13 @@
     ServerName  ${DEPLOYMENT_EXT_HOST}
     ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
 
+    # Proxy for Matrix paths
+    ProxyPass "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
+    ProxyPassReverse "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
+    # Proxy for synapse paths
+    ProxyPass "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
+    ProxyPassReverse "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
+
     <LocationMatch "^/logs/.*">
         Require all denied
         AuthName "eXo Employees only"
@@ -122,6 +129,13 @@
     ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
 
     RequestHeader set X-Forwarded-Proto "https"
+
+    # Proxy for Matrix paths
+    ProxyPass "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
+    ProxyPassReverse "/_matrix" "https://matrix-dev.exoplatform.org/_matrix"
+    # Proxy for synapse paths
+    ProxyPass "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
+    ProxyPassReverse "/_synapse" "https://matrix-dev.exoplatform.org/_synapse"
 
     <LocationMatch "^/elasticsearch.*">
         Require all denied
