@@ -148,10 +148,11 @@
      #iframely standalone
      ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
      ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
-     ProxyPass               "/_matrix"   "https://matrix-dev.exoplatform.org/_matrix"
-     ProxyPassReverse        "/_matrix"   "https://matrix-dev.exoplatform.org/_matrix"
-     ProxyPass               "/_synapse"  "https://matrix-dev.exoplatform.org/_synapse"
-     ProxyPassReverse        "/_synapse"  "https://matrix-dev.exoplatform.org/_synapse"
+     ProxyPass               "/_matrix"          "https://matrix-dev.exoplatform.org/_matrix"
+     ProxyPassReverse        "/_matrix"          "https://matrix-dev.exoplatform.org/_matrix"
+     ProxyPass               "/_synapse"         "https://matrix-dev.exoplatform.org/_synapse"
+     ProxyPassReverse        "/_synapse"         "https://matrix-dev.exoplatform.org/_synapse"
+     LogLevel debug
 
 
     # Forward request to OnlyOffice when the url start with the version scheme (see in side the Docker container for it)
