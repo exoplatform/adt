@@ -16,12 +16,6 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
-## Function to generate a random string of specified length
-#generate_secret() {
-#    local length=$1
-#    echo "$(openssl rand -base64 $length | tr -dc 'a-zA-Z0-9' | cut -c1-$length)"
-#}
-
 do_get_matrix_settings() {
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
     return;
@@ -43,7 +37,6 @@ do_drop_matrix_data() {
 
 do_stop_matrix() {
   echo_info "Stopping matrix ..."
-#  chown -R prdacc:prdacc ${DEPLOYMENT_DIR}/data/
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
     echo_info "matrix wasn't specified, skiping its server container shutdown"
     return
@@ -69,30 +62,11 @@ do_start_matrix() {
 
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml
 
-  # Generate secrets
-#  local registration_shared_secret=$(generate_secret 32)
-#  local macaroon_secret_key=$(generate_secret 64)
-#  local form_secret=$(generate_secret 32)
-
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
   ${DOCKER_CMD} pull ${DEPLOYMENT_MATRIX_IMAGE}
-
-    # Create a temporary environment file for secrets
-#    {
-#      echo "REGISTRATION_SHARED_SECRET=${registration_shared_secret}"
-#      echo "MACAROON_SECRET_KEY=${macaroon_secret_key}"
-#      echo "FORM_SECRET=${form_secret}"
-#    } > "${DEPLOYMENT_DIR}/temp_secrets.env"
-
-  # Ensure that the DEPLOYMENT_MATRIX_HTTP_PORT and DEPLOYMENT_MATRIX_HTTPS_PORT are set
-#  DEPLOYMENT_MATRIX_HTTP_PORT="${DEPLOYMENT_MATRIX_HTTP_PORT:-8008}"
-#  DEPLOYMENT_MATRIX_HTTPS_PORT="${DEPLOYMENT_MATRIX_HTTPS_PORT:-8448}"
-#
-#  echo "DEPLOYMENT_MATRIX_HTTP_PORT is set to: ${DEPLOYMENT_MATRIX_HTTP_PORT}"
-#  echo "DEPLOYMENT_MATRIX_HTTPS_PORT is set to: ${DEPLOYMENT_MATRIX_HTTPS_PORT}"
 
 #  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
@@ -116,8 +90,6 @@ do_start_matrix() {
 
   echo_info "${DEPLOYMENT_MATRIX_CONTAINER_NAME} container started"
 
-    # Clean up the temporary secrets file after starting the container
-#    rm -f "${DEPLOYMENT_DIR}/temp_secrets.env"
 
   check_matrix_availability
 }
