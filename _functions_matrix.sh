@@ -76,8 +76,8 @@ do_start_matrix() {
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
   #Change Matrix data directory to 991
-#  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-#  sh -c "chown -R 991:991 /data"
+  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
+  sh -c "chown -R 991:991 /data"
 
   ${DOCKER_CMD} run \
     -d \
