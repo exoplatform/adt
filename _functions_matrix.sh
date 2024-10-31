@@ -28,6 +28,8 @@ do_drop_matrix_data() {
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ] ; then
     echo_info "Drops matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
+    echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
+    delete_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
     echo_info "Done."
     echo_info "matrix data dropped"
   else
@@ -47,9 +49,11 @@ do_stop_matrix() {
 
 do_create_matrix() {
   if ! ${DEPLOYMENT_MATRIX_EMBEDDED}; then
-    echo_info "Creation of the MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
-    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
-    echo_info "MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} created"
+#    echo_info "Creation of the MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
+#    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
+#    echo_info "MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} created"
+    echo_info "Creation of the Matrix Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
+    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
   fi
 }
 
@@ -71,14 +75,14 @@ do_start_matrix() {
 #  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
-  docker run --rm -v ${DEPLOYMENT_DIR}/data:/data alpine \
-      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
+#  docker run --rm -v ${DEPLOYMENT_DIR}/data:/data alpine \
+#      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/media_store:/data/media_store \
-    -v ${DEPLOYMENT_DIR}/data:/data \
+    -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
