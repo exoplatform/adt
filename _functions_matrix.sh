@@ -48,7 +48,7 @@ do_stop_matrix() {
 }
 
 do_create_matrix() {
-  if ! ${DEPLOYMENT_MATRIX_EMBEDDED}; then
+  if ! ${DEPLOYMENT_MATRIX_ENABLED}; then
 #    echo_info "Creation of the MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
 #    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
 #    echo_info "MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} created"
@@ -74,9 +74,6 @@ do_start_matrix() {
 
 #  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
-
-  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-  sh -c "chown -R 991:991 /data"
 
 #  docker run --rm -v ${DEPLOYMENT_DIR}/data:/data alpine \
 #      sh -c "mkdir -p /data/media_store && chown -R 991:991 /data"
