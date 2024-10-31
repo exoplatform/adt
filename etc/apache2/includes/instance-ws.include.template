@@ -141,6 +141,7 @@
     #iframely standalone
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    #RedirectMatch           /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}
 
     # Matrix configuration
     <IfModule mod_proxy.c>
