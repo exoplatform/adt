@@ -48,6 +48,7 @@ do_stop_matrix() {
 }
 
 do_create_matrix() {
+    echo_info "Creation of the Matrix Docker volume Test ..."
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ]; then
 #    echo_info "Creation of the MATRIX Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
 #    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
