@@ -153,4 +153,3 @@
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/
 
-    </If>
