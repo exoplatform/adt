@@ -16,13 +16,15 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
+DEPLOYMENT_MATRIX_CONTAINER_NAME="${DEPLOYMENT_MATRIX_ENABLED}"
+
 do_get_matrix_settings() {
   if ! ${DEPLOYMENT_MATRIX_ENABLED:-false} ; then
     return;
   fi
   env_var DEPLOYMENT_MATRIX_CONTAINER_NAME "${INSTANCE_KEY}_matrix"
 }
-echo_info "the Value of container Matrix is : ${DEPLOYMENT_MATRIX_CONTAINER_NAME}"
+
 do_drop_matrix_data() {
   echo_info "Dropping matrix data ..."
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ] ; then
