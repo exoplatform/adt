@@ -80,6 +80,7 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/media_store:/data/media_store \
+    -v ${DEPLOYMENT_DIR}/client:/data/client:ro \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
