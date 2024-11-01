@@ -146,6 +146,9 @@
     ProxyPassReverse        /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix
     ProxyPass               /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
     ProxyPassReverse        /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
+    # Matrix well-known for client & server
+  	ProxyPass               /.well-known/matrix  http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/.well-known/matrix nocanon
+   	ProxyPassReverse        /.well-known/matrix  http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/.well-known/matrix nocanon
 
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
