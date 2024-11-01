@@ -22,7 +22,7 @@ do_get_matrix_settings() {
   fi
   env_var DEPLOYMENT_MATRIX_CONTAINER_NAME "${INSTANCE_KEY}_matrix"
 }
-
+echo_info "the Value of container Matrix is : ${DEPLOYMENT_MATRIX_CONTAINER_NAME}"
 do_drop_matrix_data() {
   echo_info "Dropping matrix data ..."
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ] ; then
