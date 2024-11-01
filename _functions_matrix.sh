@@ -66,12 +66,12 @@ do_start_matrix() {
 
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml
   evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/client
-  if sudo chown www-data:www-data ${DEPLOYMENT_DIR}/client; then
+  if  chown www-data:www-data ${DEPLOYMENT_DIR}/client; then
       echo_info "Ownership changed successfully."
   else
       echo_error "Failed to change ownership."
   fi
-  sudo chmod 644 ${DEPLOYMENT_DIR}/client
+  chmod 644 ${DEPLOYMENT_DIR}/client
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name
