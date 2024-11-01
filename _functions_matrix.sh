@@ -17,7 +17,7 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
 fi
 
 do_get_matrix_settings() {
-  if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
+  if ! ${DEPLOYMENT_MATRIX_ENABLED:-false} ; then
     return;
   fi
   env_var DEPLOYMENT_MATRIX_CONTAINER_NAME "${INSTANCE_KEY}_matrix"
