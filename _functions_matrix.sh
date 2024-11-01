@@ -83,7 +83,7 @@ do_start_matrix() {
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/homeserver.yaml:/data/homeserver.yaml:ro \
-    -v ${DEPLOYMENT_DIR}/client:/data/client.yaml:ro \
+    -v ${DEPLOYMENT_DIR}/client:/data/client:ro \
     -v ${DEPLOYMENT_DIR}/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
