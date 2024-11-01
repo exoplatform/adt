@@ -37,6 +37,7 @@ jwt_config:
   algorithm: "HS256"
 enable_registration: true
 enable_registration_without_verification: true
+enable_3pid_changes: true
 default_power_level_content_override:
   private_chat:
     "events":
