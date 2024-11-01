@@ -46,7 +46,7 @@ do_create_matrix() {
 
 do_stop_matrix() {
   echo_info "Stopping matrix ..."
-  if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
+  if ! ${DEPLOYMENT_MATRIX_ENABLED}; then
     echo_info "matrix wasn't specified, skiping its server container shutdown"
     return
   fi
