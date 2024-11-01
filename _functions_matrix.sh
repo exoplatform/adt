@@ -37,6 +37,13 @@ do_drop_matrix_data() {
   fi
 }
 
+do_create_matrix() {
+  if ${DEPLOYMENT_MATRIX_ENABLED}; then
+    echo_info "Creation of the Matrix Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
+    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
+  fi
+}
+
 do_stop_matrix() {
   echo_info "Stopping matrix ..."
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "false" ] ; then
@@ -45,13 +52,6 @@ do_stop_matrix() {
   fi
   ensure_docker_container_stopped ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
   echo_info "matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} stopped."
-}
-
-do_create_matrix() {
-  if ${DEPLOYMENT_MATRIX_ENABLED}; then
-    echo_info "Creation of the Matrix Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
-    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
-  fi
 }
 
 do_start_matrix() {
