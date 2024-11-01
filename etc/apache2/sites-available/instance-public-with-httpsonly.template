@@ -155,8 +155,8 @@
     BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
 
     # Mount Matrix client file config in apache well-known
-    Alias /.well-known/matrix/client ${DEPLOYMENT_DIR}/client
-    <Directory "${DEPLOYMENT_DIR}/client">
+    Alias /.well-known/matrix/client /srv/adt/conf/apache/conf.d/client
+    <Directory "/srv/adt/conf/apache/conf.d/client">
         Options None
         AllowOverride None
         Require all granted

@@ -65,20 +65,14 @@ do_start_matrix() {
   fi
 
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml
-  evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/client
-  if  chown www-data:www-data ${DEPLOYMENT_DIR}/client; then
-      echo_info "Ownership changed successfully."
-  else
-      echo_error "Failed to change ownership."
-  fi
-  chmod 644 ${DEPLOYMENT_DIR}/client
+  #evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/client
+  evaluate_file_content ${ETC_DIR}/matrix/client.template /srv/adt/conf/apache/conf.d/client
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
   ${DOCKER_CMD} pull ${DEPLOYMENT_MATRIX_IMAGE}
 
-#  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix.log.config
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix.host.signing.key
 
   #Change Matrix data directory to 991
