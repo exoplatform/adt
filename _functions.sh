@@ -328,6 +328,11 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
 
+      # Matrix
+      configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
+      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse"
+      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.108.0"
+
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "mthenw/frontail"
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "latest"
@@ -379,10 +384,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
-
-      # Matrix
-      env_var "DEPLOYMENT_MATRIX_ENABLED" false
-      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse:v1.108.0"
 
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""

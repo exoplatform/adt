@@ -89,7 +89,8 @@ do_start_matrix() {
     --health-timeout=5s \
     --health-retries=3 \
     --health-start-period=5s \
-    --name ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ${DEPLOYMENT_MATRIX_IMAGE}
+    --name ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ${DEPLOYMENT_MATRIX_IMAGE}:${DEPLOYMENT_MATRIX_IMAGE_VERSION}
+
 
   echo_info "${DEPLOYMENT_MATRIX_CONTAINER_NAME} container started"
 
