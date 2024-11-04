@@ -155,16 +155,13 @@
     BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
 
     # Mount Matrix client file config in apache well-known
-     Alias "/.well-known/matrix/" "${DEPLOYMENT_DIR}/client"
-     <Location "/.well-known/matrix/">
-         Options FollowSymLinks
-         AllowOverride None
-         Require all granted
-         Header set Content-Type application/json
-         Header always set Access-Control-Allow-Origin "https://app.element.io"
-         Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-         Header always set Access-Control-Allow-Headers "Origin, Content-Type, Accept"
-         Header always set Access-Control-Max-Age "1728000"
-     </Location>
+	Alias /.well-known/matrix/client ${DEPLOYMENT_DIR}/client
+	<Files "${DEPLOYMENT_DIR}/client">
+		Require all granted
+	</Files>
+	<Location "/.well-known/matrix/client">
+		Header always set Content-Type "application/json"
+		Header always set Access-Control-Allow-Origin "*"
+	</Location>
 
 </VirtualHost>
