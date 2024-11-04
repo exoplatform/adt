@@ -1553,10 +1553,15 @@ do_configure_apache() {
   unset DOMAIN
   echo_info "Done."
 
+  echo_info "Configure and update Matrix client well-known endpoint..."
+  mkdir -p ${MATRIX_CONF_DIR}
+  # Generate configuration for Matrix client at .well-known/matrix/client
+  evaluate_file_content ${ETC_DIR}/matrix/client.template ${MATRIX_CONF_DIR}/client
+
   # Auto extract domain name
   if [ ! -z "${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" ] && [ -z "${INSTANCE_DOMAIN:-}" ]; then
     env_var "INSTANCE_DOMAIN" "$(echo ${DEPLOYMENT_APACHE_VHOST_ALIAS} | cut -d'.' -f2,3)"
-  fi  
+  fi
   
   # Selct Certificate according to the domain name
   case ${INSTANCE_DOMAIN:-} in
