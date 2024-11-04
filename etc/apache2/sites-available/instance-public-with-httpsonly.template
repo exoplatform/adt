@@ -27,7 +27,7 @@
             AuthLDAPMaxSubGroupDepth 1
         </RequireAll>
     </LocationMatch>
-    <LocationMatch "${MATRIX_CONF_DIR}.*">
+    <LocationMatch "^/.well-known/matrix/.*">
         Options None
         AllowOverride None
         Require all granted
