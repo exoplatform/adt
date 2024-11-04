@@ -49,7 +49,7 @@
         Allow from all
     </Directory>
 
-	Alias /.well-known/matrix/ /srv/adt/conf/matrix/.well-known/matrix/
+	Alias /.well-known/matrix/ "/srv/adt/conf/matrix/.well-known/matrix/"
     <Directory "/srv/adt/conf/matrix/.well-known/matrix/">
         Options Indexes MultiViews
         AllowOverride None
