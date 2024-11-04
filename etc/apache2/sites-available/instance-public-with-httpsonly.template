@@ -27,7 +27,7 @@
             AuthLDAPMaxSubGroupDepth 1
         </RequireAll>
     </LocationMatch>
-    <LocationMatch "^/.well-known/*">
+    <LocationMatch "^/.well-known/matrix/client">
         Options None
         AllowOverride None
         Require all granted
