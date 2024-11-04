@@ -49,6 +49,13 @@
         Allow from all
     </Directory>
 
+	Alias /.well-known/matrix/client /srv/adt/conf/matrix/.well-known/matrix/client
+    <Directory "/srv/adt/conf/matrix/.well-known/matrix/client">
+        Options Indexes MultiViews
+        AllowOverride None
+        Allow from all
+    </Directory>
+
     RewriteEngine on 
     RewriteRule ^/mailhog$ /mailhog/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
