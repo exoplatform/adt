@@ -16,8 +16,6 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
-DEPLOYMENT_MATRIX_CONTAINER_NAME="${DEPLOYMENT_MATRIX_ENABLED}"
-
 do_get_matrix_settings() {
   if ! ${DEPLOYMENT_MATRIX_ENABLED:-false} ; then
     return;
