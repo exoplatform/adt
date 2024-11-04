@@ -36,7 +36,7 @@
         Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
         Header always set Access-Control-Allow-Headers "Origin, Content-Type, Accept"
         Header always set Access-Control-Max-Age "1728000"
-    </Directory>
+    </LocationMatch>
     <LocationMatch "^/elasticsearch.*">
         Require all denied
         AuthName "eXo Employees only"
