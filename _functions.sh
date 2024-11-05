@@ -1554,9 +1554,9 @@ do_configure_apache() {
   echo_info "Done."
 
   echo_info "Configure and update Matrix client well-known endpoint..."
-  mkdir -p ${MATRIX_CONF_DIR}
+  mkdir -p ${MATRIX_CONF_DIR}/${DEPLOYMENT_APACHE_VHOST_ALIAS}/
   # Generate configuration for Matrix client at .well-known/matrix/client
-  evaluate_file_content ${ETC_DIR}/matrix/client.template ${MATRIX_CONF_DIR}/client
+  evaluate_file_content ${ETC_DIR}/matrix/client.template ${MATRIX_CONF_DIR}/${DEPLOYMENT_APACHE_VHOST_ALIAS}/client
 
   # Auto extract domain name
   if [ ! -z "${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" ] && [ -z "${INSTANCE_DOMAIN:-}" ]; then

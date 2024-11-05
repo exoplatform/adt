@@ -53,7 +53,6 @@ if [ -d ${ADT_DATA} ]; then
   popd > /dev/null
 fi
 echo_info "ADT_DATA = ${ADT_DATA}"
-echo_info "the Vhost Matrix is DEPLOYMENT_APACHE_VHOST_ALIAS = ${DEPLOYMENT_APACHE_VHOST_ALIAS}"
 # Create ADT_DATA if required
 mkdir -p ${ADT_DATA}
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
