@@ -331,7 +331,7 @@ initialize_product_settings() {
       # Matrix
       configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse"
-      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.108.0"
+      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
 
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "mthenw/frontail"
