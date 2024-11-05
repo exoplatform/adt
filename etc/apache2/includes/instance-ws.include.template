@@ -49,8 +49,8 @@
         Allow from all
     </Directory>
 
-	Alias /.well-known/matrix/ "${MATRIX_CONF_DIR}${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
-    <Directory "${MATRIX_CONF_DIR}${DEPLOYMENT_APACHE_VHOST_ALIAS}/">
+	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}"
+    <Directory "${DEPLOYMENT_DIR}">
         Options Indexes MultiViews
         AllowOverride None
         Allow from all
