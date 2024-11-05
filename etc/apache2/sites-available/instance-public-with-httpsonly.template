@@ -27,7 +27,16 @@
             AuthLDAPMaxSubGroupDepth 1
         </RequireAll>
     </LocationMatch>
-
+    <LocationMatch "^/.well-known/matrix/.*">
+        Options None
+        AllowOverride None
+        Require all granted
+        Header set Content-Type application/json
+        Header always set Access-Control-Allow-Origin "https://app.element.io"
+        Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+        Header always set Access-Control-Allow-Headers "Origin, Content-Type, Accept"
+        Header always set Access-Control-Max-Age "1728000"
+    </LocationMatch>
     <LocationMatch "^/elasticsearch.*">
         Require all denied
         AuthName "eXo Employees only"
@@ -153,5 +162,4 @@
         downgrade-1.0 force-response-1.0
     # MSIE 7 and newer should be able to use keepalive
     BrowserMatch "MSIE [17-9]" ssl-unclean-shutdown
-
 </VirtualHost>
