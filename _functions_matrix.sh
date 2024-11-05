@@ -60,9 +60,9 @@ do_start_matrix() {
     echo_info "matrix not specified, skiping its containers startup"
     return
   fi
-
+  mkdir -p ${DEPLOYMENT_DIR}/matrix
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/homeserver.yaml
-  evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/client
+  evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/matrix/client
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name

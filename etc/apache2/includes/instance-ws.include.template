@@ -49,8 +49,8 @@
         Allow from all
     </Directory>
 
-	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}"
-    <Directory "${DEPLOYMENT_DIR}">
+	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}/matrix/"
+    <Directory "${DEPLOYMENT_DIR}/matrix/">
         Options Indexes MultiViews
         AllowOverride None
         Allow from all
