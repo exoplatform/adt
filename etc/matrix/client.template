@@ -1,0 +1,8 @@
+{
+  "m.homeserver": {
+    "base_url": "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}"
+  },
+  "io.element.e2ee": {
+    "default": false
+  }
+}

@@ -55,7 +55,6 @@ fi
 echo_info "ADT_DATA = ${ADT_DATA}"
 # Create ADT_DATA if required
 mkdir -p ${ADT_DATA}
-
 env_var "TMP_DIR" "${ADT_DATA}/tmp"
 export TMPDIR=${TMP_DIR}
 env_var "DL_DIR" "${ADT_DATA}/downloads"

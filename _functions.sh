@@ -33,6 +33,7 @@ source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_iframely.sh"
 source "${SCRIPT_DIR}/_functions_mailhog.sh"
+source "${SCRIPT_DIR}/_functions_matrix.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_adminmongo.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
@@ -327,6 +328,11 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
       configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
 
+      # Matrix
+      configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
+      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse"
+      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
+
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "mthenw/frontail"
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "latest"
@@ -342,7 +348,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "24.2.0-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "24.2.4-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
@@ -378,7 +384,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
-
 
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
@@ -1214,6 +1219,7 @@ initialize_product_settings() {
    do_get_ldap_settings
    do_get_iframely_settings
    do_get_mailhog_settings
+   do_get_matrix_settings
    do_get_frontail_settings
    do_get_admin_mongo_settings
    do_get_keycloak_settings
@@ -1407,6 +1413,11 @@ do_init_empty_data(){
     do_drop_iframely_data
     do_create_iframely
   fi
+  if ${DEPLOYMENT_MATRIX_ENABLED}; then
+    do_drop_matrix_data
+    do_create_matrix
+  fi
+
   do_init_empty_chat_database
 
   do_drop_es_data
@@ -1545,7 +1556,7 @@ do_configure_apache() {
   # Auto extract domain name
   if [ ! -z "${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" ] && [ -z "${INSTANCE_DOMAIN:-}" ]; then
     env_var "INSTANCE_DOMAIN" "$(echo ${DEPLOYMENT_APACHE_VHOST_ALIAS} | cut -d'.' -f2,3)"
-  fi  
+  fi
   
   # Selct Certificate according to the domain name
   case ${INSTANCE_DOMAIN:-} in
@@ -1794,6 +1805,10 @@ do_deploy() {
   env_var "DEPLOYMENT_JITSI_JVB_COLIBRI_PORT" "${DEPLOYMENT_PORT_PREFIX}86"
   env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT" "${DEPLOYMENT_PORT_PREFIX}87"
 
+  # Matrix port
+  env_var "DEPLOYMENT_MATRIX_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}47"
+  env_var "DEPLOYMENT_MATRIX_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}48"
+
   # SFTP port
   env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
   
@@ -2013,6 +2028,7 @@ do_start() {
   do_start_ldap
   do_start_iframely
   do_start_mailhog
+  do_start_matrix
   do_start_frontail
   do_start_keycloak
   do_start_jitsi
@@ -2296,6 +2312,7 @@ do_stop() {
       do_stop_ldap
       do_stop_iframely
       do_stop_mailhog
+      do_stop_matrix
       do_stop_frontail
       do_stop_phpldapadmin
       do_stop_admin_mongo
@@ -2343,6 +2360,7 @@ do_undeploy() {
     do_drop_ldap_data
     do_drop_iframely_data
     do_drop_mailhog_data
+    do_drop_matrix_data
     do_drop_frontail_data
     do_drop_keycloak_data
     do_drop_phpldapadmin_data
