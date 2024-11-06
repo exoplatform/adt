@@ -174,6 +174,7 @@ function getRepositories()
         "gamification-evm" => "Gamification EVM",
         "pwa" => "Progressive Web App",
         "ide" => "Integrated Dev Env",
+        "deeds-tenant " => "Deeds Tenant",
         "addons-manager" => "Addons Manager",
         "meeds" => "Meeds Distribution",
         "maven-exo-depmgt-pom" => "DEPMGT POM EXO",
@@ -229,6 +230,7 @@ function getModuleCiPrefix($item)
         "gamification-evm" => "meeds-addon-",
         "pwa" => "meeds-addon-",
         "ide" => "meeds-addon-",
+        "deeds-tenant " => "meeds-addon-",
         "automatic-translation" => "addon-",
         "gatein-wci" => "meeds-",
         "kernel" => "meeds-",
@@ -404,6 +406,7 @@ function getTranslationBranches($projects)
       "gamification-evm" => true,
       "pwa" => true,
       "ide" => true,
+      "deeds-tenant " => true,
       "automatic-translation" => true,
       "documents" => true,
       "ecms" => true,
@@ -617,7 +620,7 @@ function getLocalAcceptanceInstances()
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '7.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-content / meeds-pwa / meeds-ide";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-content / meeds-pwa  / meeds-ide / meeds-deeds-tenant";
               break;
             case '1.5.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter";
