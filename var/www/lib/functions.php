@@ -1542,10 +1542,10 @@ function getGitBaseBranchToCompareWith($org, $repo, $branch)
     "feature/mips" => "develop"
   );
 
-  if(isset($fbBaseBranch[$branch])) {
-    return $fbBaseBranch[$branch];
-  }
   if (strtolower($org) == "meeds-io") {
+    if(isset($fbBaseBranch[$branch])) {
+      return $fbBaseBranch[$branch];
+    }
     return "develop-exo";
   }
   return 'develop';
