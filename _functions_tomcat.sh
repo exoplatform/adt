@@ -154,17 +154,6 @@ do_configure_tomcat_jod() {
   fi
 }
 
-do_configure_tomcat_ldap() {  
-  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ] && ! grep -qP "^(1|6)." <<< "${PRODUCT_VERSION}"; then
-    echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."      
-    mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/portal/portal
-    cp ${ETC_DIR}/gatein/portal/portal/configuration.xml ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/configuration.xml
-    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/idm-configuration.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/idm-configuration.xml
-    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml
-    echo_info "End Deploying Directory ${USER_DIRECTORY} conf ..."    
-  fi
-}
-
 do_configure_tomcat_datasources() {
   local DEPLOYMENT_APPSRV_MAJOR_VERSION=$(echo ${DEPLOYMENT_APPSRV_VERSION} | cut -d '.' -f1)
   case ${DEPLOYMENT_DB_TYPE} in
@@ -435,7 +424,6 @@ do_configure_tomcat_server() {
   fi
   do_configure_tomcat_email
   do_configure_tomcat_jod
-  do_configure_tomcat_ldap
 
   # Install the addons manager
   # Addon manager is needed to install jdbc driver
