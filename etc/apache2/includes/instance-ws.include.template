@@ -85,8 +85,9 @@
         <Location "/mailhog/">
             RewriteCond %{HTTP:Connection} Upgrade [NC]
             RewriteCond %{HTTP:Upgrade} websocket [NC]
-            RewriteRule /mailhog/api/v2/websocket(.*) ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket$1  [P,L]
+            RewriteRule ^/mailhog/api/v2/websocket(.*) ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket$1 [P,L]
             ProxyPass http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+            ProxyPassReverse http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
         </Location>
             
         <Location "/livelogs/">
