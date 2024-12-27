@@ -52,7 +52,7 @@
         </RequireAll>
     </LocationMatch>
 
-    <LocationMatch "^/mailhog.*">
+    <LocationMatch "^/mailpit.*">
         Require all denied
         AuthName "eXo Employees only"
         AuthType Basic
