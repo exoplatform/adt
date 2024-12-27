@@ -57,7 +57,7 @@
     </Location>
 
     RewriteEngine on 
-    RewriteRule ^/mailhog$ /mailhog/ [R]
+    RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
 
@@ -81,11 +81,11 @@
     <IfModule mod_proxy_wstunnel.c>
         ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
         
-        <Location "/mailhog/">
+        <Location "/mailpit/">
             RewriteCond %{HTTP:Connection} Upgrade [NC]
             RewriteCond %{HTTP:Upgrade} websocket [NC]
-            RewriteRule /mailhog/api/v2/websocket(.*) ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket$1  [P,L]
-            ProxyPass http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+            ProxyPass http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
+            ProxyPassReverse http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
         </Location>
             
         <Location "/livelogs/">
@@ -148,7 +148,6 @@
     #iframely standalone
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
-    
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
