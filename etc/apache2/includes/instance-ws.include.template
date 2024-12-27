@@ -82,11 +82,11 @@
     <IfModule mod_proxy_wstunnel.c>
         ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
         
-        <Location "/mailpit/">
-            RewriteCond %{HTTP:Connection} Upgrade [NC]
-            RewriteCond %{HTTP:Upgrade} websocket [NC]
-            ProxyPass http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
-            ProxyPassReverse http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
+        <Location "/mailpit/api/events">
+            ProxyPass "ws://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/api/events"
+            ProxyPassReverse "ws://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/api/events"
+            RequestHeader set Upgrade "websocket"
+            RequestHeader set Connection "upgrade"
         </Location>
             
         <Location "/livelogs/">
@@ -149,6 +149,9 @@
     #iframely standalone
     ProxyPass               /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
     ProxyPassReverse        /oembed              http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed
+    # Mailpit
+    ProxyPass               /mailpit/              http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
+    ProxyPassReverse        /mailpit/              http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
     # Matrix
     ProxyPass               /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix
     ProxyPassReverse        /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix
