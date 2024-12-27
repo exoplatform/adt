@@ -647,10 +647,10 @@ function componentDeploymentActions ($deployment_descriptor) {
     $content.=' | <a href="http://'.$deploymentURL.'/elasticsearch" rel="tooltip" title="Elasticsearch">';
     $content.='<img src="/images/elastic.svg" width="16" height="16" alt="elasticsearch" class="icon"/></a>';
   }
-  // Mailhog access
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_MAILHOG_ENABLED') && $deployment_descriptor->DEPLOYMENT_MAILHOG_ENABLED) {
-    $content.=' | <a href="http://'.$deploymentURL.'/mailhog/" rel="tooltip" title="Mailhog">';
-    $content.='<img src="/images/mailhog.svg" width="16" height="16" alt="mailhog" class="icon"/></a>';
+  // Mailpit access
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_MAILPIT_ENABLED') && $deployment_descriptor->DEPLOYMENT_MAILPIT_ENABLED) {
+    $content.=' | <a href="http://'.$deploymentURL.'/mailpit/" rel="tooltip" title="Mailpit">';
+    $content.='<img src="/images/mailpit.svg" width="16" height="16" alt="mailpit" class="icon"/></a>';
   }
   // Admin Mongo access
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_ADMIN_MONGO_ENABLED') && $deployment_descriptor->DEPLOYMENT_ADMIN_MONGO_ENABLED) {

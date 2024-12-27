@@ -32,7 +32,7 @@ source "${SCRIPT_DIR}/_functions_chat.sh"
 source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
 source "${SCRIPT_DIR}/_functions_ldap.sh"
 source "${SCRIPT_DIR}/_functions_iframely.sh"
-source "${SCRIPT_DIR}/_functions_mailhog.sh"
+source "${SCRIPT_DIR}/_functions_mailpit.sh"
 source "${SCRIPT_DIR}/_functions_matrix.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_adminmongo.sh"
@@ -324,9 +324,9 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE" "jolt/iframely"
       configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE_VERSION" "v2.2.1"
 
-      configurable_env_var "DEPLOYMENT_MAILHOG_ENABLED" false
-      configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE" "mailhog/mailhog"
-      configurable_env_var "DEPLOYMENT_MAILHOG_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_MAILPIT_ENABLED" false
+      configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE" "axllent/mailpit"
+      configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE_VERSION" "v1.21"
 
       # Matrix
       configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
@@ -1218,7 +1218,7 @@ initialize_product_settings() {
    do_get_onlyoffice_settings
    do_get_ldap_settings
    do_get_iframely_settings
-   do_get_mailhog_settings
+   do_get_mailpit_settings
    do_get_matrix_settings
    do_get_frontail_settings
    do_get_admin_mongo_settings
@@ -1422,13 +1422,14 @@ do_init_empty_data(){
 
   do_drop_es_data
   do_drop_data
-  do_drop_mailhog_data
+  do_drop_mailpit_data
   do_drop_frontail_data
   do_drop_keycloak_data
   do_drop_phpldapadmin_data
 
   do_create_data
   do_create_es
+  do_create_mailpit
   do_create_keycloak
   echo_info "Done"
 }
@@ -1778,9 +1779,9 @@ do_deploy() {
   # IFRAMELY  port
   env_var "DEPLOYMENT_IFRAMELY_PORT" "${DEPLOYMENT_PORT_PREFIX}76"
 
-  # Mailhog  port
-  env_var "DEPLOYMENT_MAILHOG_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
-  env_var "DEPLOYMENT_MAILHOG_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
+  # Mailpit  port
+  env_var "DEPLOYMENT_MAILPIT_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
+  env_var "DEPLOYMENT_MAILPIT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
 
   # Frontail port
   env_var "DEPLOYMENT_FRONTAIL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}36"
@@ -1885,8 +1886,8 @@ do_deploy() {
 
   echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
 
-  if [ "${DEPLOYMENT_MAILHOG_ENABLED}" == "true" ]; then
-    env_var "DEPLOYMENT_SMTP_PORT" "${DEPLOYMENT_MAILHOG_SMTP_PORT}"
+  if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
+    env_var "DEPLOYMENT_SMTP_PORT" "${DEPLOYMENT_MAILPIT_SMTP_PORT}"
     env_var "EXO_EMAIL_SMTP_STARTTLS_ENABLE" true
     env_var "EXO_EMAIL_SMTP_AUTH" true
   fi
@@ -1916,6 +1917,7 @@ do_deploy() {
       do_create_es
       do_create_onlyoffice
       do_create_cmis
+      do_create_mailpit
       do_create_keycloak
       do_create_jitsi
     else
@@ -1940,6 +1942,7 @@ do_deploy() {
         do_create_es
         do_create_onlyoffice
         do_create_cmis
+        do_create_mailpit
         do_create_keycloak
         do_create_jitsi
       fi
@@ -2027,7 +2030,7 @@ do_start() {
   do_start_onlyoffice
   do_start_ldap
   do_start_iframely
-  do_start_mailhog
+  do_start_mailpit
   do_start_matrix
   do_start_frontail
   do_start_keycloak
@@ -2311,7 +2314,7 @@ do_stop() {
       echo_info "Server stopped."
       do_stop_ldap
       do_stop_iframely
-      do_stop_mailhog
+      do_stop_mailpit
       do_stop_matrix
       do_stop_frontail
       do_stop_phpldapadmin
@@ -2359,7 +2362,7 @@ do_undeploy() {
     do_drop_onlyoffice_data
     do_drop_ldap_data
     do_drop_iframely_data
-    do_drop_mailhog_data
+    do_drop_mailpit_data
     do_drop_matrix_data
     do_drop_frontail_data
     do_drop_keycloak_data

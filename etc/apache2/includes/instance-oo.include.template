@@ -50,7 +50,7 @@
     </Directory>
     
     RewriteEngine on 
-    RewriteRule ^/mailhog$ /mailhog/ [R]
+    RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
 
@@ -74,12 +74,11 @@
     # Proxify of websocket url pattern
     <IfModule mod_proxy_wstunnel.c>
 
-    <Location "/mailhog/">
+    <Location "/mailpit/">
         RewriteCond %{HTTP:Connection} Upgrade [NC]
         RewriteCond %{HTTP:Upgrade} websocket [NC]
-        RewriteRule ^/mailhog/api/v2/websocket(.*) ws://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/api/v2/websocket$1 [P,L]
-        ProxyPass http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
-        ProxyPassReverse http://localhost:${DEPLOYMENT_MAILHOG_HTTP_PORT}/
+        ProxyPass http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
+        ProxyPassReverse http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
     </Location>
 
     <Location "/livelogs/">
