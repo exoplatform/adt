@@ -74,7 +74,7 @@
     <IfModule mod_proxy_wstunnel.c>
         # Proxify of websocket url pattern for onlyoffice
    
-        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io)/
+        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io|mailpit)/
         RewriteCond %{HTTP:Upgrade} websocket [NC]
         RewriteCond %{HTTP:Connection} upgrade [NC]
         RewriteRule ^/?(.*) "ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2" [P,L]
