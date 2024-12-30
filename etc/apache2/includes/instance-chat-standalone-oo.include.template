@@ -131,8 +131,8 @@
     ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
 
-    ProxyPass               /mongoexpress            http://localhost:${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT}/mongoexpress
-    ProxyPassReverse        /mongoexpress            http://localhost:${DEPLOYMENT_ADMIN_MONGO_HTTP_PORT}/mongoexpress
+    ProxyPass               /mongoexpress            http://localhost:${DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT}/mongoexpress
+    ProxyPassReverse        /mongoexpress            http://localhost:${DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT}/mongoexpress
 
     ProxyPass               /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
     ProxyPassReverse        /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
