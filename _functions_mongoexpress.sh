@@ -63,6 +63,11 @@ do_start_mongo_express() {
     -e ME_CONFIG_SITE_SESSIONSECRET="${DEPLOYMENT_MONGO_EXPRESS_CONTAINER_NAME}_session" \
     -e ME_CONFIG_SITE_BASEURL="/mongoexpress" \
     -p "${DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT}:8081" \
+    -h "mongoexpress" \
+    --health-cmd="wget -qO- mongoexpress:8081/mongoexpress/status  &> /dev/null || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
     --name "${DEPLOYMENT_MONGO_EXPRESS_CONTAINER_NAME}" "${DEPLOYMENT_MONGO_EXPRESS_IMAGE}:${DEPLOYMENT_MONGO_EXPRESS_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_MONGO_EXPRESS_CONTAINER_NAME} container started"
   check_mongo_express_availability
