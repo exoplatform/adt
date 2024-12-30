@@ -78,7 +78,7 @@
         Header set Cache-Control "max-age=63072000, public"
     </LocationMatch>
 
-    <LocationMatch "^/adminmongo.*">
+    <LocationMatch "^/mongoexpress.*">
         Require all denied
         AuthName "eXo Employees only"
         AuthType Basic
@@ -93,11 +93,6 @@
         </RequireAll>
     </LocationMatch>
     
-    # Prevent accessing to admin panel of Admin mongo
-    <LocationMatch "^/adminmongo/app/connection_list.*>
-        Deny from all
-    </LocationMatch>
-
     <LocationMatch "^/cmis.*">
         Require all denied
         AuthName "eXo Employees only"
