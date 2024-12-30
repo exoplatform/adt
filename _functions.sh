@@ -35,7 +35,7 @@ source "${SCRIPT_DIR}/_functions_iframely.sh"
 source "${SCRIPT_DIR}/_functions_mailpit.sh"
 source "${SCRIPT_DIR}/_functions_matrix.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
-source "${SCRIPT_DIR}/_functions_adminmongo.sh"
+source "${SCRIPT_DIR}/_functions_mongoexpress.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
 source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
 source "${SCRIPT_DIR}/_functions_phpldapadmin.sh"
@@ -337,9 +337,11 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "mthenw/frontail"
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "latest"
 
-      configurable_env_var "DEPLOYMENT_ADMIN_MONGO_ENABLED" false
-      configurable_env_var "DEPLOYMENT_ADMIN_MONGO_IMAGE" "mrvautin/adminmongo"
-      configurable_env_var "DEPLOYMENT_ADMIN_MONGO_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_ENABLED" false
+      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_IMAGE" "mongo-express"
+      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_IMAGE_VERSION" "1-20-alpine3.19"
+      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_READONLY" true
+      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_ADMIN" true
 
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
@@ -1221,7 +1223,7 @@ initialize_product_settings() {
    do_get_mailpit_settings
    do_get_matrix_settings
    do_get_frontail_settings
-   do_get_admin_mongo_settings
+   do_get_mongo_express_settings
    do_get_keycloak_settings
    do_get_cloudbeaver_settings
    do_get_phpldapadmin_settings
@@ -1786,8 +1788,8 @@ do_deploy() {
   # Frontail port
   env_var "DEPLOYMENT_FRONTAIL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}36"
 
-  # Admin Mongo port
-  env_var "DEPLOYMENT_ADMIN_MONGO_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}94"
+  # Mongo Express port
+  env_var "DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}94"
 
   # Keycloak  port
   env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
@@ -2042,7 +2044,7 @@ do_start() {
   do_start_phpldapadmin
   do_start_es
   do_start_chat_server
-  do_start_admin_mongo
+  do_start_mongo_express
 
   if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
     do_ufw_open_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
@@ -2318,7 +2320,7 @@ do_stop() {
       do_stop_matrix
       do_stop_frontail
       do_stop_phpldapadmin
-      do_stop_admin_mongo
+      do_stop_mongo_express
       do_stop_keycloak
       do_stop_cloudbeaver
       do_stop_jitsi
