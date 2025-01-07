@@ -74,7 +74,7 @@ do_start_keycloak() {
   fi
   local _startArgs=""
   if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false}; then 
-    _startArgs="--proxy edge --hostname-strict=false"
+    _startArgs="--proxy-headers=xforwarded --hostname-strict=false"
   fi
   ${DOCKER_CMD} run \
   -d \
