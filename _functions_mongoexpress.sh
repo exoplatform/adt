@@ -20,7 +20,6 @@ do_get_mongo_express_settings() {
     return;
   fi
   env_var DEPLOYMENT_MONGO_EXPRESS_CONTAINER_NAME "${INSTANCE_KEY}_mongo_express"
-  env_var DEPLOYMENT_ADMIN_MONGO_CONTAINER_NAME "${INSTANCE_KEY}_admin_mongo" # Transition to new image. TODO: Remove it in the future
 }
 
 do_stop_mongo_express() {
@@ -30,7 +29,6 @@ do_stop_mongo_express() {
     return
   fi
   ensure_docker_container_stopped ${DEPLOYMENT_MONGO_EXPRESS_CONTAINER_NAME}
-  ensure_docker_container_stopped ${DEPLOYMENT_ADMIN_MONGO_CONTAINER_NAME} # Transition to new image. TODO: Remove it in the future
   echo_info "Mongo Express container ${DEPLOYMENT_MONGO_EXPRESS_CONTAINER_NAME} stopped."
 }
 
@@ -50,7 +48,6 @@ do_start_mongo_express() {
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_MONGO_EXPRESS_CONTAINER_NAME}
-  delete_docker_container ${DEPLOYMENT_ADMIN_MONGO_CONTAINER_NAME} # Transition to new image. TODO: Remove it in the future
   local mongo_ip_addr=$(${DOCKER_CMD} inspect --format '{{ .NetworkSettings.IPAddress }}' ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME})
   ${DOCKER_CMD} run \
     -d \

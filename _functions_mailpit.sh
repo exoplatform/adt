@@ -20,7 +20,6 @@ do_get_mailpit_settings() {
     return;
   fi
   env_var DEPLOYMENT_MAILPIT_CONTAINER_NAME "${INSTANCE_KEY}_mailpit"
-  env_var DEPLOYMENT_MAILHOG_CONTAINER_NAME "${INSTANCE_KEY}_mailhog" # Transition from Mailhog to Mailpit -- to be removed
 }
 
 #
@@ -31,7 +30,6 @@ do_drop_mailpit_data() {
   if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
     echo_info "Drops Mailpit container ${DEPLOYMENT_MAILPIT_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}
-    delete_docker_container ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} # Transition from Mailhog to Mailpit -- to be removed
     echo_info "Done."
     echo_info "Drops Mailpit docker volume ${DEPLOYMENT_MAILPIT_CONTAINER_NAME} ..."
     delete_docker_volume ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}
@@ -56,7 +54,6 @@ do_stop_mailpit() {
     return
   fi
   ensure_docker_container_stopped ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}
-  ensure_docker_container_stopped ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} # Transition from Mailhog to Mailpit -- to be removed
   echo_info "Mailpit container ${DEPLOYMENT_MAILPIT_CONTAINER_NAME} stopped."
 }
 
@@ -71,7 +68,6 @@ do_start_mailpit() {
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}
-  delete_docker_container ${DEPLOYMENT_MAILHOG_CONTAINER_NAME} # Transition from Mailhog to Mailpit -- to be removed
 
   ${DOCKER_CMD} run \
     -d \
