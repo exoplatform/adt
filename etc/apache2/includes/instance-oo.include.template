@@ -145,13 +145,15 @@
     ProxyPassReverse        /mailpit/              http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
 
     # Forward request to OnlyOffice when the url start with the version scheme (see in side the Docker container for it)
-    # ex: /v5.2.8-24/* OR /5.3.0-243/* 
-    ProxyPassMatch    "^\/(v?[\d]+\.[\d]+\.[\d]+[\.|-][\d]+\/.*)$"      http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+    # ex: /v5.2.8-24/* OR /5.3.0-243/* OR /8.2.0-3189256175a3b908c32679c0287836ed/*
+    ProxyPassMatch    "^\/(v?[\d]+\.[\d]+\.[\d]+[\.|-].+\/.*)$"      http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(OfficeWeb\/.*)$"                             http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(printfile\/.*)$"                             http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(cache\/.*)$"                                 http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(web-apps\/.*)$"                              http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     ProxyPassMatch    "^\/(coauthoring\/.*)$"                           http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+    ProxyPassMatch    "^\/(downloadfile\/.*)$"                          http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
+    ProxyPassMatch    "^\/(converter\/.*)$"                             http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
     # OO Healthcheck
     ProxyPass               /oohealthcheck               http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck
     ProxyPassReverse        /oohealthcheck               http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck
