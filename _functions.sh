@@ -1022,7 +1022,7 @@ initialize_product_settings() {
               
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
               configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.5" # Default version for Only Office docker image to use
+              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "8.2.2" # Default version for Only Office docker image to use
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(6.5) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
