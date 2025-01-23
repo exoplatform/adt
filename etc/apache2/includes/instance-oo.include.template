@@ -74,6 +74,13 @@
     # Proxify of websocket url pattern
     <IfModule mod_proxy_wstunnel.c>
 
+    <Location "/cloudbeaver/api/ws">
+        ProxyPass "ws://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/api/ws"
+        ProxyPassReverse "ws://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/api/ws"
+        RequestHeader set Upgrade "websocket"
+        RequestHeader set Connection "upgrade"
+    </Location>
+
     <Location "/mailpit/api/events">
         ProxyPass "ws://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/api/events"
         ProxyPassReverse "ws://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/api/events"
