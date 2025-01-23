@@ -74,12 +74,19 @@
     <IfModule mod_proxy_wstunnel.c>
         # Proxify of websocket url pattern for onlyoffice
    
-        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io|mailpit)/
+        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io|mailpit|cloudbeaver)/
         RewriteCond %{HTTP:Upgrade} websocket [NC]
         RewriteCond %{HTTP:Connection} upgrade [NC]
         RewriteRule ^/?(.*) "ws://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1$2" [P,L]
 
         ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
+
+        <Location "/cloudbeaver/api/ws">
+            ProxyPass "ws://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/api/ws"
+            ProxyPassReverse "ws://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/api/ws"
+            RequestHeader set Upgrade "websocket"
+            RequestHeader set Connection "upgrade"
+        </Location>
         
         <Location "/mailpit/api/events">
             ProxyPass "ws://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/api/events"
