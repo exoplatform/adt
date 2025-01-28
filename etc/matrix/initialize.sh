@@ -14,14 +14,14 @@ exec /start.py &
 
 # Wait for Synapse to be ready
 echo "Waiting for Synapse API to be ready..."
-until curl -sSf http://${DEPLOYMENT_APACHE_VHOST_ALIAS}:8008/_matrix/client/versions &>/dev/null; do
+until curl -sSf http://localhost:8008/_matrix/client/versions &>/dev/null; do
   echo "Synapse API not ready, retrying in 5 seconds..."
   sleep 5
 done
 
 if curl -sSf -X POST -H "Content-Type: application/json" \
     -d '{"type":"m.login.password", "user":"${DEPLOYMENT_MATRIX_ADMIN_USERNAME}", "password":"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}"}' \
-    http://${DEPLOYMENT_APACHE_VHOST_ALIAS}:8008/_matrix/client/r0/login &>/dev/null; then
+    http://localhost:8008/_matrix/client/r0/login &>/dev/null; then
     echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} already exists. Skipping creation."
 else
   echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} not found. Attempting to create the user..."
