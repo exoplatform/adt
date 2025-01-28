@@ -19,8 +19,9 @@ until curl -sSf http://localhost:8008/_matrix/client/versions &>/dev/null; do
   sleep 5
 done
 
+# Correct the curl command for admin user check
 if curl -sSf -X POST -H "Content-Type: application/json" \
-    -d '{"type":"m.login.password", "user":"${DEPLOYMENT_MATRIX_ADMIN_USERNAME}", "password":"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}"}' \
+    -d "{\"type\":\"m.login.password\", \"user\":\"${DEPLOYMENT_MATRIX_ADMIN_USERNAME}\", \"password\":\"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}\"}" \
     http://localhost:8008/_matrix/client/r0/login &>/dev/null; then
     echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} already exists. Skipping creation."
 else
@@ -29,7 +30,7 @@ else
   if register_new_matrix_user -c /data/homeserver.yaml -a -u ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} -p "${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}" &>/dev/null; then
     echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} created successfully!"
   else
-    echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} already exist !!"
+    echo "Failed to create admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME}."
   fi
 fi
 
