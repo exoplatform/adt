@@ -21,6 +21,7 @@ do_get_matrix_settings() {
     return;
   fi
   env_var DEPLOYMENT_MATRIX_CONTAINER_NAME "${INSTANCE_KEY}_matrix"
+  env_var DEPLOYMENT_MATRIX_NETWORK_NAME "matrix"
 }
 
 do_drop_matrix_data() {
@@ -32,6 +33,8 @@ do_drop_matrix_data() {
     delete_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
     echo_info "Done."
     echo_info "matrix data dropped"
+    echo_info "Drops Jitsi docker network ${DEPLOYMENT_MATRIX_NETWORK_NAME} ..."
+    delete_docker_network ${DEPLOYMENT_MATRIX_NETWORK_NAME}
   else
     echo_info "Skip Drops matrix container ..."
   fi
@@ -40,7 +43,8 @@ do_drop_matrix_data() {
 do_create_matrix() {
   if ${DEPLOYMENT_MATRIX_ENABLED}; then
     echo_info "Creation of the Matrix Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
-    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
+    echo_info "Creation of the Jitsi Docker network ${DEPLOYMENT_MATRIX_NETWORK_NAME} ..."
+    create_docker_network ${DEPLOYMENT_MATRIX_NETWORK_NAME}
   fi
 }
 
@@ -60,6 +64,8 @@ do_start_matrix() {
     echo_info "matrix not specified, skiping its containers startup"
     return
   fi
+  export DEPLOYMENT_URL DEPLOYMENT_MATRIX_NETWORK_NAME
+  create_docker_network ${DEPLOYMENT_MATRIX_NETWORK_NAME}
   mkdir -p ${DEPLOYMENT_DIR}/matrix
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/matrix/homeserver.yaml
   evaluate_file_content ${ETC_DIR}/matrix/initialize.sh ${DEPLOYMENT_DIR}/matrix/initialize.sh
@@ -93,6 +99,7 @@ do_start_matrix() {
     --health-start-period=5s \
     --hostname matrix \
     --entrypoint "/bin/bash" \
+    --network "${DEPLOYMENT_MATRIX_NETWORK_NAME}" \
     --name ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ${DEPLOYMENT_MATRIX_IMAGE}:${DEPLOYMENT_MATRIX_IMAGE_VERSION} \
     -c "/docker-entrypoint-init.d/initialize.sh"
 
