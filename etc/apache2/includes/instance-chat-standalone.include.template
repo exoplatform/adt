@@ -49,6 +49,13 @@
         Allow from all
     </Directory>
 
+	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}/matrix/"
+    <Directory "${DEPLOYMENT_DIR}/matrix/">
+        Options Indexes MultiViews
+        AllowOverride None
+        Allow from all
+    </Directory>
+
     RewriteEngine on 
     RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
@@ -63,6 +70,7 @@
     ProxyPass               /robots.txt          !
     ProxyPass               /style.css           !
     ProxyPass               /logs/               !
+    ProxyPass               /.well-known/matrix/ !
     ProxyPass               /icons/              !
     ProxyPass               /images/favicon.ico  !
     ProxyPass               /images/Arrow.gif    !
@@ -158,6 +166,11 @@
     # Mailpit
     ProxyPass               /mailpit/              http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
     ProxyPassReverse        /mailpit/              http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
+    # Matrix
+    ProxyPass               /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix
+    ProxyPassReverse        /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix
+    ProxyPass               /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
+    ProxyPassReverse        /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
     # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
     # Can be remove if apache version is >= 2.4.13
     ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
