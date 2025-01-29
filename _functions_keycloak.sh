@@ -78,8 +78,8 @@ do_start_keycloak() {
   fi
   ${DOCKER_CMD} run \
   -d \
-  -e KEYCLOAK_ADMIN=root \
-  -e KEYCLOAK_ADMIN_PASSWORD=password \
+  -e KC_BOOTSTRAP_ADMIN_USERNAME=bootstrap_admin \
+  -e KC_BOOTSTRAP_ADMIN_PASSWORD=b00tstrap_p@ssw0rd \
   -e PROXY_ADDRESS_FORWARDING=${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false} \
   -e KC_HTTP_RELATIVE_PATH=/auth \
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
@@ -91,26 +91,8 @@ do_start_keycloak() {
   --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} start-dev ${_startArgs}
   echo_info "${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} container started"  
   check_keycloak_availability
-  local token=$(curl -X POST "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/realms/master/protocol/openid-connect/token" \
-   -H "Content-Type: application/x-www-form-urlencoded" \
-   -d "username=root" \
-   -d "password=password" \
-   -d 'grant_type=password' \
-   -d 'client_id=admin-cli' | jq -r '.access_token')
-
-  local keycloakRootUserId=$(curl -fssL "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users" -H 'Content-Type: application/json' -H  "Authorization: Bearer $token" | jq -r '.[]| select(.username == "root") | .id')
-  local keycloakCreatedTimestamp=$(curl -fssL "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users" -H 'Content-Type: application/json' -H  "Authorization: Bearer $token" | jq -r '.[]| select(.username == "root") | .createdTimestamp')
-
-  curl -s -X PUT --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users/${keycloakRootUserId}" \
-   -H 'Content-type: application/json' \
-   -H "Authorization: Bearer ${token}" \
-   -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":\"root@gatein.com\",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
-    && echo_info "Keycloak root user updated"
-  
-  curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
-   -H 'Content-type: application/json' \
-   -H "Authorization: Bearer ${token}" \
-   -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client added"
+  do_provision_keycloak_permanent_admin
+  do_provision_keycloak_clients
 }
 
 check_keycloak_availability() {
@@ -162,6 +144,89 @@ do_dump_keycloak_dataset() {
   local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME})
   sudo chown 1000:1000 -R ${mount_point}
   sudo cp -fTr "${mount_point}/" ${_keycloakData}/ || touch ${_keycloakData}/__nofile
+}
+
+# Provision Keycloak permanent admin user
+do_provision_keycloak_permanent_admin() {
+  local KEYCLOAK_URL="http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth"
+  local KC_TOKEN=$(curl -s -X POST \
+    -d "client_id=admin-cli" \
+    -d "username=bootstrap_admin" \
+    -d "password=b00tstrap_p@ssw0rd" \
+    -d "grant_type=password" \
+    "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" | jq -r '.access_token')
+  echo_info "Checking if user root already exists..."
+  local rootUserId=$(curl -s -X GET \
+    -H "Authorization: Bearer $KC_TOKEN" \
+    "$KEYCLOAK_URL/admin/realms/master/users?username=root" | jq -r '.[0].id')
+  if [ "$rootUserId" != "null" ] && [ -n "$rootUserId" ]; then
+    echo_info "User root already exists with ID: ${rootUserId}. Skipping creation."
+  else
+    echo_info "Creating a new admin user: root..."
+    local creationResp=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $KC_TOKEN" \
+      -d '{"username": "root", "enabled": true, "firstName": "Root", "lastName": "Root", "email": "root@gatein.com"}' \
+      "$KEYCLOAK_URL/admin/realms/master/users")
+    if [ "$creationResp" -ne 201 ]; then
+        echo_error "Failed to create user. HTTP status code: $creationResp"
+        exit 1
+    fi
+    echo_info "User created successfully."
+    rootUserId=$(curl -s -X GET \
+      -H "Authorization: Bearer $KC_TOKEN" \
+      "$KEYCLOAK_URL/admin/realms/master/users?username=root" | jq -r '.[0].id')
+    local setPassResp=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+      -H "Content-Type: application/json" \
+      -H "Authorization: Bearer $KC_TOKEN" \
+      -d '{ "type": "password", "value": "password", "temporary": false }' \
+      "$KEYCLOAK_URL/admin/realms/master/users/${rootUserId}/reset-password")
+    if [ "$setPassResp" -ne 204 ]; then
+      echo_error "Failed to set password. HTTP status code: $setPassResp"
+      exit 1
+    fi
+    echo_info "User root Password set successfully."
+    echo_info "Assigning admin role to root..."
+    local adminRoleId=$(curl -s -X GET \
+      -H "Authorization: Bearer $KC_TOKEN" \
+      "$KEYCLOAK_URL/admin/realms/master/roles" |  jq -r --arg ROLE_NAME "admin" '.[] | select(.name == $ROLE_NAME) | .id')
+    if [ -z "$adminRoleId" ]; then
+      echo "Realm admin role $adminRoleId not found."
+      exit 1
+    fi
+    # Assign the realm role to the user
+    local roleAssignmentResp=$(curl -s -o /dev/null -w "%{http_code}" -X POST \
+      -H "Authorization: Bearer $KC_TOKEN" \
+      -H "Content-Type: application/json" \
+      -d '[{"id": "'"$adminRoleId"'", "name": "admin"}]' \
+      "$KEYCLOAK_URL/admin/realms/master/users/${rootUserId}/role-mappings/realm")
+    if [ "$roleAssignmentResp" -ne 204 ]; then
+      echo_error "Failed to assign admin role. HTTP status code: $roleAssignmentResp"
+      exit 1
+    fi
+    echo_info "Admin role assigned to user root successfully."
+  fi
+}
+
+# Provision Keycloak clients
+do_provision_keycloak_clients() {
+  local token=$(curl -X POST "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/realms/master/protocol/openid-connect/token" \
+   -H "Content-Type: application/x-www-form-urlencoded" \
+   -d "username=root" \
+   -d "password=password" \
+   -d 'grant_type=password' \
+   -d 'client_id=admin-cli' | jq -r '.access_token')
+  local keycloakRootUserId=$(curl -fssL "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users" -H 'Content-Type: application/json' -H  "Authorization: Bearer $token" | jq -r '.[]| select(.username == "root") | .id')
+  local keycloakCreatedTimestamp=$(curl -fssL "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users" -H 'Content-Type: application/json' -H  "Authorization: Bearer $token" | jq -r '.[]| select(.username == "root") | .createdTimestamp')
+  curl -s -X PUT --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/users/${keycloakRootUserId}" \
+   -H 'Content-type: application/json' \
+   -H "Authorization: Bearer ${token}" \
+   -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":\"root@gatein.com\",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
+    && echo_info "Keycloak root user updated"
+  curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
+   -H 'Content-type: application/json' \
+   -H "Authorization: Bearer ${token}" \
+   -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client added"
 }
 
 
