@@ -62,6 +62,8 @@ do_start_matrix() {
   fi
   mkdir -p ${DEPLOYMENT_DIR}/matrix
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/matrix/homeserver.yaml
+  evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.template ${DEPLOYMENT_DIR}/matrix/initialize.sh
+  chmod +x ${DEPLOYMENT_DIR}/matrix/initialize.sh
   evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/matrix/client
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
@@ -81,6 +83,7 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
+    -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
@@ -88,7 +91,10 @@ do_start_matrix() {
     --health-timeout=5s \
     --health-retries=3 \
     --health-start-period=5s \
-    --name ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ${DEPLOYMENT_MATRIX_IMAGE}:${DEPLOYMENT_MATRIX_IMAGE_VERSION}
+    --hostname matrix \
+    --entrypoint "/bin/bash" \
+    --name ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ${DEPLOYMENT_MATRIX_IMAGE}:${DEPLOYMENT_MATRIX_IMAGE_VERSION} \
+    -c "/docker-entrypoint-init.d/initialize.sh"
 
 
   echo_info "${DEPLOYMENT_MATRIX_CONTAINER_NAME} container started"

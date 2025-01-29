@@ -35,9 +35,39 @@ jwt_config:
   enabled: true
   secret: "acc-e0eeooroep-3-e-j0r3-e-tjest-"
   algorithm: "HS256"
-enable_registration: true
-enable_registration_without_verification: true
+
+rc_registration:
+  per_second: 0.5
+  burst_count: 20
+
+rc_login:
+  address:
+    per_second: 20
+    burst_count: 100
+  account:
+    per_second: 1
+    burst_count: 10
+  failed_attempts:
+    per_second: 1
+    burst_count: 10
+
+enable_registration: false
+enable_registration_without_verification: false
 enable_3pid_changes: true
+
+modules:
+  - module: synapse_auto_accept_invite.InviteAutoAccepter
+    config:
+      # Optional: if set to true, then only invites for direct messages (1:1 rooms)
+      # will be auto accepted.
+      # Defaults to false.
+      accept_invites_only_for_direct_messages: true
+
+      # Optional: if set to true, then only invites from local users will be auto
+      # accepted.
+      # Defaults to false.
+      accept_invites_only_from_local_users: true
+
 default_power_level_content_override:
   private_chat:
     "events":
@@ -46,6 +76,7 @@ default_power_level_content_override:
       "m.room.encryption": 999
       "m.room.history_visibility": 100
       "m.room.name": 50
+      "m.room.invite": 100
       "m.room.power_levels": 100
       "m.room.server_acl": 100
       "m.room.tombstone": 100
@@ -57,6 +88,7 @@ default_power_level_content_override:
       "m.room.encryption": 999
       "m.room.history_visibility": 100
       "m.room.name": 50
+      "m.room.invite": 100
       "m.room.power_levels": 100
       "m.room.server_acl": 100
       "m.room.tombstone": 100
