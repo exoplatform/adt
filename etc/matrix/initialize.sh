@@ -1,7 +1,4 @@
 #!/bin/bash -eu
-##################
-# File managed by puppet, don't edit
-##################
 
 # Plugin install
 if ! pip show synapse-auto-accept-invite; then
