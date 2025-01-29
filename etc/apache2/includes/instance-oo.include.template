@@ -48,7 +48,14 @@
         Order allow,deny
         Allow from all
     </Directory>
-    
+
+	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}/matrix/"
+    <Directory "${DEPLOYMENT_DIR}/matrix/">
+        Options Indexes MultiViews
+        AllowOverride None
+        Allow from all
+    </Directory>
+
     RewriteEngine on 
     RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
@@ -63,6 +70,7 @@
     ProxyPass               /robots.txt          !
     ProxyPass               /style.css           !
     ProxyPass               /logs/               !
+    ProxyPass               /.well-known/matrix/ !
     ProxyPass               /icons/              !
     ProxyPass               /images/favicon.ico  !
     ProxyPass               /images/Arrow.gif    !
@@ -150,7 +158,11 @@
     # Mailpit
     ProxyPass               /mailpit/              http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
     ProxyPassReverse        /mailpit/              http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/
-
+    # Matrix
+    ProxyPass               /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix
+    ProxyPassReverse        /_matrix             http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix
+    ProxyPass               /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
+    ProxyPassReverse        /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
     # Forward request to OnlyOffice when the url start with the version scheme (see in side the Docker container for it)
     # ex: /v5.2.8-24/* OR /5.3.0-243/* OR /8.2.0-3189256175a3b908c32679c0287836ed/*
     ProxyPassMatch    "^\/(v?[\d]+\.[\d]+\.[\d]+[\.|-].+\/.*)$"      http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1 acquire=1000 retry=30
