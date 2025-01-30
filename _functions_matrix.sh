@@ -26,12 +26,12 @@ do_get_matrix_settings() {
 do_drop_matrix_data() {
   echo_info "Dropping matrix data ..."
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ] ; then
-    docker run --rm -v ${DEPLOYMENT_DIR}/logs/matrix:/var/log/matrix alpine \
-    sh -c "chown -R prdacc:prdacc /var/log/matrix"
     echo_info "Drops matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
     echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
     delete_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
+    echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs ..."
+    delete_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs
     echo_info "Done."
     echo_info "matrix data dropped"
   else
@@ -43,6 +43,8 @@ do_create_matrix() {
   if ${DEPLOYMENT_MATRIX_ENABLED}; then
     echo_info "Creation of the Matrix Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
     create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
+    echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs ..."
+    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs
   fi
 }
 
@@ -63,7 +65,6 @@ do_start_matrix() {
     return
   fi
   mkdir -p ${DEPLOYMENT_DIR}/matrix
-  mkdir -p ${DEPLOYMENT_DIR}/logs/matrix
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/matrix/homeserver.yaml
   evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.template ${DEPLOYMENT_DIR}/matrix/initialize.sh
   chmod +x ${DEPLOYMENT_DIR}/matrix/initialize.sh
@@ -77,17 +78,23 @@ do_start_matrix() {
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key
   cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
 
-  #Change Matrix data & logs directory to 991
-  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-  sh -c "chown -R 991:991 /data"
-  docker run --rm -v ${DEPLOYMENT_DIR}/logs/matrix:/var/log/matrix alpine \
-  sh -c "chown -R 991:991 /var/log/matrix"
+  local data_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data)
+  sudo chown 991:991 -R ${data_mount_point}
+  local logs_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs)
+  sudo chown 991:991 -R ${logs_mount_point}
+  ln -s ${logs_mount_point} ${DEPLOYMENT_DIR}/matrix/logs
 
-  ${DOCKER_CMD} run \
+  #Change Matrix data & logs directory to 991
+#  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
+#  sh -c "chown -R 991:991 /data"
+#  docker run --rm -v ${DEPLOYMENT_DIR}/logs/matrix:/var/log/matrix alpine \
+#  sh -c "chown -R 991:991 /var/log/matrix"
+
+  ${DOCKER_CMD} run  \
     -d \
     -v ${DEPLOYMENT_DIR}/matrix/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
-    -v ${DEPLOYMENT_DIR}/logs/matrix:/var/log/matrix \
+    -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs:/var/log/matrix \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
