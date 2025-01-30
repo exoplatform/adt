@@ -84,12 +84,6 @@ do_start_matrix() {
   sudo chown 991:991 -R ${logs_mount_point}
   ln -s ${logs_mount_point} ${DEPLOYMENT_DIR}/matrix/logs
 
-  #Change Matrix data & logs directory to 991
-#  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-#  sh -c "chown -R 991:991 /data"
-#  docker run --rm -v ${DEPLOYMENT_DIR}/logs/matrix:/var/log/matrix alpine \
-#  sh -c "chown -R 991:991 /var/log/matrix"
-
   ${DOCKER_CMD} run  \
     -d \
     -v ${DEPLOYMENT_DIR}/matrix/homeserver.yaml:/data/homeserver.yaml:ro \
