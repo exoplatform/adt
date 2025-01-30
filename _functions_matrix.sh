@@ -26,6 +26,8 @@ do_get_matrix_settings() {
 do_drop_matrix_data() {
   echo_info "Dropping matrix data ..."
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ] ; then
+    docker run --rm -v ${DEPLOYMENT_DIR}/logs/matrix:/var/log/matrix alpine \
+    sh -c "chown -R prdacc:prdacc /var/log/matrix"
     echo_info "Drops matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
     echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
