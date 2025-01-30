@@ -49,8 +49,8 @@
         Allow from all
     </Directory>
 
-    Alias /logs/matrix/ "${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs"
-    <Directory "${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs">
+    Alias /logs/matrix/ "${DEPLOYMENT_DIR}/matrix/logs"
+    <Directory "${DEPLOYMENT_DIR}/matrix/logs">
         Options Indexes MultiViews
         AllowOverride None
         Require all granted
