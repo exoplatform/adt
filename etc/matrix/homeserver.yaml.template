@@ -24,6 +24,7 @@ database:
   args:
     database: /data/homeserver.db
 media_store_path: /data/media_store
+log_config: /data/matrix.log.config
 registration_shared_secret: "U4mf8a4Nsm*#inyR;o4pFh~V,@U-JBYY#1KryurFx3T-~f_ahf"
 report_stats: true
 macaroon_secret_key: "IkZiKk31HA&,DZd^1q33mDbn.,K+2+,NnDu+Hxs5nFV_RKdez7"
