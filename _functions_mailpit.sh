@@ -70,6 +70,7 @@ do_start_mailpit() {
   delete_docker_container ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}
 
   ${DOCKER_CMD} run \
+    --network "${DEPLOYMENT_MATRIX_NETWORK_NAME}" \
     -d \
     -p "${DEPLOYMENT_MAILPIT_SMTP_PORT}:1025" \
     -p "${DEPLOYMENT_MAILPIT_HTTP_PORT}:8025" \
