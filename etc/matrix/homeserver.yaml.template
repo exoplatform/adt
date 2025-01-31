@@ -56,8 +56,8 @@ enable_registration_without_verification: false
 enable_3pid_changes: true
 
 email:
-  smtp_host: 172.17.0.1
-  smtp_port: ${DEPLOYMENT_MAILPIT_SMTP_PORT}
+  smtp_host: smtpserver
+  smtp_port: 1025
   force_tls: false
   require_transport_security: false
   enable_tls: false
