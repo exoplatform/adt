@@ -57,7 +57,7 @@ enable_3pid_changes: true
 
 email:
   smtp_host: mailpit
-  smtp_port: 31995
+  smtp_port: ${DEPLOYMENT_MAILPIT_SMTP_PORT}
   force_tls: false
   require_transport_security: false
   enable_tls: false
