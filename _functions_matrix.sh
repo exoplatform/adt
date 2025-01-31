@@ -21,6 +21,7 @@ do_get_matrix_settings() {
     return;
   fi
   env_var DEPLOYMENT_MATRIX_CONTAINER_NAME "${INSTANCE_KEY}_matrix"
+  env_var DEPLOYMENT_MAILPIT_CONTAINER_NAME "${INSTANCE_KEY}_mailpit"
 }
 
 do_drop_matrix_data() {
@@ -69,7 +70,6 @@ do_start_matrix() {
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
-  ${DOCKER_CMD} pull ${DEPLOYMENT_MATRIX_IMAGE}
 
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key
 
@@ -77,6 +77,13 @@ do_start_matrix() {
   docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
   sh -c "chown -R 991:991 /data"
 
+  local SMTP_SERVER='0.0.0.0'
+  if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
+      SMTP_SERVER=$(${DOCKER_CMD} inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${DEPLOYMENT_MAILPIT_CONTAINER_NAME})
+  else
+      # to do for SMTP relay
+      echo_info "Mailpit wasn't enabled, No email sending is configured in Matrix"
+  fi
   ${DOCKER_CMD} run \
     -d \
     -v ${DEPLOYMENT_DIR}/matrix/homeserver.yaml:/data/homeserver.yaml:ro \
@@ -86,6 +93,7 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
+    --add-host=smtpserver:${SMTP_SERVER} \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \
     --health-timeout=5s \
