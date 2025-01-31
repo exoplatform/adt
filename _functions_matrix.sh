@@ -21,14 +21,11 @@ do_get_matrix_settings() {
     return;
   fi
   env_var DEPLOYMENT_MATRIX_CONTAINER_NAME "${INSTANCE_KEY}_matrix"
-  env_var DEPLOYMENT_MATRIX_NETWORK_NAME "$(tolower "${INSTANCE_KEY}").matrix"
 }
 
 do_drop_matrix_data() {
   echo_info "Dropping matrix data ..."
   if [ "${DEPLOYMENT_MATRIX_ENABLED}" == "true" ] ; then
-    echo_info "Drops Matrix docker network ${DEPLOYMENT_MATRIX_NETWORK_NAME} ..."
-    delete_docker_network ${DEPLOYMENT_MATRIX_NETWORK_NAME}
     echo_info "Drops matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
     echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
@@ -42,8 +39,6 @@ do_drop_matrix_data() {
 
 do_create_matrix() {
   if ${DEPLOYMENT_MATRIX_ENABLED}; then
-    echo_info "Creation of the Matrix Docker network ${DEPLOYMENT_MATRIX_NETWORK_NAME} ..."
-    create_docker_network ${DEPLOYMENT_MATRIX_NETWORK_NAME}
     echo_info "Creation of the Matrix Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
     create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
   fi
@@ -73,8 +68,6 @@ do_start_matrix() {
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name
-  delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
-  create_docker_network ${DEPLOYMENT_MATRIX_NETWORK_NAME}
   ${DOCKER_CMD} pull ${DEPLOYMENT_MATRIX_IMAGE}
 
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key
@@ -92,7 +85,6 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
-    --network "${DEPLOYMENT_MATRIX_NETWORK_NAME}" \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \
     --health-timeout=5s \
