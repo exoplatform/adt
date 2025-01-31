@@ -53,7 +53,8 @@
     <Directory "${DEPLOYMENT_DIR}/matrix/logs">
         Options Indexes MultiViews
         AllowOverride None
-        Require all granted
+        Order allow,deny
+        Allow from all
     </Directory>
 
 	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}/matrix/"

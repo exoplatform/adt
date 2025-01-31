@@ -54,6 +54,7 @@
         Options Indexes MultiViews
         AllowOverride None
         Require all granted
+        Allow from all
     </Directory>
 
 	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}/matrix/"
