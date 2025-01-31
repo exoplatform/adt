@@ -56,7 +56,7 @@ enable_registration_without_verification: false
 enable_3pid_changes: true
 
 email:
-  smtp_host: mailpit
+  smtp_host: ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}
   smtp_port: 25
   force_tls: false
   require_transport_security: false
