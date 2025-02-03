@@ -60,6 +60,7 @@
     RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
+    RewriteRule ^/_matrix/push/v1/notify$ /matrix/rest/matrix/notify [PT]
 
     ProxyRequests           Off
     ProxyPreserveHost       On
@@ -102,7 +103,14 @@
             RewriteRule /livelogs/socket.io/(.*) ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/$1  [P,L]
             ProxyPass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
         </Location>
-        
+
+        <Location "/_matrix/push/v1/notify">
+            Header set Access-Control-Allow-Headers "Authorization"
+            SetEnvIf Request_URI "^/_matrix/push/v1/notify" AUTH_HEADER=1
+            ProxyPass "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
+            ProxyPassReverse "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
+        </Location>
+
         <Location "/jitsiweb/xmpp-websocket">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
         </Location>
