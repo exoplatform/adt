@@ -31,8 +31,6 @@ do_drop_matrix_data() {
     delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
     echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
     delete_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
-    echo_info "Drops Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs ..."
-    delete_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs
     echo_info "Done."
     echo_info "matrix data dropped"
   else
@@ -44,8 +42,6 @@ do_create_matrix() {
   if ${DEPLOYMENT_MATRIX_ENABLED}; then
     echo_info "Creation of the Matrix Docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data ..."
     create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data
-    echo_info "Creation of the Matrix docker volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs ..."
-    create_docker_volume ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs
   fi
 }
 
@@ -76,17 +72,10 @@ do_start_matrix() {
   delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
 
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key
-  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
 
- #Change Matrix data directory to 991
+  #Change Matrix data directory to 991
   docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
   sh -c "chown -R 991:991 /data"
-
-  local data_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data)
-  sudo chown 991:991 -R ${data_mount_point}
-  local logs_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs)
-  sudo chown 991:991 -R ${logs_mount_point}
-  ln -s ${logs_mount_point} ${DEPLOYMENT_DIR}/matrix/logs
 
   local SMTP_SERVER='0.0.0.0'
   if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
@@ -99,8 +88,6 @@ do_start_matrix() {
     -d \
     -v ${DEPLOYMENT_DIR}/matrix/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
-    -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs:/var/log/matrix \
-    -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
