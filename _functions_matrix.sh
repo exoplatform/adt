@@ -82,11 +82,11 @@ do_start_matrix() {
   docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
   sh -c "chown -R 991:991 /data"
 
-#  local data_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data)
-#  sudo chown 991:991 -R ${data_mount_point}
-#  local logs_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs)
-#  sudo chown 991:991 -R ${logs_mount_point}
-#  ln -s ${logs_mount_point} ${DEPLOYMENT_DIR}/matrix/logs
+  local data_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data)
+  sudo chown 991:991 -R ${data_mount_point}
+  local logs_mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_logs)
+  sudo chown 991:991 -R ${logs_mount_point}
+  ln -s ${logs_mount_point} ${DEPLOYMENT_DIR}/matrix/logs
 
   local SMTP_SERVER='0.0.0.0'
   if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
