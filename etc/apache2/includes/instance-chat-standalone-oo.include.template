@@ -60,7 +60,7 @@
     RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
-    #RewriteRule ^/_matrix/push/v1/notify$ /matrix/rest/matrix/notify [PT]
+    RewriteRule ^/_matrix/push/v1/notify$ /matrix/rest/matrix/notify [PT]
 
     ProxyRequests           Off
     ProxyPreserveHost       On
@@ -105,7 +105,6 @@
 
          <Location "/_matrix/push/v1/notify">
              Header set Access-Control-Allow-Headers "Authorization"
-             SetEnvIf Request_URI "^/_matrix/push/v1/notify" AUTH_HEADER=1
              ProxyPass "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
              ProxyPassReverse "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
          </Location>
