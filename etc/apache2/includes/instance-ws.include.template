@@ -49,6 +49,14 @@
         Allow from all
     </Directory>
 
+    Alias /logs/matrix/ "${DEPLOYMENT_DIR}/matrix/logs"
+    <Directory "${DEPLOYMENT_DIR}/matrix/logs/">
+        Options Indexes MultiViews
+        AllowOverride None
+        Order allow,deny
+        Allow from all
+    </Directory>
+
 	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}/matrix/"
     <Directory "${DEPLOYMENT_DIR}/matrix/">
         Options Indexes MultiViews
@@ -70,6 +78,7 @@
     ProxyPass               /robots.txt          !
     ProxyPass               /style.css           !
     ProxyPass               /logs/               !
+    ProxyPass               /logs/matrix/        !
     ProxyPass               /.well-known/matrix/ !
     ProxyPass               /icons/              !
     ProxyPass               /images/favicon.ico  !
