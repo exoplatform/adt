@@ -74,6 +74,7 @@ do_start_matrix() {
 
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key
   cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
+  sudo chown -R 991:991 ${DEPLOYMENT_DIR}/matrix/
 
   #Change Matrix data directory to 991
   docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
