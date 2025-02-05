@@ -101,7 +101,13 @@
             RewriteRule /livelogs/socket.io/(.*) ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/$1  [P,L]
             ProxyPass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
         </Location>
- 
+
+         <Location "/_matrix/push/v1/notify">
+             Header set Access-Control-Allow-Headers "Authorization"
+             ProxyPass "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
+             ProxyPassReverse "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
+         </Location>
+
         # Proxify of websocket url pattern for only office
 
 

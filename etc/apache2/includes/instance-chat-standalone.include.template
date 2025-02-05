@@ -104,6 +104,12 @@
             ProxyPass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
         </Location>
 
+        <Location "/_matrix/push/v1/notify">
+            Header set Access-Control-Allow-Headers "Authorization"
+            ProxyPass "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
+            ProxyPassReverse "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
+        </Location>
+
         <Location "/jitsiweb/xmpp-websocket">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
         </Location>
