@@ -75,8 +75,8 @@ do_start_matrix() {
   cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
 
   #Change Matrix data directory to 991
-#  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-#  sh -c "chown -R 991:991 /data"
+  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
+  sh -c "chown -R 12000:12000 /data"
 #  docker run --rm -v ${DEPLOYMENT_DIR}/logs:/var/log/matrix alpine \
 #  sh -c "chown -R 991:991 /var/log/matrix"
 

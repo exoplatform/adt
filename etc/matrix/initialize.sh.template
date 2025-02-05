@@ -1,13 +1,5 @@
 #!/bin/bash -eu
 
-# Ensure that /data/matrix_plugins is writable by the current user
-mkdir -p /data/matrix_plugins
-chown -R 12000:12000 /data/matrix_plugins
-
-# Ensure /data/.cache/pip exists and is writable by prdacc
-mkdir -p /data/.cache/pip
-chown -R 12000:12000 /data/.cache/pip
-
 # Plugin install
 if ! pip show synapse-auto-accept-invite; then
   echo "Installing synapse-auto-accept-invite plugin..."
