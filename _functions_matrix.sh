@@ -62,6 +62,7 @@ do_start_matrix() {
     return
   fi
   mkdir -p ${DEPLOYMENT_DIR}/matrix
+  sudo chgrp -R 991 ${DEPLOYMENT_DIR}/matrix/
   mkdir -p ${DEPLOYMENT_DIR}/matrix/logs
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/matrix/homeserver.yaml
   evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.template ${DEPLOYMENT_DIR}/matrix/initialize.sh
@@ -74,7 +75,7 @@ do_start_matrix() {
 
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key
   cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
-  sudo chown -R 991:991 ${DEPLOYMENT_DIR}/matrix/
+#  sudo chown -R 991:991 ${DEPLOYMENT_DIR}/matrix/
 
   #Change Matrix data directory to 991
   docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
