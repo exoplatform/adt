@@ -3,13 +3,10 @@
 # Plugin install
 if ! pip show synapse-auto-accept-invite; then
   echo "Installing synapse-auto-accept-invite plugin..."
-  pip install --no-cache-dir --target /data/matrix_plugins synapse-auto-accept-invite
+  pip install --target /data/matrix_plugins synapse-auto-accept-invite
 fi
-
-# Set PYTHONPATH for the installed plugin
 export PYTHONPATH="/data/matrix_plugins:${PYTHONPATH:-}"
 
-# Start Synapse
 exec /start.py &
 
 # Wait for Synapse to be ready
@@ -19,7 +16,7 @@ until curl -sSf http://localhost:8008/_matrix/client/versions &>/dev/null; do
   sleep 5
 done
 
-# Check if the admin user exists and create if necessary
+# Correct the curl command for admin user check
 if curl -sSf -X POST -H "Content-Type: application/json" \
     -d "{\"type\":\"m.login.password\", \"user\":\"${DEPLOYMENT_MATRIX_ADMIN_USERNAME}\", \"password\":\"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}\"}" \
     http://localhost:8008/_matrix/client/r0/login &>/dev/null; then
