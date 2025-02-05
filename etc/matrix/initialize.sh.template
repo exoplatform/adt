@@ -1,12 +1,23 @@
 #!/bin/bash -eu
 
+# Ensure that /data/matrix_plugins is writable by the current user
+mkdir -p /data/matrix_plugins
+chown -R 12000:12000 /data/matrix_plugins
+
+# Ensure /data/.cache/pip exists and is writable by prdacc
+mkdir -p /data/.cache/pip
+chown -R 12000:12000 /data/.cache/pip
+
 # Plugin install
 if ! pip show synapse-auto-accept-invite; then
   echo "Installing synapse-auto-accept-invite plugin..."
-  pip install --target /data/matrix_plugins synapse-auto-accept-invite
+  pip install --no-cache-dir --target /data/matrix_plugins synapse-auto-accept-invite
 fi
+
+# Set PYTHONPATH for the installed plugin
 export PYTHONPATH="/data/matrix_plugins:${PYTHONPATH:-}"
 
+# Start Synapse
 exec /start.py &
 
 # Wait for Synapse to be ready
@@ -16,7 +27,7 @@ until curl -sSf http://localhost:8008/_matrix/client/versions &>/dev/null; do
   sleep 5
 done
 
-# Correct the curl command for admin user check
+# Check if the admin user exists and create if necessary
 if curl -sSf -X POST -H "Content-Type: application/json" \
     -d "{\"type\":\"m.login.password\", \"user\":\"${DEPLOYMENT_MATRIX_ADMIN_USERNAME}\", \"password\":\"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}\"}" \
     http://localhost:8008/_matrix/client/r0/login &>/dev/null; then
