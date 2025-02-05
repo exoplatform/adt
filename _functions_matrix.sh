@@ -72,10 +72,11 @@ do_start_matrix() {
   delete_docker_container ${DEPLOYMENT_MATRIX_CONTAINER_NAME}
 
   cp -v ${ETC_DIR}/matrix/matrix.host.signing.key ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key
+  cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
 
   #Change Matrix data directory to 991
   docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-  sh -c "chown -R 991:991 /data"
+  sh -c "chown -R 12000:12000 /data"
 
   local SMTP_SERVER='0.0.0.0'
   if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
@@ -86,8 +87,11 @@ do_start_matrix() {
   fi
   ${DOCKER_CMD} run \
     -d \
+    --user 12000:12000 \
     -v ${DEPLOYMENT_DIR}/matrix/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
+    -v ${DEPLOYMENT_DIR}/logs:/var/log/matrix \
+    -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
