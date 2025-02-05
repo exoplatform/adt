@@ -62,7 +62,6 @@ do_start_matrix() {
     return
   fi
   mkdir -p ${DEPLOYMENT_DIR}/matrix
-  mkdir -p ${DEPLOYMENT_DIR}/matrix/logs
   evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/matrix/homeserver.yaml
   evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.template ${DEPLOYMENT_DIR}/matrix/initialize.sh
   chmod +x ${DEPLOYMENT_DIR}/matrix/initialize.sh
@@ -76,9 +75,9 @@ do_start_matrix() {
   cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
 
   #Change Matrix data directory to 991
-  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-  sh -c "chown -R 991:991 /data"
-  docker run --rm -v ${DEPLOYMENT_DIR}/logs/matrix:/var/log/matrix alpine \
+#  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
+#  sh -c "chown -R 991:991 /data"
+  docker run --rm -v ${DEPLOYMENT_DIR}/logs:/var/log/matrix alpine \
   sh -c "chown -R 991:991 /var/log/matrix"
 
   local SMTP_SERVER='0.0.0.0'
@@ -90,9 +89,10 @@ do_start_matrix() {
   fi
   ${DOCKER_CMD} run \
     -d \
+    --user 12000:12000 \
     -v ${DEPLOYMENT_DIR}/matrix/homeserver.yaml:/data/homeserver.yaml:ro \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
-    -v ${DEPLOYMENT_DIR}/matrix/logs:/var/log/matrix \
+    -v ${DEPLOYMENT_DIR}/logs:/var/log/matrix \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
