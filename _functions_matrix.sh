@@ -106,7 +106,7 @@ do_start_matrix() {
     --hostname matrix \
     --entrypoint "/bin/bash" \
     --name ${DEPLOYMENT_MATRIX_CONTAINER_NAME} ${DEPLOYMENT_MATRIX_IMAGE}:${DEPLOYMENT_MATRIX_IMAGE_VERSION} \
-    -c "/docker-entrypoint-init.d/initialize.sh"
+    -c "chown -R 12000:12000 /data/media_store && /docker-entrypoint-init.d/initialize.sh"
 
 
   echo_info "${DEPLOYMENT_MATRIX_CONTAINER_NAME} container started"
