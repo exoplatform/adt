@@ -76,7 +76,7 @@ do_start_matrix() {
 
   #Change Matrix data directory to 991
   docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
-  sh -c "chown -R 12000:12000 /data /data/media_store"
+  sh -c "chown -R 12000:12000 /data"
 
   local SMTP_SERVER='0.0.0.0'
   if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
