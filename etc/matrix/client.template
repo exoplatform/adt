@@ -4,5 +4,14 @@
   },
   "io.element.e2ee": {
     "default": false
+  },
+  "m.integrations": {
+    "managers": [
+      {
+        "api_url": "https://scalar.vector.im/api",
+        "ui_url": "https://scalar.vector.im/",
+        "id": "scalar"
+      }
+    ]
   }
 }
