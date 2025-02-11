@@ -66,6 +66,7 @@ do_start_matrix() {
   evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.template ${DEPLOYMENT_DIR}/matrix/initialize.sh
   chmod +x ${DEPLOYMENT_DIR}/matrix/initialize.sh
   evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/matrix/client
+  evaluate_file_content ${ETC_DIR}/matrix/server.template ${DEPLOYMENT_DIR}/matrix/server
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name

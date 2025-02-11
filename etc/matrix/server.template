@@ -1,0 +1,3 @@
+{
+  "m.server": "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
+}
