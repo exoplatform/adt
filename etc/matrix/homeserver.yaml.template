@@ -25,6 +25,10 @@ listeners:
     resources:
       - names: [federation]
         compress: false
+
+tls_certificate_path: "/etc/certs/wild.exoplatform.org.pem"
+tls_private_key_path: "/etc/certs/wild.exoplatform.org.key"
+
 database:
   name: sqlite3
   args:
