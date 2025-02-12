@@ -20,7 +20,7 @@ listeners:
       - names: [client]
         compress: false
   - port: 8448
-    tls: true
+    tls: false
     type: http
     resources:
       - names: [federation]
