@@ -21,7 +21,7 @@ listeners:
         compress: false
   - port: 8448
     tls: true
-    type: https
+    type: http
     resources:
       - names: [federation]
         compress: false
@@ -29,7 +29,7 @@ listeners:
 tls_certificate_path: "/etc/certs/wild.exoplatform.org.pem"
 tls_private_key_path: "/etc/certs/wild.exoplatform.org.key"
 
-public_baseurl: "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}"
+public_baseurl: "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
 federation_domain_whitelist: null
 federation:
   enabled: true
