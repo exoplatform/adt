@@ -17,7 +17,13 @@ listeners:
     type: http
     x_forwarded: true
     resources:
-      - names: [client, federation]
+      - names: [client]
+        compress: false
+  - port: 8448
+    tls: true
+    type: http
+    resources:
+      - names: [federation]
         compress: false
 database:
   name: sqlite3
