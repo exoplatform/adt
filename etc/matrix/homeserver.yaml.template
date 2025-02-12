@@ -29,6 +29,11 @@ listeners:
 tls_certificate_path: "/etc/certs/wild.exoplatform.org.pem"
 tls_private_key_path: "/etc/certs/wild.exoplatform.org.key"
 
+public_baseurl: "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
+federation_domain_whitelist: null
+federation:
+  enabled: true
+
 database:
   name: sqlite3
   args:
@@ -101,10 +106,6 @@ modules:
       # accepted.
       # Defaults to false.
       accept_invites_only_from_local_users: true
-
-federation_domain_whitelist: null
-federation:
-  enabled: true
 
 default_power_level_content_override:
   private_chat:
