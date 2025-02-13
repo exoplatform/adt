@@ -20,9 +20,10 @@ listeners:
       - names: [client, federation]
         compress: false
 
-public_baseurl: "http://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
+public_baseurl: "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
 
 federation_domain_whitelist:
+  - "matrix.org"
   - "vector.im"
   - "scalar.vector.im"
   - "app.element.io"

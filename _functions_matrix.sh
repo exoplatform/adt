@@ -124,7 +124,7 @@ check_matrix_availability() {
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$((count + 1))
     set +e
-    curl -fSs http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/health > /dev/null
+    curl -fSs http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/health &>/dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
       [ $((count % 10)) -eq 0 ] && echo_info "Matrix not yet available (${count} / ${try})..."
