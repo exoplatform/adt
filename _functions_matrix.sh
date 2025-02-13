@@ -93,7 +93,6 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/logs:/var/log/matrix \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
-    -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
