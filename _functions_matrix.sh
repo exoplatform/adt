@@ -96,9 +96,7 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
-    -v /etc/certs:/etc/certs:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
-    -p "8448:8448" \
     --add-host=smtpserver:${SMTP_SERVER} \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \

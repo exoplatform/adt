@@ -17,19 +17,11 @@ listeners:
     type: http
     x_forwarded: true
     resources:
-      - names: [client]
-        compress: false
-  - port: 8448
-    tls: true
-    type: http
-    resources:
-      - names: [federation]
+      - names: [client, federation]
         compress: false
 
-tls_certificate_path: "/etc/certs/wild.exoplatform.org.pem"
-tls_private_key_path: "/etc/certs/wild.exoplatform.org.key"
+public_baseurl: "http://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
 
-public_baseurl: "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
 federation_domain_whitelist:
   - "vector.im"
   - "scalar.vector.im"
