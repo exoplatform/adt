@@ -4,5 +4,5 @@
   },
   "io.element.e2ee": {
     "default": false
-  },
+  }
 }

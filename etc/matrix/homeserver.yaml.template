@@ -30,7 +30,12 @@ tls_certificate_path: "/etc/certs/wild.exoplatform.org.pem"
 tls_private_key_path: "/etc/certs/wild.exoplatform.org.key"
 
 public_baseurl: "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
-federation_domain_whitelist: null
+federation_domain_whitelist:
+  - "vector.im"
+  - "scalar.vector.im"
+  - "app.element.io"
+  - "exoplatform.org"
+  - "exoplatform.com"
 federation:
   enabled: true
 
