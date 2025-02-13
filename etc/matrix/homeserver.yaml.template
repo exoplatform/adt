@@ -19,6 +19,19 @@ listeners:
     resources:
       - names: [client, federation]
         compress: false
+
+public_baseurl: "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
+
+federation_domain_whitelist:
+  - "matrix.org"
+  - "vector.im"
+  - "scalar.vector.im"
+  - "app.element.io"
+  - "exoplatform.org"
+  - "exoplatform.com"
+federation:
+  enabled: true
+
 database:
   name: sqlite3
   args:

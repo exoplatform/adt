@@ -66,6 +66,7 @@ do_start_matrix() {
   evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.template ${DEPLOYMENT_DIR}/matrix/initialize.sh
   chmod +x ${DEPLOYMENT_DIR}/matrix/initialize.sh
   evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/matrix/client
+  evaluate_file_content ${ETC_DIR}/matrix/server.template ${DEPLOYMENT_DIR}/matrix/server
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name
@@ -92,11 +93,9 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro \
     -v ${DEPLOYMENT_DIR}/logs:/var/log/matrix \
     -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
-    -v ${DEPLOYMENT_DIR}/matrix/media_store:/data/media_store \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
-    -p "${DEPLOYMENT_MATRIX_HTTPS_PORT}:8448" \
     --add-host=smtpserver:${SMTP_SERVER} \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \
@@ -124,7 +123,7 @@ check_matrix_availability() {
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$((count + 1))
     set +e
-    curl -fSs http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/health > /dev/null
+    curl -fSs http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/health &>/dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
       [ $((count % 10)) -eq 0 ] && echo_info "Matrix not yet available (${count} / ${try})..."
