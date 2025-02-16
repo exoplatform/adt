@@ -74,14 +74,14 @@ do_start_mailpit() {
     -p "${DEPLOYMENT_MAILPIT_SMTP_PORT}:1025" \
     -p "${DEPLOYMENT_MAILPIT_HTTP_PORT}:8025" \
     -v ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}:/data \
+    -e "MP_WEBROOT=/mailpit" \
     -e "MP_MAX_MESSAGES=5000" \
     -e "MP_DATABASE=/data/mailpit.db" \
     --health-cmd="printf 'EHLO healthcheck\n' | nc 127.0.0.1 1025 | grep -qE '^220.*Mailpit ESMTP' || exit 1" \
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_MAILPIT_CONTAINER_NAME} ${DEPLOYMENT_MAILPIT_IMAGE}:${DEPLOYMENT_MAILPIT_IMAGE_VERSION} \
-    --webroot=/mailpit
+    --name ${DEPLOYMENT_MAILPIT_CONTAINER_NAME} ${DEPLOYMENT_MAILPIT_IMAGE}:${DEPLOYMENT_MAILPIT_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_MAILPIT_CONTAINER_NAME} container started"  
   check_mailpit_availability
 }
