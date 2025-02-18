@@ -60,6 +60,7 @@
     RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
+    RewriteRule ^/_matrix/push/v1/notify$ /matrix/rest/matrix/notify [PT]
 
     ProxyRequests           Off
     ProxyPreserveHost       On
