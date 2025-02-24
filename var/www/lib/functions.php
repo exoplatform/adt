@@ -167,6 +167,7 @@ function getRepositories()
         "notes" => "Notes",
         "content" => "Content",
         "poll" => "Poll",
+        "matrix" => "Matrix",
         "task" => "TASK",
         "gamification-github" => "Gamification Github",
         "gamification-twitter" => "Gamification Twitter",
@@ -224,6 +225,7 @@ function getModuleCiPrefix($item)
         "anti-malware" => "addon-",
         "analytics" => "meeds-addon-",
         "poll" => "meeds-addon-",
+        "matrix" => "meeds-addon-",
         "gamification-github" => "meeds-addon-",
         "gamification-twitter" => "meeds-addon-",
         "gamification-crowdin" => "meeds-addon-",
@@ -400,6 +402,7 @@ function getTranslationBranches($projects)
       "anti-malware" => true,
       "analytics" => true,
       "poll" => true,
+      "matrix" => true,
       "gamification-github" => true,
       "gamification-twitter" => true,
       "gamification-crowdin" => true,
@@ -620,7 +623,7 @@ function getLocalAcceptanceInstances()
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '7.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-content / meeds-pwa  / meeds-ide / meeds-deeds-tenant";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-matrix / meeds-gamification-github / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-content / meeds-pwa  / meeds-ide / meeds-deeds-tenant";
               break;
             case '1.5.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-github / meeds-gamification-twitter";
@@ -648,7 +651,7 @@ function getLocalAcceptanceInstances()
         case 'plfcom':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '7.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-layout / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-pwa / meeds-ide";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-layout / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-matrix / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-pwa / meeds-ide";
               break;
             case '6.5.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
@@ -692,7 +695,7 @@ function getLocalAcceptanceInstances()
         case 'plfenteap':
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '7.0.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-onlyoffice / exo-chat / exo-documents / exo-external-visio-connector / meeds-app-center / meeds-gamification / meeds-layout / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-pwa / meeds-ide";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-onlyoffice / exo-chat / exo-documents / exo-external-visio-connector / meeds-app-center / meeds-gamification / meeds-layout / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-matrix / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-pwa / meeds-ide";
               break;
             case '6.5.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="exo-agenda / exo-digital-workplace / exo-jcr / exo-jitsi / exo-ecms / exo-web-conferencing / exo-multifactor-authentication / exo-layout-management / exo-news / exo-onlyoffice / exo-chat / exo-documents / meeds-app-center / meeds-gamification / meeds-wallet / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-notes / meeds-task / meeds-analytics / meeds-poll";
