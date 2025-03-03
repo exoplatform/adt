@@ -15,7 +15,7 @@ jobs:
           token: ${{ secrets.SWF_TOKEN }}
       - name: Looking for Cloubdeaver updates
         run: |
-          latestTag=$(curl -fsSL "https://hub.docker.com/v2/repositories/${{ env.BASE_IMAGE }}/tags/?page_size=1000" | jq -r '.results | .[] | .name' | grep -P '^24\.[0-9]+\.[0-9]+-acc$' | head -1)
+          latestTag=$(curl -fsSL "https://hub.docker.com/v2/repositories/${{ env.BASE_IMAGE }}/tags/?page_size=1000" | jq -r '.results | .[] | .name' | grep -P '^25\.[0-9]+\.[0-9]+-acc$' | head -1)
           if [ -z "${latestTag}" ]; then
             echo "Error: Could not get latest tag of ${{ env.BASE_IMAGE }} image! Abort!"
             exit 1
