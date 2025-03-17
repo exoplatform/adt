@@ -190,8 +190,7 @@ Environment Variables
   DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
   DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
   DEPLOYMENT_GZIP_ENABLED           : Enable Gzip Compression on the Tomcat Server
-  DEPLOYMENT_LOGBACK_LOGGERS  : Enable Debug logging for java packages (comma seperated)
-  DEPLOYMENT_LOGBACK_LOGGERS_LEVEL  : Customize Logback logging level (INFO, DEBUG, ERROR): Default: DEBUG
+  DEPLOYMENT_LOGBACK_LOGGERS        : Enable Debug logging for java packages (comma seperated eg: org.exoplatform:DEBUG,org.hibernate,org.springframework:ERROR), Default logging level is DEBUG
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
   DEPLOYMENT_STAGING_ENABLED        : Enable Staging nexus repositories deployment 
 
@@ -384,7 +383,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
       configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS" ""
-      configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS_LEVEL" "DEBUG"
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""

@@ -364,13 +364,19 @@ do_configure_logback_loggers() {
     # Add new loggers (just before the end of configuration)
     loggersList=$(echo ${DEPLOYMENT_LOGBACK_LOGGERS} | sed 's/,/ /g')
     for logger in $loggersList; do 
-      echo_info "Registering ${logger} package to logback.xml file with ${DEPLOYMENT_LOGBACK_LOGGERS_LEVEL:-DEBUG} level..."
+      loggerLevel=$(echo ${logger} | grep ':' | cut -d ':' -f2)
+      [ -z "${loggerLevel}" ] && loggerLevel="DEBUG"
+      if [[ ! "${loggerLevel}" =~ ^(TRACE|DEBUG|INFO|WARN|ERROR|FATAL|OFF)$ ]]; then
+        echo_error "Invalid log level ${loggerLevel} for logger ${logger}. Please use one of the following: TRACE, DEBUG, INFO, WARN, ERROR, FATAL, OFF"
+        exit 1
+      fi
+      echo_info "Registering ${logger} package to logback.xml file with ${loggerLevel} level..."
       xmlstarlet ed -L -s "/configuration" -t elem -n "loggerTMP" -v "" \
         -i "//loggerTMP" -t attr -n "name" -v "${logger}" \
-        -i "//loggerTMP" -t attr -n "level" -v "${DEPLOYMENT_LOGBACK_LOGGERS_LEVEL:-DEBUG}" \
+        -i "//loggerTMP" -t attr -n "level" -v "${loggerLevel}" \
         -r "//loggerTMP" -v logger \
         ${DEPLOYMENT_DIR}/conf/logback.xml || {
-          echo_error "ERROR during xmlstarlet processing (adding ${DEPLOYMENT_LOGBACK_LOGGERS_LEVEL:-DEBUG} logback loggers)"
+          echo_error "ERROR during xmlstarlet processing (adding ${loggerLevel} logback loggers)"
           exit 1
         }
       echo_info "Done."
