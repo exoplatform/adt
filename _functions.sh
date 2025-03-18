@@ -627,7 +627,7 @@ initialize_product_settings() {
             env_var DEPLOYMENT_APPSRV_VERSION "8.5"
           elif [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4|1.5) ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(7.0[7.1]) ]]; then
+          elif [[ "${PRODUCT_VERSION}" =~ ^(7.0|7.1) ]]; then
             env_var "DEPLOYMENT_APPSRV_VERSION" "10.0"
           else 
             echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
