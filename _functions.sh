@@ -1926,9 +1926,20 @@ do_deploy() {
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
+      # Hack to keep the previous deployment directory in case of deployment failure
+      local BCK_DEPLOYMENT_DIR=${DEPLOYMENT_DIR:-}
+      local BCK_DEPLOYMENT_DATA_DIR=${DEPLOYMENT_DATA_DIR:-}
+      local BCK_DEPLOYMENT_CODEC_DIR=${DEPLOYMENT_CODEC_DIR:-}
       # The server have been already deployed.
       # We load its settings from the configuration
       do_load_deployment_descriptor
+      # if the job was failed during the deployment, we need to use current build variables instead of the broken deployment descriptor's variables
+      if [ -z "${DEPLOYMENT_DIR:-}" ] || [ -z "${DEPLOYMENT_DATA_DIR:-}" ] || [ -z "${DEPLOYMENT_CODEC_DIR:-}" ]; then
+        echo_warn "The deployment descriptor is invalid, likely due to a previous failed build. We will proceed by using the directory from current build."
+        DEPLOYMENT_DIR=${BCK_DEPLOYMENT_DIR}
+        DEPLOYMENT_DATA_DIR=${BCK_DEPLOYMENT_DATA_DIR}
+        DEPLOYMENT_CODEC_DIR=${BCK_DEPLOYMENT_CODEC_DIR}
+      fi
       if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ] && [ "$(find "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" -mindepth 1 -print -quit 2>/dev/null)" ]; then
         rm -rf ${_tmpdir}
         mkdir -p ${_tmpdir}
