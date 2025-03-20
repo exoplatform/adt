@@ -1322,6 +1322,7 @@ do_dump_dataset(){
   mkdir -p ${_dumpdir}/codec
   if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
     echo_info "Backing up codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
+    echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt | awk '{print $1}')"
     cp -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ${_dumpdir}/codec
     echo_info "Done."
   fi
@@ -1375,6 +1376,7 @@ do_restore_dataset(){
   mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exo/* ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/
   if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ]; then
     echo_info "Restoring codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
+    echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt | awk '{print $1}')"
     mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
     mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
     echo_info "Done."
@@ -1927,12 +1929,17 @@ do_deploy() {
       # The server have been already deployed.
       # We load its settings from the configuration
       do_load_deployment_descriptor
-      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ] && [ ! -z "$(ls -A ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})" ]; then
-        rm -rf ${_tmpdir}/*
+      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ] && [ "$(find "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" -mindepth 1 -print -quit 2>/dev/null)" ]; then
+        rm -rf ${_tmpdir}
+        mkdir -p ${_tmpdir}
         mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
         if [ -d ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ]; then
+          if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
+            echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt | awk '{print $1}')"
+          fi
           mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}
         else
+          echo_warn "No codec directory found."
           mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
         fi
       else
