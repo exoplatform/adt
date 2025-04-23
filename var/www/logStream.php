@@ -20,16 +20,20 @@ if (!file_exists($file_path)) {
 
 $filesize = filesize($file_path);
 
-if ($offset > $filesize) {
-    $offset = 0; // reset if file rotated
+if ($filesize > $offset) {
+    $handle = fopen($file_path, "rb");
+    fseek($handle, $offset);
+    $content = fread($handle, $filesize - $offset);
+    fclose($handle);
+
+    echo json_encode([
+        'offset' => $filesize,
+        'content' => ansi_to_html($content)
+    ]);
+} else {
+    // Nothing new to read — just return current offset and empty content
+    echo json_encode([
+        'offset' => $filesize,
+        'content' => ''
+    ]);
 }
-
-$handle = fopen($file_path, 'rb');
-fseek($handle, $offset);
-$content = fread($handle, $filesize - $offset);
-fclose($handle);
-
-echo json_encode([
-    'offset' => $filesize,
-    'content' => ansi_to_html($content)
-]);
