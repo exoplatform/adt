@@ -30,5 +30,5 @@ fclose($handle);
 
 echo json_encode([
     'offset' => $filesize,
-    'content' => htmlspecialchars($content, ENT_NOQUOTES, 'UTF-8')
+    'content' => ansi_to_html($content)
 ]);

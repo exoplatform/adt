@@ -828,4 +828,32 @@ function componentFBDeployIcon($deployment_descriptor) {
   $content.='</span></a>';
   return $content;
 }
+
+/*
+  * Convert ANSI color codes to HTML
+  *
+  * @param string $text The text with ANSI codes
+  * @return string The text with HTML tags
+  */
+function ansi_to_html($text) {
+  // Escape HTML characters first
+  $text = htmlspecialchars($text, ENT_NOQUOTES, 'UTF-8');
+
+  // ANSI code to HTML map (common for logback + tomcat)
+  $ansiMap = [
+      "\e[0;39m" => '</span>',                            // Reset
+      "\e[0m"     => '</span>',                           // Reset
+      "\e[1m"     => '<span style="font-weight: bold;">', // Bold
+      "\e[31m"    => '<span style="color: red;">',        // ERROR
+      "\e[33m"    => '<span style="color: orange;">',     // WARN
+      "\e[34m"    => '<span style="color: blue;">',       // INFO
+      "\e[32m"    => '<span style="color: green;">',      // Logger/Context
+      "\e[36m"    => '<span style="color: cyan;">',       // Thread
+      "\e[90m"    => '<span style="color: gray;">',       // Timestamp/Debug
+  ];
+
+  // Replace known ANSI sequences
+  return str_replace(array_keys($ansiMap), array_values($ansiMap), $text);
+}
+
 ?>
