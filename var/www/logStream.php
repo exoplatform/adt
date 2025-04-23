@@ -1,5 +1,6 @@
 <?php
 require_once(dirname(__FILE__) . '/lib/functions.php');
+require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 
 $file_path = $_GET['file'];
 $log_type = $_GET['type'];
