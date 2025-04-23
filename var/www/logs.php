@@ -47,30 +47,47 @@ checkCaches();
                             <pre id="log-output">Loading logs...</pre>
                             <script>
                                 let offset = 0;
+                                let polling = true;
                                 const file = "<?= htmlspecialchars($file_path, ENT_QUOTES) ?>";
                                 const type = "<?= htmlspecialchars($log_type, ENT_QUOTES) ?>";
 
-                                function fetchLogs() {
-                                    fetch(`logStream.php?file=${encodeURIComponent(file)}&type=${encodeURIComponent(type)}&offset=${offset}`)
-                                        .then(response => response.json())
-                                        .then(data => {
-                                            const pre = document.getElementById('log-output');
-                                            if (data.error) {
-                                                pre.innerText += "\n[ERROR] " + data.error;
-                                                return;
-                                            }
-                                            offset = data.offset;
-                                            if (data.content) {
-                                                pre.innerHTML += data.content;
-                                                pre.scrollTop = pre.scrollHeight;
-                                            }
-                                        })
-                                        .catch(err => {
-                                            console.error("Log stream error:", err);
-                                        });
+                                function showError(msg) {
+                                    const pre = document.getElementById('log-output');
+                                    pre.innerHTML += `\n<span style="color: red; font-weight: bold;">[ERROR]</span> ${msg}`;
+                                    pre.scrollTop = pre.scrollHeight;
                                 }
 
-                                setInterval(fetchLogs, 2000); // Poll every 2 seconds
+                                async function fetchLogs() {
+                                    if (!polling) return;
+
+                                    try {
+                                        const response = await fetch(`logStream.php?file=${encodeURIComponent(file)}&type=${encodeURIComponent(type)}&offset=${offset}`);
+                                        if (!response.ok) {
+                                            throw new Error(`Server error ${response.status}`);
+                                        }
+
+                                        const data = await response.json();
+
+                                        if (data.error) {
+                                            showError(data.error);
+                                            polling = false; // Stop polling
+                                            return;
+                                        }
+
+                                        if (data.content) {
+                                            const pre = document.getElementById('log-output');
+                                            offset = data.offset;
+                                            pre.innerHTML += data.content;
+                                            pre.scrollTop = pre.scrollHeight;
+                                        }
+
+                                    } catch (err) {
+                                        showError("Failed to fetch logs: " + err.message);
+                                        polling = false; // Stop polling on network/server error
+                                    }
+                                }
+
+                                setInterval(fetchLogs, 2000);
                             </script>
                             <?php
                         }

@@ -848,7 +848,7 @@ function ansi_to_html($text) {
       "\e[33m"    => '<span style="color: orange;">',     // WARN
       "\e[34m"    => '<span style="color: blue;">',       // INFO
       "\e[32m"    => '<span style="color: green;">',      // Logger/Context
-      "\e[36m"    => '<span style="color: cyan;">',       // Thread
+      "\e[36m"    => '<span style="color: #5555aa;">',  // Thread
       "\e[90m"    => '<span style="color: gray;">',       // Timestamp/Debug
   ];
 
