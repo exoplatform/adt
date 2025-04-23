@@ -841,15 +841,15 @@ function ansi_to_html($text) {
 
   // ANSI code to HTML map (common for logback + tomcat)
   $ansiMap = [
-      "\e[0;39m" => '</span>',                            // Reset
-      "\e[0m"     => '</span>',                           // Reset
-      "\e[1m"     => '<span style="font-weight: bold;">', // Bold
-      "\e[31m"    => '<span style="color: red;">',        // ERROR
-      "\e[33m"    => '<span style="color: orange;">',     // WARN
-      "\e[34m"    => '<span style="color: blue;">',       // INFO
-      "\e[32m"    => '<span style="color: green;">',      // Logger/Context
-      "\e[36m"    => '<span style="color: #5555aa;">',  // Thread
-      "\e[90m"    => '<span style="color: gray;">',       // Timestamp/Debug
+    "\033[0;39m" => '</span>',
+    "\033[0m"    => '</span>',
+    "\033[1m"    => '<span style="font-weight: bold;">',
+    "\033[31m"   => '<span style="color: red;">',        // ERROR
+    "\033[33m"   => '<span style="color: orange;">',     // WARN
+    "\033[34m"   => '<span style="color: blue;">',       // INFO
+    "\033[32m"   => '<span style="color: green;">',      // Logger/Context
+    "\033[36m"   => '<span style="color: #5555aa;">',  // Thread (e.g., <main>)
+    "\033[90m"   => '<span style="color: gray;">',       // DEBUG
   ];
 
   // Replace known ANSI sequences
