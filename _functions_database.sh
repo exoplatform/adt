@@ -423,7 +423,7 @@ do_reset_matrix_plf_database() {
       local _scopeId=$(${DATABASE_CMD_HEADLESS} <<< "${_scopeIdSQL}")
       if [ -z "${scopeId}" ] || [[ ! $scopeId =~ ^[0-9]+$ ]]; then
         echo_error "Unable to get the scopeId from the database"
-        exit 1
+        return 1
       fi
       cat >${_matrixsql} <<EOF
 DELETE FROM STG_SETTINGS WHERE SCOPE_ID = ${scopeId};
@@ -442,7 +442,7 @@ EOF
     *)
       echo_error "Matrix Plf Dataset reset isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
-      exit 1
+      return 1
     ;;
   esac
   rm -rf ${_matrixsql}
