@@ -1,5 +1,11 @@
 #!/bin/bash -eu
 
+# Install ffmpeg if not already installed
+# if ! command -v ffmpeg &>/dev/null; then
+#   echo "Installing ffmpeg..."
+#   apt-get update && apt-get install -y ffmpeg
+# fi
+
 # Plugin install
 if ! pip show synapse-auto-accept-invite; then
   echo "Installing synapse-auto-accept-invite plugin..."

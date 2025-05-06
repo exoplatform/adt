@@ -95,6 +95,7 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
+    -v /srv/ffmpeg/ffmpeg-7.0.2-i686-static/ffmpeg:/usr/local/bin/ffmpeg:ro \
     -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     --add-host=smtpserver:${SMTP_SERVER} \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
