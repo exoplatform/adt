@@ -415,10 +415,6 @@ do_reset_matrix_plf_database() {
 
   case ${DEPLOYMENT_DB_TYPE} in
     MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
-      if [ ! -e ${_matrixsql} ]; then
-       echo_error "SQL file (${_matrixsql}) doesn't exist."
-       exit 1
-      fi;
       if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
         do_start_database
       fi
