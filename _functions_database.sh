@@ -409,6 +409,49 @@ do_restore_database_dataset() {
   rm -rf ${_backupfile}
 }
 
+do_reset_matrix_plf_database() {
+   
+  local _matrixsql="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exomatrix.sql"
+
+  case ${DEPLOYMENT_DB_TYPE} in
+    MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
+      if [ ! -e ${_matrixsql} ]; then
+       echo_error "SQL file (${_matrixsql}) doesn't exist."
+       exit 1
+      fi;
+      if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
+        do_start_database
+      fi
+      local DATABASE_CMD_HEADLESS=$(echo "${DATABASE_CMD} -N")
+      local _scopeIdSQL='SELECT SCOPE_ID FROM STG_SCOPES WHERE NAME = "MatrixRoomAndAccountsDataInitializer";'
+      local _scopeId=$(${DATABASE_CMD_HEADLESS} <<< "${_scopeIdSQL}")
+      if [ -z "${scopeId}" ] || [[ ! $scopeId =~ ^[0-9]+$ ]]; then
+        echo_error "Unable to get the scopeId from the database"
+        exit 1
+      fi
+      cat >${_matrixsql} <<EOF
+DELETE FROM STG_SETTINGS WHERE SCOPE_ID = ${scopeId};
+DELETE FROM STG_SCOPES WHERE SCOPE_ID = ${scopeId};
+DELETE FROM MATRIX_ROOM;
+DELETE FROM SOC_IDENTITY_PROPERTIES where name = "matrixId";
+EOF
+      echo_info "Reset Matrix plf database initialization on ${DEPLOYMENT_DATABASE_NAME} database ..."
+      pv -p -t -e -a -r -b ${_matrixsql} | ${DATABASE_CMD}
+      echo_info "Reset done"
+      if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
+        do_stop_database
+      fi
+    ;;
+    # To be implemented for postgres database
+    *)
+      echo_error "Matrix Plf Dataset reset isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+  rm -rf ${_matrixsql}
+}
+
 #
 #
 #
