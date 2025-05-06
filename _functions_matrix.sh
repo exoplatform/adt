@@ -140,6 +140,15 @@ check_matrix_availability() {
 
   echo_info "Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} up and available."
 }
+
+# This function is used to reset the matrix data
+# It will drop the matrix data and create a new one
+# To be replaced by a dump/restore function
+do_reset_matrix_data() {
+  do_drop_matrix_data
+  do_create_matrix
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_MATRIX_LOADED=true

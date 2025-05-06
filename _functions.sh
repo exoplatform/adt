@@ -1394,6 +1394,15 @@ do_restore_dataset(){
   do_restore_database_dataset
 
   do_restore_es_dataset
+
+  if ${DEPLOYMENT_MATRIX_ENABLED}; then
+    if do_reset_matrix_plf_database; then 
+      do_reset_matrix_data
+    else 
+      echo_warn "An error occurred while resetting the matrix initialization on plf database. Skipping matrix data reset."
+    fi
+  fi
+
   rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
 }
 
