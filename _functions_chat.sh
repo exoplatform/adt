@@ -161,10 +161,10 @@ do_stop_chat_server() {
       echo_info "Stopping chat server container ${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}"
       ensure_docker_container_stopped ${DEPLOYMENT_CHAT_SERVER_CONTAINER_NAME}
     fi
-    if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
-      echo_info "Stopping chat server database container ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}"
-      ensure_docker_container_stopped ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
-    fi
+    # if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then 
+    #   echo_info "Stopping chat server database container ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}"
+    #   ensure_docker_container_stopped ${DEPLOYMENT_CHAT_MONGODB_CONTAINER_NAME}
+    # fi
     echo_info "Done."
   fi
 }
