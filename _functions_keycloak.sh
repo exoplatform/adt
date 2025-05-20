@@ -78,12 +78,16 @@ do_start_keycloak() {
   fi
   ${DOCKER_CMD} run \
   -d \
+  --user 12000:12000 \
   -e KC_BOOTSTRAP_ADMIN_USERNAME=bootstrap_admin \
   -e KC_BOOTSTRAP_ADMIN_PASSWORD=b00tstrap_p@ssw0rd \
   -e PROXY_ADDRESS_FORWARDING=${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false} \
   -e KC_HTTP_RELATIVE_PATH=/auth \
+  -e KC_LOG=console,file \
+  -e KC_LOG_FILE=/opt/keycloak/logs/keycloak.log \
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
   -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/keycloak/data \
+  -v ${DEPLOYMENT_DIR}/logs:/opt/keycloak/logs \
   --health-cmd="timeout 2 /bin/bash -c '</dev/tcp/localhost/8080' || exit 1" \
   --health-interval=30s \
   --health-timeout=30s \
