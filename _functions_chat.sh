@@ -289,15 +289,15 @@ do_drop_chat_mongo_database() {
 
 do_restore_chat_mongo_dataset() {
   do_drop_chat_database
-  do_start_chat_server
   local _dumpfile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/chat.dump"
   local _dbnamefile="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/chat.name"
+  if [ ! -e ${_dumpfile} ]; then
+    echo_warn "Mongo dump file (${_dumpfile}) doesn't exist. Skipping restore."
+    return 0
+  fi
+  do_start_chat_server
   case ${DEPLOYMENT_CHAT_MONGODB_TYPE} in
     DOCKER)
-      if [ ! -e ${_dumpfile} ]; then
-        echo_error "Mongo dump file (${_dumpfile}) doesn't exist."
-        exit 1
-      fi;
       local dbname="chat"
       [ -f "$_dbnamefile" -a -s "$_dbnamefile" ] && dbname=$(cat $_dbnamefile)
       echo_info "Restauring dump file to mongo server..."
