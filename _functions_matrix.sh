@@ -76,7 +76,7 @@ do_start_matrix() {
   cp -v ${ETC_DIR}/matrix/matrix.log.config ${DEPLOYMENT_DIR}/matrix/matrix.log.config
 
   #Change Matrix data directory to 12000
-  docker run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
+  ${DOCKER_CMD} run --rm -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data alpine \
   sh -c "chown -R 12000:12000 /data"
 
   local SMTP_SERVER='0.0.0.0'
