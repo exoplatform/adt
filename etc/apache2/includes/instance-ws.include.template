@@ -111,6 +111,18 @@
             ProxyPassReverse "http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify"
         </Location>
 
+        <LocationMatch "emojiBank\.json$">
+            Header set Cache-Control "public, max-age=31536000"
+
+            ProxyPreserveHost On
+            ProxyPass http://localhost:${DEPLOYMENT_PORT_PREFIX}
+            ProxyPassReverse http://localhost:${DEPLOYMENT_PORT_PREFIX}
+
+            RequestHeader set X-Real-IP %{REMOTE_ADDR}s
+            RequestHeader set X-Forwarded-For %{REMOTE_ADDR}s
+            RequestHeader set X-Forwarded-Proto expr=%{REQUEST_SCHEME}
+        </LocationMatch>
+
         <Location "/jitsiweb/xmpp-websocket">
             ProxyPass "ws://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket"
         </Location>
