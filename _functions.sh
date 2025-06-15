@@ -325,7 +325,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_MAILPIT_ENABLED" false
       configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE" "axllent/mailpit"
-      configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE_VERSION" "v1.26.0"
+      configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE_VERSION" "v1.26.1"
 
       # Matrix
       configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
