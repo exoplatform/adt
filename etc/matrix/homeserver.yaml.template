@@ -29,6 +29,7 @@ federation_domain_whitelist:
   - "app.element.io"
   - "exoplatform.org"
   - "exoplatform.com"
+  - "t2bot.io"
 federation:
   enabled: true
 
