@@ -1,19 +1,27 @@
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-$file = $_GET['file'];
-$type = $_GET['type'];
+declare(strict_types=1);
 
-if (file_exists($file) && isAuthorizedToReadFile($type, $file)) {
+require_once __DIR__ . '/lib/functions.php';
+
+$file = $_GET['file'] ?? '';
+$type = $_GET['type'] ?? '';
+
+if (!isAuthorizedToReadFile($type, $file)) {
+    header("HTTP/1.1 403 Forbidden");
+    exit("<span style=\"color:red\"><strong>Not authorized to download this file.</strong></span>");
+}
+
+if (file_exists($file)) {
     header('Content-Description: File Transfer');
     header('Content-Type: application/octet-stream');
-    header('Content-Disposition: attachment; filename="'.basename($file).'"');
+    header('Content-Disposition: attachment; filename="' . basename($file) . '"');
     header('Expires: 0');
     header('Cache-Control: must-revalidate');
     header('Pragma: public');
     header('Content-Length: ' . filesize($file));
     readfile($file);
     exit;
-} else {
-    printf("<span style=\"color:red\"><strong>Not authorized to download this file.</strong></span>");
 }
-?>
+
+header("HTTP/1.1 404 Not Found");
+exit("<span style=\"color:red\"><strong>File not found.</strong></span>");

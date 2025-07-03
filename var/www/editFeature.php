@@ -1,57 +1,40 @@
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-if( !empty($_POST['key']) ){
-    $file_base = getenv('ADT_DATA') . "/conf/features/" . $_POST['key'];
-    $file_spec = $file_base  . ".spec";
-    $file_status = $file_base . ".status";
-    $file_issue = $file_base . ".issue";
-    $file_description = $file_base . ".desc";
-    $file_branch = $file_base . ".branch";
+declare(strict_types=1);
 
-    if( !empty($_POST['specifications']) ) {
-        file_put_contents($file_spec, $_POST['specifications']);
-    } else {
-        // Remove any existing value by removing the file
-        if ( file_exists($file_spec) ) {
-            unlink($file);
+require_once __DIR__ . '/lib/functions.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_POST['key'])) {
+    $file_base = getenv('ADT_DATA') . "/conf/features/" . basename($_POST['key']);
+    
+    // Handle file operations
+    $files = [
+        'spec' => $file_base . ".spec",
+        'status' => $file_base . ".status",
+        'issue' => $file_base . ".issue",
+        'description' => $file_base . ".desc",
+        'branch' => $file_base . ".branch"
+    ];
+    
+    foreach ($files as $field => $file_path) {
+        if (isset($_POST[$field]) && $_POST[$field] !== '') {
+            if ($field === 'branch' && $_POST[$field] === 'UNSET') {
+                if (file_exists($file_path)) {
+                    unlink($file_path);
+                }
+            } else {
+                file_put_contents($file_path, $_POST[$field]);
+            }
+        } elseif (file_exists($file_path)) {
+            unlink($file_path);
         }
     }
-    if( !empty($_POST['status']) ) {
-        file_put_contents($file_status, $_POST['status']);
-    } else {
-        // Remove any existing value by removing the file
-        if ( file_exists($file_status) ) {
-            unlink($file_status);
-        }
-    }
-    if( !empty($_POST['issue']) ) {
-        file_put_contents($file_issue, $_POST['issue']);
-    } else {
-        // Remove any existing value by removing the file
-        if ( file_exists($file_issue) ) {
-            unlink($file_issue);
-        }
-    }
-    if( !empty($_POST['description']) ) {
-        file_put_contents($file_description, $_POST['description']);
-    } else {
-        // Remove any existing value by removing the file
-        if ( file_exists($file_description) ) {
-            unlink($file_description);
-        }
-    }
-    if ($_POST['branch'] !== "UNSET") {
-        file_put_contents($file_branch, $_POST['branch']);
-    } else {
-        // Remove any existing value by removing the file
-        if ( file_exists($file_branch) ) {
-          unlink($file_branch);
-        }
-    }
+    
+    // Clear caches and redirect
+    clearCaches();
+    header("Location: " . filter_var($_POST['from'], FILTER_SANITIZE_URL));
+    exit;
 }
-// Flush caches
-clearCaches();
-header("Location: " . $_POST['from'] . "?clearCaches=true"); /* Redirect browser */
-/* Make sure that code below does not get executed when we redirect. */
+
+// If not a POST request or missing key, redirect to home
+header("Location: /");
 exit;
-?>

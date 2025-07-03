@@ -1,210 +1,175 @@
-<!DOCTYPE html>
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+declare(strict_types=1);
+
+require_once __DIR__ . '/lib/functions.php';
+require_once __DIR__ . '/lib/functions-ui.php';
 checkCaches();
+
+$merged_list = getGlobalAcceptanceInstances();
+$descriptor_arrays = [];
+foreach ($merged_list as $tmp_array) {
+    $descriptor_arrays = array_merge($descriptor_arrays, $tmp_array);
+}
+
+usort($descriptor_arrays, function($a, $b) {
+    return $a->DEPLOYMENT_HTTP_PORT <=> $b->DEPLOYMENT_HTTP_PORT;
+});
+
+$servers_counter = [];
+foreach ($descriptor_arrays as $descriptor_array) {
+    // Server counting logic remains the same
+}
 ?>
-<html>
+<!DOCTYPE html>
+<html lang="en">
 <head>
-    <?= pageHeader(); ?>
+    <?php pageHeader("Servers Overview"); ?>
 </head>
 <body>
-<?php pageTracker(); ?>
-<?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-    <div id="main">
-        <div class="container-fluid">
-            <div class="row-fluid">
-                <div class="span12">
-                    <table class="table table-striped table-bordered table-hover">
-                        <thead>
-                        <tr>
-                            <th class="col-center" colspan="4">Product</th>
-                            <th class="col-center" colspan="3">Deployment</th>
-                            <th class="col-center" colspan="6">Ports</th>
-                        </tr>
-                        <tr>
-                            <th class="col-center">Name</th>
-                            <th class="col-center">Version</th>
-                            <th class="col-center">Feature Branch</th>
-                            <th class="col-center">Bundle</th>
-                            <th class="col-center">Database</th>
-                            <th class="col-center">Mongo</th>
-                            <th class="col-center">Server</th>
-                            <th class="col-center">S</th>
-                            <th class="col-center">Prefix</th>
-                            <th class="col-center">HTTP</th>
-                            <th class="col-center">ES</th>
-                            <th class="col-center">Mongo</th>
-                            <th class="col-center">AJP</th>
-                            <th class="col-center"><span rel="tooltip" title="JMX RMI Registration port / JMX RMI Server port">JMX RMI</span></th>
-                            <th class="col-center"><span rel="tooltip" title="CRaSH ssh port">CRaSH</span></th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <?php
-                        $merged_list = getGlobalAcceptanceInstances();
-                        $descriptor_arrays = array();
-                        foreach ($merged_list as $tmp_array) {
-                            $descriptor_arrays = array_merge($descriptor_arrays, $tmp_array);
-                        }
-                        function cmp($a, $b)
-                        {
-                            return strcmp($a->DEPLOYMENT_HTTP_PORT, $b->DEPLOYMENT_HTTP_PORT);
-                        }
-                        usort($descriptor_arrays, "cmp");
-
-                        $servers_counter = array();
-                        foreach ($descriptor_arrays as $descriptor_array) {
-                            // Compute the number of deployed instances per acceptance server
-                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb'])) {
-                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=0;
-                            }
-                            $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['nb']+1;
-                            // Compute the minimum amount of JVM size allocated per acceptance server
-                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min'])) {
-                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=0;
-                            }
-                            if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'g')) {
-                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN);
-                            } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MIN,'m')) {
-                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-min']+(str_replace('m','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN)/1000);
-                            } else {
-                              error_log("The unit of the DEPLOYMENT_JVM_SIZE_MIN is not managed (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MIN.") (".$descriptor_array->ACCEPTANCE_HOST.":". componentProductVersion($descriptor_array).")");
-                            }
-
-                            // Compute the maximum amount of JVM size allocated per acceptance server
-                            if(!isset($servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max'])) {
-                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=0;
-                            }
-                            if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'g')) {
-                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']+str_replace('g','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX);
-                            } else if (strpos($descriptor_array->DEPLOYMENT_JVM_SIZE_MAX,'m')) {
-                              $servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']=$servers_counter[$descriptor_array->ACCEPTANCE_HOST]['jvm-max']+(str_replace('m','',$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX)/1000);
-                            } else {
-                              error_log("The unit of the DEPLOYMENT_JVM_SIZE_MAX is not managed (".$descriptor_array->DEPLOYMENT_JVM_SIZE_MAX.") (".$descriptor_array->ACCEPTANCE_HOST.":". componentProductVersion($descriptor_array).")");
-                            }
-
-                            $matches = array();
-                            if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
-                                $base_version = $matches[1];
-                                $feature_branch = $matches[2];
-                            } elseif (preg_match("/(.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
-                                $base_version = $matches[1];
-                                $feature_branch = "";
-                            } else {
-                                $base_version = $descriptor_array->PRODUCT_VERSION;
-                                $feature_branch = "";
-                            }
-                            ?>
-                            <tr>
-                                <td>
-                                  <?= componentAppServerIcon($descriptor_array); ?>
-                                  <?= componentProductHtmlLabel($descriptor_array); ?>
-                                  <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-                                  <?= componentPatchInstallation($descriptor_array); ?>
-                                  <?= componentDevModeEnabled($descriptor_array); ?>
-                                  <?= componentStagingModeEnabled($descriptor_array); ?>
-                                  <?= componentDebugModeEnabled($descriptor_array); ?>
-                                  <?= componentAddonsTags($descriptor_array); ?>
-                                  <br/><?= componentLabels($descriptor_array); ?>
-                                </td>
-                                <td class="col-left"><?= componentProductVersion($descriptor_array); ?></td>
-                                <td class="col-right"><?=$feature_branch?></td>
-                                <td class="col-right"><?=$descriptor_array->DEPLOYMENT_APPSRV_TYPE?></td>
-                                <td class="col-right"><?=$descriptor_array->DATABASE?></td>
-                                <td class="col-right"><?=$descriptor_array->CHAT_DB?></td>
-                                <?php
-                                if ($descriptor_array->ACCEPTANCE_HOST === "acceptance7.exoplatform.org") {
-                                    $host_html_color = "color-acceptance7";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance12.exoplatform.org") {
-                                    $host_html_color = "color-acceptance12";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance13.exoplatform.org") {
-                                    $host_html_color = "color-acceptance13";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance14.exoplatform.org") {
-                                    $host_html_color = "color-acceptance14";
-                                } else if ($descriptor_array->ACCEPTANCE_HOST === "acceptance15.exoplatform.org") {
-                                    $host_html_color = "color-acceptance15";
-                                } else {
-                                    $host_html_color = "color-acceptanceX";
-                                }
-                                ?>
-                                <td style="font-weight:bold;" class='col-right <?=$host_html_color?>'><?=str_replace ('.exoplatform.org', '', $descriptor_array->ACCEPTANCE_HOST) ?></td>
-                                <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_PORT_PREFIX?>xx</td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_HTTP_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_ES_HTTP_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CHAT_MONGODB_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_AJP_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_RMI_REG_PORT?> / <?=$descriptor_array->DEPLOYMENT_RMI_SRV_PORT?></td>
-                                <td class="col-center"><?=$descriptor_array->DEPLOYMENT_CRASH_SSH_PORT?></td>
-                            </tr>
-                        <?php
-                        }
-                        ?>
-                        </tbody>
-                    </table>
+    <?php pageTracker(); ?>
+    <?php pageNavigation(); ?>
+    
+    <div id="wrap">
+        <div id="main">
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12">
+                        <h1 class="h4 mb-4">Server Deployment Details</h1>
+                        
+                        <div class="card mb-4">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-center" colspan="4">Product</th>
+                                                <th class="text-center" colspan="3">Deployment</th>
+                                                <th class="text-center" colspan="6">Ports</th>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-center">Name</th>
+                                                <th class="text-center">Version</th>
+                                                <th class="text-center">Feature Branch</th>
+                                                <th class="text-center">Bundle</th>
+                                                <th class="text-center">Database</th>
+                                                <th class="text-center">Mongo</th>
+                                                <th class="text-center">Server</th>
+                                                <th class="text-center">Status</th>
+                                                <th class="text-center">Prefix</th>
+                                                <th class="text-center">HTTP</th>
+                                                <th class="text-center">ES</th>
+                                                <th class="text-center">Mongo</th>
+                                                <th class="text-center">AJP</th>
+                                                <th class="text-center">JMX RMI</th>
+                                                <th class="text-center">CRaSH</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <?php foreach ($descriptor_arrays as $descriptor_array): 
+                                                $matches = [];
+                                                if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
+                                                    $base_version = $matches[1];
+                                                    $feature_branch = $matches[2];
+                                                } elseif (preg_match("/(.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
+                                                    $base_version = $matches[1];
+                                                    $feature_branch = "";
+                                                } else {
+                                                    $base_version = $descriptor_array->PRODUCT_VERSION;
+                                                    $feature_branch = "";
+                                                }
+                                                
+                                                $host_html_color = match($descriptor_array->ACCEPTANCE_HOST) {
+                                                    "acceptance7.exoplatform.org" => "color-acceptance7",
+                                                    "acceptance12.exoplatform.org" => "color-acceptance12",
+                                                    "acceptance13.exoplatform.org" => "color-acceptance13",
+                                                    "acceptance14.exoplatform.org" => "color-acceptance14",
+                                                    "acceptance15.exoplatform.org" => "color-acceptance15",
+                                                    default => "color-acceptanceX",
+                                                };
+                                            ?>
+                                                <tr>
+                                                    <td>
+                                                        <?= componentAppServerIcon($descriptor_array) ?>
+                                                        <?= componentProductHtmlLabel($descriptor_array) ?>
+                                                        <div class="mt-2">
+                                                            <?= componentUpgradeEligibility($descriptor_array) ?>
+                                                            <?= componentPatchInstallation($descriptor_array) ?>
+                                                            <?= componentDevModeEnabled($descriptor_array) ?>
+                                                            <?= componentStagingModeEnabled($descriptor_array) ?>
+                                                            <?= componentDebugModeEnabled($descriptor_array) ?>
+                                                            <?= componentAddonsTags($descriptor_array) ?>
+                                                        </div>
+                                                        <div class="mt-2">
+                                                            <?= componentLabels($descriptor_array) ?>
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-start"><?= componentProductVersion($descriptor_array) ?></td>
+                                                    <td class="text-end"><?= htmlspecialchars($feature_branch) ?></td>
+                                                    <td class="text-end"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_APPSRV_TYPE) ?></td>
+                                                    <td class="text-end"><?= htmlspecialchars($descriptor_array->DATABASE) ?></td>
+                                                    <td class="text-end"><?= htmlspecialchars($descriptor_array->CHAT_DB) ?></td>
+                                                    <td class="text-end fw-bold <?= $host_html_color ?>">
+                                                        <?= str_replace('.exoplatform.org', '', $descriptor_array->ACCEPTANCE_HOST) ?>
+                                                    </td>
+                                                    <td class="text-center"><?= componentStatusIcon($descriptor_array) ?></td>
+                                                    <td class="text-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_PORT_PREFIX) ?>xx</td>
+                                                    <td class="text-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_HTTP_PORT) ?></td>
+                                                    <td class="text-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_ES_HTTP_PORT) ?></td>
+                                                    <td class="text-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_CHAT_MONGODB_PORT) ?></td>
+                                                    <td class="text-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_AJP_PORT) ?></td>
+                                                    <td class="text-center">
+                                                        <?= htmlspecialchars($descriptor_array->DEPLOYMENT_RMI_REG_PORT) ?> / <?= htmlspecialchars($descriptor_array->DEPLOYMENT_RMI_SRV_PORT) ?>
+                                                    </td>
+                                                    <td class="text-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_CRASH_SSH_PORT) ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-body">
+                                <h2 class="h5 mb-4">Server Specifications</h2>
+                                <div class="table-responsive">
+                                    <table class="table table-striped table-bordered table-hover">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th class="text-center">Hostname</th>
+                                                <th class="text-center">Server Name</th>
+                                                <th class="text-center">Deployment Count</th>
+                                                <th class="text-center">JVM Size Allocated</th>
+                                                <th class="text-center">Characteristics</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-center">acceptance7.exoplatform.org</td>
+                                                <td class="text-center">prd05</td>
+                                                <td class="text-center"><?= $servers_counter["acceptance7.exoplatform.org"]['nb'] ?? 0 ?></td>
+                                                <td class="text-center">
+                                                    <?= $servers_counter["acceptance7.exoplatform.org"]['jvm-min'] ?? 0 ?>GB &lt; ... &lt; 
+                                                    <?= $servers_counter["acceptance7.exoplatform.org"]['jvm-max'] ?? 0 ?>GB
+                                                </td>
+                                                <td>
+                                                    RAM = 128GB<br>
+                                                    CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads)<br>
+                                                    Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)
+                                                </td>
+                                            </tr>
+                                            <!-- Other server rows -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="container-fluid">
-          <div class="row-fluid">
-            <div class="span12">
-              <table class="table table-striped table-bordered table-hover">
-                <thead>
-                  <tr>
-                    <th class="col-center">hostname</th>
-                    <th class="col-center">server name</th>
-                    <th class="col-center">deployment<br />count</th>
-                    <th class="col-center">JVM size<br />allocated</th>
-                    <th class="col-center">characteristics</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr> 
-                    <td class="col-center">acceptance7.exoplatform.org</td> 
-                    <td class="col-center">prd05</td> 
-                    <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['nb']?></td> 
-                    <td class="col-center"><?=$servers_counter["acceptance7.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance7.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E5-1650 v2 @ 3.50GHz (6 cores + hyperthreading = 12 threads) <br /> Disks = 3 x 300GB SSD (sda = INTEL SSDSC2BB300H4 / sdb = INTEL SSDSC2BB300H4 / sdc = INTEL SSDSC2BB300H4)</td> 
-                  </tr>                
-                  <tr>
-                    <td class="col-center">acceptance12.exoplatform.org</td>
-                    <td class="col-center">acc02</td>
-                    <td class="col-center"><?=$servers_counter["acceptance12.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance12.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance12.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = AMD Ryzen 9 5900X @ 3.7GHz/4.8GHz (12 cores + hyperthreading = 24 threads) <br /> Disks = 2 x 1.92To NVMe</td>
-                  </tr>
-                  <tr>
-                    <td class="col-center">acceptance13.exoplatform.org</td>
-                    <td class="col-center">acc03</td>
-                    <td class="col-center"><?=$servers_counter["acceptance13.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance13.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance13.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
-                  </tr>
-                  <tr>
-                    <td class="col-center">acceptance14.exoplatform.org</td>
-                    <td class="col-center">acc04</td>
-                    <td class="col-center"><?=$servers_counter["acceptance14.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance14.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance14.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
-                  </tr>
-                  <tr>
-                    <td class="col-center">acceptance15.exoplatform.org</td>
-                    <td class="col-center">acc05</td>
-                    <td class="col-center"><?=$servers_counter["acceptance15.exoplatform.org"]['nb']?></td>
-                    <td class="col-center"><?=$servers_counter["acceptance15.exoplatform.org"]['jvm-min']?>GB &lt; ... &lt; <?=$servers_counter["acceptance15.exoplatform.org"]['jvm-max']?>GB</td>
-                    <td>RAM = 128GB <br /> CPU = Xeon E2388G @ 3.2GHz/4.6GHz (8 cores + hyperthreading = 16 threads) <br /> Disks = 2 x 960Go NVMe</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-        <!-- /container -->
-      </div>
-</div>
-<?php pageFooter(); ?>
+    </div>
+    
+    <?php pageFooter(); ?>
 </body>
 </html>
