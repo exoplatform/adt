@@ -49,6 +49,14 @@
         Allow from all
     </Directory>
 
+    # Serve Certbot challenge files directly
+    Alias /.well-known/acme-challenge/ ${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/
+    <Directory "${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/">
+        AllowOverride None
+        Options None
+        Require all granted
+    </Directory>
+
     ProxyRequests           Off
     ProxyPreserveHost       On
     ProxyPass               /404.html            !
@@ -65,6 +73,7 @@
     ProxyPass               /images/Header.png   !
     ProxyPass               /images/Footer.png   !
     ProxyPass               /images/Logo.png     !
+    ProxyPass               /.well-known/acme-challenge/  !
 
     <IfModule mod_proxy_wstunnel.c>
         <Location "/jitsiweb/xmpp-websocket">
