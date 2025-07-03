@@ -1,0 +1,13 @@
+<VirtualHost *:80>
+    ServerName  ${DEPLOYMENT_EXT_HOST}
+    ServerAlias ${DEPLOYMENT_APACHE_VHOST_ALIAS}
+
+    # Serve Certbot challenge files directly
+    Alias /.well-known/acme-challenge/ ${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/
+    <Directory "${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/">
+        AllowOverride None
+        Options None
+        Require all granted
+    </Directory>
+
+</VirtualHost>

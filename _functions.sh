@@ -42,6 +42,7 @@ source "${SCRIPT_DIR}/_functions_phpldapadmin.sh"
 source "${SCRIPT_DIR}/_functions_jitsi.sh"
 source "${SCRIPT_DIR}/_functions_sftp.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
+source "${SCRIPT_DIR}/_functions_certbot.sh"
 
 # #################################################################################
 #
@@ -193,6 +194,18 @@ Environment Variables
   DEPLOYMENT_LOGBACK_LOGGERS        : Enable Debug logging for java packages (comma seperated eg: org.exoplatform:DEBUG,org.hibernate,org.springframework:ERROR), Default logging level is DEBUG
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
   DEPLOYMENT_STAGING_ENABLED        : Enable Staging nexus repositories deployment 
+
+  DEPLOYMENT_CERTBOT_ENABLED                : Enable Certbot integration for automatic SSL certificate issuance and renewal
+  DEPLOYMENT_CERTBOT_CERT_EXPIRE_PERIOD     : Certificate renewal threshold in seconds (e.g., 2592000 = 30 days before expiry)
+  DEPLOYMENT_CERTBOT_ACME_SERVER            : ACME server URL used for certificate issuance (e.g., Let's Encrypt endpoint)
+  DEPLOYMENT_CERTBOT_EAB_KID                : External Account Binding Key ID for ACME registration (leave empty if not required)
+  DEPLOYMENT_CERTBOT_EAB_HMAC_KEY           : External Account Binding HMAC key for ACME (leave empty if not required)
+  DEPLOYMENT_CERTBOT_FORCE_RENEWAL          : Force renewal of certificate even if not close to expiry
+  DEPLOYMENT_CERTBOT_UNDEPLOY_CERT_REMOVAL  : Remove certificates from the system upon undeploy
+
+  DEPLOYMENT_CERTBOT_CONFIG_FOLDER          : Filesystem path where Certbot stores certificates and configurations
+  DEPLOYMENT_CERTBOT_WEBROOT_PATH           : Webroot path used by Certbot for HTTP-01 challenge validation
+
 
 EOF
 }
@@ -387,6 +400,17 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
 
+      configurable_env_var "DEPLOYMENT_CERTBOT_ENABLED" false
+      configurable_env_var "DEPLOYMENT_CERTBOT_CERT_EXPIRE_PERIOD" "2592000" # 30 days
+      configurable_env_var "DEPLOYMENT_CERTBOT_ACME_SERVER" "https://acme-v02.api.letsencrypt.org/directory"
+      configurable_env_var "DEPLOYMENT_CERTBOT_EAB_KID" ""
+      configurable_env_var "DEPLOYMENT_CERTBOT_EAB_HMAC_KEY" ""
+      configurable_env_var "DEPLOYMENT_CERTBOT_FORCE_RENEWAL" false
+      configurable_env_var "DEPLOYMENT_CERTBOT_UNDEPLOY_CERT_REMOVAL" true
+
+      env_var "DEPLOYMENT_CERTBOT_CONFIG_FOLDER" "/etc/letsencrypt"
+      env_var "DEPLOYMENT_CERTBOT_WEBROOT_PATH" "/srv/wwwcertbot"
+    
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
 
@@ -1232,6 +1256,7 @@ initialize_product_settings() {
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
+   do_get_certbot_settings
 }
 
 #
@@ -1574,11 +1599,30 @@ do_configure_apache() {
   
   # Selct Certificate according to the domain name
   case ${INSTANCE_DOMAIN:-} in
+    exoplatform.org)
+      if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" = "true" ]; then 
+        echo_error "Certbot is not available for exoplatform.org domain name!"
+        exit 1
+      fi
+    ;;
     meeds.io)
       # MEEDSIO_XXXXX vars must be set on Jenkins SLAVE or loaded as global envs
       env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${MEEDSIO_SSL_CERTIFICATE_FILE}"
       env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${MEEDSIO_SSL_CERTIFICATE_KEY_FILE}"
       env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${MEEDSIO_SSL_CERTIFICATE_CHAIN_FILE}"
+    ;;
+    *)
+      if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" = "true" ]; then 
+        if [ "${DEPLOYMENT_APACHE_HTTPS_ENABLED:-false}" = "true" ] || [ "${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false}" = "true" ]; then
+          do_generate_certbot_certificate
+        else 
+          echo_error "HTTPS must be enabled when enabling certbot!"
+          exit 1
+        fi
+      else 
+        echo_error "${INSTANCE_DOMAIN:-} domain isn't supported!"
+        exit 1
+      fi
     ;;
   esac
 
@@ -1618,7 +1662,7 @@ do_configure_apache() {
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]); then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
             echo_n_info "Deploying Apache instance configuration for HTTPS only..."
             evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
@@ -1640,7 +1684,7 @@ do_configure_apache() {
     ;;
     private)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
+        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]); then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
             echo_n_info "Deploying Apache instance configuration for HTTPS only..."
             evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
@@ -2428,6 +2472,10 @@ do_undeploy() {
     fi
     if [ "${DEPLOYMENT_SFTP_ENABLED}" == "true" ]; then
       do_ufw_close_port ${DEPLOYMENT_SFTP_PORT} "Sftp Port" ${ADT_DEV_MODE}
+    fi
+
+    if [ "${DEPLOYMENT_CERTBOT_ENABLED}" == "true" ] && [ "${DEPLOYMENT_CERTBOT_UNDEPLOY_CERT_REMOVAL:-true}" == "true" ]; then 
+      do_unregister_certbot_certificate
     fi
 
     echo_info "Server undeployed"

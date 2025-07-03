@@ -67,6 +67,11 @@ getrandomstring() {
   cat /dev/urandom | tr -dc '[:alpha:][0-9]' | fold -w ${1:-12} | head -n 1
 }
 
+# $1 : url 
+getdomainfromUrl() {
+  echo "$1" | sed -E 's|^[a-z]+://||; s|:.*||; s|/.*||'
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_STRING_LOADED=true

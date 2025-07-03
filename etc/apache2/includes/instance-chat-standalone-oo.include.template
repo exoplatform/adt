@@ -56,6 +56,15 @@
         Allow from all
     </Directory>
 
+    # Serve Certbot challenge files directly
+    Alias /.well-known/acme-challenge/ ${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/
+    <Directory "${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/">
+        AllowOverride None
+        Options None
+        Require all granted
+    </Directory>
+
+
     RewriteEngine on 
     RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
@@ -72,6 +81,7 @@
     ProxyPass               /style.css           !
     ProxyPass               /logs/               !
     ProxyPass               /.well-known/matrix/ !
+    ProxyPass               /.well-known/acme-challenge/  !
     ProxyPass               /icons/              !
     ProxyPass               /images/favicon.ico  !
     ProxyPass               /images/Arrow.gif    !
