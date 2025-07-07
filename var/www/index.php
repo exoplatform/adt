@@ -4,170 +4,185 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
 <?= pageHeader(); ?>
 </head>
-<body>
+<body class="modern-ui">
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-<div id="main">
-<div class="container-fluid">
-<div class="row-fluid">
-<div class="span12">
-<p>These instances are deployed to be used for acceptance tests.</p>
-<table class="table table-bordered table-hover">
-<thead>
-<tr>
-    <th class="col-center">S</th>
-    <th class="col-center">Name</th>
-    <th class="col-center">Version</th>
-    <th class="col-center">Database</th>
-    <th class="col-center" colspan="4">Feature Branch</th>
-    <th class="col-center">Built</th>
-    <th class="col-center">Deployed</th>
-    <th class="col-center">&nbsp;</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-  <td colspan="15" class="category-row"><i class="icon-globe"></i> - Translation deployments</td>
-</tr>
-<?php
-$translation_instances = getGlobalTranslationInstances();
-if (isDeploymentInCategoryArray($translation_instances)) {
-  foreach ($translation_instances as $plf_branch => $descriptor_arrays) {
-    foreach ($descriptor_arrays as $descriptor_array) {?>
-      <tr>
-        <td class="col-center"><?= componentStatusIcon($descriptor_array) ?></td>
-        <td>
-          <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-          <?php
-          $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'green');
-          $product_deployment_url_label.='&nbsp;'.componentAppServerIcon($descriptor_array);
-          $product_deployment_url_label.='&nbsp;'.componentProductHtmlLabel($descriptor_array);
-          print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
-          ?>
-          <span class="pull-right">
-          <?= componentEditNoteIcon($descriptor_array) ?>
-      </span>
-        </td>
-        <td class="col-left"><?= componentDownloadIcon($descriptor_array); ?>&nbsp;<?= componentProductVersion($descriptor_array); ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-        <td class="col-center" colspan="4"></td>
-        <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-        <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
-      </tr>
-    <?php }
-  }
-}
-?>
-<!--<tr>
-  <td colspan="15" class="category-row"><i class="icon-book"></i> - Documentation deployments</td>
-</tr>-->
-<?php
-$doc_instances = getGlobalDocInstances();
-if (isDeploymentInCategoryArray($doc_instances)) {
-  foreach ($doc_instances as $plf_branch => $descriptor_arrays) {
-    foreach ($descriptor_arrays as $descriptor_array) {?>
-      <tr>
-        <td class="col-center"><?= componentStatusIcon($descriptor_array) ?></td>
-        <td>
-          <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-          <?php
-          $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'green');
-          $product_deployment_url_label.='&nbsp;'.componentAppServerIcon($descriptor_array);
-          $product_deployment_url_label.='&nbsp;'.componentProductHtmlLabel($descriptor_array);
-          print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
-          ?>
-          <span class="pull-right">
-          <?= componentEditNoteIcon($descriptor_array) ?>
-      </span>
-        </td>
-        <td class="col-left"><?= componentDownloadIcon($descriptor_array); ?>&nbsp;<?= componentProductVersion($descriptor_array); ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-        <td class="col-center" colspan="4"></td>
-        <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-        <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
-      </tr>
-    <?php }
-  }
-}
-?>
-<?php
-$dev_instances = getGlobalDevInstances();
-foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
-  ?>
-  <tr>
-    <td colspan="15" class="category-row"><?= buildTableTitleDev($plf_branch) ?></td>
-  </tr>
-  <?php foreach ($descriptor_arrays as $descriptor_array) { ?>
-    <tr>
-      <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-      <td>
-        <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-        <?php
-        $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'green');
-        $product_deployment_url_label.='&nbsp;'.componentAppServerIcon($descriptor_array);
-        $product_deployment_url_label.='&nbsp;'.componentProductHtmlLabel($descriptor_array);
-        print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
-        ?>
-        <span class="pull-right">
-          <?= componentSpecificationIcon($descriptor_array) ?>
-          <?php
-            // add edit note option icon if not a feature branch
-            if (!isInstanceFeatureBranch($descriptor_array)) {
-              print componentEditNoteIcon($descriptor_array);
-            }
-          ?>
-        </span>
-        <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-        <?= componentPatchInstallation($descriptor_array); ?>
-        <?= componentCertbotEnabled($descriptor_array); ?>
-        <?= componentDevModeEnabled($descriptor_array); ?>
-        <?= componentStagingModeEnabled($descriptor_array); ?>
-        <?= componentDebugModeEnabled($descriptor_array); ?>
-        <?= componentAddonsTags($descriptor_array); ?>
-        <br/><?= componentLabels($descriptor_array); ?>
-      </td>
-      <td class="col-left"><?= componentDownloadIcon($descriptor_array); ?>&nbsp;<?= componentProductVersion($descriptor_array); ?></td>
-      <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-      <?php if (isInstanceFeatureBranch($descriptor_array)) { ?>
-        <td class="col-center"><?= componentFBStatusLabel($descriptor_array) ?></td>
-        <td class="col-center"><?= componentFBScmLabel($descriptor_array) ?></td>
-        <td class="col-center"><?= componentFBIssueLabel($descriptor_array) ?></td>
-        <td class="col-center"><?= componentFBEditIcon($descriptor_array) ?><?= componentFBDeployIcon($descriptor_array) ?></td>
-      <?php } else { ?>
-        <td class="col-center" colspan="4"></td>
-      <?php } ?>
-      <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-      <td class="col-right"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-      <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
-    </tr>
-  <?php
-  }
-}
-?>
-</tbody>
-</table>
-<p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and its credentials can be found on CI Build.
-</p>
-<p>Each deployed Keycloak can be accessed using the Keycloak icon and these credentials :
-  <strong><code>root</code></strong> / <strong><code>password</code></strong>
-</p>
-<p>Each Ldap deployed can be accessed using the URL linked to the ldap url icon and these parameters :
-    <strong><code>Base DN:dc=exoplatform,dc=com</code></strong> / <strong><code>User DN:cn=admin,dc=exoplatform,dc=com</code></strong> / <strong><code>password:exo</code></strong>
-</p>
-</div>
-</div>
-</div>
-<!-- /container -->
-</div>
-</div>
+
+<!-- Main Content ================================================== -->
+<main class="container-fluid py-4">
+  <div class="row">
+    <div class="col-12">
+      <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white">
+          <h5 class="mb-0">Acceptance Testing Instances</h5>
+        </div>
+        <div class="card-body">
+          <p class="text-muted">These instances are deployed for acceptance tests and quality assurance.</p>
+          
+          <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th class="text-center" style="width: 40px">Status</th>
+                  <th class="text-center">Instance</th>
+                  <th class="text-center">Version</th>
+                  <th class="text-center">Database</th>
+                  <th class="text-center" colspan="4">Feature Branch</th>
+                  <th class="text-center">Built</th>
+                  <th class="text-center">Deployed</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td colspan="15" class="bg-dark text-warning fw-bold"><i class="fas fa-globe me-2"></i>Translation Deployments</td>
+                </tr>
+                <?php
+                $translation_instances = getGlobalTranslationInstances();
+                if (isDeploymentInCategoryArray($translation_instances)) {
+                  foreach ($translation_instances as $plf_branch => $descriptor_arrays) {
+                    foreach ($descriptor_arrays as $descriptor_array) {?>
+                      <tr>
+                        <td class="text-center"><?= componentStatusIcon($descriptor_array) ?></td>
+                        <td>
+                          <?= componentProductInfoIcon($descriptor_array); ?>
+                          <?php
+                          $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'text-success');
+                          $product_deployment_url_label.=' '.componentAppServerIcon($descriptor_array);
+                          $product_deployment_url_label.=' '.componentProductHtmlLabel($descriptor_array);
+                          print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
+                          ?>
+                          <div class="float-end">
+                          <?= componentEditNoteIcon($descriptor_array) ?>
+                          </div>
+                        </td>
+                        <td><?= componentDownloadIcon($descriptor_array); ?> <?= componentProductVersion($descriptor_array); ?></td>
+                        <td class="text-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+                        <td class="text-center" colspan="4"></td>
+                        <td class="text-end <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+                        <td class="text-end"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+                        <td><?= componentDeploymentActions($descriptor_array); ?></td>
+                      </tr>
+                    <?php }
+                  }
+                }
+                ?>
+                
+                <?php
+                $doc_instances = getGlobalDocInstances();
+                if (isDeploymentInCategoryArray($doc_instances)) {
+                  foreach ($doc_instances as $plf_branch => $descriptor_arrays) {
+                    foreach ($descriptor_arrays as $descriptor_array) {?>
+                      <tr>
+                        <td class="text-center"><?= componentStatusIcon($descriptor_array) ?></td>
+                        <td>
+                          <?= componentProductInfoIcon($descriptor_array); ?>
+                          <?php
+                          $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'text-success');
+                          $product_deployment_url_label.=' '.componentAppServerIcon($descriptor_array);
+                          $product_deployment_url_label.=' '.componentProductHtmlLabel($descriptor_array);
+                          print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
+                          ?>
+                          <div class="float-end">
+                          <?= componentEditNoteIcon($descriptor_array) ?>
+                          </div>
+                        </td>
+                        <td><?= componentDownloadIcon($descriptor_array); ?> <?= componentProductVersion($descriptor_array); ?></td>
+                        <td class="text-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+                        <td class="text-center" colspan="4"></td>
+                        <td class="text-end <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+                        <td class="text-end"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+                        <td><?= componentDeploymentActions($descriptor_array); ?></td>
+                      </tr>
+                    <?php }
+                  }
+                }
+                ?>
+                
+                <?php
+                $dev_instances = getGlobalDevInstances();
+                foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
+                  ?>
+                  <tr>
+                    <td colspan="15" class="bg-dark text-warning fw-bold"><?= buildTableTitleDev($plf_branch) ?></td>
+                  </tr>
+                  <?php foreach ($descriptor_arrays as $descriptor_array) { ?>
+                    <tr>
+                      <td class="text-center"><?= componentStatusIcon($descriptor_array); ?></td>
+                      <td>
+                        <?= componentProductInfoIcon($descriptor_array); ?>
+                        <?php
+                        $product_deployment_url_label=componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'text-success');
+                        $product_deployment_url_label.=' '.componentAppServerIcon($descriptor_array);
+                        $product_deployment_url_label.=' '.componentProductHtmlLabel($descriptor_array);
+                        print componentProductOpenLink($descriptor_array, $product_deployment_url_label);
+                        ?>
+                        <div class="float-end">
+                          <?= componentSpecificationIcon($descriptor_array) ?>
+                          <?php
+                            // add edit note option icon if not a feature branch
+                            if (!isInstanceFeatureBranch($descriptor_array)) {
+                              print componentEditNoteIcon($descriptor_array);
+                            }
+                          ?>
+                        </div>
+                        <div class="mt-2">
+                          <?= componentUpgradeEligibility($descriptor_array); ?>
+                          <?= componentPatchInstallation($descriptor_array); ?>
+                          <?= componentCertbotEnabled($descriptor_array); ?>
+                          <?= componentDevModeEnabled($descriptor_array); ?>
+                          <?= componentStagingModeEnabled($descriptor_array); ?>
+                          <?= componentDebugModeEnabled($descriptor_array); ?>
+                          <?= componentAddonsTags($descriptor_array); ?>
+                        </div>
+                        <div class="mt-1"><?= componentLabels($descriptor_array); ?></div>
+                      </td>
+                      <td><?= componentDownloadIcon($descriptor_array); ?> <?= componentProductVersion($descriptor_array); ?></td>
+                      <td class="text-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+                      <?php if (isInstanceFeatureBranch($descriptor_array)) { ?>
+                        <td class="text-center"><?= componentFBStatusLabel($descriptor_array) ?></td>
+                        <td class="text-center"><?= componentFBScmLabel($descriptor_array) ?></td>
+                        <td class="text-center"><?= componentFBIssueLabel($descriptor_array) ?></td>
+                        <td class="text-center"><?= componentFBEditIcon($descriptor_array) ?><?= componentFBDeployIcon($descriptor_array) ?></td>
+                      <?php } else { ?>
+                        <td class="text-center" colspan="4"></td>
+                      <?php } ?>
+                      <td class="text-end <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+                      <td class="text-end"><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+                      <td><?= componentDeploymentActions($descriptor_array); ?></td>
+                    </tr>
+                  <?php
+                  }
+                }
+                ?>
+              </tbody>
+            </table>
+          </div>
+          
+          <div class="alert alert-info mt-4">
+            <h6><i class="fas fa-info-circle me-2"></i>Access Information</h6>
+            <ul class="mb-0">
+              <li>Each instance can be accessed using JMX with the URL linked to the monitoring icon and its credentials can be found on CI Build.</li>
+              <li>Each deployed Keycloak can be accessed using the Keycloak icon with credentials: <code>root</code> / <code>password</code></li>
+              <li>Each LDAP deployment can be accessed using the LDAP URL icon with parameters:
+                <ul>
+                  <li><strong>Base DN:</strong> <code>dc=exoplatform,dc=com</code></li>
+                  <li><strong>User DN:</strong> <code>cn=admin,dc=exoplatform,dc=com</code></li>
+                  <li><strong>Password:</strong> <code>exo</code></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
 <?php pageFooter(); ?>
 </body>
 </html>
