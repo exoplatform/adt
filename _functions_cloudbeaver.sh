@@ -84,6 +84,7 @@ do_start_cloudbeaver() {
   -d \
   -p "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}:8978" \
   -v "${DEPLOYMENT_DIR}/data-sources.json:/opt/cloudbeaver/workspace/GlobalConfiguration/.dbeaver/data-sources.json" \
+  -v "${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/mnt/synapse_data:ro" \
   --add-host=host.docker.internal:${DB_ADDR} \
   --name ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION}
 

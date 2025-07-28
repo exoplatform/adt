@@ -1,51 +1,49 @@
 {
-	"folders": {},
-	"connections": {
-		"mysql8-18823545840-4c316f51e9ff0ee": {
-			"provider": "mysql",
-			"driver": "mysql8",
-			"name": "MySQL@Acceptance",
-			"save-password": true,
-			"show-system-objects": true,
-			"read-only": ${DEPLOYMENT_CLOUDBEAVER_READONLY},
-			"configuration": {
-				"host": "host.docker.internal",
-				"port": "3306",
-				"database": "${DEPLOYMENT_DATABASE_NAME}",
-				"url": "jdbc:mysql://host.docker.internal:3306/${DEPLOYMENT_DATABASE_NAME}",
-				"user": "${DEPLOYMENT_DATABASE_USER}",
-				"password": "${DEPLOYMENT_DATABASE_USER}",
-				"configurationType": "MANUAL",
-				"type": "dev",
-				"properties": {
-					"allowPublicKeyRetrieval": "true"
-				},
-				"auth-model": "native",
-				"handlers": {}
-			}
-		}
-	},
-	"connections": {
-		"synapse-sqlite": {
-		"provider": "sqlite",
-		"driver": "sqlite",
-		"name": "Synapse SQLite",
-		"configuration": {
-			"type": "dev",
-			"configurationType": "MANUAL",
-			"url": "jdbc:sqlite:${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data/homeserver.db"
-		}
-		}
-	},
-	"connection-types": {
-		"dev": {
-			"name": "Development",
-			"color": "255,255,255",
-			"description": "Regular development database",
-			"auto-commit": true,
-			"confirm-execute": false,
-			"confirm-data-change": false,
-			"auto-close-transactions": false
-		}
-	}
+  "folders": {},
+  "connections": {
+    "mysql8-18823545840-4c316f51e9ff0ee": {
+      "provider": "mysql",
+      "driver": "mysql8",
+      "name": "MySQL@Acceptance",
+      "save-password": true,
+      "show-system-objects": true,
+      "read-only": ${DEPLOYMENT_CLOUDBEAVER_READONLY},
+      "configuration": {
+        "host": "host.docker.internal",
+        "port": "3306",
+        "database": "${DEPLOYMENT_DATABASE_NAME}",
+        "url": "jdbc:mysql://host.docker.internal:3306/${DEPLOYMENT_DATABASE_NAME}",
+        "user": "${DEPLOYMENT_DATABASE_USER}",
+        "password": "${DEPLOYMENT_DATABASE_USER}",
+        "configurationType": "MANUAL",
+        "type": "dev",
+        "properties": {
+          "allowPublicKeyRetrieval": "true"
+        },
+        "auth-model": "native",
+        "handlers": {}
+      }
+    },
+    "synapse-sqlite": {
+      "provider": "sqlite",
+      "driver": "sqlite",
+      "name": "Synapse SQLite",
+      "configuration": {
+        "type": "dev",
+        "configurationType": "MANUAL",
+        "url": "jdbc:sqlite:/mnt/synapse_data/homeserver.db"
+      }
+    }
+  },
+  "connection-types": {
+    "dev": {
+      "name": "Development",
+      "color": "255,255,255",
+      "description": "Regular development database",
+      "auto-commit": true,
+      "confirm-execute": false,
+      "confirm-data-change": false,
+      "auto-close-transactions": false
+    }
+  }
 }
