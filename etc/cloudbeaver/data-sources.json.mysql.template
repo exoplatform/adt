@@ -25,6 +25,18 @@
 			}
 		}
 	},
+	"connections": {
+		"synapse-sqlite": {
+		"provider": "sqlite",
+		"driver": "sqlite",
+		"name": "Synapse SQLite",
+		"configuration": {
+			"type": "dev",
+			"configurationType": "MANUAL",
+			"url": "jdbc:sqlite:${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data/homeserver.db"
+		}
+		}
+	},
 	"connection-types": {
 		"dev": {
 			"name": "Development",

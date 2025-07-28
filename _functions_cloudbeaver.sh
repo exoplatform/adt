@@ -64,7 +64,10 @@ do_start_cloudbeaver() {
     ;;
     DOCKER_POSTGRES)
       evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.postgres.template ${DEPLOYMENT_DIR}/data-sources.json
-    ;;  
+    ;;
+    SQLITE)
+      evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.sqlite.template ${DEPLOYMENT_DIR}/data-sources.json
+    ;;
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
