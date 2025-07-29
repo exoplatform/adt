@@ -34,7 +34,8 @@
         "type": "dev",
         "configurationType": "MANUAL",
         "url": "jdbc:sqlite:/mnt/synapse_data/homeserver.db",
-        "database": "/mnt/synapse_data/homeserver.db"
+        "database": "/mnt/synapse_data/homeserver.db",
+        "closeIdleConnection": true
       }
     }
   },
