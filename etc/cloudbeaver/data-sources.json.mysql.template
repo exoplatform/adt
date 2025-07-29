@@ -36,7 +36,11 @@
         "url": "jdbc:sqlite:/mnt/synapse_data/homeserver.db",
         "database": "/mnt/synapse_data/homeserver.db",
         "closeIdleConnection": true
-      }
+      },
+      "template": false,
+      "providerProperties": {
+        "file": "/mnt/synapse_data/homeserver.db"
+      }     
     }
   },
   "connection-types": {
