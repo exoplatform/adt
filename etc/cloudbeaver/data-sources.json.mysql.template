@@ -26,7 +26,7 @@
     },
     "synapse-sqlite": {
       "provider": "sqlite",
-      "driver": "sqlite",
+      "driver": "sqlite_jdbc",
       "name": "Synapse SQLite",
       "save-password": true,
       "show-system-objects": true,      
