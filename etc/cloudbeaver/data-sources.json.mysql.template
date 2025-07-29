@@ -28,10 +28,13 @@
       "provider": "sqlite",
       "driver": "sqlite-xerial",
       "name": "Synapse SQLite",
+      "save-password": true,
+      "show-system-objects": true,      
       "configuration": {
         "type": "dev",
         "configurationType": "MANUAL",
-        "url": "jdbc:sqlite:/mnt/synapse_data/homeserver.db"
+        "url": "jdbc:sqlite:/mnt/synapse_data/homeserver.db",
+        "database": "/mnt/synapse_data/homeserver.db"
       }
     }
   },
