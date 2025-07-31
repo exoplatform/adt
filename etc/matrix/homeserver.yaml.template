@@ -78,7 +78,7 @@ email:
   enable_tls: false
   notif_from: "Your Friendly %(app)s homeserver <noreply@exoplatform.com>"
   app_name: eXo Matrix Chat # Name of the server that will appear in notifications
-  enable_notifs: true
+  enable_notifs: false
   notif_for_new_users: true
   validation_token_lifetime: 15m
   subjects:
