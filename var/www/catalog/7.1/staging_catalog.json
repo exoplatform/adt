@@ -319,6 +319,25 @@
         "compatibility": "[@exo_plf_version]"
     },
     {
+        "id": "exo-email-connector",
+        "version": "@exo_plf_version",
+        "unstable": true,
+        "name": "eXo Email Connector",
+        "description": "eXo Email Connector",
+        "sourceUrl": "https://github.com/exoplatform/email-connector",
+        "documentationUrl": "https://github.com/exoplatform/email-connector",
+        "downloadUrl": "http://addons.exoplatform.org/n/exo-addons-snapshots/org.exoplatform.addons.email-connector/email-connector-packaging/@exo_plf_version/zip",
+        "vendor": "eXo",
+        "author": "eXo",
+        "authorEmail": "exo-addons@exoplatform.com",
+        "license": "LGPLv3",
+        "licenseUrl": "https://www.gnu.org/licenses/agpl-3.0.txt",
+        "mustAcceptLicense": false,
+        "supportedDistributions": "exo_community,community,enterprise",
+        "supportedApplicationServers": "tomcat",
+        "compatibility": "[@exo_plf_version]"
+    },
+  {
         "id": "exo-multifactor-authentication",
         "version": "@exo_plf_version",
         "unstable": true,
