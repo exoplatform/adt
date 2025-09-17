@@ -95,14 +95,12 @@ do_start_jitsi() {
     return
   fi
   # TL;DR: export All envrionment variables included on this template
-  jitsi_major_version=$(echo "${DEPLOYMENT_JITSI_IMAGE_VERSION}" | grep -oP '^[0-9]+' | head -n1)
-  case "${jitsi_major_version}" in
-    7|8|9|10)
-      ;;
-    *)
-      jitsi_major_version="10"
-      ;;
-  esac  
+if [[ "$DEPLOYMENT_JITSI_IMAGE_VERSION" =~ ^stable-([0-9]+) ]]; then
+  build_number="${BASH_REMATCH[1]}"
+  jitsi_major_version=$(( build_number / 1000 ))
+else
+  jitsi_major_version="10" # default latest version
+fi
   export DEPLOYMENT_URL DEPLOYMENT_JITSI_NETWORK_NAME DEPLOYMENT_JITSI_JVB_PORT jitsi_major_version
   evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}"
