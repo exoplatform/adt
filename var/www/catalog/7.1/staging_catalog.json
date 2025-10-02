@@ -326,7 +326,7 @@
         "description": "eXo Email Connector",
         "sourceUrl": "https://github.com/exoplatform/email-connector",
         "documentationUrl": "https://github.com/exoplatform/email-connector",
-        "downloadUrl": "http://addons.exoplatform.org/n/exo-addons-snapshots/org.exoplatform.addons.email-connector/email-connector-packaging/@exo_plf_version/zip",
+        "downloadUrl": "http://addons.exoplatform.org/n/staging/org.exoplatform.addons.email-connector/email-connector-packaging/@exo_plf_version/zip",
         "vendor": "eXo",
         "author": "eXo",
         "authorEmail": "exo-addons@exoplatform.com",
