@@ -151,7 +151,7 @@ function buildTableTitleDev($plf_branch) {
       $content="Platform " . $plf_branch . " based builds (Maintenance)";
       break;  
     case "7.1.x":
-      $content="Platform or Meeds " . $plf_branch . " based builds (R&D) - next product release (no date yet)";
+      $content="Platform " . $plf_branch . " based builds (Maintenance)";
       break;
     case "7.2.x":
       $content="Platform or Meeds " . $plf_branch . " based builds (R&D) - next product release (no date yet)";
