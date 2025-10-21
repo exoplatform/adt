@@ -343,7 +343,7 @@ initialize_product_settings() {
       # Matrix
       configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse"
-      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
+      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.139.2"
       configurable_env_var "DEPLOYMENT_MATRIX_ADMIN_USERNAME" "root"
       configurable_env_var "DEPLOYMENT_MATRIX_ADMIN_PASSWORD" "$(fqdn_rand_string 32 'admin-password' ${INSTANCE_KEY})"
       configurable_env_var "DEPLOYMENT_MATRIX_REGISTRATION_SHARED_KEY" "$(fqdn_rand_string 32 'reg-secret' ${INSTANCE_KEY})"
