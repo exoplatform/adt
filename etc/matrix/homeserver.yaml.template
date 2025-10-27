@@ -39,16 +39,16 @@ database:
     database: /data/homeserver.db
 media_store_path: /data/media_store
 log_config: /data/matrix.log.config
-registration_shared_secret: "U4mf8a4Nsm*#inyR;o4pFh~V,@U-JBYY#1KryurFx3T-~f_ahf"
+registration_shared_secret: "${DEPLOYMENT_MATRIX_REGISTRATION_SHARED_KEY}"
 report_stats: true
-macaroon_secret_key: "IkZiKk31HA&,DZd^1q33mDbn.,K+2+,NnDu+Hxs5nFV_RKdez7"
-form_secret: "Ws~&n4ueNIKH,vgEIt=4@d=qWs,K@KbvvR;I1Fo74q@:6fy7Fh"
+macaroon_secret_key: "${DEPLOYMENT_MATRIX_MACARON_SECRET_KEY}"
+form_secret: "${DEPLOYMENT_MATRIX_FORM_SECRET}"
 signing_key_path: "/data/matrix.host.signing.key"
 trusted_key_servers:
   - server_name: "matrix.org"
 jwt_config:
   enabled: true
-  secret: "acc-e0eeooroep-3-e-j0r3-e-tjest-"
+  secret: "${DEPLOYMENT_MATRIX_JWT_SECRET}"
   algorithm: "HS256"
 
 rc_registration:

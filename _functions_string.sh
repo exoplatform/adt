@@ -72,6 +72,24 @@ getdomainfromUrl() {
   echo "$1" | sed -E 's|^[a-z]+://||; s|:.*||; s|/.*||'
 }
 
+# $1: length
+# $2: salt
+# $3: fqdn
+fqdn_rand_string() {
+  local length="$1"
+  local salt="$2"
+  local fqdn="$3"
+  local seed="${fqdn}-${salt}"
+
+  # Compute a SHA-256 hash and convert to base64 for a diverse charset
+  local hash
+  hash=$(echo -n "$seed" | sha256sum | awk '{print $1}')
+  local b64
+  b64=$(echo -n "$hash" | xxd -r -p | base64 | tr -d '=' | tr '/+' 'AB')
+
+  echo "${b64:0:$length}"
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_STRING_LOADED=true

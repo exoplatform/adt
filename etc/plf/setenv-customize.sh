@@ -224,3 +224,14 @@ if [ -f "${DEPLOYMENT_DIR}/exo.jks" ]; then
   CATALINA_OPTS="${CATALINA_OPTS:-} -Djavax.net.ssl.trustStore=${DEPLOYMENT_DIR}/exo.jks"
   CATALINA_OPTS="${CATALINA_OPTS:-} -Djavax.net.ssl.trustStorePassword=changeit"
 fi
+
+#Matrix integration
+if ${DEPLOYMENT_MATRIX_ENABLED}; then
+  DEP_URL="$(echo ${EXO_DEPLOYMENT_URL} | sed -e 's/\(.*\)/\L\1/')"
+  DEP_DOMAIN="$(echo ${DEP_URL} | sed -E 's|https?://||')"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.matrix.server.url=${DEP_URL}"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.matrix.server.name=${DEP_DOMAIN}"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.matrix.user.name=${DEPLOYMENT_MATRIX_ADMIN_USERNAME}"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.matrix.shared_secret_registration=${DEPLOYMENT_MATRIX_REGISTRATION_SHARED_KEY}"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.matrix.jwt.secret=${DEPLOYMENT_MATRIX_JWT_SECRET}"
+fi
