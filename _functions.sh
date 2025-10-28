@@ -2264,7 +2264,7 @@ do_start() {
   echo_info " - Read only access : acceptanceMonitor/${DEPLOYMENT_JMX_READONLY_PASSWORD}"
   echo_info " - Write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
   if [ ! -z "${DEPLOYMENT_MATRIX_ENABLED}" ]; then
-    echo_info "Matrix: ${DEPLOYMENT_MATRIX_ADMIN_USERNAME}/${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}"
+    echo_info "Matrix : ${DEPLOYMENT_MATRIX_ADMIN_USERNAME}/${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}"
   fi
   if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
     echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
