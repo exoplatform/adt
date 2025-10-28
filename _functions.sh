@@ -345,7 +345,11 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse"
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
       configurable_env_var "DEPLOYMENT_MATRIX_ADMIN_USERNAME" "root"
-      configurable_env_var "DEPLOYMENT_MATRIX_ADMIN_PASSWORD" "rootroot"
+      configurable_env_var "DEPLOYMENT_MATRIX_ADMIN_PASSWORD" "$(fqdn_rand_string 32 'admin-password' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_MATRIX_REGISTRATION_SHARED_KEY" "$(fqdn_rand_string 32 'reg-secret' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_MATRIX_JWT_SECRET" "$(fqdn_rand_string 32 'jwt-secret' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_MATRIX_MACARON_SECRET_KEY" "$(fqdn_rand_string 64 'macaroon-secret"' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_MATRIX_FORM_SECRET" "$(fqdn_rand_string 32 'form-secret' ${INSTANCE_KEY})"
 
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "mthenw/frontail"
@@ -2259,6 +2263,9 @@ do_start() {
   echo_info " - URL              : ${DEPLOYMENT_JMX_URL}"
   echo_info " - Read only access : acceptanceMonitor/${DEPLOYMENT_JMX_READONLY_PASSWORD}"
   echo_info " - Write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
+  if [ ! -z "${DEPLOYMENT_MATRIX_ENABLED}" ]; then
+    echo_info "Matrix : ${DEPLOYMENT_MATRIX_ADMIN_USERNAME}/${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}"
+  fi
   if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
     echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
   fi
