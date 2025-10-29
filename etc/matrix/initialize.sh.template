@@ -1,34 +1,23 @@
-#!/bin/bash -eu
-
-# Plugin install
-if ! pip show synapse-auto-accept-invite; then
-  echo "Installing synapse-auto-accept-invite plugin..."
-  pip install --target /data/matrix_plugins synapse-auto-accept-invite
-fi
-export PYTHONPATH="/data/matrix_plugins:${PYTHONPATH:-}"
-
-exec /start.py &
-
-# Wait for Synapse to be ready
-echo "Waiting for Synapse API to be ready..."
+# Wait for Synapse API
+echo "Waiting for Synapse API..."
 until curl -sSf http://localhost:8008/_matrix/client/versions &>/dev/null; do
-  echo "Synapse API not ready, retrying in 5 seconds..."
+  echo "Synapse not ready, retrying..."
   sleep 5
 done
 
-# Correct the curl command for admin user check
-if curl -sSf -X POST -H "Content-Type: application/json" \
-    -d "{\"type\":\"m.login.password\", \"user\":\"${DEPLOYMENT_MATRIX_ADMIN_USERNAME}\", \"password\":\"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}\"}" \
-    http://localhost:8008/_matrix/client/r0/login &>/dev/null; then
-    echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} already exists. Skipping creation."
-else
-  echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} not found. Attempting to create the user..."
-  # Attempt to register the admin user
-  if register_new_matrix_user -c /data/homeserver.yaml -a -u ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} -p "${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}" &>/dev/null; then
-    echo "Admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME} created successfully!"
-  else
-    echo "Failed to create admin user ${DEPLOYMENT_MATRIX_ADMIN_USERNAME}."
-  fi
-fi
+# Attempt login
+LOGIN_RESPONSE=$(curl -s -XPOST -H "Content-Type: application/json" \
+    -d "{\"type\":\"m.login.password\",\"user\":\"${DEPLOYMENT_MATRIX_ADMIN_USERNAME}\",\"password\":\"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}\"}" \
+    http://localhost:8008/_matrix/client/r0/login)
 
-wait
+if echo "$LOGIN_RESPONSE" | grep -q '"access_token"'; then
+    echo "Admin user exists and login successful."
+else
+    echo "Admin user login failed. Resetting password..."
+    # Reset password via admin API
+    curl -s -XPOST -H "Authorization: Bearer ${DEPLOYMENT_MATRIX_ADMIN_TOKEN}" \
+        -H "Content-Type: application/json" \
+        -d "{\"new_password\":\"${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}\"}" \
+        http://localhost:8008/_synapse/admin/v1/reset_password/@${DEPLOYMENT_MATRIX_ADMIN_USERNAME}:devx-ft.exoplatform.org
+    echo "Password reset. Admin user ready."
+fi
