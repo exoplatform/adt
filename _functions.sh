@@ -2023,17 +2023,22 @@ do_deploy() {
         DEPLOYMENT_CODEC_DIR=${BCK_DEPLOYMENT_CODEC_DIR}
       fi
       if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ] && [ "$(find "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" -mindepth 1 -print -quit 2>/dev/null)" ]; then
-        rm -rf ${_tmpdir}
-        mkdir -p ${_tmpdir}
-        mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}
-        if [ -d ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ]; then
-          if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
-            echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt | awk '{print $1}')"
-          fi
-          mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}
+        if [ -d "${_tmpdir}" ] && [ "$(find "${_tmpdir}" -mindepth 1 -print -quit 2>/dev/null)" ]; then
+          echo_warn "Previous archive directory ${_tmpdir} exists from a failed deployment. Skipping overwrite to preserve data."
         else
-          echo_warn "No codec directory found."
-          mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
+          mkdir -p ${_tmpdir}
+          echo_info "Copying data safely to temporary directory..."
+          cp -a ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}/
+          if [ -d ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ]; then
+            if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
+              echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt | awk '{print $1}')"
+            fi
+            cp -a ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}/
+          else
+            echo_warn "No codec directory found."
+            mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
+          fi
+          echo_info "Data archived in ${_tmpdir}. Original data preserved until deployment completes."
         fi
       else
         mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
