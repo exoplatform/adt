@@ -45,14 +45,14 @@ jibri {
                 control-login {
                     domain = "auth.{{ DEPLOYMENT_JITSI_NETWORK_NAME }}"
                     username = "jibri"
-                    password = "9e40f754c897f55d83e6d51ba544be5e"
+                    password = "{{ DEPLOYMENT_JITSI_JIBRI_XMPP_PASSWORD }}"
                 }
 
                 // The login information the selenium web client will use
                 call-login {
                     domain = "recorder.{{ DEPLOYMENT_JITSI_NETWORK_NAME }}"
                     username = "recorder"
-                    password = "682869f8ad2910a94e99f631bf597726"
+                    password = "{{ DEPLOYMENT_JITSI_JIBRI_RECORDER_PASSWORD  }}"
                 }
 
                 // The value we'll strip from the room JID domain to derive
