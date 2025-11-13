@@ -382,6 +382,15 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
       configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.1"
 
+      # Jitsi secrets and passwords
+      configurable_env_var "DEPLOYMENT_JITSI_EXO_JWT_SECRET" "$(fqdn_rand_string 32 'exo-jwt' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_JITSI_JIBRI_RECORDER_PASSWORD" "$(fqdn_rand_string 32 'jibri-recorder' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_JITSI_JIBRI_XMPP_PASSWORD" "$(fqdn_rand_string 32 'jibri-xmpp' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_JITSI_JICOFO_AUTH_PASSWORD" "$(fqdn_rand_string 32 'jicofo-auth"' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_JITSI_JICOFO_COMPONENT_SECRET" "$(fqdn_rand_string 32 'jicofo-component' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_JITSI_JVB_AUTH_PASSWORD" "$(fqdn_rand_string 32 'jvb-auth' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_JITSI_JWT_APP_SECRET" "$(fqdn_rand_string 32 'jwt-app' ${INSTANCE_KEY})"
+
       configurable_env_var "DEPLOYMENT_PG_UPGRADE_IMAGE" "tianon/postgres-upgrade"
 
       configurable_env_var "DEPLOYMENT_SFTP_ENABLED" false
