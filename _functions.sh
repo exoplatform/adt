@@ -423,6 +423,8 @@ initialize_product_settings() {
 
       env_var "DEPLOYMENT_CERTBOT_CONFIG_FOLDER" "/etc/letsencrypt"
       env_var "DEPLOYMENT_CERTBOT_WEBROOT_PATH" "/srv/wwwcertbot"
+
+      configurable_env_var "DEPLOYMENT_TOMCAT_UNPACK_WARS" true
     
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
