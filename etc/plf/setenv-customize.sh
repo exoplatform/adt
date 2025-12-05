@@ -236,5 +236,11 @@ if ${DEPLOYMENT_MATRIX_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.matrix.jwt.secret=${DEPLOYMENT_MATRIX_JWT_SECRET}"
 fi
 
+#Clamav integration
+#if ${DEPLOYMENT_CLAMAV_ENABLED}; then
+#  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.malwareDetection.connector.clamav.report.path=/report/clamav-report.txt"
+#  CATALINA_OPTS="${CATALINA_OPTS} -Dexo.malwareDetection.connector.clamav.isDefault=true"
+#fi
+
 # Unpack tomcat wars
 EXO_TOMCAT_UNPACK_WARS=${DEPLOYMENT_TOMCAT_UNPACK_WARS}
