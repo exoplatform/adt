@@ -17,7 +17,7 @@ listeners:
     type: http
     x_forwarded: true
     resources:
-      - names: [client, federation]
+      - names: [client, federation, media]
         compress: false
 
 public_baseurl: "https://${DEPLOYMENT_APACHE_VHOST_ALIAS}/"
