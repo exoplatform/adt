@@ -154,4 +154,4 @@ media_retention:
   local_media_lifetime: 30d
   remote_media_lifetime: 30d  
 
-enable_media_repo: true
+enable_authenticated_media: false
