@@ -335,7 +335,7 @@ initialize_product_settings() {
       # Iframely
       configurable_env_var "DEPLOYMENT_IFRAMELY_ENABLED" false
       configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE" "jolt/iframely"
-      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE_VERSION" "v2.2.1"
+      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE_VERSION" "v2.3.0"
 
       configurable_env_var "DEPLOYMENT_MAILPIT_ENABLED" false
       configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE" "axllent/mailpit"
@@ -387,7 +387,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_JITSI_JICOFO_XMX" 1g
       configurable_env_var "DEPLOYMENT_JITSI_JVB_XMX" 1g
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
-      configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.1"
+      configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.2"
 
       # Jitsi secrets and passwords
       configurable_env_var "DEPLOYMENT_JITSI_EXO_JWT_SECRET" "$(fqdn_rand_string 32 'exo-jwt' ${INSTANCE_KEY})"

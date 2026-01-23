@@ -66,6 +66,7 @@ do_start_iframely() {
   export DEPLOYMENT_OPTS="${DEPLOYMENT_OPTS} -Dio.meeds.iframely.url=${DEPLOYMENT_URL}/oembed"
   ${DOCKER_CMD} run \
     -d \
+    --init=true \
     -p "${DEPLOYMENT_IFRAMELY_PORT}:8061" \
     -h 'iframely' \
     --health-cmd='wget -qO- http://iframely:8061 &> /dev/null || exit 1' \
