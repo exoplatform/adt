@@ -6,64 +6,603 @@
     <meta http-equiv="refresh" content="30">
     <title>502 - Bad Gateway</title>
     <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico">
-    <link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="//cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YcnS/pVQl4fXNLPm0PehpFhEBqqJSqMzGK7" crossorigin="anonymous">
+    <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
+    <link href="//fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --gradient-start: #1a1a2e;
+            --gradient-mid: #16213e;
+            --gradient-end: #0f3460;
+            --glass-bg: rgba(255, 255, 255, 0.06);
+            --glass-border: rgba(255, 255, 255, 0.12);
+            --accent: #f472b6;
+            --accent-secondary: #ec4899;
+            --accent-glow: rgba(244, 114, 182, 0.4);
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            background-color: #f8f9fa;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow-x: hidden;
+            position: relative;
+            color: var(--text-primary);
         }
+
+        /* Background orbs */
+        .bg-orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float 20s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-orb--1 {
+            width: 600px; height: 600px;
+            background: radial-gradient(circle, #ec4899, transparent 70%);
+            top: -200px; right: -100px;
+            animation-duration: 25s;
+        }
+        .bg-orb--2 {
+            width: 400px; height: 400px;
+            background: radial-gradient(circle, #f97316, transparent 70%);
+            bottom: -150px; left: -100px;
+            animation-duration: 20s; animation-delay: -5s;
+        }
+        .bg-orb--3 {
+            width: 300px; height: 300px;
+            background: radial-gradient(circle, #8b5cf6, transparent 70%);
+            top: 50%; left: 60%;
+            animation-duration: 18s; animation-delay: -10s;
+        }
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -40px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(40px, 30px) scale(1.02); }
+        }
+
+        /* Grid */
+        .grid-bg {
+            position: fixed; inset: 0;
+            background-image:
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0; pointer-events: none;
+        }
+
+        .error-wrapper {
+            position: relative; z-index: 1;
+            width: 100%; max-width: 720px; padding: 20px;
+        }
+
         .error-container {
-            max-width: 800px;
-            margin: 100px auto;
-            padding: 30px;
-            background: white;
+            background: var(--glass-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(40px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        /* Language switcher */
+        .lang-switcher {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 28px;
+        }
+        .lang-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 100px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+        }
+        .lang-btn:hover {
+            background: rgba(255,255,255,0.08);
+            color: var(--text-secondary);
+            border-color: rgba(255,255,255,0.15);
+        }
+        .lang-btn.active {
+            background: rgba(244, 114, 182, 0.15);
+            border-color: rgba(244, 114, 182, 0.3);
+            color: var(--accent);
+        }
+        .lang-btn img {
+            width: 18px;
+            height: 14px;
+            border-radius: 2px;
+            object-fit: cover;
+        }
+
+        /* Animated icon */
+        .error-icon {
+            width: 100px; height: 100px;
+            margin: 0 auto 32px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .error-icon__ring {
+            position: absolute; inset: 0;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: var(--accent);
+            animation: spin 3s linear infinite;
+        }
+        .error-icon__ring:nth-child(2) {
+            inset: 8px; border-top-color: #f97316;
+            animation-duration: 2s; animation-direction: reverse;
+        }
+        .error-icon__ring:nth-child(3) {
+            inset: 16px; border-top-color: #8b5cf6;
+            animation-duration: 4s;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .error-icon i {
+            font-size: 2rem; color: var(--accent);
+            animation: pulse-icon 2s ease-in-out infinite;
+            position: relative; z-index: 1;
+        }
+        @keyframes pulse-icon {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(0.9); }
+        }
+
+        /* Broken connection animation */
+        .connection-animation {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .connection-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            animation: connectionPulse 1.5s ease-in-out infinite;
+        }
+        .connection-dot:nth-child(2) { animation-delay: 0.2s; }
+        .connection-dot:nth-child(3) { animation-delay: 0.4s; background: #f97316; }
+        .connection-line {
+            width: 30px; height: 2px;
+            background: linear-gradient(90deg, var(--accent), transparent, #ef4444);
+            position: relative;
+            animation: lineBroken 1.5s ease-in-out infinite;
+        }
+        .connection-line::after {
+            content: '✕';
+            position: absolute;
+            left: 50%; top: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 10px;
+            color: #ef4444;
+        }
+        @keyframes connectionPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(0.8); opacity: 0.5; }
+        }
+        @keyframes lineBroken {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Error code badge */
+        .error-code {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(244, 114, 182, 0.1);
+            border: 1px solid rgba(244, 114, 182, 0.2);
+            border-radius: 100px;
+            padding: 6px 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            margin-bottom: 20px;
+        }
+        .error-code__dot {
+            width: 8px; height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: blink 1s ease-in-out infinite;
+        }
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .error-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 12px;
+            letter-spacing: -0.5px;
+            line-height: 1.3;
+        }
+        .error-subtitle {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 36px;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Info cards */
+        .info-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 36px;
+        }
+        .info-card {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px;
+            padding: 24px 20px;
+            text-align: left;
+            transition: all 0.3s ease;
+        }
+        .info-card:hover {
+            background: rgba(255,255,255,0.07);
+            border-color: rgba(255,255,255,0.1);
+            transform: translateY(-2px);
+        }
+        .info-card__icon {
+            width: 40px; height: 40px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            margin-bottom: 14px;
+        }
+        .info-card__icon--warning { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
+        .info-card__icon--info { background: rgba(249, 115, 22, 0.15); color: #f97316; }
+        .info-card__title {
+            font-size: 0.9rem; font-weight: 600;
+            color: var(--text-primary); margin-bottom: 6px;
+        }
+        .info-card__text {
+            font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;
+        }
+
+        /* CTA button */
+        .btn-retry {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: linear-gradient(135deg, #ec4899, #f472b6);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 32px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            box-shadow: 0 4px 20px var(--accent-glow);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-retry::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .btn-retry:hover {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 8px 30px var(--accent-glow);
+            color: white;
+        }
+        .btn-retry:hover::before { opacity: 1; }
+        .btn-retry:active { transform: translateY(0) scale(0.98); }
+        .btn-retry i { transition: transform 0.4s ease; }
+        .btn-retry:hover i { transform: rotate(180deg); }
+
+        /* Progress bar */
+        .refresh-bar { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); }
+        .refresh-bar__label {
+            font-size: 0.78rem; color: var(--text-muted);
+            margin-bottom: 10px;
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+        }
+        .refresh-bar__track {
+            width: 100%; height: 3px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 100px; overflow: hidden;
+        }
+        .refresh-bar__fill {
+            height: 100%; width: 0%;
+            background: linear-gradient(90deg, var(--accent), #f97316);
+            border-radius: 100px;
+            animation: progress 30s linear forwards;
+        }
+        @keyframes progress { from { width: 0%; } to { width: 100%; } }
+
+        /* Contact */
+        .contact-section { margin-top: 24px; padding-top: 20px; }
+        .contact-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+            padding: 8px 16px;
             border-radius: 10px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.04);
         }
-        .error-header {
-            color: #dc3545;
-            margin-bottom: 30px;
+        .contact-link:hover {
+            color: var(--accent);
+            background: rgba(244, 114, 182, 0.06);
+            border-color: rgba(244, 114, 182, 0.15);
         }
+
+        /* Footer */
         .footer {
+            position: relative; z-index: 1;
             text-align: center;
-            margin-top: 30px;
-            color: #6c757d;
-            font-size: 0.9rem;
+            margin-top: 32px;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            opacity: 0.6;
+            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+        }
+
+        /* Responsive */
+        @media (max-width: 576px) {
+            .error-container { padding: 36px 24px; border-radius: 20px; }
+            .error-title { font-size: 1.4rem; }
+            .error-subtitle { font-size: 0.95rem; }
+            .info-cards { grid-template-columns: 1fr; }
+            .error-icon { width: 80px; height: 80px; margin-bottom: 24px; }
+            .error-icon i { font-size: 1.5rem; }
+            .lang-switcher { flex-wrap: wrap; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            .refresh-bar__fill { animation: progress 30s linear forwards; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
+    <!-- Background effects -->
+    <div class="bg-orb bg-orb--1"></div>
+    <div class="bg-orb bg-orb--2"></div>
+    <div class="bg-orb bg-orb--3"></div>
+    <div class="grid-bg"></div>
+
+    <div class="error-wrapper">
         <div class="error-container text-center">
-            <h1 class="error-header display-4">
-                <i class="fas fa-exchange-alt me-2"></i>502 - Bad Gateway
-            </h1>
-            
-            <div class="mb-4">
-                <h2>What went wrong?</h2>
-                <p class="lead">The server received an invalid response from the upstream server while trying to fulfill your request.</p>
+
+            <!-- Language Switcher -->
+            <div class="lang-switcher">
+                <button class="lang-btn active" onclick="switchLang('en')" id="lang-btn-en">
+                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/gb.svg" alt="English">
+                    English
+                </button>
+                <button class="lang-btn" onclick="switchLang('fr')" id="lang-btn-fr">
+                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/fr.svg" alt="Français">
+                    Français
+                </button>
+                <button class="lang-btn" onclick="switchLang('de')" id="lang-btn-de">
+                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/de.svg" alt="Deutsch">
+                    Deutsch
+                </button>
             </div>
 
-            <div class="mb-4">
-                <h2>What can I do?</h2>
-                <p>Please try again later. This page will automatically refresh in 30 seconds.</p>
-                <a href="/" class="btn btn-primary btn-lg mt-3">
-                    <i class="fas fa-sync-alt me-2"></i>Try Again Now
+            <!-- Animated Icon with Connection Animation -->
+            <div class="error-icon">
+                <div class="error-icon__ring"></div>
+                <div class="error-icon__ring"></div>
+                <div class="error-icon__ring"></div>
+                <i class="fas fa-plug-circle-xmark"></i>
+            </div>
+
+            <!-- Connection Animation -->
+            <div class="connection-animation">
+                <div class="connection-dot"></div>
+                <div class="connection-line"></div>
+                <div class="connection-dot"></div>
+                <div class="connection-line"></div>
+                <div class="connection-dot"></div>
+            </div>
+
+            <!-- Error Badge -->
+            <div class="error-code">
+                <span class="error-code__dot"></span>
+                Error 502
+            </div>
+
+            <!-- Title -->
+            <h1 class="error-title" id="error-title">Bad Gateway</h1>
+            <p class="error-subtitle" id="error-subtitle">
+                The server received an invalid response from the upstream server while trying to fulfill your request.
+            </p>
+
+            <!-- Info Cards -->
+            <div class="info-cards">
+                <div class="info-card">
+                    <div class="info-card__icon info-card__icon--warning">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="info-card__title" id="card1-title">What happened?</div>
+                    <div class="info-card__text" id="card1-text">Our server couldn't get a valid response from the upstream server. This usually indicates a communication problem between servers.</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-card__icon info-card__icon--info">
+                        <i class="fas fa-rotate"></i>
+                    </div>
+                    <div class="info-card__title" id="card2-title">What can I do?</div>
+                    <div class="info-card__text" id="card2-text">Wait a few moments and refresh the page. This issue is typically temporary and resolves itself quickly.</div>
+                </div>
+            </div>
+
+            <!-- Retry Button -->
+            <a href="/" class="btn-retry" id="btn-retry">
+                <i class="fas fa-sync-alt"></i>
+                <span id="btn-retry-text">Try Again</span>
+            </a>
+
+            <!-- Auto-refresh Progress -->
+            <div class="refresh-bar">
+                <div class="refresh-bar__label">
+                    <i class="fas fa-redo-alt"></i>
+                    <span id="refresh-label">Auto-refreshing in</span> <span id="countdown">30</span>s
+                </div>
+                <div class="refresh-bar__track">
+                    <div class="refresh-bar__fill"></div>
+                </div>
+            </div>
+
+            <!-- Contact -->
+            <div class="contact-section">
+                <a href="mailto:exo-swf@exoplatform.com" class="contact-link">
+                    <i class="fas fa-envelope"></i>
+                    <span id="contact-text">Contact Support</span> — exo-swf@exoplatform.com
                 </a>
-            </div>
-
-            <div class="mt-5">
-                <h3>Need help?</h3>
-                <p>Contact our support team at <a href="mailto:exo-swf@exoplatform.com">exo-swf@exoplatform.com</a></p>
             </div>
         </div>
 
         <div class="footer">
-            Copyright © 2000-<script>document.write(new Date().getFullYear())</script>. All rights Reserved, eXo Platform SAS.
+            Copyright &copy; 2000&ndash;<script>document.write(new Date().getFullYear())</script>. All rights reserved, eXo Platform SAS.
         </div>
     </div>
 
-    <script src="//cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+    <script>
+        // Translation data
+        const translations = {
+            en: {
+                title: "Bad Gateway",
+                subtitle: "The server received an invalid response from the upstream server while trying to fulfill your request.",
+                card1Title: "What happened?",
+                card1Text: "Our server couldn't get a valid response from the upstream server. This usually indicates a communication problem between servers.",
+                card2Title: "What can I do?",
+                card2Text: "Wait a few moments and refresh the page. This issue is typically temporary and resolves itself quickly.",
+                btnRetry: "Try Again",
+                refreshLabel: "Auto-refreshing in",
+                contactText: "Contact Support"
+            },
+            fr: {
+                title: "Passerelle incorrecte",
+                subtitle: "Le serveur a reçu une réponse invalide du serveur en amont lors du traitement de votre demande.",
+                card1Title: "Que s'est-il passé ?",
+                card1Text: "Notre serveur n'a pas pu obtenir une réponse valide du serveur en amont. Cela indique généralement un problème de communication entre les serveurs.",
+                card2Title: "Que puis-je faire ?",
+                card2Text: "Patientez quelques instants et actualisez la page. Ce problème est généralement temporaire et se résout rapidement.",
+                btnRetry: "Réessayer",
+                refreshLabel: "Actualisation automatique dans",
+                contactText: "Contacter le support"
+            },
+            de: {
+                title: "Ungültiges Gateway",
+                subtitle: "Der Server hat eine ungültige Antwort vom vorgelagerten Server erhalten, während er Ihre Anfrage bearbeiten wollte.",
+                card1Title: "Was ist passiert?",
+                card1Text: "Unser Server konnte keine gültige Antwort vom vorgelagerten Server erhalten. Dies deutet normalerweise auf ein Kommunikationsproblem zwischen den Servern hin.",
+                card2Title: "Was kann ich tun?",
+                card2Text: "Warten Sie einen Moment und aktualisieren Sie die Seite. Dieses Problem ist in der Regel vorübergehend und behebt sich schnell von selbst.",
+                btnRetry: "Erneut versuchen",
+                refreshLabel: "Automatische Aktualisierung in",
+                contactText: "Support kontaktieren"
+            }
+        };
+
+        // Detect browser language
+        function detectLanguage() {
+            const browserLang = (navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase();
+            if (translations[browserLang]) return browserLang;
+            return 'en';
+        }
+
+        // Switch language
+        function switchLang(lang) {
+            const t = translations[lang];
+            if (!t) return;
+
+            document.getElementById('error-title').textContent = t.title;
+            document.getElementById('error-subtitle').textContent = t.subtitle;
+            document.getElementById('card1-title').textContent = t.card1Title;
+            document.getElementById('card1-text').textContent = t.card1Text;
+            document.getElementById('card2-title').textContent = t.card2Title;
+            document.getElementById('card2-text').textContent = t.card2Text;
+            document.getElementById('btn-retry-text').textContent = t.btnRetry;
+            document.getElementById('refresh-label').textContent = t.refreshLabel;
+            document.getElementById('contact-text').textContent = t.contactText;
+
+            document.documentElement.lang = lang;
+
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('lang-btn-' + lang).classList.add('active');
+
+            // Save preference
+            try { localStorage.setItem('preferred-lang', lang); } catch(e) {}
+        }
+
+        // Initialize language
+        (function() {
+            let lang = null;
+            try { lang = localStorage.getItem('preferred-lang'); } catch(e) {}
+            if (!lang || !translations[lang]) lang = detectLanguage();
+            switchLang(lang);
+        })();
+
+        // Countdown timer
+        let seconds = 30;
+        const countdownEl = document.getElementById('countdown');
+        const interval = setInterval(() => {
+            seconds--;
+            if (countdownEl) countdownEl.textContent = seconds;
+            if (seconds <= 0) clearInterval(interval);
+        }, 1000);
+    </script>
 </body>
 </html>
