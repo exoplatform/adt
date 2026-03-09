@@ -15,15 +15,19 @@ checkCaches();
 <div id="wrap">
 <div id="main">
 <div class="container-fluid">
-<div class="row-fluid">
-<div class="span12">
-<p>These instances are deployed for <strong>eXo Sales Team</strong> usage only.</p>
+<div class="row">
+<div class="col-12">
+<div class="alert alert-info">
+    <i class="fas fa-chart-line me-2"></i>
+    These instances are deployed for <strong>eXo Sales Team</strong> usage only.
+</div>
 <?php
 // List all Sales personal environments
 $sales_user_instances=getGlobalSalesUserInstances();
 if (isDeploymentInCategoryArray($sales_user_instances)) {
   ?>
-  <table class="table table-bordered table-hover">
+  <div class="table-responsive">
+  <table class="table table-hover">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -34,7 +38,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
     </thead>
     <tbody>
     <tr>
-        <td colspan="15" class="category-row"><i class="icon-user"></i> - <?= "Platform personal environments for Sales people"; ?></td>
+        <td colspan="15" class="category-row"><i class="fas fa-user me-2"></i><?= "Platform personal environments for Sales people"; ?></td>
     </tr>
   <?php
   foreach ($sales_user_instances as $plf_branch => $descriptor_arrays) {
@@ -43,37 +47,41 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
         <tr>
             <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
             <td>
-              <?= componentProductOpenLink($descriptor_array, "", true); ?>
-              <span class="pull-right">
-                <?php 
-                if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
-                  ?>
-                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
+              <div class="d-flex align-items-center">
+                <div>
+                  <?= componentProductOpenLink($descriptor_array, "", true); ?>
+                  <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+                  <?= componentPatchInstallation($descriptor_array); ?>
+                  <?= componentCertbotEnabled($descriptor_array); ?>
+                  <?= componentDevModeEnabled($descriptor_array); ?>
+                  <?= componentStagingModeEnabled($descriptor_array); ?>
+                  <?= componentDebugModeEnabled($descriptor_array); ?>
+                  <?= componentAddonsTags($descriptor_array); ?>
+                </div>
+                <span class="ms-auto">
                   <?php 
-                } else { 
+                  if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
+                    ?>
+                    <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
+                    <?php 
+                  } else { 
+                    ?>
+                    <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-trial-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
+                    <?php 
+                  }
                   ?>
-                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-trial-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build?delay=0sec" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
-                  <?php 
-                }
-                ?>
-                  <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
-                </a> - 
-                <?= componentEditNoteIcon($descriptor_array) ?>
-              </span>
-              <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-              <?= componentPatchInstallation($descriptor_array); ?>
-              <?= componentCertbotEnabled($descriptor_array); ?>
-              <?= componentDevModeEnabled($descriptor_array); ?>
-              <?= componentStagingModeEnabled($descriptor_array); ?>
-              <?= componentDebugModeEnabled($descriptor_array); ?>
-              <?= componentAddonsTags($descriptor_array); ?>
+                    <i class="fas fa-sync-alt"></i>
+                  </a>
+                  <?= componentEditNoteIcon($descriptor_array) ?>
+                </span>
+              </div>
             </td>
             <td class="col-center">
                 <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
                 <?= componentProductVersion($descriptor_array); ?>&nbsp;
                 <?= componentDownloadIcon($descriptor_array); ?>
             </td>
-            <td class="col-right">deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+            <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
             <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
             <td class="col-left"><?= componentDeploymentActions($descriptor_array) ?></td>
         </tr>
@@ -84,13 +92,19 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
 ?>
     </tbody>
 </table>
-    <p>These instances are deployed for <strong>eXo Demo</strong> purpose usage only.</p>
+</div>
+
+    <div class="alert alert-info mt-4">
+        <i class="fas fa-chart-pie me-2"></i>
+        These instances are deployed for <strong>eXo Demo</strong> purpose usage only.
+    </div>
 <?php
 // List all Sales lead demo environments
 $sales_demo_instances=getGlobalSalesDemoInstances();
 if (isDeploymentInCategoryArray($sales_demo_instances)) {
   ?>
-  <table class="table table-bordered table-hover">
+  <div class="table-responsive">
+  <table class="table table-hover">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -101,7 +115,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
     </thead>
     <tbody>
     <tr>
-      <td colspan="15" class="category-row"><i class="icon-briefcase"></i> - <?= "Platform demo environments for Leads"; ?></td>
+      <td colspan="15" class="category-row"><i class="fas fa-briefcase me-2"></i><?= "Platform demo environments for Leads"; ?></td>
     </tr>
   <?php
   foreach ($sales_demo_instances as $plf_branch => $descriptor_arrays) {
@@ -110,39 +124,43 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
       <tr>
         <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
         <td>
-          <?= componentProductOpenLink($descriptor_array, "", true); ?>
-          <span class="pull-right">
-          <?php 
-                if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
-                  ?>
-                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
-                  <?php 
-                } else { 
-                  ?>
-                  <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-trial-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build?delay=0sec" target="_blank" rel="tooltip" title="Restart your instance or reset your instance's data">
-                  <?php 
-                }
+          <div class="d-flex align-items-center">
+            <div>
+              <?= componentProductOpenLink($descriptor_array, "", true); ?>
+              <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+              <?= componentPatchInstallation($descriptor_array); ?>
+              <?= componentDevModeEnabled($descriptor_array); ?>
+              <?= componentStagingModeEnabled($descriptor_array); ?>
+              <?= componentDebugModeEnabled($descriptor_array); ?>
+              <?= componentAddonsTags($descriptor_array); ?>
+            </div>
+            <span class="ms-auto">
+              <?php 
+              if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
                 ?>
-              <i class="icon-refresh"></i>&nbsp;(restart or reset data)&nbsp;
-            </a> - 
-            <?= componentEditNoteIcon($descriptor_array) ?>
-          </span>
-          <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-          <?= componentPatchInstallation($descriptor_array); ?>
-          <?= componentDevModeEnabled($descriptor_array); ?>
-          <?= componentStagingModeEnabled($descriptor_array); ?>
-          <?= componentDebugModeEnabled($descriptor_array); ?>
-          <?= componentAddonsTags($descriptor_array); ?>
-        </td>
-        <td class="col-center">
-          <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-          <?= componentProductVersion($descriptor_array); ?>&nbsp;
-          <?= componentDownloadIcon($descriptor_array); ?>
-        </td>
-        <td class="col-right">deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-        <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
-      </tr>
+                <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
+                <?php 
+              } else { 
+                ?>
+                <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-trial-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
+                <?php 
+              }
+              ?>
+                  <i class="fas fa-sync-alt"></i>
+                </a>
+                <?= componentEditNoteIcon($descriptor_array) ?>
+              </span>
+            </div>
+          </td>
+          <td class="col-center">
+            <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
+            <?= componentProductVersion($descriptor_array); ?>&nbsp;
+            <?= componentDownloadIcon($descriptor_array); ?>
+          </td>
+          <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+          <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+          <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
+        </tr>
     <?php
     }
   }
@@ -150,13 +168,19 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
 ?>
     </tbody>
 </table>
-    <p>These instances are deployed for <strong>Evaluation by Leads</strong> purpose usage only.</p>
+</div>
+
+    <div class="alert alert-info mt-4">
+        <i class="fas fa-chart-bar me-2"></i>
+        These instances are deployed for <strong>Evaluation by Leads</strong> purpose usage only.
+    </div>
 <?php
 // List all Sales lead evaluation environments
 $sales_eval_instances=getGlobalSalesEvalInstances();
 if (isDeploymentInCategoryArray($sales_eval_instances)) {
   ?>
-  <table class="table table-bordered table-hover">
+  <div class="table-responsive">
+  <table class="table table-hover">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -167,7 +191,7 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
     </thead>
     <tbody>
     <tr>
-      <td colspan="15" class="category-row"><i class="icon-briefcase"></i> - <?= "Platform evaluation environments for Leads"; ?></td>
+      <td colspan="15" class="category-row"><i class="fas fa-chart-line me-2"></i><?= "Platform evaluation environments for Leads"; ?></td>
     </tr>
   <?php
   foreach ($sales_eval_instances as $plf_branch => $descriptor_arrays) {
@@ -176,23 +200,27 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
       <tr>
         <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
         <td>
-          <?= componentProductOpenLink($descriptor_array, "", true); ?>
-          <span class="pull-right">
-            <?= componentEditNoteIcon($descriptor_array) ?>
-          </span>
-          <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-          <?= componentPatchInstallation($descriptor_array); ?>
-          <?= componentDevModeEnabled($descriptor_array); ?>
-          <?= componentStagingModeEnabled($descriptor_array); ?>
-          <?= componentDebugModeEnabled($descriptor_array); ?>
-          <?= componentAddonsTags($descriptor_array); ?>
+          <div class="d-flex align-items-center">
+            <div>
+              <?= componentProductOpenLink($descriptor_array, "", true); ?>
+              <br/><?= componentUpgradeEligibility($descriptor_array); ?>
+              <?= componentPatchInstallation($descriptor_array); ?>
+              <?= componentDevModeEnabled($descriptor_array); ?>
+              <?= componentStagingModeEnabled($descriptor_array); ?>
+              <?= componentDebugModeEnabled($descriptor_array); ?>
+              <?= componentAddonsTags($descriptor_array); ?>
+            </div>
+            <span class="ms-auto">
+              <?= componentEditNoteIcon($descriptor_array) ?>
+            </span>
+          </div>
         </td>
         <td class="col-center">
           <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
           <?= componentProductVersion($descriptor_array); ?>&nbsp;
           <?= componentDownloadIcon($descriptor_array); ?>
         </td>
-        <td class="col-right">deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
         <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
         <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
       </tr>
@@ -203,16 +231,49 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
 ?>
     </tbody>
 </table>
+</div>
 
-<!-- footer -->
-<p>Each instance can be accessed using JMX with the URL linked to the monitoring icon and its credentials can be found on CI Build.
-</p>
-<p>Each deployed Keycloak can be accessed using the Keycloak icon and these credentials :
-    <strong><code>root</code></strong> / <strong><code>password</code></strong>
-</p>
-<p>Each Ldap deployed can be accessed using the URL linked to the ldap url icon and these parameters :
-    <strong><code>Base DN:dc=exoplatform,dc=com</code></strong> / <strong><code>User DN:cn=admin,dc=exoplatform,dc=com</code></strong> / <strong><code>password:exo</code></strong>
-</p>
+<!-- Info cards with synchronized design -->
+<div class="row mt-4">
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <i class="fas fa-plug me-2"></i>JMX Access
+        </div>
+        <div class="card-body">
+          <p class="card-text">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <i class="fas fa-key me-2"></i>Keycloak Access
+        </div>
+        <div class="card-body">
+          <p class="card-text">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
+          <div class="mt-2 p-2 rounded code-bg">
+            <code class="d-block">root / password</code>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card h-100">
+        <div class="card-header">
+          <i class="fas fa-address-book me-2"></i>LDAP Access
+        </div>
+        <div class="card-body">
+          <p class="card-text">Each LDAP deployed can be accessed with:</p>
+          <div class="mt-2 p-2 rounded code-bg">
+            <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
+            <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
+            <code class="d-block mt-1">password: exo</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 </div>
 </div>

@@ -7,47 +7,52 @@
  *
  * @return array html markup
  */
-function getFormEditNote ($descriptor_array) {
-  ob_start()
-  ?>
-  <form class="form" style="display: inline" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editInstance.php" method="POST">
-    <div class="modal bigModal hide fade" id="edit-note-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" tabindex="-1" role="dialog" aria-labelledby="label-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" aria-hidden="true">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
-        <h3 id="label-<?= $descriptor_array->INSTANCE_KEY ?>">Edit Instance Note</h3>
-      </div>
-      <div class="modal-body">
-        <input type="hidden" name="from" value="<?= currentPageURL() ?>">
-        <input type="hidden" name="key" value="<?= $descriptor_array->INSTANCE_KEY ?>">
+function getFormEditNote($descriptor_array)
+{
+  ob_start();
+?>
+  <div class="modal fade bigModal" id="edit-note-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" tabindex="-1" aria-labelledby="label-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="POST" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editInstance.php">
+          <div class="modal-header">
+            <h5 class="modal-title" id="label-<?= str_replace(".", "_", $descriptor_array->INSTANCE_KEY) ?>">
+              <i class="fas fa-pencil-alt me-2"></i>Edit Instance Note
+            </h5>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <input type="hidden" name="from" value="<?= currentPageURL() ?>">
+            <input type="hidden" name="key" value="<?= $descriptor_array->INSTANCE_KEY ?>">
 
-        <div class="row-fluid">
-          <div class="span4"><strong>Product</strong></div>
-          <div class="span8"><?= componentProductHtmlLabel($descriptor_array, true); ?></div>
-        </div>
-        <div class="row-fluid">
-          <div class="span4"><strong>Version</strong></div>
-          <div class="span8"><?= componentProductVersion($descriptor_array) ?></div>
-        </div>
-        <hr/>
-        <div class="row-fluid">
-          <div class="span12">
-            <div class="control-group">
-              <label class="control-label" for="description"><strong>Note</strong></label>
-              <div class="controls">
-                <input class="input-xxlarge" type="text" id="note" name="note" placeholder="Add a note" value="<?= ( empty($descriptor_array->INSTANCE_NOTE) ? "" : $descriptor_array->INSTANCE_NOTE ) ?>">
-                <span class="help-block">Short note about this instance</span>
+            <div class="card mb-3">
+              <div class="card-body">
+                <div class="row mb-2">
+                  <div class="col-4 fw-bold">Product</div>
+                  <div class="col-8"><?= componentProductHtmlLabel($descriptor_array, true); ?></div>
+                </div>
+                <div class="row mb-2">
+                  <div class="col-4 fw-bold">Version</div>
+                  <div class="col-8"><?= componentProductVersion($descriptor_array) ?></div>
+                </div>
               </div>
             </div>
+
+            <div class="mb-3">
+              <label for="note" class="form-label fw-bold">Note</label>
+              <input type="text" class="form-control" id="note" name="note" placeholder="Add a note" value="<?= htmlspecialchars($descriptor_array->INSTANCE_NOTE ?? '') ?>">
+              <div class="form-text">Short note about this instance</div>
+            </div>
           </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button class="btn" data-dismiss="modal" aria-hidden="true">Close</button>
-        <button class="btn btn-primary">Save changes</button>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Save changes</button>
+          </div>
+        </form>
       </div>
     </div>
-  </form>
-  <?php
-    return ob_get_clean();
+  </div>
+<?php
+  return ob_get_clean();
 }
 ?>

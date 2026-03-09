@@ -10,9 +10,19 @@ if( !empty($_POST['note']) ) {
     }
 }
 
-// Flush caches
+// Flush caches to ensure changes are reflected immediately
 clearCaches();
-header("Location: " . $_POST['from'] . "?clearCaches=true"); /* Redirect browser */
-/* Make sure that code below does not get executed when we redirect. */
+
+// Get the referring page URL
+$redirect_url = $_POST['from'];
+
+// Add cache clearing parameter if not already present
+if (strpos($redirect_url, '?') === false) {
+    $redirect_url .= '?clearCaches=true';
+} else {
+    $redirect_url .= '&clearCaches=true';
+}
+
+header("Location: " . $redirect_url);
 exit;
 ?>

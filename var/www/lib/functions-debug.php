@@ -12,7 +12,7 @@ function debug_var($var, $html = false) {
   ob_start();
   var_export($var);
   if ($html) {
-    $content = "<pre>" . ob_get_clean() . "</pre>";
+    $content = "<pre class='bg-dark text-light p-3 rounded'><code>" . ob_get_clean() . "</code></pre>";
   } else {
     $content = ob_get_clean();
   }
@@ -22,8 +22,10 @@ function debug_var($var, $html = false) {
 function debug_var_toggle($var) {
   $html_id = rand();
   $content = "";
-  $content .= '<button type="button" class="btn btn-danger" data-toggle="collapse" data-target="#' . $html_id . '">details</button>';
-  $content .= '<div id="' . $html_id . '" class="collapse out">';
+  $content .= '<button type="button" class="btn btn-sm btn-outline-primary mb-2" data-bs-toggle="collapse" data-bs-target="#' . $html_id . '">';
+  $content .= '<i class="fas fa-code me-2"></i>Toggle Details';
+  $content .= '</button>';
+  $content .= '<div id="' . $html_id . '" class="collapse">';
   $content .= debug_var($var, true);
   $content .= "</div>";
 
