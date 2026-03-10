@@ -719,3 +719,130 @@ a[name] {
     margin-top: 0.5rem;
   }
 }
+
+/* Additional modern styles for features page */
+.feature-card {
+    transition: all 0.2s ease;
+    border-left: 4px solid transparent;
+}
+.feature-card:hover {
+    transform: translateX(4px);
+    border-left-color: var(--secondary-color);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.feature-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-weight: 500;
+}
+.project-chip {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+    height: 100%;
+}
+.project-chip:hover {
+    border-color: var(--secondary-color);
+    box-shadow: 0 2px 8px rgba(52,152,219,0.2);
+}
+.project-chip-header {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.25rem;
+}
+.commit-stats {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+}
+.commit-stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    background: var(--body-bg);
+    color: var(--bs-body-color);
+    text-decoration: none;
+}
+.commit-stat:hover {
+    background: var(--secondary-color);
+    color: white;
+    text-decoration: none;
+}
+.commit-stat.behind {
+    color: var(--danger-color);
+}
+.commit-stat.ahead {
+    color: var(--success-color);
+}
+.commit-stat.behind:hover,
+.commit-stat.ahead:hover {
+    color: white;
+}
+.ci-badge {
+    height: 18px;
+    width: auto;
+    border-radius: 4px;
+}
+.feature-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+.feature-title h5 {
+    margin: 0;
+    font-weight: 600;
+}
+.feature-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.feature-branch-link {
+    font-family: 'Monaco', 'Menlo', monospace;
+    font-size: 0.9rem;
+    color: var(--secondary-color);
+}
+.stats-summary {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+.stats-summary span {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+.empty-section {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-muted);
+}
+.empty-section i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+.project-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+@media (max-width: 768px) {
+    .project-grid {
+        grid-template-columns: 1fr;
+    }
+}
