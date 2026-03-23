@@ -11,12 +11,6 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-<div id="main">
-<div class="container-fluid">
-<div class="row">
-<div class="col-12">
 <div class="alert alert-info">
     <i class="fas fa-flask me-2"></i>
     These instances are deployed for <strong>eXo QA Team members</strong> usage only.
@@ -25,8 +19,8 @@ checkCaches();
 $qa_instances=getGlobalQAUserInstances();
 if (isDeploymentInCategoryArray($qa_instances)) {
 ?>
-  <div class="table-responsive">
-  <table class="table table-hover">
+  <div class="inst-table-wrap">
+  <table class="inst-table">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -104,8 +98,8 @@ if (isDeploymentInCategoryArray($qa_instances)) {
 $qa_auto_instances=getGlobalQAAutoInstances();
 if (isDeploymentInCategoryArray($qa_auto_instances)) {
 ?>
-  <div class="table-responsive">
-  <table class="table table-hover">
+  <div class="inst-table-wrap">
+  <table class="inst-table">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -216,15 +210,9 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
           </div>
         </div>
       </div>
-    </div>
+    </table>
   </div>
 
-</div>
-</div>
-</div>
-<!-- /container -->
-</div>
-</div>
 <?php pageFooter(); ?>
 </body>
 </html>

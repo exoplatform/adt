@@ -4,17 +4,20 @@ require_once(dirname(__FILE__) . '/functions-ui-form-edit-note.php');
 
 /**
  * Insert the page header lines
- *
- * @param string $title the title of the page (default: none)
  */
 function pageHeader($title = "")
 {
 ?>
-  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta http-equiv="refresh" content="120">
-  <title>Acceptance<?= (empty($title) ? "" : " - " . $title) ?></title>
+  <title>Acceptance<?= (empty($title) ? "" : " — " . $title) ?></title>
   <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
-  <!-- Bootstrap 5 CSS -->
+  <!-- Google Fonts: IBM Plex Sans + IBM Plex Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -22,1040 +25,539 @@ function pageHeader($title = "")
   <link href="./style.css" media="screen" rel="stylesheet" type="text/css" />
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <!-- Bootstrap 5 JS Bundle with Popper -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Dark mode handling -->
+  <!-- Theme init (runs before render to prevent flash) -->
   <script>
-    // Function to set theme
-    function setTheme(theme) {
-      document.documentElement.setAttribute('data-bs-theme', theme);
-      localStorage.setItem('theme', theme);
-      
-      // Update toggle button icon and tooltip
-      const toggleBtn = document.getElementById('darkModeToggle');
-      if (toggleBtn) {
-        const icon = toggleBtn.querySelector('i');
-        if (theme === 'dark') {
-          icon.className = 'fas fa-sun';
-          toggleBtn.setAttribute('title', 'Switch to light mode');
-        } else {
-          icon.className = 'fas fa-moon';
-          toggleBtn.setAttribute('title', 'Switch to dark mode');
-        }
-        
-        // Refresh tooltip
-        const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-        if (tooltip) {
-          tooltip.dispose();
-        }
-        new bootstrap.Tooltip(toggleBtn);
-      }
-    }
-    
-    // Function to toggle theme
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      setTheme(newTheme);
-    }
-    
-    // Initialize theme on page load
     (function() {
-      // Check for saved theme preference
-      const savedTheme = localStorage.getItem('theme');
-      
-      // Check for system preference if no saved theme
-      if (!savedTheme) {
-        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(systemPrefersDark ? 'dark' : 'light');
-      } else {
-        setTheme(savedTheme);
-      }
-      
-      // Listen for system preference changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        if (!localStorage.getItem('theme')) {
-          setTheme(event.matches ? 'dark' : 'light');
-        }
-      });
+      var saved = localStorage.getItem('adt-theme');
+      var prefer = (!saved && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : (saved || 'dark');
+      document.documentElement.setAttribute('data-bs-theme', prefer);
     })();
+    function adtToggleTheme() {
+      var cur = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+      var next = cur === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-bs-theme', next);
+      localStorage.setItem('adt-theme', next);
+      var btn = document.getElementById('themeToggle');
+      if (btn) btn.querySelector('i').className = next === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+    }
   </script>
 <?php
 }
 
-
 /**
- * Insert the script tag for Google Analytics tracking
- *
- * @param string $id the google tracker id
+ * Insert the Google Analytics tracking script
  */
 function pageTracker($id = 'UA-1292368-28') {
 ?>
   <script>
-    (function(i, s, o, g, r, a, m) {
-      i['GoogleAnalyticsObject'] = r;
-      i[r] = i[r] || function() {
-        (i[r].q = i[r].q || []).push(arguments)
-      }, i[r].l = 1 * new Date();
-      a = s.createElement(o),
-        m = s.getElementsByTagName(o)[0];
-      a.async = 1;
-      a.src = g;
-      m.parentNode.insertBefore(a, m)
-    })(window, document, 'script', 'https://www.google-analytics.com/analytics.js', 'ga');
-
-    ga('create', '<?= $id ?>', 'auto');
-    ga('send', 'pageview');
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+    ga('create','<?= $id ?>','auto');
+    ga('send','pageview');
   </script>
 <?php
 }
 
 /**
- * Insert the navigation bar
+ * Build the navigation items array
  */
-function pageNavigation()
-{
-  $nav = array(
-    "Home" => "/",
-    "QA" => "/qa.php",
-    "Sales" => "/sales.php",
-    "CP" => "/customers.php",
-    "Company" => "/company.php",
-    "Features" => "/features.php",
-    "Servers" => "/servers.php"
-  );
-  
-  // Get current theme for initial tooltip
-  $savedTheme = isset($_COOKIE['theme']) ? $_COOKIE['theme'] : 'light';
-  $initialIcon = $savedTheme === 'dark' ? 'fa-sun' : 'fa-moon';
-  $initialTooltip = $savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+function getNavItems() {
+  return [
+    ['label' => 'Instances', 'url' => '/',            'icon' => 'fa-server'],
+    ['label' => 'QA',        'url' => '/qa.php',       'icon' => 'fa-flask'],
+    ['label' => 'Sales',     'url' => '/sales.php',    'icon' => 'fa-chart-line'],
+    ['label' => 'CP',        'url' => '/customers.php','icon' => 'fa-users'],
+    ['label' => 'Company',   'url' => '/company.php',  'icon' => 'fa-building'],
+    ['label' => 'Features',  'url' => '/features.php', 'icon' => 'fa-code-branch'],
+    ['label' => 'Servers',   'url' => '/servers.php',  'icon' => 'fa-database'],
+  ];
+}
+
+/**
+ * Insert the full page shell: sidebar + topbar wrapper.
+ * Call this instead of the old pageNavigation().
+ * Pages should wrap their content in .adt-content themselves via pageOpenContent() / pageCloseContent().
+ */
+function pageNavigation() {
+  $nav   = getNavItems();
+  $uri   = $_SERVER['REQUEST_URI'];
+  $host  = $_SERVER['SERVER_NAME'];
+  $isDark = isset($_COOKIE['adt-theme']) ? ($_COOKIE['adt-theme'] === 'dark') : true;
+  $themeIcon = $isDark ? 'fa-sun' : 'fa-moon';
 ?>
-  <!-- navbar ================================================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/">
-        <i class="fas fa-cloud me-2"></i><?= $_SERVER['SERVER_NAME'] ?>
+<!-- ═══ ADT SHELL ═══ -->
+<div class="adt-shell">
+
+  <!-- SIDEBAR -->
+  <aside class="adt-sidebar">
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <div class="logo-mark">
+        <div class="logo-icon">ADT</div>
+        <div>
+          <div class="logo-text">Acceptance</div>
+        </div>
+      </div>
+      <div class="logo-host"><?= htmlspecialchars($host) ?></div>
+    </div>
+
+    <!-- Environments section -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Environments</div>
+      <?php foreach ($nav as $item):
+        $active = ($item['url'] === $uri || ($item['url'] !== '/' && strpos($uri, $item['url']) === 0)) ? 'active' : '';
+      ?>
+      <a class="nav-item <?= $active ?>" href="<?= $item['url'] ?>">
+        <span class="nav-icon"><i class="fas <?= $item['icon'] ?>"></i></span>
+        <?= $item['label'] ?>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
-          <?php
-          foreach ($nav as $label => $url) {
-            $active = ($url == $_SERVER['REQUEST_URI']) ? 'active' : '';
-            echo '<li class="nav-item"><a class="nav-link ' . $active . '" href="' . $url . '">' . $label . '</a></li>';
-          }
-          ?>
-        </ul>
-        
-        <!-- Dark mode toggle button only (icon only, no text) -->
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" rel="tooltip" title="<?= $initialTooltip ?>">
-              <i class="fas <?= $initialIcon ?>"></i>
-            </button>
-          </li>
-        </ul>
+      <?php endforeach; ?>
+    </div>
+
+    <!-- Status summary -->
+    <div class="sidebar-status">
+      <div class="status-title">Live status</div>
+      <div class="status-row">
+        <span class="status-label">Online</span>
+        <span id="sb-online" class="s-green">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Down</span>
+        <span id="sb-down" class="s-red">—</span>
+      </div>
+      <div class="status-row">
+        <span class="status-label">Instances</span>
+        <span id="sb-total" class="s-blue">—</span>
       </div>
     </div>
-  </nav>
-  <!-- /navbar -->
+  </aside>
+
+  <!-- MAIN PANEL -->
+  <div class="adt-main">
+
+    <!-- TOPBAR -->
+    <div class="adt-topbar">
+      <div class="topbar-breadcrumb">
+        <span class="crumb">ADT</span>
+        <span class="crumb-sep">/</span>
+        <?php foreach ($nav as $item):
+          $active = ($item['url'] === $uri || ($item['url'] !== '/' && strpos($uri, $item['url']) === 0));
+          if ($active): ?>
+            <span class="crumb-active"><?= $item['label'] ?></span>
+          <?php endif;
+        endforeach; ?>
+      </div>
+      <div class="topbar-right">
+        <div class="live-indicator">
+          <span class="live-dot"></span>auto-refresh 2m
+        </div>
+        <button class="topbar-btn" id="themeToggle" onclick="adtToggleTheme()" title="Toggle theme">
+          <i class="fas <?= $themeIcon ?>"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- PAGE CONTENT goes here -->
+    <div class="adt-content">
 <?php
 }
 
-
 /**
- * Insert the Footer
+ * Insert the page footer and close the shell.
  */
 function pageFooter() {
 ?>
-  <!-- Footer ================================================== -->
-  <footer id="footer" class="footer">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col">
-          Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS
-          <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" class="ms-3" target="_blank">
-            <i class="fas fa-chart-bar"></i>
-          </a>
-        </div>
-      </div>
-    </div>
-  </footer>
-  <script type="text/javascript">
-    $(document).ready(function() {
-      // Initialize Bootstrap tooltips
-      var tooltipTriggerList = [].slice.call(document.querySelectorAll('[rel=tooltip]'));
-      var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-        return new bootstrap.Tooltip(tooltipTriggerEl);
-      });
+    </div><!-- /.adt-content -->
 
-      // Initialize Bootstrap popovers with HTML support
-      var popoverTriggerList = [].slice.call(document.querySelectorAll('[rel=popover]'));
-      var popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
-        return new bootstrap.Popover(popoverTriggerEl, {
-          trigger: 'hover',
-          html: true,
-          sanitize: false,
-          container: 'body',
-          animation: true,
-          delay: {
-            show: 100,
-            hide: 100
-          }
-        });
-      });
-    });
-  </script>
+    <!-- FOOTER -->
+    <footer id="footer">
+      Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS
+      <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" class="ms-3" target="_blank">
+        <i class="fas fa-chart-bar"></i>
+      </a>
+    </footer>
+
+  </div><!-- /.adt-main -->
+</div><!-- /.adt-shell -->
+
+<script>
+$(document).ready(function() {
+  // Tooltips
+  $('[rel=tooltip]').each(function() { new bootstrap.Tooltip(this); });
+
+  // Popovers
+  $('[rel=popover]').each(function() {
+    new bootstrap.Popover(this, { trigger:'hover', html:true, sanitize:false, container:'body', delay:{show:80,hide:80} });
+  });
+
+  // Live status counter (parse visible status icons)
+  var up = 0, down = 0;
+  $('.fa-circle.text-success').each(function(){ up++; });
+  $('.fa-circle.text-danger').each(function(){ down++; });
+  var total = up + down;
+  if (total > 0) {
+    $('#sb-online').text(up + ' / ' + total);
+    $('#sb-down').text(down);
+    $('#sb-total').text(total);
+  }
+});
+</script>
 <?php
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   SECTION HELPER — replaces category-row for grouped pages
+   ═══════════════════════════════════════════════════════════════ */
+
 function buildTableTitleDev($plf_branch) {
-  switch ($plf_branch) {
-    case "1.0.x":
-      $content="Platform " . $plf_branch . " based builds (Meeds)";
-      break;
-    case "1.1.x":
-      $content="Platform " . $plf_branch . " based builds (Meeds)";
-      break;  
-    case "1.2.x":
-      $content="Platform " . $plf_branch . " based builds (Meeds)";
-      break;
-    case "1.3.x":
-      $content="Platform " . $plf_branch . " based builds (Meeds)";
-      break;
-    case "1.4.x":
-      $content="Platform " . $plf_branch . " based builds (Meeds)";
-      break;
-    case "1.5.x":
-      $content="Platform " . $plf_branch . " based builds (Meeds)";
-      break;
-    case "4.0.x":
-    case "4.1.x":
-    case "4.2.x":
-    case "4.3.x":
-    case "4.4.x":
-    case "5.0.x":
-    case "5.1.x":
-    case "5.2.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;
-    case "5.3.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;
-    case "6.0.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-       break;  
-    case "6.1.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;  
-    case "6.2.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;  
-    case "6.3.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;  
-    case "6.4.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;  
-    case "6.5.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;  
-    case "7.0.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;  
-    case "7.1.x":
-      $content="Platform " . $plf_branch . " based builds (Maintenance)";
-      break;
-    case "7.2.x":
-      $content="Platform or Meeds " . $plf_branch . " based builds (R&D) - next product release (no date yet)";
-      break;  
-    case "5.x":
-      $content="Platform " . $plf_branch . " based builds (R&D) - perhaps next features ;-)"; 
-      break;
-    case "4.0.x Demo":
-    case "4.1.x Demo":
-    case "4.2.x Demo":
-    case "4.3.x Demo":
-    case "4.4.x Demo":
-    case "5.0.x Demo":
-    case "5.1.x Demo":
-    case "5.2.x Demo":
-    case "5.3.x Demo":
-      $content="Platform " . $plf_branch . "s";
-      break;
-    case "COMPANY":
-      $content="Company internal projects";
-      break;
-    case "CODEFEST":
-      $content="eXo Codefest";
-      break;
-    case "UNKNOWN":
-      $content="Unclassified projects";
-      break;
-    default:
-      $content="Platform " . $plf_branch . " based build (Unclassified)";
-  }
-  return $content;
-}
+  $typeMap = [
+    '7.2.x' => ['label' => 'R&D', 'class' => 'type-rd',    'title' => "Platform or Meeds {$plf_branch} based builds (R&D) — next product release (no date yet)"],
+    '7.1.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    '7.0.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    '6.5.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    '6.4.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    '6.3.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    '6.2.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    '6.1.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    '6.0.x' => ['label' => 'Maint', 'class' => 'type-maint','title' => "Platform {$plf_branch} based builds (Maintenance)"],
+    'COMPANY'  => ['label' => 'Co',   'class' => 'type-co',   'title' => "Company internal projects"],
+    'CODEFEST' => ['label' => 'Fest', 'class' => 'type-co',   'title' => "eXo Codefest"],
+    'UNKNOWN'  => ['label' => '?',    'class' => 'type-gray', 'title' => "Unclassified projects"],
+  ];
 
-/**
- * Return the markup for labels
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentLabels ($deployment_descriptor) {
-  $content="";
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_LABELS')) {
-    if (is_array($deployment_descriptor->DEPLOYMENT_LABELS)) {
-      $labels = $deployment_descriptor->DEPLOYMENT_LABELS;
+  $m = $typeMap[$plf_branch] ?? null;
+
+  if (!$m) {
+    if (strpos($plf_branch, 'Demo') !== false) {
+      $m = ['label'=>'Demo','class'=>'type-trans','title'=>"Platform {$plf_branch}s"];
+    } elseif (in_array($plf_branch, ['1.0.x','1.1.x','1.2.x','1.3.x','1.4.x','1.5.x'])) {
+      $m = ['label'=>'Meeds','class'=>'type-rd','title'=>"Platform {$plf_branch} based builds (Meeds)"];
+    } elseif (in_array($plf_branch, ['5.x'])) {
+      $m = ['label'=>'R&D','class'=>'type-rd','title'=>"Platform {$plf_branch} based builds (R&D) — perhaps next features ;-)"];
     } else {
-      $labels[] = $deployment_descriptor->DEPLOYMENT_LABELS;
-    }
-    foreach ($labels as $label) {
-      $content.='<span class="label label-label">'.$label.'</span>&nbsp;';
+      $m = ['label'=>'Maint','class'=>'type-maint','title'=>"Platform {$plf_branch} based builds (Maintenance)"];
     }
   }
-  return $content;
+
+  // Return the content that will go inside td.category-row
+  return '<span class="group-type-tag ' . $m['class'] . ' me-2">' . $m['label'] . '</span>' . $m['title'];
 }
 
-/**
- * Return the markup for addons labels
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentAddonsTags($deployment_descriptor)
-{
-  $content = "";
-  $content .= componentAddonsDistributionTags($deployment_descriptor) . " ";
+/* ═══════════════════════════════════════════════════════════════
+   COMPONENT FUNCTIONS
+   ═══════════════════════════════════════════════════════════════ */
 
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_ADDONS')) {
-    if (is_array($deployment_descriptor->DEPLOYMENT_ADDONS)) {
-      $labels = $deployment_descriptor->DEPLOYMENT_ADDONS;
-    } else {
-      $labels[] = $deployment_descriptor->DEPLOYMENT_ADDONS;
-    }
-    foreach ($labels as $label) {
-      $label_array = explode(':', $label, 2);
-      $version = isset($label_array[1]) ? $label_array[1] : 'latest';
-      $content .= '<span class="badge bg-info" rel="tooltip" title="version: ' . $version . '">' . $label_array[0] . '</span> ';
+function componentLabels($d) {
+  $out = "";
+  if (property_exists($d, 'DEPLOYMENT_LABELS')) {
+    $labels = is_array($d->DEPLOYMENT_LABELS) ? $d->DEPLOYMENT_LABELS : [$d->DEPLOYMENT_LABELS];
+    foreach ($labels as $l) $out .= '<span class="label label-label me-1">' . $l . '</span>';
+  }
+  return $out;
+}
+
+function componentAddonsTags($d) {
+  $out = componentAddonsDistributionTags($d) . ' ';
+  if (property_exists($d, 'DEPLOYMENT_ADDONS')) {
+    $addons = is_array($d->DEPLOYMENT_ADDONS) ? $d->DEPLOYMENT_ADDONS : [$d->DEPLOYMENT_ADDONS];
+    foreach ($addons as $addon) {
+      $parts = explode(':', $addon, 2);
+      $ver   = isset($parts[1]) ? $parts[1] : 'latest';
+      $out  .= '<span class="label label-addon me-1" rel="tooltip" title="version: ' . $ver . '">' . $parts[0] . '</span>';
     }
   }
-  return $content;
+  return $out;
 }
 
-/**
- * Return the markup for distribution addons labels
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentAddonsDistributionTags($deployment_descriptor)
-{
-  return '<span class="badge bg-secondary" rel="tooltip" title="distribution add-ons: ' . $deployment_descriptor->PRODUCT_ADDONS_DISTRIB . '"><i class="fas fa-gift"></i></span>';
+function componentAddonsDistributionTags($d) {
+  return '<span class="badge bg-secondary me-1" rel="tooltip" title="distribution add-ons: ' . $d->PRODUCT_ADDONS_DISTRIB . '"><i class="fas fa-gift"></i></span>';
 }
 
-/**
- * Return the markup for instance upgrades eligiblity
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentUpgradeEligibility($deployment_descriptor, $is_label_addon = true)
-{
-  if (property_exists($deployment_descriptor, 'INSTANCE_TOKEN') && $deployment_descriptor->INSTANCE_TOKEN) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="fas fa-flag"></i></span>';
-    } else {
-      return '<span class="badge bg-info" rel="tooltip" title="This instance is eligible for upgrades."><i class="fas fa-flag"></i></span>';
-    }
+function componentUpgradeEligibility($d, $badge = true) {
+  if (property_exists($d,'INSTANCE_TOKEN') && $d->INSTANCE_TOKEN) {
+    return $badge
+      ? '<span class="badge bg-info me-1" rel="tooltip" title="Eligible for upgrades"><i class="fas fa-flag"></i></span>'
+      : '<span rel="tooltip" title="Eligible for upgrades"><i class="fas fa-flag"></i></span>';
   }
   return '';
 }
 
-/**
- * Return the markup for instance patch installation
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentPatchInstallation($deployment_descriptor, $is_label_addon = true)
-{
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_PATCHES') && $deployment_descriptor->DEPLOYMENT_PATCHES) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="' . $deployment_descriptor->DEPLOYMENT_PATCHES . ' is installed on this instance."><i class="fas fa-plus-circle"></i></span>';
-    } else {
-      return '<span class="badge bg-success" rel="tooltip" title="' . $deployment_descriptor->DEPLOYMENT_PATCHES . ' is installed on this instance."><i class="fas fa-plus-circle"></i></span>';
-    }
-  }
-  return '';
-}
-/**
- * Return the markup for staging instance
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentStagingModeEnabled($deployment_descriptor, $is_label_addon = true)
-{
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_STAGING_ENABLED') && $deployment_descriptor->DEPLOYMENT_STAGING_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance is enabled with Staging mode."><i class="fas fa-fire"></i></span>';
-    } else {
-      return '<span class="badge bg-warning" rel="tooltip" title="This instance is enabled with Staging mode."><i class="fas fa-fire"></i></span>';
-    }
+function componentPatchInstallation($d, $badge = true) {
+  if (property_exists($d,'DEPLOYMENT_PATCHES') && $d->DEPLOYMENT_PATCHES) {
+    return $badge
+      ? '<span class="badge bg-success me-1" rel="tooltip" title="' . $d->DEPLOYMENT_PATCHES . ' installed"><i class="fas fa-plus-circle"></i></span>'
+      : '<span rel="tooltip" title="' . $d->DEPLOYMENT_PATCHES . ' installed"><i class="fas fa-plus-circle"></i></span>';
   }
   return '';
 }
 
-/**
- * Return the markup for instance dev mode availability
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentDevModeEnabled($deployment_descriptor, $is_label_addon = true)
-{
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_DEV_ENABLED') && $deployment_descriptor->DEPLOYMENT_DEV_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance is enabled with Dev mode."><i class="fab fa-github"></i></span>';
-    } else {
-      return '<span class="badge bg-dark" rel="tooltip" title="This instance is enabled with Dev mode."><i class="fab fa-github"></i></span>';
-    }
+function componentStagingModeEnabled($d, $badge = true) {
+  if (property_exists($d,'DEPLOYMENT_STAGING_ENABLED') && $d->DEPLOYMENT_STAGING_ENABLED) {
+    return $badge
+      ? '<span class="badge bg-warning me-1" rel="tooltip" title="Staging mode enabled"><i class="fas fa-fire"></i></span>'
+      : '<span rel="tooltip" title="Staging mode enabled"><i class="fas fa-fire"></i></span>';
   }
   return '';
 }
 
-/**
- * Return the markup for instance debug mode availability
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentDebugModeEnabled($deployment_descriptor, $is_label_addon = true)
-{
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_DEBUG_ENABLED') && $deployment_descriptor->DEPLOYMENT_DEBUG_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance is enabled with Debug mode."><i class="fas fa-stethoscope"></i></span>';
-    } else {
-      return '<span class="badge bg-danger" rel="tooltip" title="This instance is enabled with Debug mode."><i class="fas fa-stethoscope"></i></span>';
-    }
+function componentDevModeEnabled($d, $badge = true) {
+  if (property_exists($d,'DEPLOYMENT_DEV_ENABLED') && $d->DEPLOYMENT_DEV_ENABLED) {
+    return $badge
+      ? '<span class="badge bg-dark me-1" rel="tooltip" title="Dev mode enabled"><i class="fab fa-github"></i></span>'
+      : '<span rel="tooltip" title="Dev mode enabled"><i class="fab fa-github"></i></span>';
   }
   return '';
 }
 
-/**
- * Return the markup for instance certbot availability
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentCertbotEnabled($deployment_descriptor, $is_label_addon = true)
-{
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CERTBOT_ENABLED') && $deployment_descriptor->DEPLOYMENT_CERTBOT_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance SSL certificate is generated by certbot."><i class="fas fa-certificate"></i></span>';
-    } else {
-      return '<span class="badge bg-primary" rel="tooltip" title="This instance SSL certificate is generated by certbot."><i class="fas fa-certificate"></i></span>';
-    }
+function componentDebugModeEnabled($d, $badge = true) {
+  if (property_exists($d,'DEPLOYMENT_DEBUG_ENABLED') && $d->DEPLOYMENT_DEBUG_ENABLED) {
+    return $badge
+      ? '<span class="badge bg-danger me-1" rel="tooltip" title="Debug mode enabled"><i class="fas fa-stethoscope"></i></span>'
+      : '<span rel="tooltip" title="Debug mode enabled"><i class="fas fa-stethoscope"></i></span>';
   }
   return '';
 }
 
-/**
- * Return the markup for the Deployment Status
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentStatusIcon($deployment_descriptor) {
-  if ($deployment_descriptor->DEPLOYMENT_STATUS == "Up") {
-    return '<i class="fas fa-circle text-success" rel="tooltip" title="Status: Up"></i>';
-  } else {
-    return '<i class="fas fa-circle text-danger" rel="tooltip" title="Status: Down"></i>';
-  }
-}
-
-/**
- * Return markup for the Application Server type
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentAppServerIcon($deployment_descriptor) {
-  $icons = array(
-    'tomcat' => 'fa-brands fa-java',
-    'jboss' => 'fa-brands fa-redhat',
-    'wildfly' => 'fa-brands fa-redhat'
-  );
-  
-  $type = strtolower($deployment_descriptor->DEPLOYMENT_APPSRV_TYPE);
-  $icon = isset($icons[$type]) ? $icons[$type] : 'fa-server';
-  
-  return '<i class="fas ' . $icon . '" rel="tooltip" title="Application Server: ' . $deployment_descriptor->DEPLOYMENT_APPSRV_TYPE . '"></i>';
-}
-/**
- * Get the markup for the Edit Note icon
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentEditNoteIcon($deployment_descriptor)
-{
-  $modalId = 'edit-note-' . str_replace(".", "_", $deployment_descriptor->INSTANCE_KEY);
-  $content = '<a href="#" rel="tooltip" title="Add/Edit Instance Note" data-bs-toggle="modal" data-bs-target="#' . $modalId . '"><i class="fas fa-pencil-alt"></i></a>';
-  $content .= getFormEditNote($deployment_descriptor);
-  return $content;
-}
-
-/**
- * Get the markup for the Specification link icon
- *
- * @param $deployment_descriptor
- *
- * @return string html markup or empty if no specification on the deployment
- */
-function componentSpecificationIcon($deployment_descriptor)
-{
-  if (!empty($deployment_descriptor->SPECIFICATIONS_LINK)) {
-    return '<a rel="tooltip" title="Specifications link" href="' . $deployment_descriptor->SPECIFICATIONS_LINK . '" target="_blank"><i class="fas fa-book"></i></a>';
+function componentCertbotEnabled($d, $badge = true) {
+  if (property_exists($d,'DEPLOYMENT_CERTBOT_ENABLED') && $d->DEPLOYMENT_CERTBOT_ENABLED) {
+    return $badge
+      ? '<span class="badge bg-primary me-1" rel="tooltip" title="SSL via Certbot"><i class="fas fa-certificate"></i></span>'
+      : '<span rel="tooltip" title="SSL via Certbot"><i class="fas fa-certificate"></i></span>';
   }
   return '';
 }
 
-
-/**
- * Return markup for the Database type icon
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentDatabaseIcon($deployment_descriptor)
-{
-  $db_type = "none";
-  $icon_class = "fa-database";
-  $icon_color = "text-secondary";
-  
-  if (stripos($deployment_descriptor->DATABASE, 'mysql') !== false) {
-    $db_type = "MySQL";
-    $icon_class = "fa-database";
-    $icon_color = "text-primary";
-  } else if (stripos($deployment_descriptor->DATABASE, 'mariadb') !== false) {
-    $db_type = "MariaDB";
-    $icon_class = "fa-database";
-    $icon_color = "text-success";
-  } else if (stripos($deployment_descriptor->DATABASE, 'postgres') !== false) {
-    $db_type = "PostgreSQL";
-    $icon_class = "fa-database";
-    $icon_color = "text-info";
-  } else if (stripos($deployment_descriptor->DATABASE, 'oracle') !== false) {
-    $db_type = "Oracle";
-    $icon_class = "fa-database";
-    $icon_color = "text-danger";
-  } else if (stripos($deployment_descriptor->DATABASE, 'sqlserver') !== false) {
-    $db_type = "SQL Server";
-    $icon_class = "fa-database";
-    $icon_color = "text-warning";
-  } else if (stripos($deployment_descriptor->DATABASE, 'h2') !== false) {
-    $db_type = "H2";
-    $icon_class = "fa-database";
-    $icon_color = "text-secondary";
-  } else if (stripos($deployment_descriptor->DATABASE, 'hsql') !== false) {
-    $db_type = "HSQLDB";
-    $icon_class = "fa-database";
-    $icon_color = "text-secondary";
+function componentStatusIcon($d) {
+  if ($d->DEPLOYMENT_STATUS === "Up") {
+    return '<i class="fas fa-circle text-success" rel="tooltip" title="Up"></i>';
   }
-  
-  $content = "";
-  if ($db_type != "none") {
-    $content .= '<i class="fas ' . $icon_class . ' ' . $icon_color . '" rel="tooltip" title="' . $db_type . '"></i>&nbsp;';
+  return '<i class="fas fa-circle text-danger" rel="tooltip" title="Down"></i>';
+}
+
+function componentAppServerIcon($d) {
+  $type = strtolower($d->DEPLOYMENT_APPSRV_TYPE);
+  $icon = in_array($type, ['tomcat']) ? 'fa-brands fa-java' : ($type === 'jboss' || $type === 'wildfly' ? 'fa-brands fa-redhat' : 'fa-server');
+  return '<i class="fas ' . $icon . '" rel="tooltip" title="App server: ' . $d->DEPLOYMENT_APPSRV_TYPE . '"></i>';
+}
+
+function componentEditNoteIcon($d) {
+  $id  = 'edit-note-' . str_replace('.', '_', $d->INSTANCE_KEY);
+  $out = '<a href="#" rel="tooltip" title="Edit instance note" data-bs-toggle="modal" data-bs-target="#' . $id . '"><i class="fas fa-pencil-alt"></i></a>';
+  $out .= getFormEditNote($d);
+  return $out;
+}
+
+function componentSpecificationIcon($d) {
+  if (!empty($d->SPECIFICATIONS_LINK)) {
+    return '<a rel="tooltip" title="Specifications" href="' . $d->SPECIFICATIONS_LINK . '" target="_blank"><i class="fas fa-book"></i></a>';
+  }
+  return '';
+}
+
+function componentDatabaseIcon($d) {
+  $db = $d->DATABASE;
+  if     (stripos($db,'mysql')    !== false) { $t='MySQL';     $c='text-warning'; }
+  elseif (stripos($db,'mariadb')  !== false) { $t='MariaDB';   $c='text-success'; }
+  elseif (stripos($db,'postgres') !== false) { $t='PostgreSQL';$c='text-info';    }
+  elseif (stripos($db,'oracle')   !== false) { $t='Oracle';    $c='text-danger';  }
+  elseif (stripos($db,'sqlserver')!== false) { $t='SQL Server';$c='text-secondary';}
+  elseif (stripos($db,'h2')       !== false) { $t='H2';        $c='text-secondary';}
+  else                                        { $t='DB';        $c='text-secondary';}
+
+  $out = '<i class="fas fa-database ' . $c . ' me-1" rel="tooltip" title="' . $t . '"></i>';
+  if (empty($d->DEPLOYMENT_DATABASE_VERSION)) {
+    $out .= '<span class="badge bg-secondary">-NC-</span>';
   } else {
-    $content .= '<i class="fas fa-database text-muted" rel="tooltip" title="No database"></i>&nbsp;';
+    $out .= '<span class="badge bg-info">' . $d->DEPLOYMENT_DATABASE_VERSION . '</span>';
   }
-  
-  if (empty($deployment_descriptor->DEPLOYMENT_DATABASE_VERSION)) {
-    $content .= '<span class="badge bg-secondary">-NC-</span>';
-  } else {
-    $content .= '<span class="badge bg-info">' . $deployment_descriptor->DEPLOYMENT_DATABASE_VERSION . '</span>';
-  }
-  
-  return $content;
+  return $out;
 }
 
-/**
- * Return markup for the Visibility icon
- *
- * @param $deployment_descriptor
- * @param $color The color for the icon (default: none)
- *
- * @return string html markup
- */
-function componentVisibilityIcon($deployment_descriptor, $color = "")
-{
-  if ($deployment_descriptor->DEPLOYMENT_APACHE_SECURITY === "public") {
-    $icon = "fa-globe";
-  } else if ($deployment_descriptor->DEPLOYMENT_APACHE_SECURITY === "private") {
-    $icon = "fa-lock";
-  } else {
-    $icon = "fa-question-circle";
-  }
-  
-  $colorClass = empty($color) ? '' : ' text-' . $color;
-  return '<i class="fas ' . $icon . $colorClass . '" rel="tooltip" title="Visibility: ' . $deployment_descriptor->DEPLOYMENT_APACHE_SECURITY . '"></i>';
+function componentVisibilityIcon($d, $color = '') {
+  $icon = $d->DEPLOYMENT_APACHE_SECURITY === 'public' ? 'fa-globe'
+       : ($d->DEPLOYMENT_APACHE_SECURITY === 'private' ? 'fa-lock' : 'fa-question-circle');
+  $cls  = $color ? ' text-' . $color : '';
+  return '<i class="fas ' . $icon . $cls . '" rel="tooltip" title="Visibility: ' . $d->DEPLOYMENT_APACHE_SECURITY . '"></i>';
 }
 
-/**
- * Get the markup for the Product Info icon with popover
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentProductInfoIcon($deployment_descriptor)
-{
-  return '<a href="#" rel="popover" data-bs-content="' . htmlspecialchars(componentProductHtmlPopover($deployment_descriptor)) . '" data-bs-html="true" data-bs-trigger="hover"><i class="fas fa-info-circle text-info"></i></a>';
+function componentProductInfoIcon($d) {
+  return '<a href="#" rel="popover" data-bs-content="' . htmlspecialchars(componentProductHtmlPopover($d)) . '" data-bs-html="true" data-bs-trigger="hover"><i class="fas fa-info-circle text-info"></i></a>';
 }
 
-/**
- * Insert markup for the Artifact download icon link
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentDownloadIcon($deployment_descriptor)
-{
-  $data_content = "<strong>GroupId:</strong> " . $deployment_descriptor->ARTIFACT_GROUPID . "<br/>";
-  $data_content .= "<strong>ArtifactId:</strong> " . $deployment_descriptor->ARTIFACT_ARTIFACTID . "<br/>";
-  $data_content .= "<strong>Version/Timestamp:</strong> " . $deployment_descriptor->ARTIFACT_TIMESTAMP;
-
-  return '<a href="' . $deployment_descriptor->ARTIFACT_DL_URL . '" rel="popover" data-bs-content="' . htmlspecialchars($data_content) . '" data-bs-html="true" data-bs-trigger="hover"><i class="fas fa-download"></i></a>';
+function componentDownloadIcon($d) {
+  $content  = '<strong>GroupId:</strong> ' . $d->ARTIFACT_GROUPID . '<br>';
+  $content .= '<strong>ArtifactId:</strong> ' . $d->ARTIFACT_ARTIFACTID . '<br>';
+  $content .= '<strong>Version:</strong> ' . $d->ARTIFACT_TIMESTAMP;
+  return '<a href="' . $d->ARTIFACT_DL_URL . '" rel="popover" data-bs-content="' . htmlspecialchars($content) . '" data-bs-html="true" data-bs-trigger="hover"><i class="fas fa-download"></i></a>';
 }
 
-/**
- * Return the markup for the Product Html Label
- *
- * @param $deployment_descriptor
- * @param bool $simple if true then ignore Branch Description and Instance Note if present (default: false)
- *
- * @return string html markup
-*/
-function componentProductHtmlLabel ($deployment_descriptor, $simple=false) {
-  if (empty($deployment_descriptor->PRODUCT_DESCRIPTION)) {
-      $content = $deployment_descriptor->PRODUCT_NAME;
-  } else {
-      $content = $deployment_descriptor->PRODUCT_DESCRIPTION;
+function componentProductHtmlLabel($d, $simple = false) {
+  $out = empty($d->PRODUCT_DESCRIPTION) ? $d->PRODUCT_NAME : $d->PRODUCT_DESCRIPTION;
+  if (!empty($d->INSTANCE_ID)) $out .= ' (' . $d->INSTANCE_ID . ')';
+  if (!$simple) {
+    if (!empty($d->BRANCH_DESC))    $out = '<span class="muted">' . $out . '</span>&nbsp;&mdash;&nbsp;' . $d->BRANCH_DESC;
+    if (!empty($d->INSTANCE_NOTE))  $out = '<span class="muted">' . $out . '</span>&nbsp;&mdash;&nbsp;' . $d->INSTANCE_NOTE;
   }
-  if (!empty($deployment_descriptor->INSTANCE_ID)) {
-      $content .= ' (' . $deployment_descriptor->INSTANCE_ID . ')';
-  }
-  if ($simple == false) {
-    if (!empty($deployment_descriptor->BRANCH_DESC)) {
-        $content = '<span class="muted">'.$content.'</span>&nbsp;&nbsp;-&nbsp;&nbsp;'.$deployment_descriptor->BRANCH_DESC;
-    }
-    if (!empty($deployment_descriptor->INSTANCE_NOTE)) {
-        $content = "<span class=\"muted\">" . $content . "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" . $deployment_descriptor->INSTANCE_NOTE;
-    }
-  }
-  return $content;
+  return $out;
 }
 
-/**
- * Get the markup for the link(s) to open the Product url.
- *
- * @param $deployment_descriptor
- * @param string $link_text
- * @param bool $enforce_ssl
- *
- * @return string
- */
-function componentProductOpenLink ($deployment_descriptor, $link_text="", $enforce_ssl=false) {
-  if ($deployment_descriptor->DEPLOYMENT_APACHE_HTTPS_ENABLED) {
-    $ssl=true;
-  } else {
-    $ssl=false;
-  }
-  if ($deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS) {
-    $url = "http://" . $deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS;
-  } else {
-    $url = $deployment_descriptor->DEPLOYMENT_URL;
-  }
-  // Buy page deployment specificity
-  if (isInstanceBuyPage($deployment_descriptor)) {
-    $url.='/buy/';
-  }
-  $content='<a href="';
-  if ($enforce_ssl && $ssl) {
-    $content.=preg_replace("/http:(.*)/", "https:$1", $url);
-  } else {
-    $content.=$url;
-  }
-  $content.='" target="_blank">';
-  $content.=empty($link_text) ? componentProductHtmlLabel($deployment_descriptor) : $link_text;
-  $content.='</a>';
+function componentProductOpenLink($d, $text = '', $ssl = false) {
+  $https = $d->DEPLOYMENT_APACHE_HTTPS_ENABLED;
+  $url   = $d->DEPLOYMENT_APACHE_VHOST_ALIAS ? 'http://' . $d->DEPLOYMENT_APACHE_VHOST_ALIAS : $d->DEPLOYMENT_URL;
+  if (isInstanceBuyPage($d)) $url .= '/buy/';
 
-  if (! $enforce_ssl && $ssl) {
-    $content.=' <a rel="tooltip" title="HTTPS link available" href="';
-    $content.=preg_replace("/http:(.*)/", "https:$1", $url);
-    $content.='" target="_blank">';
-    $content.='<i class="fas fa-lock text-success"></i>';
-    $content.='</a>';
+  $href = ($ssl && $https) ? preg_replace('/http:(.*)/', 'https:$1', $url) : $url;
+  $label = empty($text) ? componentProductHtmlLabel($d) : $text;
+  $out = '<a href="' . $href . '" target="_blank">' . $label . '</a>';
+
+  if (!$ssl && $https) {
+    $sslUrl = preg_replace('/http:(.*)/', 'https:$1', $url);
+    $out .= ' <a rel="tooltip" title="HTTPS available" href="' . $sslUrl . '" target="_blank"><i class="fas fa-lock text-success"></i></a>';
   }
-  return $content;
+  return $out;
 }
 
-/**
- * Return the markup for the Product Version
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentProductVersion ($deployment_descriptor) {
-  if (preg_match("/.*-M(LT|BL)$/", $deployment_descriptor->BASE_VERSION)) {
-    $tooltipmessage=(preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION) ? "Before latest" : "Latest")." milestone continuous deployment enabled";
-    $content=$deployment_descriptor->ARTIFACT_TIMESTAMP.' <span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$tooltipmessage.'">Auto</span>';
-  } else {
-    $content=$deployment_descriptor->BASE_VERSION;
-    $timestamp=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
-    if (!empty($timestamp)) {
-      $content.='<span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">';
-      if (!empty($deployment_descriptor->BRANCH_NAME)) {
-        $content.='-'.$deployment_descriptor->BRANCH_NAME;
-      }
-      $content.='-SNAPSHOT</span>';
-    }
+function componentProductVersion($d) {
+  if (preg_match('/.*-M(LT|BL)$/', $d->BASE_VERSION)) {
+    $msg = (preg_match('/.*-MBL$/', $d->BASE_VERSION) ? 'Before latest' : 'Latest') . ' milestone CD enabled';
+    return $d->ARTIFACT_TIMESTAMP . ' <span class="version-sub" rel="tooltip" title="' . $msg . '">Auto</span>';
   }
-  return $content;
+  $out  = $d->BASE_VERSION;
+  $tail = substr_replace($d->ARTIFACT_TIMESTAMP, '', 0, strlen($d->BASE_VERSION));
+  if (!empty($tail)) {
+    $out .= '<span class="version-sub" rel="tooltip" title="' . $d->ARTIFACT_TIMESTAMP . '">';
+    if (!empty($d->BRANCH_NAME)) $out .= '-' . $d->BRANCH_NAME;
+    $out .= '-SNAPSHOT</span>';
+  }
+  return $out;
 }
 
-/**
- * Return the markup for the Product Html Popover
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentProductHtmlPopover($deployment_descriptor) {
-  $content = '<div class="popover-content" style="min-width: 250px;">';
-  $content .= '<strong>Product:</strong> ' . componentProductHtmlLabel($deployment_descriptor) . '<br>';
-  $content .= '<strong>Version:</strong> ' . $deployment_descriptor->PRODUCT_VERSION . '<br>';
-  $content .= '<strong>Packaging:</strong> ' . $deployment_descriptor->DEPLOYMENT_APPSRV_TYPE . ' ';
-  $content .= '<i class="fas fa-server"></i><br>';
-  $content .= '<strong>Database:</strong> ' . $deployment_descriptor->DATABASE . '<br>';
-  $content .= '<strong>Visibility:</strong> ' . $deployment_descriptor->DEPLOYMENT_APACHE_SECURITY . ' ';
-  
-  if ($deployment_descriptor->DEPLOYMENT_APACHE_SECURITY === "public") {
-    $content .= '<i class="fas fa-globe text-success"></i>';
-  } else {
-    $content .= '<i class="fas fa-lock text-warning"></i>';
+function componentProductHtmlPopover($d) {
+  $out  = '<div style="min-width:220px;font-size:12px;line-height:1.7">';
+  $out .= '<strong>Product:</strong> ' . componentProductHtmlLabel($d) . '<br>';
+  $out .= '<strong>Version:</strong> ' . $d->PRODUCT_VERSION . '<br>';
+  $out .= '<strong>Server:</strong> ' . $d->DEPLOYMENT_APPSRV_TYPE . '<br>';
+  $out .= '<strong>Database:</strong> ' . $d->DATABASE . '<br>';
+  $out .= '<strong>Visibility:</strong> ' . $d->DEPLOYMENT_APACHE_SECURITY . '<br>';
+  $out .= '<strong>HTTPS:</strong> ' . ($d->DEPLOYMENT_APACHE_HTTPS_ENABLED ? '✓ yes' : '✗ no') . '<br>';
+  $out .= '<strong>ES embedded:</strong> ' . ($d->DEPLOYMENT_ES_EMBEDDED ? '✓ yes' : '✗ no') . '<br>';
+  $out .= '<strong>OnlyOffice:</strong> ' . ($d->DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED ? '✓ yes' : '✗ no') . '<br>';
+  if ($d->DEPLOYMENT_CHAT_ENABLED) {
+    $out .= '<strong>Chat embedded:</strong> ' . ($d->DEPLOYMENT_CHAT_EMBEDDED ? '✓ yes' : '✗ no') . '<br>';
+    $out .= '<strong>MongoDB:</strong> v' . $d->DEPLOYMENT_CHAT_MONGODB_VERSION . '<br>';
   }
-  
-  $content .= '<br>';
-  $content .= '<strong>HTTPS:</strong> ' . ($deployment_descriptor->DEPLOYMENT_APACHE_HTTPS_ENABLED ? 
-    '<i class="fas fa-lock text-success"></i> yes' : 
-    '<i class="fas fa-unlock text-muted"></i> no');
-  
-  $content .= '<br><strong>ES embedded:</strong> ' . ($deployment_descriptor->DEPLOYMENT_ES_EMBEDDED ? 
-    '<i class="fas fa-check text-success"></i> yes' : 
-    '<i class="fas fa-times text-danger"></i> no');
-  
-  $content .= '<br><strong>OnlyOffice:</strong> ' . ($deployment_descriptor->DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED ? 
-    '<i class="fas fa-check text-success"></i> yes' : 
-    '<i class="fas fa-times text-danger"></i> no');
-  
-  $content .= '<br><strong>CMIS Server:</strong> ' . ($deployment_descriptor->DEPLOYMENT_CMISSERVER_ENABLED ? 
-    '<i class="fas fa-check text-success"></i> yes' : 
-    '<i class="fas fa-times text-danger"></i> no');
-  
-  if ($deployment_descriptor->DEPLOYMENT_CHAT_ENABLED) {
-    $content .= '<br><strong>Chat embedded:</strong> ' . ($deployment_descriptor->DEPLOYMENT_CHAT_EMBEDDED ? 
-      '<i class="fas fa-check text-success"></i> yes' : 
-      '<i class="fas fa-times text-danger"></i> no');
-    $content .= '<br><strong>MongoDB:</strong> v' . $deployment_descriptor->DEPLOYMENT_CHAT_MONGODB_VERSION;
-  }
-  
-  $content .= '<br><strong>WebSocket:</strong> ' . ((strcmp($deployment_descriptor->ACCEPTANCE_APACHE_VERSION_MINOR, '2.4') == 0 && 
-    $deployment_descriptor->DEPLOYMENT_APACHE_WEBSOCKET_ENABLED) ? 
-    '<i class="fas fa-check text-success"></i> yes' : 
-    '<i class="fas fa-times text-danger"></i> no');
-  
-  $content .= '<br><strong>Virtual Host:</strong> ' . preg_replace('/https?:\/\/(.*)/', '$1', $deployment_descriptor->DEPLOYMENT_URL);
-  
-  if ($deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS) {
-    $content .= '<br><strong>Alias:</strong> ' . $deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS;
-  }
-  
-  if ($deployment_descriptor->DEPLOYMENT_INFO) {
-    $content .= '<hr><strong>Info:</strong> ' . $deployment_descriptor->DEPLOYMENT_INFO;
-  }
-  
-  $content .= '</div>';
-  
-  return $content;
+  $out .= '<strong>Virtual Host:</strong> ' . preg_replace('/https?:\/\/(.*)/', '$1', $d->DEPLOYMENT_URL);
+  if ($d->DEPLOYMENT_APACHE_VHOST_ALIAS) $out .= '<br><strong>Alias:</strong> ' . $d->DEPLOYMENT_APACHE_VHOST_ALIAS;
+  if ($d->DEPLOYMENT_INFO) $out .= '<hr><strong>Info:</strong> ' . $d->DEPLOYMENT_INFO;
+  $out .= '</div>';
+  return $out;
 }
 
-/**
- * Get the markup for the available actions of the deployment
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentDeploymentActions($deployment_descriptor)
-{
-  $deploymentURL = $deployment_descriptor->DEPLOYMENT_EXT_HOST;
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_APACHE_VHOST_ALIAS') && $deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS != "") {
-    $deploymentURL = $deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS;
-  }
-  
-  $content = '<div class="btn-group btn-group-sm" role="group">';
-  
-  // Instance logs
-  $content .= '<a href="' . $deployment_descriptor->DEPLOYMENT_LOG_APPSRV_URL . '" rel="tooltip" title="Instance logs" target="_blank" class="btn btn-outline-secondary">';
-  $content .= '<i class="fas fa-file-alt"></i>';
-  $content .= '</a>';
-  
-  // Apache logs
-  $content .= '<a href="' . $deployment_descriptor->DEPLOYMENT_LOG_APACHE_URL . '" rel="tooltip" title="Apache logs" target="_blank" class="btn btn-outline-secondary">';
-  $content .= '<i class="fas fa-server"></i>';
-  $content .= '</a>';
-  
-  // JMX monitoring
-  if (!empty($deployment_descriptor->DEPLOYMENT_JMX_URL)) {
-    $content .= '<a href="' . $deployment_descriptor->DEPLOYMENT_JMX_URL . '" rel="tooltip" title="JMX monitoring" target="_blank" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-chart-line"></i>';
-    $content .= '</a>';
-  }
-  
-  // LDAP
-  if (!empty($deployment_descriptor->DEPLOYMENT_LDAP_LINK)) {
-    $content .= '<a href="' . $deployment_descriptor->DEPLOYMENT_LDAP_LINK . '" rel="tooltip" title="LDAP url" target="_blank" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-address-book"></i>';
-    $content .= '</a>';
-  }
-  
-  // CRaSH SSH
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CRASH_ENABLED') && $deployment_descriptor->DEPLOYMENT_CRASH_ENABLED) {
-    $content .= '<a href="ssh://root@' . $deployment_descriptor->DEPLOYMENT_EXT_HOST . ':' . $deployment_descriptor->DEPLOYMENT_CRASH_SSH_PORT . '" rel="tooltip" title="CRaSH SSH Access" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-terminal"></i>';
-    $content .= '</a>';
-  }
-  
-  // Statistics
-  $content .= '<a href="' . $deployment_descriptor->DEPLOYMENT_AWSTATS_URL . '" rel="tooltip" title="Usage statistics" target="_blank" class="btn btn-outline-secondary">';
-  $content .= '<i class="fas fa-chart-bar"></i>';
-  $content .= '</a>';
-  
-  // Elasticsearch
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_ES_ENABLED') && $deployment_descriptor->DEPLOYMENT_ES_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . '/elasticsearch" rel="tooltip" title="Elasticsearch" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-search"></i>';
-    $content .= '</a>';
-  }
-  
-  // Mailpit
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_MAILPIT_ENABLED') && $deployment_descriptor->DEPLOYMENT_MAILPIT_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . '/mailpit/" rel="tooltip" title="Mailpit" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-envelope"></i>';
-    $content .= '</a>';
-  }
-  
-  // Mongo Express
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_MONGO_EXPRESS_ENABLED') && $deployment_descriptor->DEPLOYMENT_MONGO_EXPRESS_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . '/mongoexpress/" rel="tooltip" title="Mongo Express" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-database"></i>';
-    $content .= '</a>';
-  }
-  
-  // Keycloak
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_KEYCLOAK_ENABLED') && $deployment_descriptor->DEPLOYMENT_KEYCLOAK_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . '/auth/admin/" rel="tooltip" title="Keycloak" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-key"></i>';
-    $content .= '</a>';
-  }
-  
-  // CloudBeaver
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CLOUDBEAVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . '/cloudbeaver/" rel="tooltip" title="CloudBeaver" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-cloud"></i>';
-    $content .= '</a>';
-  }
-  
-  // phpLDAPAdmin
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_PHPLDAPADMIN_ENABLED') && $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . ':' . $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT . '" rel="tooltip" title="phpLDAPAdmin" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-address-book"></i>';
-    $content .= '</a>';
-  }
-  
-  // SFTP
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_SFTP_ENABLED') && $deployment_descriptor->DEPLOYMENT_SFTP_ENABLED) {
-    $content .= '<a href="' . $deployment_descriptor->DEPLOYMENT_SFTP_LINK . '" rel="tooltip" title="SFTP" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-file-export"></i>';
-    $content .= '</a>';
-  }
-  
-  // CMIS
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CMISSERVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CMISSERVER_ENABLED) {
-    $content .= '<a href="http://' . $deployment_descriptor->DEPLOYMENT_EXT_HOST . '/cmis" rel="tooltip" title="CMIS Server" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-share-alt"></i>';
-    $content .= '</a>';
-  }
-  
-  // Frontail
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_FRONTAIL_ENABLED') && $deployment_descriptor->DEPLOYMENT_FRONTAIL_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . '/livelogs/" rel="tooltip" title="Instance Live logs" target="_blank" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-play-circle"></i>';
-    $content .= '</a>';
-  }
-  
-  $content .= '</div>';
-  
-  return $content;
+function componentDeploymentActions($d) {
+  $host = $d->DEPLOYMENT_EXT_HOST;
+  if (property_exists($d,'DEPLOYMENT_APACHE_VHOST_ALIAS') && $d->DEPLOYMENT_APACHE_VHOST_ALIAS)
+    $host = $d->DEPLOYMENT_APACHE_VHOST_ALIAS;
+
+  $b = '<div class="btn-group btn-group-sm" role="group">';
+  $b .= _ab($d->DEPLOYMENT_LOG_APPSRV_URL, 'fa-file-alt',   'Instance logs');
+  $b .= _ab($d->DEPLOYMENT_LOG_APACHE_URL, 'fa-server',     'Apache logs');
+  if (!empty($d->DEPLOYMENT_JMX_URL))
+    $b .= _ab($d->DEPLOYMENT_JMX_URL, 'fa-chart-line', 'JMX monitoring');
+  if (!empty($d->DEPLOYMENT_LDAP_LINK))
+    $b .= _ab($d->DEPLOYMENT_LDAP_LINK, 'fa-address-book', 'LDAP');
+  if (property_exists($d,'DEPLOYMENT_CRASH_ENABLED') && $d->DEPLOYMENT_CRASH_ENABLED)
+    $b .= _ab('ssh://root@'.$d->DEPLOYMENT_EXT_HOST.':'.$d->DEPLOYMENT_CRASH_SSH_PORT,'fa-terminal','CRaSH SSH');
+  $b .= _ab($d->DEPLOYMENT_AWSTATS_URL, 'fa-chart-bar', 'Statistics');
+  if (property_exists($d,'DEPLOYMENT_ES_ENABLED') && $d->DEPLOYMENT_ES_ENABLED)
+    $b .= _ab('http://'.$host.'/elasticsearch','fa-search','Elasticsearch');
+  if (property_exists($d,'DEPLOYMENT_MAILPIT_ENABLED') && $d->DEPLOYMENT_MAILPIT_ENABLED)
+    $b .= _ab('http://'.$host.'/mailpit/','fa-envelope','Mailpit');
+  if (property_exists($d,'DEPLOYMENT_MONGO_EXPRESS_ENABLED') && $d->DEPLOYMENT_MONGO_EXPRESS_ENABLED)
+    $b .= _ab('http://'.$host.'/mongoexpress/','fa-database','Mongo Express');
+  if (property_exists($d,'DEPLOYMENT_KEYCLOAK_ENABLED') && $d->DEPLOYMENT_KEYCLOAK_ENABLED)
+    $b .= _ab('http://'.$host.'/auth/admin/','fa-key','Keycloak');
+  if (property_exists($d,'DEPLOYMENT_CLOUDBEAVER_ENABLED') && $d->DEPLOYMENT_CLOUDBEAVER_ENABLED)
+    $b .= _ab('http://'.$host.'/cloudbeaver/','fa-cloud','CloudBeaver');
+  if (property_exists($d,'DEPLOYMENT_PHPLDAPADMIN_ENABLED') && $d->DEPLOYMENT_PHPLDAPADMIN_ENABLED)
+    $b .= _ab('http://'.$d->DEPLOYMENT_EXT_HOST.':'.$d->DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT,'fa-address-book','phpLDAPAdmin');
+  if (property_exists($d,'DEPLOYMENT_SFTP_ENABLED') && $d->DEPLOYMENT_SFTP_ENABLED)
+    $b .= _ab($d->DEPLOYMENT_SFTP_LINK,'fa-file-export','SFTP');
+  if (property_exists($d,'DEPLOYMENT_CMISSERVER_ENABLED') && $d->DEPLOYMENT_CMISSERVER_ENABLED)
+    $b .= _ab('http://'.$d->DEPLOYMENT_EXT_HOST.'/cmis','fa-share-alt','CMIS');
+  if (property_exists($d,'DEPLOYMENT_FRONTAIL_ENABLED') && $d->DEPLOYMENT_FRONTAIL_ENABLED)
+    $b .= _ab('http://'.$host.'/livelogs/','fa-play-circle','Live logs');
+  $b .= '</div>';
+  return $b;
 }
 
-/**
- * Get markup for a Feature Branch status label
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentFBStatusLabel($deployment_descriptor)
-{
-  $statusClass = "";
-  if ($deployment_descriptor->ACCEPTANCE_STATE === "Implementing") {
-    $statusClass = "bg-info";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "Engineering Review") {
-    $statusClass = "bg-warning";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA Review") {
-    $statusClass = "bg-secondary";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA In Progress") {
-    $statusClass = "bg-warning";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA Rejected") {
-    $statusClass = "bg-danger";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "Validated") {
-    $statusClass = "bg-success";
-  }
-  return '<span class="badge ' . $statusClass . '">' . $deployment_descriptor->ACCEPTANCE_STATE . '</span>';
+function _ab($url, $icon, $title) {
+  return '<a href="' . $url . '" rel="tooltip" title="' . $title . '" target="_blank" class="btn btn-outline-secondary">'
+       . '<i class="fas ' . $icon . '"></i></a>';
 }
 
-/**
- * Get markup for a Feature Branch SCM Branch label
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentFBScmLabel($deployment_descriptor)
-{
-  if (!empty($deployment_descriptor->SCM_BRANCH)) {
-    $content = '<a href="/features.php#';
-    $content .= str_replace(array("/", "."), "-", $deployment_descriptor->SCM_BRANCH) . '"';
-    $content .= ' rel="tooltip" title="SCM Branch used to host this FB development">';
-    $content .= '<i class="fas fa-code-branch"></i>&nbsp;' . $deployment_descriptor->SCM_BRANCH . '</a>';
-    return $content;
+function componentFBStatusLabel($d) {
+  $map = [
+    'Implementing'      => 'fb-implementing',
+    'Engineering Review'=> 'fb-review',
+    'QA Review'         => 'fb-review',
+    'QA In Progress'    => 'fb-review',
+    'QA Rejected'       => 'fb-rejected',
+    'Validated'         => 'fb-validated',
+    'Merged'            => 'fb-merged',
+  ];
+  $cls = $map[$d->ACCEPTANCE_STATE] ?? 'fb-implementing';
+  return '<span class="fb-state ' . $cls . '">' . $d->ACCEPTANCE_STATE . '</span>';
+}
+
+function componentFBScmLabel($d) {
+  if (!empty($d->SCM_BRANCH)) {
+    $anchor = str_replace(['/','.'], '-', $d->SCM_BRANCH);
+    return '<a href="/features.php#' . $anchor . '" rel="tooltip" title="SCM branch">'
+         . '<i class="fas fa-code-branch me-1"></i>' . $d->SCM_BRANCH . '</a>';
   }
   return '-';
 }
 
-/**
- * Get markup for a Feature Branch Issue label
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentFBIssueLabel($deployment_descriptor)
-{
-  if (!empty($deployment_descriptor->ISSUE_NUM)) {
-    return '<a href="https://community.exoplatform.com/portal/dw/tasks/taskDetail/' . $deployment_descriptor->ISSUE_NUM . '" rel="tooltip" title="Opened issue where to put your feedbacks on this new feature"><i class="fas fa-tasks"></i>&nbsp;' . $deployment_descriptor->ISSUE_NUM . '</a>';
+function componentFBIssueLabel($d) {
+  if (!empty($d->ISSUE_NUM)) {
+    return '<a href="https://community.exoplatform.com/portal/dw/tasks/taskDetail/' . $d->ISSUE_NUM . '" rel="tooltip" title="Issue">'
+         . '<i class="fas fa-tasks me-1"></i>' . $d->ISSUE_NUM . '</a>';
   }
   return '-';
 }
-/**
- * Get markup for a Feature Branch Edit action icon
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentFBEditIcon($deployment_descriptor)
-{
-  $modalId = 'edit-' . str_replace(".", "_", $deployment_descriptor->INSTANCE_KEY);
-  $content = '<a href="#" rel="tooltip" title="Edit feature branch details" data-bs-toggle="modal" data-bs-target="#' . $modalId . '"><i class="fas fa-pencil-alt"></i></a>';
-  $content .= getFormEditFeatureBranch($deployment_descriptor);
-  return $content;
+
+function componentFBEditIcon($d) {
+  $id  = 'edit-' . str_replace('.', '_', $d->INSTANCE_KEY);
+  $out = '<a href="#" rel="tooltip" title="Edit feature branch" data-bs-toggle="modal" data-bs-target="#' . $id . '"><i class="fas fa-pencil-alt"></i></a>';
+  $out .= getFormEditFeatureBranch($d);
+  return $out;
 }
 
-/**
- * Get markup for a Feature Branch Deploy action icon
- *
- * @param $deployment_descriptor
- *
- * @return string html markup
- */
-function componentFBDeployIcon($deployment_descriptor)
-{
-  if (isset($deployment_descriptor->DEPLOYMENT_BUILD_URL)) {
-    return '<a href="' . $deployment_descriptor->DEPLOYMENT_BUILD_URL . '/build?delay=0sec" rel="tooltip" title="Restart your instance or reset your instance data" target="_blank"><i class="fas fa-sync-alt"></i></a>';
+function componentFBDeployIcon($d) {
+  if (isset($d->DEPLOYMENT_BUILD_URL)) {
+    return '<a href="' . $d->DEPLOYMENT_BUILD_URL . '/build?delay=0sec" rel="tooltip" title="Restart / reset" target="_blank"><i class="fas fa-sync-alt"></i></a>';
   }
   return '';
 }
 
-/**
- * Get markup for a Git repository branch commits status
- *
- * @param $fb_project
- * @param $cherry_commits_display
- *
- * @return string html markup
- */
-function componentFeatureRepoBrancheStatus($fb_project, $cherry_commits_display = false)
-{
-  if ($cherry_commits_display) {
-    if ($fb_project['cherry_commits'] > 0) {
-      return '<span class="commit-stat behind" rel="tooltip" title="Some commits on the base branch that do not exist on this branch">
-                <i class="fas fa-arrow-down"></i> ' . $fb_project['cherry_commits'] . '
-              </span>';
-    } else {
-      return '<span class="commit-stat" rel="tooltip" title="Up to date">
-                <i class="fas fa-check"></i>
-              </span>';
+function componentFeatureRepoBrancheStatus($fb, $cherry = false) {
+  if ($cherry) {
+    if ($fb['cherry_commits'] > 0) {
+      return '<span class="commit-stat behind" rel="tooltip" title="' . $fb['cherry_commits'] . ' commits behind base">'
+           . '<i class="fas fa-arrow-down"></i> ' . $fb['cherry_commits'] . '</span>';
     }
+    return '<span class="commit-stat" rel="tooltip" title="Up to date"><i class="fas fa-check"></i></span>';
   }
 
-  $content = '<div class="commit-stats">';
-  
-  // Behind
-  $content .= '<a href="' . $fb_project['http_url_behind'] . '" target="_blank" class="commit-stat ' . ($fb_project['behind_commits'] > 0 ? 'behind' : '') . '" rel="tooltip" title="' . $fb_project['behind_commits'] . ' commits behind base branch">';
-  $content .= '<i class="fas fa-arrow-down"></i> ' . $fb_project['behind_commits'];
-  $content .= '</a>';
-  
-  // Ahead
-  $content .= '<a href="' . $fb_project['http_url_ahead'] . '" target="_blank" class="commit-stat ' . ($fb_project['ahead_commits'] > 0 ? 'ahead' : '') . '" rel="tooltip" title="' . $fb_project['ahead_commits'] . ' commits ahead of base branch">';
-  $content .= '<i class="fas fa-arrow-up"></i> ' . $fb_project['ahead_commits'];
-  $content .= '</a>';
-  
-  $content .= '</div>';
-  
-  return $content;
+  $out  = '<div class="commit-stats">';
+  $out .= '<a href="' . $fb['http_url_behind'] . '" target="_blank" class="commit-stat ' . ($fb['behind_commits']>0?'behind':'') . '" rel="tooltip" title="' . $fb['behind_commits'] . ' commits behind">'
+        . '<i class="fas fa-arrow-down"></i> ' . $fb['behind_commits'] . '</a>';
+  $out .= '<a href="' . $fb['http_url_ahead'] . '" target="_blank" class="commit-stat ' . ($fb['ahead_commits']>0?'ahead':'') . '" rel="tooltip" title="' . $fb['ahead_commits'] . ' commits ahead">'
+        . '<i class="fas fa-arrow-up"></i> ' . $fb['ahead_commits'] . '</a>';
+  $out .= '</div>';
+  return $out;
 }
-?>

@@ -11,12 +11,6 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-<div id="main">
-<div class="container-fluid">
-<div class="row">
-<div class="col-12">
 <div class="alert alert-info">
     <i class="fas fa-building me-2"></i>
     Company environments and deployments
@@ -48,8 +42,8 @@ checkCaches();
 $company_instances=getGlobalCompanyInstances();
 if (isDeploymentInCategoryArray($company_instances)) {
   ?>
-  <div class="table-responsive">
-  <table class="table table-hover">
+  <div class="inst-table-wrap">
+  <table class="inst-table">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -139,7 +133,7 @@ if (isDeploymentInCategoryArray($company_instances)) {
           <code class="d-block mt-1 p-2 rounded code-bg">password: exo</code>
         </div>
       </div>
-    </div>
+    </table>
   </div>
   <?php
 } else {
@@ -147,12 +141,6 @@ if (isDeploymentInCategoryArray($company_instances)) {
 }
 ?>
 
-</div>
-</div>
-</div>
-<!-- /container -->
-</div>
-</div>
 <?php pageFooter(); ?>
 </body>
 </html>

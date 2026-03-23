@@ -11,12 +11,6 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-<div id="main">
-<div class="container-fluid">
-<div class="row">
-<div class="col-12">
 <div class="alert alert-info">
     <i class="fas fa-chart-line me-2"></i>
     These instances are deployed for <strong>eXo Sales Team</strong> usage only.
@@ -26,8 +20,8 @@ checkCaches();
 $sales_user_instances=getGlobalSalesUserInstances();
 if (isDeploymentInCategoryArray($sales_user_instances)) {
   ?>
-  <div class="table-responsive">
-  <table class="table table-hover">
+  <div class="inst-table-wrap">
+  <table class="inst-table">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -103,8 +97,8 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
 $sales_demo_instances=getGlobalSalesDemoInstances();
 if (isDeploymentInCategoryArray($sales_demo_instances)) {
   ?>
-  <div class="table-responsive">
-  <table class="table table-hover">
+  <div class="inst-table-wrap">
+  <table class="inst-table">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -179,8 +173,8 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
 $sales_eval_instances=getGlobalSalesEvalInstances();
 if (isDeploymentInCategoryArray($sales_eval_instances)) {
   ?>
-  <div class="table-responsive">
-  <table class="table table-hover">
+  <div class="inst-table-wrap">
+  <table class="inst-table">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -272,14 +266,8 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
           </div>
         </div>
       </div>
-    </div>
+    </table>
   </div>
-</div>
-</div>
-</div>
-<!-- /container -->
-</div>
-</div>
 <?php pageFooter(); ?>
 </body>
 </html>

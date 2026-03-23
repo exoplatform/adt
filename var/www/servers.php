@@ -11,21 +11,15 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-    <div id="main">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
+                    <div class="inst-table-wrap">
+  <table class="inst-table">
                             <thead>
-                                <tr class="table-dark">
+                                <tr style="background:var(--bg-3)">
                                     <th class="col-center" colspan="4">Product</th>
                                     <th class="col-center" colspan="3">Deployment</th>
                                     <th class="col-center" colspan="6">Ports</th>
                                 </tr>
-                                <tr class="table-secondary">
+                                <tr style="background:var(--bg-2)">
                                     <th class="col-center">Name</th>
                                     <th class="col-center">Version</th>
                                     <th class="col-center">Feature Branch</th>
@@ -159,9 +153,9 @@ checkCaches();
         <div class="container-fluid mt-4">
             <div class="row">
                 <div class="col-12">
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover">
-                            <thead class="table-dark">
+                    <div class="inst-table-wrap">
+  <table class="inst-table">
+                            <thead style="background:var(--bg-3)">
                                 <tr>
                                     <th class="col-center">hostname</th>
                                     <th class="col-center">server name</th>
@@ -209,12 +203,6 @@ checkCaches();
                             </tbody>
                         </table>
                     </div>
-                </div>
-            </div>
-        </div>
-        <!-- /container -->
-    </div>
-</div>
-<?php pageFooter(); ?>
+                <?php pageFooter(); ?>
 </body>
 </html>

@@ -11,12 +11,6 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-<div id="main">
-<div class="container-fluid">
-<div class="row">
-<div class="col-12">
 <div class="alert alert-info">
     <i class="fas fa-users me-2"></i>
     These instances are deployed for <strong>Customer Projects</strong> development Team deployment usage only.
@@ -26,8 +20,8 @@ checkCaches();
 $cp_instances=getGlobalCPInstances();
 if (isDeploymentInCategoryArray($cp_instances)) {
   ?>
-  <div class="table-responsive">
-  <table class="table table-hover">
+  <div class="inst-table-wrap">
+  <table class="inst-table">
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -135,14 +129,8 @@ if (isDeploymentInCategoryArray($cp_instances)) {
           </div>
         </div>
       </div>
-    </div>
+    </table>
   </div>
-</div>
-</div>
-</div>
-<!-- /container -->
-</div>
-</div>
 <?php pageFooter(); ?>
 </body>
 </html>

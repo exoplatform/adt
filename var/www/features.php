@@ -32,12 +32,6 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-    <div id="main">
-        <div class="container-fluid">
-            <div class="row">
-                <div class="col-12">
                     <div class="alert alert-info d-flex align-items-center">
                         <i class="fas fa-code-branch fa-2x me-3"></i>
                         <div>
@@ -134,8 +128,8 @@ checkCaches();
 
                     <!-- Others branches -->
                     <?php if (!empty($otherFeatures)): ?>
-                    <div class="card mb-4 border-warning">
-                        <div class="card-header bg-warning bg-opacity-10">
+                    <div class="card mb-4">
+                        <div class="card-header">
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                                 <h5 class="mb-0">Other branches</h5>
@@ -265,12 +259,6 @@ checkCaches();
                         <p class="text-muted">There are currently no feature branches to display.</p>
                     </div>
                     <?php endif; ?>
-                </div>
-            </div>
-        </div>
-        <!-- /container -->
-    </div>
-</div>
-<?php pageFooter(); ?>
+                <?php pageFooter(); ?>
 </body>
 </html>

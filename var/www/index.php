@@ -11,19 +11,14 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-<!-- Main ================================================== -->
-<div id="wrap">
-<div id="main">
-<div class="container-fluid">
-<div class="row">
-<div class="col-12">
     <div class="alert alert-info">
         <i class="fas fa-flask me-2"></i>
         These instances are deployed to be used for acceptance tests.
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover">
+    <div class="inst-group">
+    <div class="inst-table-wrap">
+    <table class="inst-table">
             <thead>
                 <tr>
                     <th class="col-center">S</th>
@@ -37,11 +32,7 @@ checkCaches();
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <td colspan="15" class="category-row">
-                        <i class="fas fa-globe me-2"></i>Translation deployments
-                    </td>
-                </tr>
+<tr><td colspan="15" class="category-row"><span class="group-type-tag type-trans me-2">Trans</span>Translation Deployments</td></tr>
                 <?php
                 $translation_instances = getGlobalTranslationInstances();
                 if (isDeploymentInCategoryArray($translation_instances)) {
@@ -147,56 +138,34 @@ checkCaches();
                 }
                 ?>
             </tbody>
-        </table>
+    </table>
+    </div>
     </div>
 
-    <!-- Info cards with synchronized design -->
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-plug me-2"></i>JMX Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
-                </div>
+    <div class="info-grid">
+        <div class="info-card">
+            <div class="info-card-header"><i class="fas fa-plug"></i>JMX Access</div>
+            <div class="info-card-body">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</div>
+        </div>
+        <div class="info-card">
+            <div class="info-card-header"><i class="fas fa-key"></i>Keycloak Access</div>
+            <div class="info-card-body">
+                Each deployed Keycloak can be accessed using the Keycloak icon with credentials:
+                <div class="code-block"><span>root / password</span></div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-key me-2"></i>Keycloak Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
-                    <div class="mt-2 p-2 rounded code-bg">
-                        <code class="d-block">root / password</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-address-book me-2"></i>LDAP Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Each LDAP deployed can be accessed with:</p>
-                    <div class="mt-2 p-2 rounded code-bg">
-                        <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
-                        <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
-                        <code class="d-block mt-1">password: exo</code>
-                    </div>
+        <div class="info-card">
+            <div class="info-card-header"><i class="fas fa-address-book"></i>LDAP Access</div>
+            <div class="info-card-body">
+                Each LDAP deployed can be accessed with:
+                <div class="code-block">
+                    <span>Base DN: dc=exoplatform,dc=com</span>
+                    <span>User DN: cn=admin,dc=exoplatform,dc=com</span>
+                    <span>password: exo</span>
                 </div>
             </div>
         </div>
     </div>
-</div>
-</div>
-</div>
-<!-- /container -->
-</div>
-</div>
 <?php pageFooter(); ?>
 </body>
 </html>
