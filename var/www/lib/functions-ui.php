@@ -158,6 +158,38 @@ function pageNavigation() {
         <button class="topbar-btn" id="themeToggle" onclick="adtToggleTheme()" title="Toggle theme">
           <i class="fas <?= $themeIcon ?>"></i>
         </button>
+        <button class="topbar-btn mobile-menu-btn" id="mobileMenuBtn" onclick="adtToggleMobileMenu()" title="Menu" aria-label="Open navigation menu">
+          <i class="fas fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- MOBILE DRAWER OVERLAY -->
+    <div class="mobile-drawer-overlay" id="mobileDrawerOverlay" onclick="adtCloseMobileMenu()"></div>
+
+    <!-- MOBILE DRAWER PANEL -->
+    <div class="mobile-drawer" id="mobileDrawer">
+      <div class="mobile-drawer-header">
+        <div class="logo-mark">
+          <div class="logo-icon">ADT</div>
+          <div>
+            <div class="logo-text">Acceptance</div>
+            <div class="logo-host"><?= htmlspecialchars($host) ?></div>
+          </div>
+        </div>
+        <button class="mobile-drawer-close" onclick="adtCloseMobileMenu()" aria-label="Close menu">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="mobile-drawer-nav">
+        <?php foreach ($nav as $item):
+          $active = ($item['url'] === $uri || ($item['url'] !== '/' && strpos($uri, $item['url']) === 0)) ? 'active' : '';
+        ?>
+        <a class="mobile-drawer-item <?= $active ?>" href="<?= $item['url'] ?>">
+          <span class="mobile-drawer-icon"><i class="fas <?= $item['icon'] ?>"></i></span>
+          <?= $item['label'] ?>
+        </a>
+        <?php endforeach; ?>
       </div>
     </div>
 
@@ -183,22 +215,36 @@ function pageFooter() {
 
   </div><!-- /.adt-main -->
 
-  <!-- MOBILE BOTTOM NAV (hidden on desktop via CSS) -->
-  <nav class="mobile-nav" style="display:none">
-<?php foreach (getNavItems() as $item):
-  $uri = $_SERVER['REQUEST_URI'];
-  $active = ($item['url'] === $uri || ($item['url'] !== '/' && strpos($uri, $item['url']) === 0)) ? 'active' : '';
-?>
-    <a class="mobile-nav-item <?= $active ?>" href="<?= $item['url'] ?>">
-      <i class="fas <?= $item['icon'] ?>"></i>
-      <span><?= $item['label'] ?></span>
-    </a>
-<?php endforeach; ?>
-  </nav>
+
 
 </div><!-- /.adt-shell -->
 
 <script>
+// Mobile drawer
+function adtToggleMobileMenu() {
+  var drawer = document.getElementById('mobileDrawer');
+  var overlay = document.getElementById('mobileDrawerOverlay');
+  var isOpen = drawer.classList.contains('open');
+  if (isOpen) {
+    drawer.classList.remove('open');
+    overlay.classList.remove('open');
+    document.body.style.overflow = '';
+  } else {
+    drawer.classList.add('open');
+    overlay.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+}
+function adtCloseMobileMenu() {
+  document.getElementById('mobileDrawer').classList.remove('open');
+  document.getElementById('mobileDrawerOverlay').classList.remove('open');
+  document.body.style.overflow = '';
+}
+// Close on escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') adtCloseMobileMenu();
+});
+
 $(document).ready(function() {
   // Tooltips
   $('[rel=tooltip]').each(function() { new bootstrap.Tooltip(this); });
