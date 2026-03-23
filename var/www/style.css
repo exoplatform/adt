@@ -442,8 +442,8 @@ a:hover { color: #79c0ff; text-decoration: none; }
   border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 7px 7px;
-  overflow: hidden;
   background: var(--bg-1);
+  /* overflow set per context — never hidden globally */
 }
 
 /* Uses Bootstrap table but heavily overridden */
@@ -534,6 +534,17 @@ tr.highlight td { background: var(--highlight-bg) !important; box-shadow: inset 
 .inst-icon-sm { font-size: 9px !important; margin: 0 !important; }
 
 .inst-tags { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 2px; max-width: 100%; }
+
+/* Mobile meta strip — hidden on desktop, shown as inline chips on mobile */
+.mobile-meta {
+  display: none;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 7px;
+  padding-top: 7px;
+  border-top: 1px solid var(--border);
+}
 
 /* Tags / labels */
 .tag {
@@ -970,24 +981,18 @@ section { padding-top: 16px; }
   body { background: white; color: black; }
 }
 
-
 /* ═══════════════════════════════════════════════════════════════
    RESPONSIVE
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Always: tables scroll horizontally, actions wrap ────────── */
-.inst-table-wrap {
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-}
-
+/* ── Always: actions wrap, never overflow ────────────────────── */
 .btn-group,
 .btn-group-sm {
   flex-wrap: wrap;
   gap: 2px;
 }
 
-/* ── Mobile menu (hamburger + drawer) ─────────────────────────── */
+/* ── Mobile menu components (hidden on desktop) ──────────────── */
 .mobile-menu-btn { display: none; }
 
 .mobile-drawer-overlay {
@@ -1026,7 +1031,6 @@ section { padding-top: 16px; }
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
-
 .mobile-drawer-close {
   width: 34px;
   height: 34px;
@@ -1042,13 +1046,11 @@ section { padding-top: 16px; }
   transition: all 0.12s;
 }
 .mobile-drawer-close:hover { background: var(--bg-3); color: var(--t1); }
-
 .mobile-drawer-nav {
   flex: 1;
   overflow-y: auto;
   padding: 10px 8px;
 }
-
 .mobile-drawer-item {
   display: flex;
   align-items: center;
@@ -1070,7 +1072,6 @@ section { padding-top: 16px; }
   border-color: var(--border);
 }
 .mobile-drawer-item.active .mobile-drawer-icon { color: var(--green); }
-
 .mobile-drawer-icon {
   width: 20px;
   height: 20px;
@@ -1082,13 +1083,9 @@ section { padding-top: 16px; }
   flex-shrink: 0;
 }
 
-/* ── 960px: compact icon-only sidebar ────────────────────────── */
+/* ── 960px: icon-only sidebar ────────────────────────────────── */
 @media (max-width: 960px) {
-  .adt-sidebar {
-    width: 56px;
-    flex-shrink: 0;
-  }
-
+  .adt-sidebar { width: 56px; flex-shrink: 0; }
   .sidebar-logo {
     padding: 14px 0;
     justify-content: center;
@@ -1096,12 +1093,9 @@ section { padding-top: 16px; }
     display: flex;
   }
   .logo-mark { justify-content: center; }
-  .logo-text,
-  .logo-host { display: none; }
-
+  .logo-text, .logo-host { display: none; }
   .sidebar-section-title { display: none; }
   .sidebar-section { padding: 6px 6px; }
-
   .nav-item {
     width: 44px;
     height: 44px;
@@ -1112,7 +1106,6 @@ section { padding-top: 16px; }
   .nav-item > span:not(.nav-icon),
   .nav-badge { display: none; }
   .nav-icon { font-size: 15px; }
-
   .nav-item::after {
     content: attr(data-label);
     position: absolute;
@@ -1132,79 +1125,179 @@ section { padding-top: 16px; }
     z-index: 200;
   }
   .nav-item:hover::after { opacity: 1; }
-
   .sidebar-status { display: none; }
   .info-grid { grid-template-columns: 1fr 1fr; }
   .adt-content { padding: 16px 18px; }
 }
 
-/* ── 700px: hide sidebar, show hamburger ─────────────────────── */
+/* ── 700px: hamburger, mobile card rows ──────────────────────── */
 @media (max-width: 700px) {
-  /* Hide the sidebar */
+
+  /* ── Layout ── */
   .adt-sidebar { display: none !important; }
-
-  /* Show hamburger button */
   .mobile-menu-btn { display: flex !important; }
+  .adt-shell { flex-direction: column; height: 100vh; overflow: hidden; }
+  .adt-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0; }
+  .adt-content { flex: 1; overflow-y: auto; overflow-x: hidden; padding: 12px 12px 20px; }
 
-  /* Layout */
-  .adt-shell {
-    flex-direction: column;
-    height: 100vh;
-    overflow: hidden;
-  }
-  .adt-main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-height: 0;
-  }
-
-  /* Topbar: mobile header */
-  .adt-topbar {
-    height: auto;
-    min-height: 52px;
-    padding: 0 14px;
-    gap: 6px;
-  }
-  .topbar-breadcrumb .crumb { display: none; }
+  /* ── Topbar ── */
+  .adt-topbar { height: auto; min-height: 52px; padding: 0 14px; gap: 6px; }
+  .topbar-breadcrumb .crumb,
   .topbar-breadcrumb .crumb-sep { display: none; }
-  .topbar-breadcrumb .crumb-active {
-    font-size: 15px;
-    font-weight: 600;
-  }
+  .topbar-breadcrumb .crumb-active { font-size: 15px; font-weight: 600; }
   .live-indicator { display: none; }
 
-  /* Content */
-  .adt-content {
-    flex: 1;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 14px 12px 20px;
+  /* ── Show mobile-meta ── */
+  .mobile-meta { display: flex; }
+
+  /* ── Group header ── */
+  .inst-group { margin-bottom: 16px; }
+  .group-header { padding: 9px 12px; border-radius: 7px 7px 0 0; }
+  .group-title { font-size: 13px; }
+  .group-type-tag { font-size: 9px; padding: 2px 6px; }
+
+  /* ── TABLE → CARD ROWS ── */
+  /* Hide desktop table header */
+  .inst-table thead { display: none; }
+
+  /* Make table look like a list */
+  .inst-table,
+  .inst-table tbody { display: block; width: 100%; }
+
+  /* Each row becomes a card */
+  .inst-table tbody tr {
+    display: block;
+    position: relative;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg-1);
+    transition: background 0.1s;
+  }
+  .inst-table tbody tr:last-child { border-bottom: none; }
+  .inst-table tbody tr:hover { background: var(--bg-2); }
+  .inst-table tbody tr.row-down { background: rgba(248,81,73,0.03); }
+
+  /* Category rows stay full-width */
+  .inst-table tbody tr td.category-row {
+    display: block;
+    padding: 8px 14px !important;
+    font-size: 10.5px;
   }
 
-  /* Tables */
-  .inst-table thead th { padding: 8px 8px; font-size: 10.5px; }
-  .inst-table td { padding: 8px 8px; font-size: 13px; }
+  /* Hide all td by default — we show what we want */
+  .inst-table tbody tr td {
+    display: none;
+    padding: 0;
+    border: none;
+    vertical-align: top;
+  }
 
-  /* Actions wrap */
-  .btn-group-sm .btn {
-    width: 30px;
-    height: 30px;
+  /* ── STATUS dot — top-right corner ── */
+  .inst-table tbody tr td.col-center:first-child {
+    display: block;
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: auto;
+    min-width: 0;
+    text-align: right;
+  }
+  .inst-table tbody tr td.col-center:first-child .fas.fa-circle {
+    font-size: 8px !important;
+  }
+
+  /* ── NAME column (2nd td) — always show ── */
+  .inst-table tbody tr td:nth-child(2) {
+    display: block;
+    padding-right: 24px; /* space for status dot */
+  }
+
+  /* Name link */
+  .inst-table tbody tr td:nth-child(2) a {
+    font-size: 14px;
+    font-weight: 600;
+    white-space: normal;
+    word-break: break-word;
+    display: inline;
+  }
+
+  /* Tags under name */
+  .inst-tags { margin-top: 5px; gap: 3px; }
+  .label, .badge { font-size: 10px !important; }
+
+  /* ── META ROW: version + db inline ── */
+  .inst-table tbody tr .mobile-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 6px;
+  }
+
+  /* Version, DB, time cols — hidden; info shown in .mobile-meta instead */
+  .inst-table tbody tr td:nth-child(3),
+  .inst-table tbody tr td:nth-child(4),
+  .inst-table tbody tr td:nth-last-child(3),
+  .inst-table tbody tr td:nth-last-child(2) {
+    display: none !important;
+  }
+
+  /* ── ACTIONS (last td) ── */
+  .inst-table tbody tr td:last-child {
+    display: block;
+    margin-top: 8px;
+    padding: 0;
+  }
+
+  /* Wrap action buttons into a neat grid */
+  .inst-table tbody tr td:last-child .btn-group,
+  .inst-table tbody tr td:last-child .btn-group-sm {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    width: 100%;
+  }
+  .inst-table tbody tr td:last-child .btn-group .btn,
+  .inst-table tbody tr td:last-child .btn-group-sm .btn {
+    width: 36px;
+    height: 36px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    font-size: 13px;
+    flex-shrink: 0;
+    border-radius: 6px;
   }
 
-  /* Info grid: 1 col */
+  /* ── TIME strip: built + deployed ── */
+  .inst-table tbody tr .mobile-times {
+    display: flex;
+    gap: 12px;
+    margin-top: 5px;
+  }
+  .mobile-time-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--t3);
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .mobile-time-item i { font-size: 10px; color: var(--t4); }
+
+  /* ── Feature branch strip ── */
+  .inst-table tbody tr td:nth-child(5),
+  .inst-table tbody tr td:nth-child(6),
+  .inst-table tbody tr td:nth-child(7),
+  .inst-table tbody tr td:nth-child(8) {
+    display: none !important; /* FB cols hidden; shown inline in name cell */
+  }
+
+  /* Info grid */
   .info-grid { grid-template-columns: 1fr; gap: 8px; }
 
-  /* Group header */
-  .group-header { padding: 8px 10px; }
-  .group-title { font-size: 13px; }
-
-  /* Modal: full width */
+  /* Modal full-width */
   .modal-dialog { margin: 8px; }
   .bigModal { max-width: calc(100vw - 16px) !important; }
 }
@@ -1212,12 +1305,6 @@ section { padding-top: 16px; }
 /* ── 480px: very small ────────────────────────────────────────── */
 @media (max-width: 480px) {
   .adt-content { padding: 10px 10px 16px; }
-
-  .inst-table thead th { font-size: 10px; padding: 7px 7px; }
-  .inst-table td { font-size: 12.5px; padding: 7px 7px; }
-
-  .btn-group-sm { max-width: 130px; }
-
   .info-grid { gap: 8px; }
 }
 

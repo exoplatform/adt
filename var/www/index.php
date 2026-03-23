@@ -55,6 +55,11 @@ checkCaches();
                                             <?= componentEditNoteIcon($descriptor_array) ?>
                                         </div>
                                     </div>
+                                    <div class="mobile-meta">
+                                        <span class="version-mono"><?= componentProductVersion($descriptor_array); ?></span>
+                                        <?= componentDatabaseIcon($descriptor_array) ?>
+                                        <span class="mobile-time-item"><i class="fas fa-clock"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></span>
+                                    </div>
                                 </td>
                                 <td class="col-left">
                                     <?= componentDownloadIcon($descriptor_array); ?>
@@ -95,7 +100,6 @@ checkCaches();
                                     <div class="ms-auto">
                                         <?= componentSpecificationIcon($descriptor_array) ?>
                                         <?php
-                                        // add edit note option icon if not a feature branch
                                         if (!isInstanceFeatureBranch($descriptor_array)) {
                                             echo componentEditNoteIcon($descriptor_array);
                                         }
@@ -111,6 +115,15 @@ checkCaches();
                                     <?= componentDebugModeEnabled($descriptor_array); ?>
                                     <?= componentAddonsTags($descriptor_array); ?>
                                     <?= componentLabels($descriptor_array); ?>
+                                </div>
+                                <div class="mobile-meta">
+                                    <span class="version-mono"><?= componentProductVersion($descriptor_array); ?></span>
+                                    <?= componentDatabaseIcon($descriptor_array) ?>
+                                    <?php if (isInstanceFeatureBranch($descriptor_array)): ?>
+                                        <?= componentFBStatusLabel($descriptor_array) ?>
+                                        <?= componentFBScmLabel($descriptor_array) ?>
+                                    <?php endif; ?>
+                                    <span class="mobile-time-item"><i class="fas fa-clock"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></span>
                                 </div>
                             </td>
                             <td class="col-left">
