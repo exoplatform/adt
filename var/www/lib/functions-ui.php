@@ -111,7 +111,7 @@ function pageNavigation() {
       <?php foreach ($nav as $item):
         $active = ($item['url'] === $uri || ($item['url'] !== '/' && strpos($uri, $item['url']) === 0)) ? 'active' : '';
       ?>
-      <a class="nav-item <?= $active ?>" href="<?= $item['url'] ?>">
+      <a class="nav-item <?= $active ?>" href="<?= $item['url'] ?>" data-label="<?= $item['label'] ?>">
         <span class="nav-icon"><i class="fas <?= $item['icon'] ?>"></i></span>
         <?= $item['label'] ?>
       </a>
@@ -182,6 +182,20 @@ function pageFooter() {
     </footer>
 
   </div><!-- /.adt-main -->
+
+  <!-- MOBILE BOTTOM NAV (hidden on desktop via CSS) -->
+  <nav class="mobile-nav" style="display:none">
+<?php foreach (getNavItems() as $item):
+  $uri = $_SERVER['REQUEST_URI'];
+  $active = ($item['url'] === $uri || ($item['url'] !== '/' && strpos($uri, $item['url']) === 0)) ? 'active' : '';
+?>
+    <a class="mobile-nav-item <?= $active ?>" href="<?= $item['url'] ?>">
+      <i class="fas <?= $item['icon'] ?>"></i>
+      <span><?= $item['label'] ?></span>
+    </a>
+<?php endforeach; ?>
+  </nav>
+
 </div><!-- /.adt-shell -->
 
 <script>
