@@ -11,7 +11,7 @@ checkCaches();
 <body>
 <?php pageTracker(); ?>
 <?php pageNavigation(); ?>
-                    <div class="inst-table-wrap">
+<div class="inst-table-wrap">
   <table class="inst-table">
                             <thead>
                                 <tr style="background:var(--bg-3)">
@@ -109,6 +109,11 @@ checkCaches();
                                                 <?= componentAddonsTags($descriptor_array); ?>
                                                 <?= componentLabels($descriptor_array); ?>
                                             </div>
+                                            <div class="mobile-meta">
+                                                <span class="version-mono"><?= componentProductVersion($descriptor_array); ?></span>
+                                                <?= componentDatabaseIcon($descriptor_array) ?>
+                                                <span class="mobile-time-item"><i class="fas fa-server"></i><?= $descriptor_array->ACCEPTANCE_HOST ?></span>
+                                            </div>
                                         </td>
                                         <td class="col-left"><?= componentProductVersion($descriptor_array); ?></td>
                                         <td class="col-right"><?=$feature_branch?></td>
@@ -145,15 +150,9 @@ checkCaches();
                                 ?>
                             </tbody>
                         </table>
-                    </div>
-                </div>
-            </div>
-        </div>
+</div>
         
-        <div class="container-fluid mt-4">
-            <div class="row">
-                <div class="col-12">
-                    <div class="inst-table-wrap">
+<div class="inst-table-wrap mt-4">
   <table class="inst-table">
                             <thead style="background:var(--bg-3)">
                                 <tr>

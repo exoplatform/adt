@@ -61,15 +61,15 @@ checkCaches();
                                         <span class="mobile-time-item"><i class="fas fa-clock"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></span>
                                     </div>
                                 </td>
-                                <td class="col-left">
+                                <td class="col-left inst-version-cell">
                                     <?= componentDownloadIcon($descriptor_array); ?>
                                     <?= componentProductVersion($descriptor_array); ?>
                                 </td>
-                                <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-                                <td class="col-center" colspan="4"></td>
-                                <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-                                <td class="col-right"><i class="fas fa-clock me-1"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-                                <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
+                                <td class="col-center inst-db-cell"><?= componentDatabaseIcon($descriptor_array) ?></td>
+                                <td class="col-center inst-fb-cell" colspan="4"></td>
+                                <td class="col-right inst-built-cell <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+                                <td class="col-right inst-deployed-cell"><i class="fas fa-clock me-1"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+                                <td class="col-left inst-actions-cell"><?= componentDeploymentActions($descriptor_array); ?></td>
                             </tr>
                         <?php }
                     }
@@ -126,25 +126,25 @@ checkCaches();
                                     <span class="mobile-time-item"><i class="fas fa-clock"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></span>
                                 </div>
                             </td>
-                            <td class="col-left">
+                            <td class="col-left inst-version-cell">
                                 <?= componentDownloadIcon($descriptor_array); ?>
                                 <?= componentProductVersion($descriptor_array); ?>
                             </td>
-                            <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
+                            <td class="col-center inst-db-cell"><?= componentDatabaseIcon($descriptor_array) ?></td>
                             <?php if (isInstanceFeatureBranch($descriptor_array)) { ?>
-                                <td class="col-center"><?= componentFBStatusLabel($descriptor_array) ?></td>
-                                <td class="col-center"><?= componentFBScmLabel($descriptor_array) ?></td>
-                                <td class="col-center"><?= componentFBIssueLabel($descriptor_array) ?></td>
-                                <td class="col-center">
+                                <td class="col-center inst-fb-cell"><?= componentFBStatusLabel($descriptor_array) ?></td>
+                                <td class="col-center inst-fb-cell"><?= componentFBScmLabel($descriptor_array) ?></td>
+                                <td class="col-center inst-fb-cell"><?= componentFBIssueLabel($descriptor_array) ?></td>
+                                <td class="col-center inst-fb-cell">
                                     <?= componentFBEditIcon($descriptor_array) ?>
                                     <?= componentFBDeployIcon($descriptor_array) ?>
                                 </td>
                             <?php } else { ?>
-                                <td class="col-center" colspan="4"></td>
+                                <td class="col-center inst-fb-cell" colspan="4"></td>
                             <?php } ?>
-                            <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-                            <td class="col-right"><i class="fas fa-clock me-1"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-                            <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
+                            <td class="col-right inst-built-cell <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+                            <td class="col-right inst-deployed-cell"><i class="fas fa-clock me-1"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+                            <td class="col-left inst-actions-cell"><?= componentDeploymentActions($descriptor_array); ?></td>
                         </tr>
                     <?php
                     }

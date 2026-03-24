@@ -87,10 +87,10 @@ if (isDeploymentInCategoryArray($company_instances)) {
           &nbsp;
           <?= componentProductVersion($descriptor_array); ?>
         </td>
-        <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i>built <?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-        <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-        <td class="col-left"><?= componentDeploymentActions($descriptor_array) ?></td>
+        <td class="col-right inst-built-cell <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i>built <?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
+        <td class="col-right inst-deployed-cell"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-center inst-db-cell"><?= componentDatabaseIcon($descriptor_array) ?></td>
+        <td class="col-left inst-actions-cell"><?= componentDeploymentActions($descriptor_array) ?></td>
       </tr>
       <?php
     }
@@ -99,43 +99,31 @@ if (isDeploymentInCategoryArray($company_instances)) {
     </tbody>
   </table>
   </div>
-  <div class="row mt-4">
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <i class="fas fa-plug me-2"></i>JMX Access
-        </div>
-        <div class="card-body">
-          <p class="mb-0">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
-        </div>
-      </div>
+<div class="info-grid mt-4">
+    <div class="info-card">
+        <div class="info-card-header"><i class="fas fa-plug"></i>JMX Access</div>
+        <div class="info-card-body">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</div>
     </div>
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <i class="fas fa-key me-2"></i>Keycloak Access
+    <div class="info-card">
+        <div class="info-card-header"><i class="fas fa-key"></i>Keycloak Access</div>
+        <div class="info-card-body">
+            Each deployed Keycloak can be accessed using the Keycloak icon with credentials:
+            <div class="code-block"><span>root / password</span></div>
         </div>
-        <div class="card-body">
-          <p class="mb-0">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
-          <code class="d-block mt-2 p-2 rounded code-bg">root / password</code>
-        </div>
-      </div>
     </div>
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <i class="fas fa-address-book me-2"></i>LDAP Access
+    <div class="info-card">
+        <div class="info-card-header"><i class="fas fa-address-book"></i>LDAP Access</div>
+        <div class="info-card-body">
+            Each LDAP deployed can be accessed with:
+            <div class="code-block">
+                <span>Base DN: dc=exoplatform,dc=com</span>
+                <span>User DN: cn=admin,dc=exoplatform,dc=com</span>
+                <span>password: exo</span>
+            </div>
         </div>
-        <div class="card-body">
-          <p class="mb-0">Each LDAP deployed can be accessed with:</p>
-          <code class="d-block mt-2 p-2 rounded code-bg">Base DN: dc=exoplatform,dc=com</code>
-          <code class="d-block mt-1 p-2 rounded code-bg">User DN: cn=admin,dc=exoplatform,dc=com</code>
-          <code class="d-block mt-1 p-2 rounded code-bg">password: exo</code>
-        </div>
-      </div>
-    </table>
-  </div>
-  <?php
+    </div>
+</div>
+<?php
 } else {
   echo '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Nothing yet ;-)</div>';
 }

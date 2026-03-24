@@ -416,6 +416,8 @@ a:hover { color: #79c0ff; text-decoration: none; }
 }
 
 .group-type-tag {
+  display: inline-flex;
+  align-items: center;
   font-size: 9px;
   font-weight: 700;
   text-transform: uppercase;
@@ -424,15 +426,19 @@ a:hover { color: #79c0ff; text-decoration: none; }
   padding: 3px 8px;
   border-radius: 3px;
   border: 1px solid;
+  /* Hard colors — must be readable on the dark category-row background in both themes */
+  line-height: 1.4;
+  flex-shrink: 0;
 }
 
-.type-rd    { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
-.type-maint { background: var(--amber-bg);  color: var(--amber);  border-color: var(--amber-border);  }
-.type-trans { background: var(--blue-bg);   color: var(--blue);   border-color: var(--blue-border);   }
-.type-qa    { background: var(--green-bg);  color: var(--green);  border-color: var(--green-border);  }
-.type-sales { background: var(--amber-bg);  color: var(--amber);  border-color: var(--amber-border);  }
-.type-cp    { background: var(--blue-bg);   color: var(--blue);   border-color: var(--blue-border);   }
-.type-co    { background: var(--purple-bg); color: var(--purple); border-color: var(--purple-border); }
+/* These colors are intentionally hardcoded — they sit on #1f2328 dark bg always */
+.type-rd    { background: rgba(188,140,255,0.18); color: #c9a2ff; border-color: rgba(188,140,255,0.4); }
+.type-maint { background: rgba(227,179,65,0.18);  color: #f5c84a; border-color: rgba(227,179,65,0.4);  }
+.type-trans { background: rgba(88,166,255,0.18);  color: #79b9ff; border-color: rgba(88,166,255,0.4);  }
+.type-qa    { background: rgba(63,185,80,0.18);   color: #56d364; border-color: rgba(63,185,80,0.4);   }
+.type-sales { background: rgba(227,179,65,0.18);  color: #f5c84a; border-color: rgba(227,179,65,0.4);  }
+.type-cp    { background: rgba(88,166,255,0.18);  color: #79b9ff; border-color: rgba(88,166,255,0.4);  }
+.type-co    { background: rgba(188,140,255,0.18); color: #c9a2ff; border-color: rgba(188,140,255,0.4); }
 
 .group-title { font-size: 14px; font-weight: 500; color: var(--t1); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .group-count { font-size: 11px; color: var(--t3); font-family: 'IBM Plex Mono', monospace; background: var(--bg-4); padding: 2px 8px; border-radius: 10px; border: 1px solid var(--border); white-space: nowrap; }
@@ -491,21 +497,45 @@ a:hover { color: #79c0ff; text-decoration: none; }
 .col-right  { text-align: right !important; }
 .col-left   { text-align: left !important; }
 
-/* Category rows (legacy compat) */
+/* Category rows */
 td.category-row {
-  background: var(--category-bg) !important;
-  color: var(--category-text) !important;
+  background: #1a1f28 !important;
+  color: #e3b341 !important;
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11.5px;
   font-weight: 700;
-  letter-spacing: 0.10em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   padding: 9px 14px !important;
-  border-top: 1px solid var(--border-2) !important;
-  border-bottom: 1px solid var(--border-2) !important;
+  border-top: 1px solid rgba(255,255,255,0.1) !important;
+  border-bottom: 1px solid rgba(255,255,255,0.1) !important;
+  /* Flex so tag + title sit inline and title truncates */
+  display: flex !important;
+  align-items: center;
+  gap: 8px;
+  /* Constrain to column width — never push table wider */
+  max-width: 0;
+  min-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-[data-bs-theme="light"] td.category-row { background: #1f2328 !important; }
+/* Tag pill inside category row — shrink-proof */
+td.category-row > .group-type-tag {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  /* Fully opaque colours for both themes — tag sits on #1a1f28 always */
+}
+
+/* Category-row title text truncates */
+td.category-row > i { flex-shrink: 0; }
+td.category-row > span:not(.group-type-tag) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  min-width: 0;
+}
 
 /* Table row highlight (legacy) */
 tr.highlight td { background: var(--highlight-bg) !important; box-shadow: inset 3px 0 0 var(--amber); }
@@ -524,6 +554,7 @@ tr.highlight td { background: var(--highlight-bg) !important; box-shadow: inset 
 
 /* Instance name cell */
 .inst-name-cell { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.min-w-0 { min-width: 0 !important; }
 .inst-name-cell .d-flex { min-width: 0; }
 .inst-name-row  { display: flex; align-items: center; gap: 5px; font-size: 14px; font-weight: 500; color: var(--t1); min-width: 0; overflow: hidden; }
 .inst-name-row a { color: var(--blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
@@ -541,10 +572,19 @@ tr.highlight td { background: var(--highlight-bg) !important; box-shadow: inset 
   align-items: center;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 7px;
-  padding-top: 7px;
+  margin-top: 8px;
+  padding-top: 8px;
   border-top: 1px solid var(--border);
 }
+.mobile-time-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11.5px;
+  color: var(--t3);
+  font-family: 'IBM Plex Mono', monospace;
+}
+.mobile-time-item i { font-size: 10px; color: var(--t4); }
 
 /* Tags / labels */
 .tag {
@@ -1179,9 +1219,24 @@ section { padding-top: 16px; }
 
   /* Category rows stay full-width */
   .inst-table tbody tr td.category-row {
-    display: block;
-    padding: 8px 14px !important;
-    font-size: 10.5px;
+    display: flex !important;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px !important;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  /* The text inside category-row truncates */
+  .inst-table tbody tr td.category-row > i,
+  .inst-table tbody tr td.category-row .group-type-tag { flex-shrink: 0; }
+  .inst-table tbody tr td.category-row > span:not(.group-type-tag) {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
 
   /* Hide all td by default — we show what we want */
@@ -1234,31 +1289,31 @@ section { padding-top: 16px; }
     margin-top: 6px;
   }
 
-  /* Version, DB, time cols — hidden; info shown in .mobile-meta instead */
-  .inst-table tbody tr td:nth-child(3),
-  .inst-table tbody tr td:nth-child(4),
-  .inst-table tbody tr td:nth-last-child(3),
-  .inst-table tbody tr td:nth-last-child(2) {
+  /* Version, DB, time, built cols — hidden on mobile; shown in .mobile-meta */
+  .inst-table tbody tr td.inst-version-cell,
+  .inst-table tbody tr td.inst-db-cell,
+  .inst-table tbody tr td.inst-built-cell,
+  .inst-table tbody tr td.inst-deployed-cell {
     display: none !important;
   }
 
-  /* ── ACTIONS (last td) ── */
-  .inst-table tbody tr td:last-child {
+  /* ── ACTIONS ── */
+  .inst-table tbody tr td.td-actions {
     display: block;
     margin-top: 8px;
     padding: 0;
   }
 
   /* Wrap action buttons into a neat grid */
-  .inst-table tbody tr td:last-child .btn-group,
-  .inst-table tbody tr td:last-child .btn-group-sm {
+  .inst-table tbody tr td.td-actions .btn-group,
+  .inst-table tbody tr td.td-actions .btn-group-sm {
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
     width: 100%;
   }
-  .inst-table tbody tr td:last-child .btn-group .btn,
-  .inst-table tbody tr td:last-child .btn-group-sm .btn {
+  .inst-table tbody tr td.td-actions .btn-group .btn,
+  .inst-table tbody tr td.td-actions .btn-group-sm .btn {
     width: 36px;
     height: 36px;
     padding: 0;
@@ -1286,12 +1341,9 @@ section { padding-top: 16px; }
   }
   .mobile-time-item i { font-size: 10px; color: var(--t4); }
 
-  /* ── Feature branch strip ── */
-  .inst-table tbody tr td:nth-child(5),
-  .inst-table tbody tr td:nth-child(6),
-  .inst-table tbody tr td:nth-child(7),
-  .inst-table tbody tr td:nth-child(8) {
-    display: none !important; /* FB cols hidden; shown inline in name cell */
+  /* FB columns hidden on mobile — info shown in .mobile-meta */
+  .inst-table tbody tr td.inst-fb-cell {
+    display: none !important;
   }
 
   /* Info grid */

@@ -64,12 +64,12 @@ if (isDeploymentInCategoryArray($sales_user_instances)):
             </span>
           </div>
         </td>
-        <td class="col-center">
+        <td class="col-center inst-version-cell">
           <?= componentProductInfoIcon($d) ?>&nbsp;<?= componentProductVersion($d) ?>&nbsp;<?= componentDownloadIcon($d) ?>
         </td>
-        <td class="col-right"><i class="fas fa-clock me-1"></i><?= $d->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($d) ?></td>
-        <td class="col-left"><?= componentDeploymentActions($d) ?></td>
+        <td class="col-right inst-deployed-cell"><i class="fas fa-clock me-1"></i><?= $d->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-center inst-db-cell"><?= componentDatabaseIcon($d) ?></td>
+        <td class="col-left inst-actions-cell"><?= componentDeploymentActions($d) ?></td>
       </tr>
       <?php endforeach; endforeach; ?>
     </tbody>
@@ -128,12 +128,12 @@ if (isDeploymentInCategoryArray($sales_demo_instances)):
             </span>
           </div>
         </td>
-        <td class="col-center">
+        <td class="col-center inst-version-cell">
           <?= componentProductInfoIcon($d) ?>&nbsp;<?= componentProductVersion($d) ?>&nbsp;<?= componentDownloadIcon($d) ?>
         </td>
-        <td class="col-right"><i class="fas fa-clock me-1"></i><?= $d->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($d) ?></td>
-        <td class="col-left"><?= componentDeploymentActions($d) ?></td>
+        <td class="col-right inst-deployed-cell"><i class="fas fa-clock me-1"></i><?= $d->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-center inst-db-cell"><?= componentDatabaseIcon($d) ?></td>
+        <td class="col-left inst-actions-cell"><?= componentDeploymentActions($d) ?></td>
       </tr>
       <?php endforeach; endforeach; ?>
     </tbody>
@@ -186,12 +186,12 @@ if (isDeploymentInCategoryArray($sales_eval_instances)):
             </span>
           </div>
         </td>
-        <td class="col-center">
+        <td class="col-center inst-version-cell">
           <?= componentProductInfoIcon($d) ?>&nbsp;<?= componentProductVersion($d) ?>&nbsp;<?= componentDownloadIcon($d) ?>
         </td>
-        <td class="col-right"><i class="fas fa-clock me-1"></i><?= $d->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($d) ?></td>
-        <td class="col-left"><?= componentDeploymentActions($d) ?></td>
+        <td class="col-right inst-deployed-cell"><i class="fas fa-clock me-1"></i><?= $d->DEPLOYMENT_AGE_STRING ?></td>
+        <td class="col-center inst-db-cell"><?= componentDatabaseIcon($d) ?></td>
+        <td class="col-left inst-actions-cell"><?= componentDeploymentActions($d) ?></td>
       </tr>
       <?php endforeach; endforeach; ?>
     </tbody>
