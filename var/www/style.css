@@ -509,33 +509,24 @@ td.category-row {
   padding: 9px 14px !important;
   border-top: 1px solid rgba(255,255,255,0.1) !important;
   border-bottom: 1px solid rgba(255,255,255,0.1) !important;
-  /* Flex so tag + title sit inline and title truncates */
+  /* Flex row so tag + title sit on one line */
   display: flex !important;
   align-items: center;
   gap: 8px;
-  /* Constrain to column width — never push table wider */
-  max-width: 0;
-  min-width: 100%;
-  overflow: hidden;
-  white-space: nowrap;
+  /* Let the row wrap and grow — no truncation on desktop */
+  white-space: normal;
+  overflow: visible;
 }
 
-/* Tag pill inside category row — shrink-proof */
+/* Tag pill — never shrink */
 td.category-row > .group-type-tag {
   flex-shrink: 0;
   display: inline-flex;
   align-items: center;
-  /* Fully opaque colours for both themes — tag sits on #1a1f28 always */
 }
 
-/* Category-row title text truncates */
+/* Icon inside category row — never shrink */
 td.category-row > i { flex-shrink: 0; }
-td.category-row > span:not(.group-type-tag) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
 
 /* Table row highlight (legacy) */
 tr.highlight td { background: var(--highlight-bg) !important; box-shadow: inset 3px 0 0 var(--amber); }
@@ -1217,27 +1208,21 @@ section { padding-top: 16px; }
   .inst-table tbody tr:hover { background: var(--bg-2); }
   .inst-table tbody tr.row-down { background: rgba(248,81,73,0.03); }
 
-  /* Category rows stay full-width */
+  /* Category rows — full-width, text wraps freely */
   .inst-table tbody tr td.category-row {
     display: flex !important;
-    align-items: center;
-    gap: 6px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 5px;
     padding: 8px 12px !important;
-    font-size: 10px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+    font-size: 10.5px;
+    white-space: normal;
+    overflow: visible;
+    width: 100%;
     box-sizing: border-box;
   }
-  /* The text inside category-row truncates */
   .inst-table tbody tr td.category-row > i,
   .inst-table tbody tr td.category-row .group-type-tag { flex-shrink: 0; }
-  .inst-table tbody tr td.category-row > span:not(.group-type-tag) {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    min-width: 0;
-  }
 
   /* Hide all td by default — we show what we want */
   .inst-table tbody tr td {
@@ -1297,9 +1282,9 @@ section { padding-top: 16px; }
     display: none !important;
   }
 
-  /* ── ACTIONS ── */
+  /* ── ACTIONS — use !important to beat the hide-all td rule ── */
   .inst-table tbody tr td.td-actions {
-    display: block;
+    display: block !important;
     margin-top: 8px;
     padding: 0;
   }
