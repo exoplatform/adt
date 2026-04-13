@@ -17,13 +17,19 @@ checkCaches();
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
-    <div class="alert alert-info">
-        <i class="fas fa-flask me-2"></i>
-        These instances are deployed to be used for acceptance tests.
+
+    <!-- Filter bar -->
+    <div class="filter-bar">
+      <input type="text" id="instanceFilter" placeholder="Search instances…" autocomplete="off">
+      <button class="filter-pill active" data-filter="all"><i class="fas fa-th-list"></i> All</button>
+      <button class="filter-pill" data-filter="up"><i class="fas fa-circle text-success" style="font-size:.6em"></i> Up</button>
+      <button class="filter-pill" data-filter="down"><i class="fas fa-circle text-danger" style="font-size:.6em"></i> Down</button>
+      <div class="instance-count" id="instanceCount">– / –</div>
     </div>
 
+    <div class="table-wrap">
     <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover" id="instanceTable">
             <thead>
                 <tr>
                     <th class="col-center">S</th>
@@ -47,7 +53,7 @@ checkCaches();
                 if (isDeploymentInCategoryArray($translation_instances)) {
                     foreach ($translation_instances as $plf_branch => $descriptor_arrays) {
                         foreach ($descriptor_arrays as $descriptor_array) { ?>
-                            <tr>
+                            <tr class="instance-row">
                                 <td class="col-center"><?= componentStatusIcon($descriptor_array) ?></td>
                                 <td>
                                     <div class="d-flex align-items-center">
@@ -88,7 +94,7 @@ checkCaches();
                         <td colspan="15" class="category-row"><?= buildTableTitleDev($plf_branch) ?></td>
                     </tr>
                     <?php foreach ($descriptor_arrays as $descriptor_array) { ?>
-                        <tr>
+                        <tr class="instance-row">
                             <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
                             <td>
                                 <div class="d-flex align-items-center">
@@ -149,44 +155,32 @@ checkCaches();
             </tbody>
         </table>
     </div>
+    </div><!-- /table-wrap -->
 
-    <!-- Info cards with synchronized design -->
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-plug me-2"></i>JMX Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
+    <!-- Info cards -->
+    <div class="info-cards-row">
+        <div class="card">
+            <div class="card-header"><i class="fas fa-chart-line me-2"></i>JMX Access</div>
+            <div class="card-body">
+                Access any instance via JMX using the monitoring icon link. Credentials are available on the CI Build page.
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><i class="fas fa-key me-2"></i>Keycloak</div>
+            <div class="card-body">
+                Access deployed Keycloak instances via the key icon.
+                <div class="code-bg mt-2">
+                    <code>root / password</code>
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-key me-2"></i>Keycloak Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
-                    <div class="mt-2 p-2 rounded code-bg">
-                        <code class="d-block">root / password</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-address-book me-2"></i>LDAP Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text">Each LDAP deployed can be accessed with:</p>
-                    <div class="mt-2 p-2 rounded code-bg">
-                        <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
-                        <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
-                        <code class="d-block mt-1">password: exo</code>
-                    </div>
+        <div class="card">
+            <div class="card-header"><i class="fas fa-address-book me-2"></i>LDAP</div>
+            <div class="card-body">
+                <div class="code-bg">
+                    <code>Base DN: dc=exoplatform,dc=com</code>
+                    <code>User: cn=admin,dc=exoplatform,dc=com</code>
+                    <code>pwd: exo</code>
                 </div>
             </div>
         </div>

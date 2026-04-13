@@ -12,72 +12,36 @@ function pageHeader($title = "")
 ?>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta http-equiv="refresh" content="120">
-  <title>Acceptance<?= (empty($title) ? "" : " - " . $title) ?></title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ADT<?= (empty($title) ? "" : " · " . $title) ?></title>
   <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
-  <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  <!-- Custom CSS -->
   <link href="./style.css" media="screen" rel="stylesheet" type="text/css" />
-  <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <!-- Bootstrap 5 JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Dark mode handling -->
   <script>
-    // Function to set theme
+    // Theme: use data-theme on <html> (our CSS variables key off this)
     function setTheme(theme) {
+      document.documentElement.setAttribute('data-theme', theme);
       document.documentElement.setAttribute('data-bs-theme', theme);
-      localStorage.setItem('theme', theme);
-      
-      // Update toggle button icon and tooltip
-      const toggleBtn = document.getElementById('darkModeToggle');
-      if (toggleBtn) {
-        const icon = toggleBtn.querySelector('i');
-        if (theme === 'dark') {
-          icon.className = 'fas fa-sun';
-          toggleBtn.setAttribute('title', 'Switch to light mode');
-        } else {
-          icon.className = 'fas fa-moon';
-          toggleBtn.setAttribute('title', 'Switch to dark mode');
-        }
-        
-        // Refresh tooltip
-        const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-        if (tooltip) {
-          tooltip.dispose();
-        }
-        new bootstrap.Tooltip(toggleBtn);
+      localStorage.setItem('adt-theme', theme);
+      const btn = document.getElementById('darkModeToggle');
+      if (btn) {
+        btn.innerHTML = theme === 'dark'
+          ? '<i class="fas fa-sun"></i> Light'
+          : '<i class="fas fa-moon"></i> Dark';
       }
     }
-    
-    // Function to toggle theme
     function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      setTheme(newTheme);
+      const cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      setTheme(cur === 'dark' ? 'light' : 'dark');
     }
-    
-    // Initialize theme on page load
     (function() {
-      // Check for saved theme preference
-      const savedTheme = localStorage.getItem('theme');
-      
-      // Check for system preference if no saved theme
-      if (!savedTheme) {
-        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(systemPrefersDark ? 'dark' : 'light');
-      } else {
-        setTheme(savedTheme);
-      }
-      
-      // Listen for system preference changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        if (!localStorage.getItem('theme')) {
-          setTheme(event.matches ? 'dark' : 'light');
-        }
-      });
+      const saved = localStorage.getItem('adt-theme');
+      if (saved) { setTheme(saved); return; }
+      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      setTheme(prefersDark ? 'dark' : 'light');
     })();
   </script>
 <?php
@@ -125,22 +89,18 @@ function pageNavigation()
     "Servers" => "/servers.php"
   );
   
-  // Get current theme for initial tooltip
-  $savedTheme = isset($_COOKIE['theme']) ? $_COOKIE['theme'] : 'light';
-  $initialIcon = $savedTheme === 'dark' ? 'fa-sun' : 'fa-moon';
-  $initialTooltip = $savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
 ?>
-  <!-- navbar ================================================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <nav class="navbar navbar-expand-lg fixed-top">
     <div class="container-fluid">
       <a class="navbar-brand" href="/">
-        <i class="fas fa-cloud me-2"></i><?= $_SERVER['SERVER_NAME'] ?>
+        <span class="brand-dot"></span>
+        <span>adt<span style="color:var(--text-muted);font-weight:300;">@</span><?= $_SERVER['SERVER_NAME'] ?></span>
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav ms-3">
           <?php
           foreach ($nav as $label => $url) {
             $active = ($url == $_SERVER['REQUEST_URI']) ? 'active' : '';
@@ -148,19 +108,16 @@ function pageNavigation()
           }
           ?>
         </ul>
-        
-        <!-- Dark mode toggle button only (icon only, no text) -->
         <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" rel="tooltip" title="<?= $initialTooltip ?>">
-              <i class="fas <?= $initialIcon ?>"></i>
+          <li class="nav-item d-flex align-items-center">
+            <button id="darkModeToggle" onclick="toggleTheme()">
+              <i class="fas fa-moon"></i> Dark
             </button>
           </li>
         </ul>
       </div>
     </div>
   </nav>
-  <!-- /navbar -->
 <?php
 }
 
@@ -200,12 +157,71 @@ function pageFooter() {
           sanitize: false,
           container: 'body',
           animation: true,
-          delay: {
-            show: 100,
-            hide: 100
-          }
+          delay: { show: 100, hide: 100 }
         });
       });
+
+      // ── Live instance filter ───────────────────────────────────────
+      var $filterInput  = $('#instanceFilter');
+      var $filterPills  = $('.filter-pill[data-filter]');
+      var $countSpan    = $('#instanceCount');
+      var activeFilter  = 'all';
+
+      function applyFilters() {
+        var query  = ($filterInput.val() || '').toLowerCase().trim();
+        var total  = 0;
+        var shown  = 0;
+
+        $('table.table tbody tr').each(function() {
+          var $tr = $(this);
+          if ($tr.find('td.category-row').length) return;
+
+          var text   = $tr.text().toLowerCase();
+          var isUp   = $tr.find('.fa-circle').hasClass('text-success');
+          var status = isUp ? 'up' : 'down';
+
+          total++;
+
+          var matchesQuery  = !query || text.indexOf(query) !== -1;
+          var matchesStatus = activeFilter === 'all'
+            || (activeFilter === 'up'   && status === 'up')
+            || (activeFilter === 'down' && status === 'down');
+
+          if (matchesQuery && matchesStatus) {
+            $tr.show(); shown++;
+          } else {
+            $tr.hide();
+          }
+        });
+
+        // Hide category rows when all their children are hidden
+        $('table.table tbody tr').each(function() {
+          var $tr = $(this);
+          if (!$tr.find('td.category-row').length) return;
+          var hasVisible = false;
+          var $next = $tr.next();
+          while ($next.length && !$next.find('td.category-row').length) {
+            if ($next.is(':visible')) { hasVisible = true; break; }
+            $next = $next.next();
+          }
+          $tr.toggle(hasVisible);
+        });
+
+        if ($countSpan.length) {
+          $countSpan.html('<span>' + shown + '</span> / ' + total);
+        }
+      }
+
+      $filterInput.on('input', applyFilters);
+
+      $filterPills.on('click', function() {
+        activeFilter = $(this).data('filter');
+        $filterPills.removeClass('active');
+        $(this).addClass('active');
+        applyFilters();
+      });
+
+      applyFilters();
     });
   </script>
 <?php

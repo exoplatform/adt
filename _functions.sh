@@ -2119,9 +2119,13 @@ do_deploy() {
       echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} ..."
       rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
       mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-      rm -rf ${_tmpdir}
+      # BUG FIX: Use cp -a instead of mv so _tmpdir remains intact as a safety-net.
+      # If addon installation (called later in do_configure_*_server) fails and the
+      # script exits via set -e, the next invocation will detect a non-empty _tmpdir
+      # and skip the "new instance" branch that would wipe the database.
+      # _tmpdir is cleaned up at the very end of do_deploy() only after full success.
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
       echo_info "Done."
     ;;
     RESTORE_DATASET)
@@ -2131,9 +2135,9 @@ do_deploy() {
       echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} to be prepared for dataset dumping..."
       rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
       mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-      rm -rf ${_tmpdir}
+      # BUG FIX: Same cp -a safety-net approach (see KEEP_DATA comment above).
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
       echo_info "Done."
       do_dump_dataset
     ;;
@@ -2159,10 +2163,20 @@ do_deploy() {
       exit 1
     ;;
   esac
-  # Hack 
+  # Hack
   do_configure_chat
   do_configure_apache
   do_create_deployment_descriptor
+  # BUG FIX: Only now — after ALL steps including addon installation — is it safe
+  # to remove the data safety-net archive. If any step above failed, _tmpdir still
+  # holds the preserved data and the next run will recover it correctly.
+  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ] || [ "${DEPLOYMENT_MODE}" == "DUMP_DATASET" ]; then
+    if [ -n "${_tmpdir:-}" ] && [ -d "${_tmpdir}" ]; then
+      echo_info "Deployment fully succeeded — removing data safety-net archive ${_tmpdir} ..."
+      rm -rf "${_tmpdir}"
+      echo_info "Done."
+    fi
+  fi
   echo_info "Server deployed"
 }
 
