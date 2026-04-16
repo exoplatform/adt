@@ -163,10 +163,12 @@ function getRepositories()
         "wallet" => "Wallet",
         "push-notifications" => "Push notifications",
         "app-center" => "App Center",
+        "auth-server" => "Auth Server",
         "analytics" => "Analytics",
         "notes" => "Notes",
         "content" => "Content",
         "poll" => "Poll",
+        "ai" => "AI",
         "matrix" => "Matrix",
         "task" => "TASK",
         "gamification-github" => "Gamification Github",
@@ -227,6 +229,7 @@ function getModuleCiPrefix($item)
         "anti-malware" => "addon-",
         "analytics" => "meeds-addon-",
         "poll" => "meeds-addon-",
+        "ai" => "meeds-addon-",
         "matrix" => "meeds-addon-",
         "gamification-github" => "meeds-addon-",
         "gamification-twitter" => "meeds-addon-",
@@ -249,6 +252,7 @@ function getModuleCiPrefix($item)
         "commons" => "meeds-",
         "social" => "meeds-",
         "layout" => "meeds-addon-",
+        "auth-server" => "meeds-addon-",
         "gamification" => "meeds-addon-",
         "wallet" => "meeds-addon-",
         "app-center" => "meeds-addon-",
@@ -405,6 +409,7 @@ function getTranslationBranches($projects)
       "anti-malware" => true,
       "analytics" => true,
       "poll" => true,
+      "ai" => true,
       "matrix" => true,
       "gamification-github" => true,
       "gamification-twitter" => true,
@@ -430,6 +435,7 @@ function getTranslationBranches($projects)
       "digital-workplace" => true,
       "gatein-portal" => true,
       "layout" => true,
+      "auth-server" => true,
       "meeds" => true,
       "onlyoffice" => true,
       "platform-ui" => true,
@@ -626,7 +632,7 @@ function getLocalAcceptanceInstances()
         case 'meeds': 
           switch ($descriptor_array['PRODUCT_BRANCH']) {
             case '7.2.x':
-              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-matrix / meeds-gamification-github / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-content / meeds-pwa  / meeds-ide / meeds-deeds-tenant";
+              $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-auth-server / meeds-analytics / meeds-poll / meeds-matrix / meeds-ai / meeds-gamification-github / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-content / meeds-pwa  / meeds-ide / meeds-deeds-tenant";
               break;
             case '7.1.x':
               $descriptor_array['PRODUCT_ADDONS_DISTRIB']="meeds-layout / meeds-app-center / meeds-gamification / meeds-kudos / meeds-perk-store / meeds-push-notifications / meeds-wallet / meeds-notes / meeds-task / meeds-analytics / meeds-poll / meeds-matrix / meeds-gamification-github / meeds-gamification-twitter / meeds-gamification-crowdin / meeds-content / meeds-pwa  / meeds-ide / meeds-deeds-tenant";
