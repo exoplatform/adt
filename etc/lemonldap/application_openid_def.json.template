@@ -1,0 +1,34 @@
+{
+    "metadata": {
+        "name": "Acceptance LemonLDAP-NG OpenID",
+        "type": "oidc",
+        "clientID": "exooidc"
+    },
+    "options": {
+        "oidcRPMetaDataOptions": {
+            "oidcRPMetaDataOptionsClientID": "exooidc",
+            "oidcRPMetaDataOptionsClientSecret": "exooidc-secret",
+            "oidcRPMetaDataOptionsIDTokenExpiration": 3600,
+            "oidcRPMetaDataOptionsAccessTokenExpiration": 3600,
+            "oidcRPMetaDataOptionsRedirectUris": "${DEP_URL}/portal/*",
+            "oidcRPMetaDataOptionsPostLogoutRedirectUris": "${DEP_URL}/portal/",
+            "oidcRPMetaDataOptionsGrantTypes": "authorization_code",
+            "oidcRPMetaDataOptionsResponseTypes": "code",
+            "oidcRPMetaDataOptionsTokenEndpointAuthMethod": "client_secret_post",
+            "oidcRPMetaDataOptionsUserIDAttr": "",
+            "oidcRPMetaDataOptionsBypassConsent": 1,
+            "oidcRPMetaDataOptionsPublic": 0,
+            "oidcRPMetaDataOptionsIDTokenSignAlg": "RS256",
+            "oidcRPMetaDataOptionsRefreshToken": 0,
+            "oidcRPMetaDataOptionsAllowOffline": 0,
+            "oidcRPMetaDataOptionsScopeRules": {}
+        },
+        "oidcRPMetaDataExportedVars": {
+            "email": "mail",
+            "family_name": "sn",
+            "given_name": "givenName",
+            "name": "cn"
+        },
+        "oidcRPMetaDataMacros": {}
+    }
+}

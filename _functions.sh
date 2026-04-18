@@ -38,6 +38,7 @@ source "${SCRIPT_DIR}/_functions_clamav.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_mongoexpress.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
+source "${SCRIPT_DIR}/_functions_lemonldap.sh"
 source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
 source "${SCRIPT_DIR}/_functions_phpldapadmin.sh"
 source "${SCRIPT_DIR}/_functions_jitsi.sh"
@@ -372,6 +373,11 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "26.1"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_MODE" "SAML"
+
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_ENABLED" false
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_IMAGE" "coudot/lemonldap-ng"
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_IMAGE_VERSION" "2.20"
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_MODE" "SAML"
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
@@ -1322,6 +1328,7 @@ initialize_product_settings() {
    do_get_frontail_settings
    do_get_mongo_express_settings
    do_get_keycloak_settings
+   do_get_lemonldap_settings
    do_get_cloudbeaver_settings
    do_get_phpldapadmin_settings
    do_get_jitsi_settings
@@ -1417,6 +1424,9 @@ do_dump_dataset(){
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     do_dump_keycloak_dataset "${_dumpdir}"
   fi
+  if ${DEPLOYMENT_LEMONLDAP_ENABLED}; then
+    do_dump_lemonldap_dataset "${_dumpdir}"
+  fi
   mkdir -p ${_dumpdir}/codec
   if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
     echo_info "Backing up codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
@@ -1437,6 +1447,9 @@ do_dump_dataset(){
   fi 
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     _bakcupExt="${_bakcupExt} keycloak"
+  fi 
+  if ${DEPLOYMENT_LEMONLDAP_ENABLED}; then
+    _bakcupExt="${_bakcupExt} lemonldap"
   fi 
   _bakcupExt="$(echo ${_bakcupExt} | xargs -r)"
   display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql codec ${_bakcupExt}
@@ -1489,6 +1502,10 @@ do_restore_dataset(){
     do_restore_keycloak_dataset
   fi
 
+  if ${DEPLOYMENT_LEMONLDAP_ENABLED}; then
+    do_restore_lemonldap_dataset
+  fi
+
   do_restore_database_dataset
 
   do_restore_es_dataset
@@ -1539,12 +1556,14 @@ do_init_empty_data(){
   do_drop_mailpit_data
   do_drop_frontail_data
   do_drop_keycloak_data
+  do_drop_lemonldap_data
   do_drop_phpldapadmin_data
 
   do_create_data
   do_create_es
   do_create_mailpit
   do_create_keycloak
+  do_create_lemonldap
   echo_info "Done"
 }
 
@@ -1874,6 +1893,17 @@ do_deploy() {
     fi
   fi  
 
+  if ${DEPLOYMENT_LEMONLDAP_ENABLED}; then
+    if [[ ! "${DEPLOYMENT_LEMONLDAP_MODE:-SAML}" =~ ^(SAML|OPENID)$ ]]; then
+        echo_error "LemonLDAP-NG deployment mode should be SAML or OPENID."
+        exit 1
+    fi
+    if [ "${DEPLOYMENT_LEMONLDAP_MODE:-SAML}" = "SAML" ] && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
+      echo_error "LemonLDAP-NG deployment with saml2 mode is enabled, the exo-saml addon must be specified on the addon list."
+      exit 1
+    fi
+  fi
+
   if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
     if [[ ! "${PRODUCT_VERSION}" =~ .*-M(BL|LT)$ ]]; then
       echo_error "Continuous deployment is enabled and product version must ends with -MLT or -MBL!"
@@ -1924,6 +1954,9 @@ do_deploy() {
 
   # Keycloak  port
   env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
+
+  # LemonLDAP-NG port
+  env_var "DEPLOYMENT_LEMONLDAP_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
 
   # Cloudbeaver  port
   env_var "DEPLOYMENT_CLOUDBEAVER_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}96"
@@ -2054,6 +2087,7 @@ do_deploy() {
       do_create_cmis
       do_create_mailpit
       do_create_keycloak
+      do_create_lemonldap
       do_create_jitsi
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
@@ -2100,6 +2134,7 @@ do_deploy() {
         do_create_cmis
         do_create_mailpit
         do_create_keycloak
+        do_create_lemonldap
         do_create_jitsi
       fi
       )
@@ -2191,6 +2226,7 @@ do_start() {
   do_start_clamav
   do_start_frontail
   do_start_keycloak
+  do_start_lemonldap
   do_start_jitsi
   do_start_sftp
   do_start_cmis
@@ -2482,6 +2518,7 @@ do_stop() {
       do_stop_phpldapadmin
       do_stop_mongo_express
       do_stop_keycloak
+      do_stop_lemonldap
       do_stop_cloudbeaver
       do_stop_jitsi
       do_stop_sftp
@@ -2529,6 +2566,7 @@ do_undeploy() {
     do_drop_clamav_data
     do_drop_frontail_data
     do_drop_keycloak_data
+    do_drop_lemonldap_data
     do_drop_phpldapadmin_data
     do_drop_cloudbeaver_data
     do_drop_jitsi_data

@@ -101,6 +101,9 @@
     ProxyPass               /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
     ProxyPassReverse        /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
 
+    ProxyPass               /lemonldap       http://localhost:${DEPLOYMENT_LEMONLDAP_HTTP_PORT}/lemonldap
+    ProxyPassReverse        /lemonldap       http://localhost:${DEPLOYMENT_LEMONLDAP_HTTP_PORT}/lemonldap
+
     ProxyPass               /jitsicall           http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}
     ProxyPassReverse        /jitsicall           http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}
     ProxyPass               /jitsiweb            http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}

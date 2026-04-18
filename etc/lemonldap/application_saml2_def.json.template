@@ -1,0 +1,29 @@
+{
+    "metadata": {
+        "name": "Acceptance LemonLDAP-NG SAML2",
+        "type": "saml",
+        "entityID": "${DEP_URL}/portal/dologin"
+    },
+    "options": {
+        "samlSPMetaDataXML": "<?xml version=\"1.0\" encoding=\"UTF-8\"?><md:EntityDescriptor xmlns:md=\"urn:oasis:names:tc:SAML:2.0:metadata\" entityID=\"${DEP_URL}/portal/dologin\"><md:SPSSODescriptor AuthnRequestsSigned=\"false\" WantAssertionsSigned=\"false\" protocolSupportEnumeration=\"urn:oasis:names:tc:SAML:2.0:protocol\"><md:AssertionConsumerService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"${DEP_URL}/portal/dologin\" index=\"0\" isDefault=\"true\"/><md:SingleLogoutService Binding=\"urn:oasis:names:tc:SAML:2.0:bindings:HTTP-POST\" Location=\"${DEP_URL}/portal/dologin?GLO=true\"/></md:SPSSODescriptor></md:EntityDescriptor>",
+        "samlSPMetaDataOptions": {
+            "samlSPMetaDataOptionsEncryptionMode": "none",
+            "samlSPMetaDataOptionsEnableIDPInitiatedURL": "",
+            "samlSPMetaDataOptionsForceUTF8": 1,
+            "samlSPMetaDataOptionsNameIDFormat": "username",
+            "samlSPMetaDataOptionsNotOnOrAfterTimeout": 72000,
+            "samlSPMetaDataOptionsOneTimeUse": 0,
+            "samlSPMetaDataOptionsSessionNotOnOrAfterTimeout": 72000,
+            "samlSPMetaDataOptionsSignSSOMessage": -1,
+            "samlSPMetaDataOptionsSignSLOMessage": -1,
+            "samlSPMetaDataOptionsCheckSSOMessageSignature": 0,
+            "samlSPMetaDataOptionsCheckSLOMessageSignature": 0
+        },
+        "samlSPMetaDataExportedAttributes": {
+            "cn": "0;cn;;;",
+            "mail": "0;mail;;;",
+            "uid": "1;uid;;;"
+        },
+        "samlSPMetaDataMacros": {}
+    }
+}
