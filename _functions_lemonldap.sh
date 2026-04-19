@@ -148,9 +148,9 @@ do_dump_lemonldap_dataset() {
 do_provision_lemonldap_admin() {
   local LLNG_BASE_URL="http://localhost:${DEPLOYMENT_LEMONLDAP_HTTP_PORT}"
   echo_info "Provisioning LemonLDAP-NG admin account..."
-
+  local llngcookies_file=$(mktemp)
   # Obtain a session token using the default bootstrap credentials
-  local _session=$(curl -s -c /tmp/llng_cookies.txt -X POST \
+  local _session=$(curl -s -c $llngcookies_file -X POST \
     -H "Content-Type: application/x-www-form-urlencoded" \
     -d "user=admin&password=admin123" \
     "${LLNG_BASE_URL}/manager/api/v1/session" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -164,7 +164,7 @@ do_provision_lemonldap_admin() {
 
   # Set a permanent root/password admin account via the REST manager API
   local _resp=$(curl -s -o /dev/null -w "%{http_code}" \
-    -b /tmp/llng_cookies.txt \
+    -b $llngcookies_file \
     -X POST \
     -H "Content-Type: application/json" \
     -d "{\"password\": \"password\"}" \
@@ -175,16 +175,16 @@ do_provision_lemonldap_admin() {
   else
     echo_warn "LemonLDAP-NG root password setup returned HTTP ${_resp} — continuing."
   fi
-  rm -f /tmp/llng_cookies.txt
+  rm -f $llngcookies_file
 }
 
 # Provision LemonLDAP-NG application (SAML2 SP or OpenID Connect RP)
 do_provision_lemonldap_application() {
   local LLNG_BASE_URL="http://localhost:${DEPLOYMENT_LEMONLDAP_HTTP_PORT}"
   echo_info "Provisioning LemonLDAP-NG application (mode: ${DEPLOYMENT_LEMONLDAP_MODE:-SAML})..."
-
+  local llngcookies_file=$(mktemp)
   # Obtain manager session
-  local _session=$(curl -s -c /tmp/llng_cookies2.txt -X POST \
+  local _session=$(curl -s -c $llngcookies_file -X POST \
     -H "Content-Type: application/x-www-form-urlencoded" \
     -d "user=admin&password=admin123" \
     "${LLNG_BASE_URL}/manager/api/v1/session" | grep -o '"id":"[^"]*"' | head -1 | cut -d'"' -f4)
@@ -197,7 +197,7 @@ do_provision_lemonldap_application() {
   if [ "${DEPLOYMENT_LEMONLDAP_MODE:-SAML}" = "SAML" ]; then
     # Register SAML2 Service Provider
     local _resp=$(curl -s -o /dev/null -w "%{http_code}" \
-      -b /tmp/llng_cookies2.txt \
+      -b $llngcookies_file \
       -X POST \
       -H "Content-Type: application/json" \
       -d "@${DEPLOYMENT_DIR}/lemonldap_app_def.json" \
@@ -206,7 +206,7 @@ do_provision_lemonldap_application() {
   else
     # Register OpenID Connect Relying Party
     local _resp=$(curl -s -o /dev/null -w "%{http_code}" \
-      -b /tmp/llng_cookies2.txt \
+      -b $llngcookies_file \
       -X POST \
       -H "Content-Type: application/json" \
       -d "@${DEPLOYMENT_DIR}/lemonldap_app_def.json" \
@@ -216,11 +216,11 @@ do_provision_lemonldap_application() {
 
   # Apply configuration
   curl -s -o /dev/null -w "%{http_code}" \
-    -b /tmp/llng_cookies2.txt \
+    -b $llngcookies_file \
     -X POST \
     "${LLNG_BASE_URL}/manager/api/v1/configuration/apply" || true
   echo_info "LemonLDAP-NG configuration applied."
-  rm -f /tmp/llng_cookies2.txt
+  rm -f $llngcookies_file
 }
 
 
