@@ -376,7 +376,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_LEMONLDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LEMONLDAP_IMAGE" "coudot/lemonldap-ng"
-      configurable_env_var "DEPLOYMENT_LEMONLDAP_IMAGE_VERSION" "2.20"
+      configurable_env_var "DEPLOYMENT_LEMONLDAP_IMAGE_VERSION" "2.20.2"
       configurable_env_var "DEPLOYMENT_LEMONLDAP_MODE" "SAML"
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
