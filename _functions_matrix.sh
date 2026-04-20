@@ -141,6 +141,30 @@ check_matrix_availability() {
   echo_info "Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} up and available."
 }
 
+# Restore dataset; same instance key only supported
+do_restore_matrix_dataset() {
+  do_drop_matrix_data
+  do_create_matrix
+  local _matrixData="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/matrix_${INSTANCE_KEY}"
+  if [ ! -d ${_matrixData} ]; then
+    echo_warn "matrix data (${_matrixData}) don't exist."
+    return 1
+  fi
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data)
+  sudo mv -v ${_matrixData}/* ${mount_point}/ >/dev/null
+  sudo chown 12000:12000 -R ${mount_point}
+  rm -rf ${_matrixData}
+}
+
+# Dump dataset
+do_dump_matrix_dataset() {
+  local _matrixData="$1/matrix_${INSTANCE_KEY}"
+  mkdir -p ${_matrixData}
+  local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data)
+  sudo chown 12000:12000 -R ${mount_point}
+  sudo cp -fTr "${mount_point}/" ${_matrixData}/ || rm -rf "${_matrixData}"
+}
+
 # This function is used to reset the matrix data
 # It will drop the matrix data and create a new one
 # To be replaced by a dump/restore function
