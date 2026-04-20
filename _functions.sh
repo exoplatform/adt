@@ -1441,6 +1441,9 @@ do_dump_dataset(){
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     _bakcupExt="${_bakcupExt} keycloak"
   fi 
+  if ${DEPLOYMENT_MATRIX_ENABLED}; then
+    _bakcupExt="${_bakcupExt} matrix_${INSTANCE_KEY}"
+  fi
   _bakcupExt="$(echo ${_bakcupExt} | xargs -r)"
   display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql codec ${_bakcupExt}
   echo_info "Done."
