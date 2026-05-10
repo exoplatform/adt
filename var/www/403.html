@@ -380,36 +380,80 @@
                 transition-duration: 0.01ms !important;
             }
         }
+
+        /* Screen-reader only */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* Focus-visible ring for keyboard users */
+        :focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+        }
+        :focus:not(:focus-visible) {
+            outline: none;
+        }
+
+        /* Lang button focus */
+        .lang-btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
+        }
+
+        /* Home button focus */
+        .btn-home:focus-visible {
+            outline: 3px solid rgba(255, 255, 255, 0.9);
+            outline-offset: 3px;
+        }
+
+        /* Contact link focus */
+        .contact-link:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
+        }
     </style>
 </head>
 <body>
     <!-- Background effects -->
-    <div class="bg-orb bg-orb--1"></div>
-    <div class="bg-orb bg-orb--2"></div>
-    <div class="bg-orb bg-orb--3"></div>
-    <div class="grid-bg"></div>
+    <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
+    <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
+    <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
+    <div class="grid-bg" aria-hidden="true"></div>
 
+    <main id="main-content" aria-labelledby="error-title">
     <div class="error-wrapper">
         <div class="error-container text-center">
 
             <!-- Language Switcher -->
-            <div class="lang-switcher">
-                <button class="lang-btn active" onclick="switchLang('en')" id="lang-btn-en">
-                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/gb.svg" alt="English">
+            <nav aria-label="Language selection">
+            <div class="lang-switcher" role="group" aria-label="Language selection">
+                <button class="lang-btn active" onclick="switchLang(\'en\')" id="lang-btn-en" aria-pressed="true" aria-label="Switch to English">
+                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/gb.svg" alt="English" aria-hidden="true">
                     English
                 </button>
-                <button class="lang-btn" onclick="switchLang('fr')" id="lang-btn-fr">
-                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/fr.svg" alt="Français">
+                <button class="lang-btn" onclick="switchLang(\'fr\')" id="lang-btn-fr" aria-pressed="false" aria-label="Passer en Français">
+                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/fr.svg" alt="Français" aria-hidden="true">
                     Français
                 </button>
-                <button class="lang-btn" onclick="switchLang('de')" id="lang-btn-de">
-                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/de.svg" alt="Deutsch">
+                <button class="lang-btn" onclick="switchLang(\'de\')" id="lang-btn-de" aria-pressed="false" aria-label="Auf Deutsch wechseln">
+                    <img src="//cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/de.svg" alt="Deutsch" aria-hidden="true">
                     Deutsch
                 </button>
             </div>
+            </nav>
 
             <!-- Shield with Lock Icon -->
-            <div class="error-icon">
+            <div class="error-icon" aria-hidden="true">
                 <div class="error-icon__shield">
                     <i class="fas fa-shield-halved"></i>
                 </div>
@@ -419,7 +463,7 @@
             </div>
 
             <!-- Access Bars Animation -->
-            <div class="access-bars">
+            <div class="access-bars" aria-hidden="true">
                 <div class="access-bar"></div>
                 <div class="access-bar"></div>
                 <div class="access-bar"></div>
@@ -429,7 +473,7 @@
 
             <!-- Error Badge -->
             <div class="error-code">
-                <span class="error-code__dot"></span>
+                <span class="error-code__dot" aria-hidden="true"></span>
                 Error 403
             </div>
 
@@ -465,7 +509,7 @@
 
             <!-- Contact -->
             <div class="contact-section">
-                <a href="mailto:exo-swf@exoplatform.com" class="contact-link">
+                <a href="mailto:exo-swf@exoplatform.com" class="contact-link" aria-label="Contact support by email at exo-swf@exoplatform.com">
                     <i class="fas fa-envelope"></i>
                     <span id="contact-text">Contact Support</span> — exo-swf@exoplatform.com
                 </a>
@@ -476,6 +520,7 @@
             Copyright &copy; 2000&ndash;<script>document.write(new Date().getFullYear())</script>. All rights reserved, eXo Platform SAS.
         </div>
     </div>
+    </main>
 
     <script src="//cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
     <script>
@@ -533,8 +578,15 @@
 
             document.documentElement.lang = lang;
 
-            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
-            document.getElementById('lang-btn-' + lang).classList.add('active');
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                btn.setAttribute('aria-pressed', 'false');
+            });
+            const activeBtn = document.getElementById('lang-btn-' + lang);
+            activeBtn.classList.add('active');
+            activeBtn.setAttribute('aria-pressed', 'true');
+            const announcer = document.getElementById('lang-announce');
+            if (announcer) announcer.textContent = t.title;
 
             try { localStorage.setItem('preferred-lang', lang); } catch(e) {}
         }
@@ -546,5 +598,7 @@
             switchLang(lang);
         })();
     </script>
+
+    <div aria-live="polite" aria-atomic="true" class="sr-only" id="lang-announce"></div>
 </body>
 </html>

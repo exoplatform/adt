@@ -65,6 +65,78 @@ body {
   color: var(--bs-body-color);
 }
 
+/* =====================================================
+   ACCESSIBILITY
+   ===================================================== */
+
+/* Skip to main content link */
+.skip-to-content {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  padding: 0.75rem 1.25rem;
+  background: var(--secondary-color);
+  color: #fff;
+  font-weight: 600;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  transition: top 0.2s ease;
+}
+.skip-to-content:focus {
+  top: 0;
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+}
+
+/* Screen-reader only utility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Global focus-visible ring — keyboard nav only */
+:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* Remove focus ring for pointer users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Navbar link focus */
+.navbar-nav .nav-link:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.9);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
+}
+
+/* High-contrast mode support */
+@media (forced-colors: active) {
+  .label,
+  .btn-home,
+  .nav-link {
+    border: 2px solid ButtonText;
+  }
+  .table thead th {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* =====================================================
+   END ACCESSIBILITY
+   ===================================================== */
+
 a {
   color: var(--secondary-color);
   text-decoration: none;
@@ -699,6 +771,12 @@ a[name] {
 #darkModeToggle:focus {
   outline: none;
   box-shadow: none;
+}
+
+#darkModeToggle:focus-visible {
+  outline: 2px solid rgba(255, 255, 255, 0.8);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
 }
 
 /* Ensure button text doesn't wrap */
