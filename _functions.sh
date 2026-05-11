@@ -38,7 +38,6 @@ source "${SCRIPT_DIR}/_functions_clamav.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_mongoexpress.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
-source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
 source "${SCRIPT_DIR}/_functions_phpldapadmin.sh"
 source "${SCRIPT_DIR}/_functions_jitsi.sh"
 source "${SCRIPT_DIR}/_functions_sftp.sh"
@@ -372,11 +371,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "26.1"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_MODE" "SAML"
-
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "26.0.4-acc"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_IMAGE" "rschaeuble/phpldapadmin"
@@ -1322,7 +1316,6 @@ initialize_product_settings() {
    do_get_frontail_settings
    do_get_mongo_express_settings
    do_get_keycloak_settings
-   do_get_cloudbeaver_settings
    do_get_phpldapadmin_settings
    do_get_jitsi_settings
    do_get_sftp_settings
@@ -1929,9 +1922,6 @@ do_deploy() {
   # Keycloak  port
   env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
 
-  # Cloudbeaver  port
-  env_var "DEPLOYMENT_CLOUDBEAVER_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}96"
-
   # PHPLDAPADMIN port
   env_var "DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}80"
 
@@ -2199,7 +2189,6 @@ do_start() {
   do_start_sftp
   do_start_cmis
   do_start_database
-  do_start_cloudbeaver
   do_start_phpldapadmin
   do_start_es
   do_start_chat_server
@@ -2486,7 +2475,6 @@ do_stop() {
       do_stop_phpldapadmin
       do_stop_mongo_express
       do_stop_keycloak
-      do_stop_cloudbeaver
       do_stop_jitsi
       do_stop_sftp
       do_stop_onlyoffice
@@ -2534,7 +2522,6 @@ do_undeploy() {
     do_drop_frontail_data
     do_drop_keycloak_data
     do_drop_phpldapadmin_data
-    do_drop_cloudbeaver_data
     do_drop_jitsi_data
     do_drop_sftp_data
     do_drop_cmis_data

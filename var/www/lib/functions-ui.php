@@ -891,13 +891,6 @@ function componentDeploymentActions($deployment_descriptor)
     $content .= '</a>';
   }
   
-  // CloudBeaver
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CLOUDBEAVER_ENABLED') && $deployment_descriptor->DEPLOYMENT_CLOUDBEAVER_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . '/cloudbeaver/" rel="tooltip" title="CloudBeaver" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-cloud"></i>';
-    $content .= '</a>';
-  }
-  
   // phpLDAPAdmin
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_PHPLDAPADMIN_ENABLED') && $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_ENABLED) {
     $content .= '<a href="http://' . $deploymentURL . ':' . $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT . '" rel="tooltip" title="phpLDAPAdmin" class="btn btn-outline-secondary">';
