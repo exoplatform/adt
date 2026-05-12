@@ -1113,7 +1113,7 @@ initialize_product_settings() {
 
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10431"
+              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10888"
 
 
               # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
