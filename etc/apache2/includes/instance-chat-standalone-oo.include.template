@@ -106,11 +106,9 @@
             RequestHeader set Connection "upgrade"
         </Location>
 
-        <Location "/livelogs/">
-            RewriteCond %{HTTP:Connection} Upgrade [NC]
-            RewriteCond %{HTTP:Upgrade} websocket [NC]
-            RewriteRule /livelogs/socket.io/(.*) ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/$1  [P,L]
-            ProxyPass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/
+        <Location "/livelogs/socket.io/">
+            ProxyPass "ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/"
+            ProxyPassReverse "ws://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/"
         </Location>
 
          <Location "/_matrix/push/v1/notify">
@@ -162,6 +160,9 @@
 
     ProxyPass               /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/
+
+    ProxyPass               /livelogs            http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs
+    ProxyPassReverse        /livelogs            http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs
 
     ProxyPass               /mongoexpress            http://localhost:${DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT}/mongoexpress
     ProxyPassReverse        /mongoexpress            http://localhost:${DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT}/mongoexpress
