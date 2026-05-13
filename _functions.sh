@@ -360,7 +360,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "hbenali/frontail"
-      configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "1.1"
+      configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "1.3"
 
       configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_ENABLED" false
       configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_IMAGE" "mongo-express"
