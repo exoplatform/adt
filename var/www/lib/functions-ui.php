@@ -149,12 +149,24 @@ function pageNavigation()
           ?>
         </ul>
         
-        <!-- Dark mode toggle button only (icon only, no text) -->
+        <!-- Dark mode toggle + Logout -->
         <ul class="navbar-nav ms-auto">
+          <?php if (!empty($_SESSION['auth_user'])): ?>
+          <li class="nav-item">
+            <span class="nav-link disabled text-white-50" style="opacity:0.8; cursor:default;">
+              <i class="fas fa-user me-1"></i><?= htmlspecialchars($_SESSION['auth_user'], ENT_QUOTES, 'UTF-8') ?>
+            </span>
+          </li>
+          <?php endif; ?>
           <li class="nav-item">
             <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" rel="tooltip" title="<?= $initialTooltip ?>">
               <i class="fas <?= $initialIcon ?>"></i>
             </button>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/auth-logout.php" rel="tooltip" title="Sign out">
+              <i class="fas fa-sign-out-alt"></i>
+            </a>
           </li>
         </ul>
       </div>

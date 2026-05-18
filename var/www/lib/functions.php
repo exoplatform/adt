@@ -1,8 +1,11 @@
 <?php
 require_once(dirname(__FILE__) . '/PHPGit/Repository.php');
 require_once(dirname(__FILE__) . '/functions-debug.php');
+require_once(dirname(__FILE__) . '/functions-auth.php');
 
 date_default_timezone_set('UTC');
+
+auth_check();
 
 global $memcache;
 if (extension_loaded('memcache')) {

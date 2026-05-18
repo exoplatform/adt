@@ -1,9 +1,8 @@
-<!DOCTYPE html>
 <?php
 require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
-?>
+?><!DOCTYPE html>
 <html>
 <head>
     <?= pageHeader("Company environments"); ?>
