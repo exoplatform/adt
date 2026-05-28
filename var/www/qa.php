@@ -47,7 +47,7 @@ if (isDeploymentInCategoryArray($qa_instances)) {
     foreach ($descriptor_arrays as $descriptor_array) {
         ?>
         <tr>
-            <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
+            <td class="col-center"><?= componentPinIcon($descriptor_array) ?><?= componentStatusIcon($descriptor_array); ?></td>
             <td>
                 <div class="d-flex align-items-center">
                     <div>
@@ -127,7 +127,7 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
     foreach ($descriptor_arrays as $descriptor_array) {
         ?>
         <tr>
-            <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
+            <td class="col-center"><?= componentPinIcon($descriptor_array) ?><?= componentStatusIcon($descriptor_array); ?></td>
             <td>
                 <div class="d-flex align-items-center">
                     <div>

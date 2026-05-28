@@ -49,7 +49,7 @@ checkCaches();
                     foreach ($translation_instances as $plf_branch => $descriptor_arrays) {
                         foreach ($descriptor_arrays as $descriptor_array) { ?>
                             <tr>
-                                <td class="col-center"><?= componentStatusIcon($descriptor_array) ?></td>
+                                <td class="col-center"><?= componentPinIcon($descriptor_array) ?><?= componentStatusIcon($descriptor_array) ?></td>
                                 <td>
                                     <div class="d-flex align-items-center">
                                         <?= componentProductInfoIcon($descriptor_array); ?>
@@ -90,7 +90,7 @@ checkCaches();
                     </tr>
                     <?php foreach ($descriptor_arrays as $descriptor_array) { ?>
                         <tr>
-                            <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
+                            <td class="col-center"><?= componentPinIcon($descriptor_array) ?><?= componentStatusIcon($descriptor_array); ?></td>
                             <td>
                                 <div class="d-flex align-items-center">
                                     <?= componentProductInfoIcon($descriptor_array); ?>

@@ -858,6 +858,47 @@ a[name] {
   color: #abebc6;
 }
 
+/* ── Pin / star feature ──────────────────────────────────── */
+tr.pinned-row {
+  background-color: rgba(255, 215, 0, 0.08) !important;
+  border-left: 3px solid #f1c40f;
+}
+tr.pinned-row td {
+  border-bottom-color: rgba(241, 196, 15, 0.3);
+}
+tr.pinned-row:hover {
+  background-color: rgba(255, 215, 0, 0.15) !important;
+}
+[data-bs-theme="dark"] tr.pinned-row {
+  background-color: rgba(255, 215, 0, 0.1) !important;
+}
+[data-bs-theme="dark"] tr.pinned-row:hover {
+  background-color: rgba(255, 215, 0, 0.18) !important;
+}
+
+.pin-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+  opacity: 0.5;
+}
+.pin-toggle:hover {
+  transform: scale(1.25);
+  opacity: 1;
+  text-decoration: none;
+}
+.pin-toggle .pin-icon.fa-solid {
+  opacity: 1;
+}
+tr.pinned-row .pin-toggle {
+  opacity: 1;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   #main {
@@ -868,6 +909,7 @@ a[name] {
   
   .table-responsive {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
   .navbar-brand {
@@ -888,6 +930,62 @@ a[name] {
   
   .table-header-rotated th.rotate-45 span {
     font-size: 10px;
+  }
+
+  .table td, .table th {
+    padding: 8px 6px;
+  }
+
+  .table .btn-group {
+    flex-wrap: wrap;
+    gap: 2px;
+  }
+  .table .btn-group .btn {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .table td.col-left,
+  .table th.col-left {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .alert {
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  .card-header {
+    padding: 0.75rem 1rem;
+  }
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Extra small devices */
+@media (max-width: 576px) {
+  .container-fluid {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .table td, .table th {
+    padding: 6px 4px;
+    font-size: 0.85rem;
+  }
+
+  .table td.col-left,
+  .table th.col-left {
+    max-width: 120px;
+  }
+
+  .table .btn-group .btn {
+    padding: 0.15rem 0.25rem;
+    font-size: 0.7rem;
   }
 }
 
