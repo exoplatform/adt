@@ -157,11 +157,25 @@ function pageNavigation()
         <!-- Dark mode toggle button -->
         <ul class="navbar-nav ms-auto" role="list">
           <li class="nav-item">
-            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" rel="tooltip" title="<?= $initialTooltip ?>" aria-label="<?= $initialTooltip ?>" aria-pressed="<?= $initialAriaPressed ?>">
+            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" title="<?= $initialTooltip ?>" aria-label="<?= $initialTooltip ?>" aria-pressed="<?= $initialAriaPressed ?>">
               <i class="fas <?= $initialIcon ?>" aria-hidden="true"></i>
               <span class="sr-only"><?= $initialTooltip ?></span>
             </button>
-            <script>(function(){var t=document.getElementById('darkModeToggle'),d=t&&document.documentElement.getAttribute('data-bs-theme')==='dark',l=d?'Switch to light mode':'Switch to dark mode';if(t){t.querySelector('i').className=d?'fas fa-sun':'fas fa-moon';t.setAttribute('title',l);t.setAttribute('aria-label',l);t.setAttribute('aria-pressed',d?'true':'false');var s=t.querySelector('.sr-only');if(s)s.textContent=l}})();</script>
+            <script>
+              (function() {
+                var theme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                var isDark = theme === 'dark';
+                var btn = document.getElementById('darkModeToggle');
+                if (!btn) return;
+                btn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+                btn.setAttribute('title', label);
+                btn.setAttribute('aria-label', label);
+                btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+                var sr = btn.querySelector('.sr-only');
+                if (sr) sr.textContent = label;
+              })();
+            </script>
           </li>
         </ul>
       </div>
