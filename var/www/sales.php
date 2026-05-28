@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
     <?= pageHeader("Sales environments"); ?>
 </head>
@@ -13,7 +13,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-<div id="main">
+<div id="main" role="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
@@ -27,7 +27,8 @@ $sales_user_instances=getGlobalSalesUserInstances();
 if (isDeploymentInCategoryArray($sales_user_instances)) {
   ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="Sales environments - Personal">
+    <caption class="sr-only">Sales personal environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -38,7 +39,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
     </thead>
     <tbody>
     <tr>
-        <td colspan="15" class="category-row"><i class="fas fa-user me-2"></i><?= "Platform personal environments for Sales people"; ?></td>
+        <td colspan="15" class="category-row"><i class="fas fa-user me-2" aria-hidden="true"></i><?= "Platform personal environments for Sales people"; ?></td>
     </tr>
   <?php
   foreach ($sales_user_instances as $plf_branch => $descriptor_arrays) {
@@ -104,7 +105,8 @@ $sales_demo_instances=getGlobalSalesDemoInstances();
 if (isDeploymentInCategoryArray($sales_demo_instances)) {
   ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="Sales environments - Demo">
+    <caption class="sr-only">Sales demo environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -115,7 +117,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
     </thead>
     <tbody>
     <tr>
-      <td colspan="15" class="category-row"><i class="fas fa-briefcase me-2"></i><?= "Platform demo environments for Leads"; ?></td>
+      <td colspan="15" class="category-row"><i class="fas fa-briefcase me-2" aria-hidden="true"></i><?= "Platform demo environments for Leads"; ?></td>
     </tr>
   <?php
   foreach ($sales_demo_instances as $plf_branch => $descriptor_arrays) {
@@ -180,7 +182,8 @@ $sales_eval_instances=getGlobalSalesEvalInstances();
 if (isDeploymentInCategoryArray($sales_eval_instances)) {
   ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="Sales environments - Evaluation">
+    <caption class="sr-only">Sales evaluation environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -191,7 +194,7 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
     </thead>
     <tbody>
     <tr>
-      <td colspan="15" class="category-row"><i class="fas fa-chart-line me-2"></i><?= "Platform evaluation environments for Leads"; ?></td>
+      <td colspan="15" class="category-row"><i class="fas fa-chart-line me-2" aria-hidden="true"></i><?= "Platform evaluation environments for Leads"; ?></td>
     </tr>
   <?php
   foreach ($sales_eval_instances as $plf_branch => $descriptor_arrays) {

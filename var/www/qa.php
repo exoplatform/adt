@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
     <?= pageHeader("QA environments"); ?>
 </head>
@@ -13,7 +13,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-<div id="main">
+<div id="main" role="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
@@ -26,7 +26,8 @@ $qa_instances=getGlobalQAUserInstances();
 if (isDeploymentInCategoryArray($qa_instances)) {
 ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="QA environments - QA User">
+    <caption class="sr-only">QA user environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -36,9 +37,11 @@ if (isDeploymentInCategoryArray($qa_instances)) {
     </tr>
     </thead>
     <tbody>
-  <?php
-  foreach ($qa_instances as $plf_branch => $descriptor_arrays) {
-    ?>
+      <?php
+      $prd_instances=getGlobalPrdInstances();
+      if (isDeploymentInCategoryArray($prd_instances)) {
+      ?>
+
     <tr>
         <td colspan="15" class="category-row"><i class="fas fa-tag me-2"></i><?= "Platform " . $plf_branch . " QA environments"; ?></td>
     </tr>
@@ -105,7 +108,8 @@ $qa_auto_instances=getGlobalQAAutoInstances();
 if (isDeploymentInCategoryArray($qa_auto_instances)) {
 ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="QA environments - Automatic">
+    <caption class="sr-only">QA automatic test environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>

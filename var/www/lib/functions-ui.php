@@ -11,6 +11,7 @@ function pageHeader($title = "")
 {
 ?>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="refresh" content="120">
   <title>Acceptance<?= (empty($title) ? "" : " - " . $title) ?></title>
   <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
@@ -31,17 +32,19 @@ function pageHeader($title = "")
       document.documentElement.setAttribute('data-bs-theme', theme);
       localStorage.setItem('theme', theme);
       
-      // Update toggle button icon and tooltip
+      // Update toggle button icon, tooltip and ARIA state
       const toggleBtn = document.getElementById('darkModeToggle');
       if (toggleBtn) {
+        const isDark = theme === 'dark';
         const icon = toggleBtn.querySelector('i');
-        if (theme === 'dark') {
-          icon.className = 'fas fa-sun';
-          toggleBtn.setAttribute('title', 'Switch to light mode');
-        } else {
-          icon.className = 'fas fa-moon';
-          toggleBtn.setAttribute('title', 'Switch to dark mode');
-        }
+        const srSpan = toggleBtn.querySelector('.sr-only');
+        const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+        
+        icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        toggleBtn.setAttribute('title', label);
+        toggleBtn.setAttribute('aria-label', label);
+        toggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+        if (srSpan) srSpan.textContent = label;
         
         // Refresh tooltip
         const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
@@ -129,31 +132,38 @@ function pageNavigation()
   $savedTheme = isset($_COOKIE['theme']) ? $_COOKIE['theme'] : 'light';
   $initialIcon = $savedTheme === 'dark' ? 'fa-sun' : 'fa-moon';
   $initialTooltip = $savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
+  $initialAriaPressed = $savedTheme === 'dark' ? 'true' : 'false';
 ?>
+  <!-- Skip to main content link -->
+  <a href="#main" class="skip-to-content sr-only-focusable">
+    <i class="fas fa-arrow-down me-1" aria-hidden="true"></i>Skip to main content
+  </a>
   <!-- navbar ================================================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" aria-label="Main navigation">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">
-        <i class="fas fa-cloud me-2"></i><?= $_SERVER['SERVER_NAME'] ?>
+      <a class="navbar-brand" href="/" aria-label="Home page">
+        <i class="fas fa-cloud me-2" aria-hidden="true"></i><?= $_SERVER['SERVER_NAME'] ?>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav" role="list">
           <?php
           foreach ($nav as $label => $url) {
             $active = ($url == $_SERVER['REQUEST_URI']) ? 'active' : '';
-            echo '<li class="nav-item"><a class="nav-link ' . $active . '" href="' . $url . '">' . $label . '</a></li>';
+            $ariaCurrent = ($url == $_SERVER['REQUEST_URI']) ? ' aria-current="page"' : '';
+            echo '<li class="nav-item"><a class="nav-link ' . $active . '" href="' . $url . '"' . $ariaCurrent . '>' . $label . '</a></li>';
           }
           ?>
         </ul>
         
-        <!-- Dark mode toggle button only (icon only, no text) -->
-        <ul class="navbar-nav ms-auto">
+        <!-- Dark mode toggle button -->
+        <ul class="navbar-nav ms-auto" role="list">
           <li class="nav-item">
-            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" rel="tooltip" title="<?= $initialTooltip ?>">
-              <i class="fas <?= $initialIcon ?>"></i>
+            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" rel="tooltip" title="<?= $initialTooltip ?>" aria-label="<?= $initialTooltip ?>" aria-pressed="<?= $initialAriaPressed ?>">
+              <i class="fas <?= $initialIcon ?>" aria-hidden="true"></i>
+              <span class="sr-only"><?= $initialTooltip ?></span>
             </button>
           </li>
         </ul>
@@ -171,13 +181,13 @@ function pageNavigation()
 function pageFooter() {
 ?>
   <!-- Footer ================================================== -->
-  <footer id="footer" class="footer">
+  <footer id="footer" class="footer" role="contentinfo">
     <div class="container-fluid">
       <div class="row">
         <div class="col">
-          Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS
-          <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" class="ms-3" target="_blank">
-            <i class="fas fa-chart-bar"></i>
+          <span class="sr-only">Copyright</span> Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS
+          <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" class="ms-3" target="_blank" aria-label="View statistics">
+            <i class="fas fa-chart-bar" aria-hidden="true"></i>
           </a>
         </div>
       </div>
@@ -483,9 +493,9 @@ function componentCertbotEnabled($deployment_descriptor, $is_label_addon = true)
  */
 function componentStatusIcon($deployment_descriptor) {
   if ($deployment_descriptor->DEPLOYMENT_STATUS == "Up") {
-    return '<i class="fas fa-circle text-success" rel="tooltip" title="Status: Up"></i>';
+    return '<i class="fas fa-circle text-success" rel="tooltip" title="Status: Up" aria-label="Status: Up" role="img"></i>';
   } else {
-    return '<i class="fas fa-circle text-danger" rel="tooltip" title="Status: Down"></i>';
+    return '<i class="fas fa-circle text-danger" rel="tooltip" title="Status: Down" aria-label="Status: Down" role="img"></i>';
   }
 }
 

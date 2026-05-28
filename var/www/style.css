@@ -27,25 +27,25 @@
 
 /* Dark mode variables */
 [data-bs-theme="dark"] {
-  --primary-color: #34495e;
-  --secondary-color: #3498db;
-  --success-color: #2ecc71;
-  --warning-color: #f39c12;
-  --danger-color: #e74c3c;
+  --primary-color: #5d7a9a;
+  --secondary-color: #5dade2;
+  --success-color: #58d68d;
+  --warning-color: #f5b041;
+  --danger-color: #ec7063;
   --light-bg: #2d2d2d;
   --dark-bg: #1a1a1a;
-  --border-color: #404040;
-  --text-muted: #999999;
+  --border-color: #555555;
+  --text-muted: #b0b0b0;
   --category-bg: #1a1a1a;
-  --category-text: #f1c40f;
+  --category-text: #f4d03f;
   --table-header-bg: #1e2b37;
   --table-header-text: #ffffff;
   --card-bg: #2d2d2d;
   --body-bg: #1a1a1a;
   --table-bg: #2d2d2d;
-  --table-hover: rgba(52, 152, 219, 0.2);
-  --highlight-bg: #665c3b;
-  --highlight-border: #f1c40f;
+  --table-hover: rgba(93, 173, 226, 0.2);
+  --highlight-bg: #5a4e2a;
+  --highlight-border: #f4d03f;
   --navbar-start: #4a4a9e;
   --navbar-end: #5a3b7a;
   --footer-start: #4a4a9e;
@@ -101,11 +101,21 @@ body {
   white-space: nowrap;
   border: 0;
 }
+.sr-only-focusable:focus,
+.sr-only-focusable:focus-visible {
+  position: static;
+  width: auto;
+  height: auto;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  margin: 0;
+}
 
 /* Global focus-visible ring — keyboard nav only */
 :focus-visible {
-  outline: 2px solid var(--secondary-color);
-  outline-offset: 3px;
+  outline: 3px solid var(--secondary-color);
+  outline-offset: 2px;
   border-radius: 4px;
 }
 
@@ -121,6 +131,44 @@ body {
   box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.2);
 }
 
+/* aria-pressed toggle button state */
+[aria-pressed="true"] {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* aria-current="page" nav link */
+.nav-item a[aria-current="page"] {
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 6px;
+}
+
+/* Button focus overrides for Bootstrap buttons */
+.btn:focus-visible {
+  outline: 3px solid var(--secondary-color);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+
+/* Card / feature card focus */
+.feature-card:focus-visible,
+.card:focus-visible {
+  outline: 3px solid var(--secondary-color);
+  outline-offset: 2px;
+}
+
+/* Links in cards should also be reachable */
+.card a:focus-visible {
+  outline: 3px solid var(--secondary-color);
+  outline-offset: 2px;
+}
+
+/* Badge focus for interactive badges */
+.badge:focus-visible {
+  outline: 2px solid var(--secondary-color);
+  outline-offset: 2px;
+}
+
 /* High-contrast mode support */
 @media (forced-colors: active) {
   .label,
@@ -130,6 +178,78 @@ body {
   }
   .table thead th {
     border: 2px solid ButtonText;
+  }
+  .btn {
+    border: 2px solid ButtonText;
+  }
+  .badge {
+    border: 1px solid ButtonText;
+  }
+  .card {
+    border: 1px solid ButtonText;
+  }
+  .server-card {
+    border: 2px solid ButtonText;
+  }
+}
+
+/* Reduced motion – disable all non-essential animations */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .navbar-nav .nav-link,
+  #darkModeToggle {
+    transition: none !important;
+  }
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    transform: none !important;
+  }
+  #darkModeToggle:hover {
+    transform: none !important;
+  }
+  img.icon:hover {
+    transform: none !important;
+  }
+  .fa:hover, .fas:hover, .far:hover, .fal:hover, .fab:hover {
+    transform: none !important;
+  }
+  .card,
+  .feature-card,
+  .server-card {
+    transition: none !important;
+  }
+  .feature-card:hover {
+    transform: none !important;
+  }
+  .server-card:hover {
+    transform: none !important;
+  }
+}
+
+/* Forced more contrast */
+@media (prefers-contrast: more) {
+  .table thead th {
+    border-bottom: 3px solid currentColor;
+  }
+  .label {
+    border: 1px solid currentColor;
+  }
+  .navbar-nav .nav-link {
+    border: 1px solid transparent;
+  }
+  .navbar-nav .nav-link:hover,
+  .navbar-nav .nav-link.active {
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+  .btn-outline-secondary {
+    border-width: 2px;
   }
 }
 
@@ -614,42 +734,50 @@ a[name] {
 
 .alert-info {
   background-color: #d1ecf1;
-  color: #0c5460;
+  color: #0a4958;
+  border-left: 4px solid #1abc9c;
 }
 
 .alert-warning {
   background-color: #fff3cd;
-  color: #856404;
+  color: #7a5d00;
+  border-left: 4px solid #f39c12;
 }
 
 .alert-danger {
   background-color: #f8d7da;
-  color: #721c24;
+  color: #6b1a1e;
+  border-left: 4px solid #e74c3c;
 }
 
 .alert-success {
   background-color: #d4edda;
-  color: #155724;
+  color: #124d24;
+  border-left: 4px solid #27ae60;
 }
 
 [data-bs-theme="dark"] .alert-info {
-  background-color: #1e3a3f;
-  color: #a0d6e0;
+  background-color: #1a2e33;
+  color: #b8e6f0;
+  border-left-color: #1abc9c;
 }
 
 [data-bs-theme="dark"] .alert-warning {
-  background-color: #3f3a1e;
-  color: #f7e0a0;
+  background-color: #332e18;
+  color: #fce8a0;
+  border-left-color: #f39c12;
 }
 
 [data-bs-theme="dark"] .alert-danger {
-  background-color: #3f1e1e;
-  color: #f7a0a0;
+  background-color: #331919;
+  color: #f5b7b1;
+  border-left-color: #e74c3c;
 }
 
 [data-bs-theme="dark"] .alert-success {
-  background-color: #1e3f1e;
-  color: #a0f7a0;
+  background-color: #18331e;
+  color: #abebc6;
+  border-left-color: #27ae60;
 }
 
 /* Responsive adjustments */
