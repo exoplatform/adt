@@ -256,6 +256,7 @@ function pageNavigation()
     "Customer Projects" => "/customers.php",
     "Company" => "/company.php",
     "Features" => "/features.php",
+    "Git Activity" => "/git-activity.php",
     "Servers" => "/servers.php",
   ];
   $icons = [
@@ -265,6 +266,7 @@ function pageNavigation()
     "Customer Projects" => "fa-briefcase",
     "Company" => "fa-building",
     "Features" => "fa-code-branch",
+    "Git Activity" => "fa-code-commit",
     "Servers" => "fa-server",
   ];
 
