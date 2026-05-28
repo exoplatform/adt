@@ -1054,6 +1054,7 @@ a[name] {
 .feature-card {
     transition: all 0.2s ease;
     border-left: 4px solid transparent;
+    scroll-margin-top: 80px;
 }
 .feature-card:hover {
     transform: translateX(4px);
