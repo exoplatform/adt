@@ -125,7 +125,9 @@ function pageHeader($title = "")
   <!-- Service worker registration -->
   <script>
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      navigator.serviceWorker.register('/sw.js', { scope: '/' }).catch(function(err) {
+        console.error('SW registration failed:', err);
+      });
     }
   </script>
 <?php
