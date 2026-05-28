@@ -32,10 +32,10 @@ function getGitCommitActivityByDay($repos, $days) {
   return $activity;
 }
 
-function getGitCommitsByRepo($repos, $days) {
+function getGitCommitsByRepo($projects, $days) {
   $result = array();
   $since = date('Y-m-d', strtotime("-{$days} days"));
-  foreach ($repos as $repo => $label) {
+  foreach ($projects as $repo => $label) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
     if (!is_dir($path)) continue;
     try {
@@ -74,10 +74,10 @@ function getGitCommitsByAuthor($repos, $days) {
   return $result;
 }
 
-function getGitRecentCommits($repos, $limit = 50) {
+function getGitRecentCommits($projects, $limit = 50) {
   $all_commits = array();
   $since = date('Y-m-d', strtotime("-90 days"));
-  foreach ($repos as $repo => $label) {
+  foreach ($projects as $repo => $label) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
     if (!is_dir($path)) continue;
     try {
@@ -140,9 +140,9 @@ function getGitHubPRData($org, $token = '', $days = 30) {
 }
 
 $activity = getGitCommitActivityByDay($repo_names, $days_back);
-$repo_stats = getGitCommitsByRepo($repo_names, $days_back);
+$repo_stats = getGitCommitsByRepo($projects, $days_back);
 $author_stats = getGitCommitsByAuthor($repo_names, $days_back);
-$recent_commits = getGitRecentCommits($repo_names);
+$recent_commits = getGitRecentCommits($projects);
 
 $total_commits = array_sum($activity);
 $active_repos = count(array_filter($repo_stats, function($r) { return $r['commits'] > 0; }));
