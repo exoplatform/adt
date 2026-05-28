@@ -10,6 +10,17 @@ $projects = getRepositories();
 $repo_names = array_keys($projects);
 $ignored_authors = array('exo-swf', 'Crowdin Bot', 'eXo CI server', 'eXo');
 
+function targetBranchArgs($repoObject) {
+  $targets = array();
+  foreach (array('origin/develop-exo', 'origin/develop') as $branch) {
+    try {
+      $repoObject->git("rev-parse --verify {$branch} 2>/dev/null");
+      $targets[] = $branch;
+    } catch (Exception $e) {}
+  }
+  return empty($targets) ? 'HEAD' : implode(' ', $targets);
+}
+
 function getGitCommitActivityByDay($repos, $days) {
   $activity = array();
   $since = date('Y-m-d', strtotime("-{$days} days"));
@@ -22,7 +33,8 @@ function getGitCommitActivityByDay($repos, $days) {
     if (!is_dir($path)) continue;
     try {
       $repoObject = new PHPGit_Repository($path);
-      $output = $repoObject->git("log --after=\"{$since}\" --date=short --format=format:%ad --all");
+      $branches = targetBranchArgs($repoObject);
+      $output = $repoObject->git("log --after=\"{$since}\" --date=short --format=format:%ad --no-merges {$branches}");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $date) {
         $date = trim($date);
@@ -41,7 +53,8 @@ function getGitCommitsByRepo($projects, $days) {
     if (!is_dir($path)) continue;
     try {
       $repoObject = new PHPGit_Repository($path);
-      $output = $repoObject->git("log --after=\"{$since}\" --oneline --all");
+      $branches = targetBranchArgs($repoObject);
+      $output = $repoObject->git("log --after=\"{$since}\" --oneline --no-merges {$branches}");
       $count = empty($output) ? 0 : count(explode("\n", $output));
       $result[] = array('repo' => $repo, 'label' => $label, 'commits' => $count);
     } catch (Exception $e) {}
@@ -61,7 +74,8 @@ function getGitCommitsByAuthor($repos, $days, $ignored = array()) {
     if (!is_dir($path)) continue;
     try {
       $repoObject = new PHPGit_Repository($path);
-      $output = $repoObject->git("log --after=\"{$since}\" --format=format:%an --all");
+      $branches = targetBranchArgs($repoObject);
+      $output = $repoObject->git("log --after=\"{$since}\" --format=format:%an --no-merges {$branches}");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $author) {
         $author = trim($author);
@@ -87,7 +101,8 @@ function getGitRecentCommits($projects, $ignored = array(), $limit = 50) {
     if (!is_dir($path)) continue;
     try {
       $repoObject = new PHPGit_Repository($path);
-      $output = $repoObject->git("log --after=\"{$since}\" --format='format:%H|%an|%ae|%ai|%s' --all -100");
+      $branches = targetBranchArgs($repoObject);
+      $output = $repoObject->git("log --after=\"{$since}\" --format='format:%H|%an|%ae|%ai|%s' --no-merges {$branches} -100");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 5);
@@ -185,7 +200,7 @@ foreach ($github_orgs as $org) {
         <i class="fab fa-github fa-2x me-3" aria-hidden="true"></i>
         <div class="flex-grow-1">
           <h5 class="alert-heading mb-1">Git Activity & Analytics</h5>
-          <p class="mb-0">Commit activity across <?= count($repo_names) ?> repositories over the last <?= $days_back ?> days</p>
+          <p class="mb-0">Commit activity across <?= count($repo_names) ?> repositories over the last <?= $days_back ?> days (main branches only: <code>develop-exo</code> / <code>develop</code>, excluding merge commits and bot accounts)</p>
         </div>
         <div class="ms-3">
           <div class="btn-group btn-group-sm">
@@ -299,7 +314,7 @@ foreach ($github_orgs as $org) {
       <div class="card mb-4">
         <div class="card-header">
           <i class="fas fa-history me-1"></i> Recent Commits
-          <small class="text-muted ms-2">(last 90 days, max 50)</small>
+          <small class="text-muted ms-2">(last 90 days, max 50 — main branches only, no merges)</small>
         </div>
         <div class="card-body p-0">
           <div class="table-responsive">
