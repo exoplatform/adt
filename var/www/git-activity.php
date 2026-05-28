@@ -87,7 +87,7 @@ function getGitRecentCommits($projects, $ignored = array(), $limit = 50) {
     if (!is_dir($path)) continue;
     try {
       $repoObject = new PHPGit_Repository($path);
-      $output = $repoObject->git("log --after=\"{$since}\" --format=format:\"%H|%an|%ae|%ai|%s\" --all -100");
+      $output = $repoObject->git("log --after=\"{$since}\" --format='format:%H|%an|%ae|%ai|%s' --all -100");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 5);
