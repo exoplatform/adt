@@ -21,6 +21,17 @@ function targetBranchArgs($repoObject) {
   return empty($targets) ? 'HEAD' : implode(' ', $targets);
 }
 
+function getRepoGithubUrl($repoObject) {
+  try {
+    $url = $repoObject->git('config --get remote.origin.url');
+    if (preg_match("#git@github\.com:(.+)/(.+)\.git#", $url, $m) ||
+        preg_match("#https://github\.com/(.+)/(.+)\.git#", $url, $m)) {
+      return "https://github.com/{$m[1]}/{$m[2]}";
+    }
+  } catch (Exception $e) {}
+  return null;
+}
+
 function isIgnored($name) {
   global $ignored_authors;
   return in_array($name, $ignored_authors);
@@ -112,6 +123,7 @@ function getGitRecentCommits($projects, $limit = 50) {
     if (!is_dir($path)) continue;
     try {
       $repoObject = new PHPGit_Repository($path);
+      $gh_base = getRepoGithubUrl($repoObject);
       $branches = targetBranchArgs($repoObject);
       $output = $repoObject->git("log --after=\"{$since}\" --format='format:%H|%an|%ae|%ai|%cn|%s' --no-merges {$branches} -100");
       if (empty($output)) continue;
@@ -123,10 +135,12 @@ function getGitRecentCommits($projects, $limit = 50) {
             'repo' => $repo,
             'label' => $label,
             'hash' => substr($parts[0], 0, 8),
+            'full_hash' => $parts[0],
             'author' => $parts[1],
             'email' => $parts[2],
             'date' => substr($parts[3], 0, 10),
-            'message' => $parts[5]
+            'message' => $parts[5],
+            'github_url' => $gh_base ? "{$gh_base}/commit/{$parts[0]}" : null
           );
         }
       }
@@ -347,7 +361,7 @@ foreach ($github_orgs as $org) {
                   <td class="text-nowrap"><small><?= $c['date'] ?></small></td>
                   <td><span class="badge bg-secondary"><?= $c['label'] ?></span></td>
                   <td><?= htmlspecialchars($c['author']) ?></td>
-                  <td><code><?= $c['hash'] ?></code></td>
+                  <td><?php if ($c['github_url']): ?><a href="<?= $c['github_url'] ?>" target="_blank"><code><?= $c['hash'] ?></code></a><?php else: ?><code><?= $c['hash'] ?></code><?php endif; ?></td>
                   <td class="commit-msg" rel="tooltip" title="<?= htmlspecialchars($c['message']) ?>"><?= htmlspecialchars(function_exists('mb_strimwidth') ? mb_strimwidth($c['message'], 0, 80, '...') : (strlen($c['message']) > 80 ? substr($c['message'], 0, 77) . '...' : $c['message'])) ?></td>
                 </tr>
                 <?php endforeach; ?>
