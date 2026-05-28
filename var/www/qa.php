@@ -37,11 +37,9 @@ if (isDeploymentInCategoryArray($qa_instances)) {
     </tr>
     </thead>
     <tbody>
-      <?php
-      $prd_instances=getGlobalPrdInstances();
-      if (isDeploymentInCategoryArray($prd_instances)) {
-      ?>
-
+  <?php
+  foreach ($qa_instances as $plf_branch => $descriptor_arrays) {
+    ?>
     <tr>
         <td colspan="15" class="category-row"><i class="fas fa-tag me-2"></i><?= "Platform " . $plf_branch . " QA environments"; ?></td>
     </tr>
