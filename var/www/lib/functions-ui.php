@@ -27,61 +27,62 @@ function pageHeader($title = "")
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Dark mode handling -->
   <script>
-    // Function to set theme
-    function setTheme(theme) {
+    // Resolve the effective theme from storage or system preference
+    function resolveTheme() {
+      const saved = localStorage.getItem('theme');
+      if (saved) return saved;
+      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
+      return 'light';
+    }
+
+    // Apply theme to <html> immediately (no button update) – prevents FOUC
+    (function() {
+      const theme = resolveTheme();
       document.documentElement.setAttribute('data-bs-theme', theme);
-      localStorage.setItem('theme', theme);
-      
-      // Update toggle button icon, tooltip and ARIA state
+    })();
+
+    // Full apply: set theme + update button UI + persist
+    function applyTheme(theme, persist) {
+      document.documentElement.setAttribute('data-bs-theme', theme);
+      if (persist) localStorage.setItem('theme', theme);
+
       const toggleBtn = document.getElementById('darkModeToggle');
       if (toggleBtn) {
         const isDark = theme === 'dark';
         const icon = toggleBtn.querySelector('i');
         const srSpan = toggleBtn.querySelector('.sr-only');
         const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-        
+
         icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         toggleBtn.setAttribute('title', label);
         toggleBtn.setAttribute('aria-label', label);
         toggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
         if (srSpan) srSpan.textContent = label;
-        
-        // Refresh tooltip
+
+        // Refresh Bootstrap tooltip
         const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-        if (tooltip) {
-          tooltip.dispose();
-        }
+        if (tooltip) tooltip.dispose();
         new bootstrap.Tooltip(toggleBtn);
       }
     }
-    
-    // Function to toggle theme
+
+    // Toggle between dark and light
     function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      setTheme(newTheme);
+      const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
+      applyTheme(current === 'dark' ? 'light' : 'dark', true);
     }
-    
-    // Initialize theme on page load
-    (function() {
-      // Check for saved theme preference
-      const savedTheme = localStorage.getItem('theme');
-      
-      // Check for system preference if no saved theme
-      if (!savedTheme) {
-        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(systemPrefersDark ? 'dark' : 'light');
-      } else {
-        setTheme(savedTheme);
+
+    // Initialise once the DOM is ready (so the toggle button exists)
+    document.addEventListener('DOMContentLoaded', function() {
+      applyTheme(resolveTheme(), false);
+    });
+
+    // Listen for system preference changes (only when user hasn't explicitly saved)
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(event) {
+      if (!localStorage.getItem('theme')) {
+        applyTheme(event.matches ? 'dark' : 'light', false);
       }
-      
-      // Listen for system preference changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        if (!localStorage.getItem('theme')) {
-          setTheme(event.matches ? 'dark' : 'light');
-        }
-      });
-    })();
+    });
   </script>
 <?php
 }
@@ -128,11 +129,11 @@ function pageNavigation()
     "Servers" => "/servers.php"
   );
   
-  // Get current theme for initial tooltip
-  $savedTheme = isset($_COOKIE['theme']) ? $_COOKIE['theme'] : 'light';
-  $initialIcon = $savedTheme === 'dark' ? 'fa-sun' : 'fa-moon';
-  $initialTooltip = $savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
-  $initialAriaPressed = $savedTheme === 'dark' ? 'true' : 'false';
+  // Server-rendered defaults (JS corrects these immediately on DOMContentLoaded)
+  $initialTheme = 'light';
+  $initialIcon = 'fa-moon';
+  $initialTooltip = 'Switch to dark mode';
+  $initialAriaPressed = 'false';
 ?>
   <!-- Skip to main content link -->
   <a href="#main" class="skip-to-content sr-only-focusable">
