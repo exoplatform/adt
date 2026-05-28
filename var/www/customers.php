@@ -91,11 +91,13 @@ if (isDeploymentInCategoryArray($cp_instances)) {
     <?php
     }
   }
-}
 ?>
     </tbody>
 </table>
 </div>
+<?php
+}
+?>
 
   <!-- Info cards with synchronized design -->
   <div class="row mt-4">

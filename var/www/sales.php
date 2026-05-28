@@ -89,11 +89,13 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
     <?php
     }
   }
-}
 ?>
     </tbody>
 </table>
 </div>
+<?php
+}
+?>
 
     <div class="alert alert-info">
         <i class="fas fa-chart-pie me-2"></i>
@@ -166,11 +168,13 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
     <?php
     }
   }
-}
 ?>
     </tbody>
 </table>
 </div>
+<?php
+}
+?>
 
     <div class="alert alert-info">
         <i class="fas fa-chart-bar me-2"></i>
@@ -230,11 +234,13 @@ if (isDeploymentInCategoryArray($sales_eval_instances)) {
     <?php
     }
   }
-}
 ?>
     </tbody>
 </table>
 </div>
+<?php
+}
+?>
 
 <!-- Info cards with synchronized design -->
 <div class="row mt-4">
