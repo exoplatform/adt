@@ -21,6 +21,11 @@ function targetBranchArgs($repoObject) {
   return empty($targets) ? 'HEAD' : implode(' ', $targets);
 }
 
+function isIgnored($name) {
+  global $ignored_authors;
+  return in_array($name, $ignored_authors);
+}
+
 function getGitCommitActivityByDay($repos, $days) {
   $activity = array();
   $since = date('Y-m-d', strtotime("-{$days} days"));
@@ -34,11 +39,13 @@ function getGitCommitActivityByDay($repos, $days) {
     try {
       $repoObject = new PHPGit_Repository($path);
       $branches = targetBranchArgs($repoObject);
-      $output = $repoObject->git("log --after=\"{$since}\" --date=short --format=format:%ad --no-merges {$branches}");
+      $output = $repoObject->git("log --after=\"{$since}\" --date=short --format=format:%ad|%cn --no-merges {$branches}");
       if (empty($output)) continue;
-      foreach (explode("\n", $output) as $date) {
-        $date = trim($date);
-        if (isset($activity[$date])) $activity[$date]++;
+      foreach (explode("\n", $output) as $line) {
+        $parts = explode('|', $line, 2);
+        $date = trim($parts[0]);
+        $committer = isset($parts[1]) ? trim($parts[1]) : '';
+        if (isset($activity[$date]) && !isIgnored($committer)) $activity[$date]++;
       }
     } catch (Exception $e) {}
   }
@@ -54,8 +61,14 @@ function getGitCommitsByRepo($projects, $days) {
     try {
       $repoObject = new PHPGit_Repository($path);
       $branches = targetBranchArgs($repoObject);
-      $output = $repoObject->git("log --after=\"{$since}\" --oneline --no-merges {$branches}");
-      $count = empty($output) ? 0 : count(explode("\n", $output));
+      $output = $repoObject->git("log --after=\"{$since}\" --format=format:%cn --no-merges {$branches}");
+      $count = 0;
+      if (!empty($output)) {
+        foreach (explode("\n", $output) as $c) {
+          $c = trim($c);
+          if (!empty($c) && !isIgnored($c)) $count++;
+        }
+      }
       $result[] = array('repo' => $repo, 'label' => $label, 'commits' => $count);
     } catch (Exception $e) {}
   }
@@ -63,9 +76,7 @@ function getGitCommitsByRepo($projects, $days) {
   return $result;
 }
 
-function getGitCommitsByAuthor($repos, $days, $ignored = array()) {
-  global $ignored_authors;
-  $ignored = array_merge($ignored, $ignored_authors);
+function getGitCommitsByAuthor($repos, $days) {
   $result = array();
   $since = date('Y-m-d', strtotime("-{$days} days"));
   $author_counts = array();
@@ -75,11 +86,13 @@ function getGitCommitsByAuthor($repos, $days, $ignored = array()) {
     try {
       $repoObject = new PHPGit_Repository($path);
       $branches = targetBranchArgs($repoObject);
-      $output = $repoObject->git("log --after=\"{$since}\" --format=format:%an --no-merges {$branches}");
+      $output = $repoObject->git("log --after=\"{$since}\" --format=format:%an|%cn --no-merges {$branches}");
       if (empty($output)) continue;
-      foreach (explode("\n", $output) as $author) {
-        $author = trim($author);
-        if (empty($author) || in_array($author, $ignored)) continue;
+      foreach (explode("\n", $output) as $line) {
+        $parts = explode('|', $line, 2);
+        $author = trim($parts[0]);
+        $committer = isset($parts[1]) ? trim($parts[1]) : '';
+        if (empty($author) || isIgnored($author) || isIgnored($committer)) continue;
         $author_counts[$author] = ($author_counts[$author] ?? 0) + 1;
       }
     } catch (Exception $e) {}
@@ -91,9 +104,7 @@ function getGitCommitsByAuthor($repos, $days, $ignored = array()) {
   return $result;
 }
 
-function getGitRecentCommits($projects, $ignored = array(), $limit = 50) {
-  global $ignored_authors;
-  $ignored = array_merge($ignored, $ignored_authors);
+function getGitRecentCommits($projects, $limit = 50) {
   $all_commits = array();
   $since = date('Y-m-d', strtotime("-90 days"));
   foreach ($projects as $repo => $label) {
@@ -102,13 +113,12 @@ function getGitRecentCommits($projects, $ignored = array(), $limit = 50) {
     try {
       $repoObject = new PHPGit_Repository($path);
       $branches = targetBranchArgs($repoObject);
-      $output = $repoObject->git("log --after=\"{$since}\" --format='format:%H|%an|%ae|%ai|%s' --no-merges {$branches} -100");
+      $output = $repoObject->git("log --after=\"{$since}\" --format='format:%H|%an|%ae|%ai|%cn|%s' --no-merges {$branches} -100");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $line) {
-        $parts = explode('|', $line, 5);
-        if (count($parts) >= 5) {
-          if (in_array($parts[1], $ignored)) continue;
-          if (in_array($parts[2], $ignored)) continue;
+        $parts = explode('|', $line, 6);
+        if (count($parts) >= 6) {
+          if (isIgnored($parts[1]) || isIgnored($parts[4])) continue;
           $all_commits[] = array(
             'repo' => $repo,
             'label' => $label,
@@ -116,7 +126,7 @@ function getGitRecentCommits($projects, $ignored = array(), $limit = 50) {
             'author' => $parts[1],
             'email' => $parts[2],
             'date' => substr($parts[3], 0, 10),
-            'message' => $parts[4]
+            'message' => $parts[5]
           );
         }
       }
