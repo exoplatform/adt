@@ -11,6 +11,7 @@ function pageHeader($title = "")
 {
 ?>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="refresh" content="120">
   <title>Acceptance<?= (empty($title) ? "" : " - " . $title) ?></title>
   <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
@@ -24,61 +25,95 @@ function pageHeader($title = "")
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <!-- Bootstrap 5 JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Dark mode handling -->
+  <!-- Theme handling -->
   <script>
-    // Function to set theme
-    function setTheme(theme) {
-      document.documentElement.setAttribute('data-bs-theme', theme);
-      localStorage.setItem('theme', theme);
-      
-      // Update toggle button icon and tooltip
-      const toggleBtn = document.getElementById('darkModeToggle');
+    var THEMES = ['default', 'ocean', 'forest', 'twilight'];
+    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'twilight': 'Twilight' };
+
+    // ── Storage helpers ──────────────────────────────────
+    function getPref(key, fallback) { try { var v = localStorage.getItem(key); return v !== null ? v : fallback; } catch(e) { return fallback; } }
+    function setPref(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+
+    // ── Resolve stored/effective values ──────────────────
+    function resolveAccent() {
+      var raw = getPref('theme', '');
+      if (raw.indexOf(':') > 0) return raw.split(':')[0];
+      return 'default';
+    }
+    function resolveScheme() {
+      var raw = getPref('theme', '');
+      if (raw.indexOf(':') > 0) return raw.split(':')[1];
+      if (raw === 'light' || raw === 'dark') return raw; // backward compat
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function storeTheme(accent, scheme) { setPref('theme', accent + ':' + scheme); }
+
+    // ── Apply accent (no persist) ────────────────────────
+    function setAccent(accent) {
+      document.documentElement.setAttribute('data-accent', accent);
+      var btn = document.getElementById('themeDropdown');
+      if (btn) btn.textContent = THEME_LABELS[accent] || accent;
+    }
+
+    // ── Full apply: scheme + accent + UI + persist ───────
+    function applyTheme(accent, scheme, persist) {
+      setAccent(accent);
+      document.documentElement.setAttribute('data-bs-theme', scheme);
+      if (persist) storeTheme(accent, scheme);
+
+      // Update toggle button
+      var toggleBtn = document.getElementById('darkModeToggle');
       if (toggleBtn) {
-        const icon = toggleBtn.querySelector('i');
-        if (theme === 'dark') {
-          icon.className = 'fas fa-sun';
-          toggleBtn.setAttribute('title', 'Switch to light mode');
-        } else {
-          icon.className = 'fas fa-moon';
-          toggleBtn.setAttribute('title', 'Switch to dark mode');
-        }
-        
-        // Refresh tooltip
-        const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-        if (tooltip) {
-          tooltip.dispose();
-        }
+        var isDark = scheme === 'dark';
+        var icon = toggleBtn.querySelector('i');
+        var srSpan = toggleBtn.querySelector('.sr-only');
+        var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+        if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        toggleBtn.setAttribute('title', label);
+        toggleBtn.setAttribute('aria-label', label);
+        toggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+        if (srSpan) srSpan.textContent = label;
+        var tip = bootstrap.Tooltip.getInstance(toggleBtn);
+        if (tip) tip.dispose();
         new bootstrap.Tooltip(toggleBtn);
       }
     }
-    
-    // Function to toggle theme
-    function toggleTheme() {
-      const currentTheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-      const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-      setTheme(newTheme);
+
+    // ── Toggle light/dark scheme ─────────────────────────
+    function toggleScheme() {
+      var curAccent = resolveAccent();
+      var curScheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+      applyTheme(curAccent, curScheme === 'dark' ? 'light' : 'dark', true);
     }
-    
-    // Initialize theme on page load
+
+    // ── Pick a new accent theme ──────────────────────────
+    function pickTheme(accent) {
+      var scheme = document.documentElement.getAttribute('data-bs-theme') || resolveScheme();
+      applyTheme(accent, scheme, true);
+      // Close dropdown + sync aria-expanded
+      var dd = document.getElementById('themeDropdownMenu');
+      if (dd) dd.classList.remove('show');
+      var toggler = document.getElementById('themeDropdown');
+      if (toggler) toggler.setAttribute('aria-expanded', 'false');
+    }
+
+    // ── Initialise immediately (FOUC guard) ──────────────
     (function() {
-      // Check for saved theme preference
-      const savedTheme = localStorage.getItem('theme');
-      
-      // Check for system preference if no saved theme
-      if (!savedTheme) {
-        const systemPrefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-        setTheme(systemPrefersDark ? 'dark' : 'light');
-      } else {
-        setTheme(savedTheme);
-      }
-      
-      // Listen for system preference changes
-      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
-        if (!localStorage.getItem('theme')) {
-          setTheme(event.matches ? 'dark' : 'light');
+      document.documentElement.setAttribute('data-accent', resolveAccent());
+      document.documentElement.setAttribute('data-bs-theme', resolveScheme());
+    })();
+
+    // ── Listen for system scheme changes ─────────────────
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        var raw = getPref('theme', '');
+        if (raw === '' || raw === 'light' || raw === 'dark') {
+          var a = resolveAccent();
+          var s = e.matches ? 'dark' : 'light';
+          applyTheme(a, s, false);
         }
       });
-    })();
+    }
   </script>
 <?php
 }
@@ -125,36 +160,70 @@ function pageNavigation()
     "Servers" => "/servers.php"
   );
   
-  // Get current theme for initial tooltip
-  $savedTheme = isset($_COOKIE['theme']) ? $_COOKIE['theme'] : 'light';
-  $initialIcon = $savedTheme === 'dark' ? 'fa-sun' : 'fa-moon';
-  $initialTooltip = $savedTheme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode';
 ?>
+  <!-- Skip to main content link -->
+  <a href="#main" class="skip-to-content sr-only-focusable">
+    <i class="fas fa-arrow-down me-1" aria-hidden="true"></i>Skip to main content
+  </a>
   <!-- navbar ================================================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" aria-label="Main navigation">
     <div class="container-fluid">
-      <a class="navbar-brand" href="/">
-        <i class="fas fa-cloud me-2"></i><?= $_SERVER['SERVER_NAME'] ?>
+      <a class="navbar-brand" href="/" aria-label="Home page">
+        <i class="fas fa-cloud me-2" aria-hidden="true"></i><?= $_SERVER['SERVER_NAME'] ?>
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav">
+        <ul class="navbar-nav" role="list">
           <?php
           foreach ($nav as $label => $url) {
             $active = ($url == $_SERVER['REQUEST_URI']) ? 'active' : '';
-            echo '<li class="nav-item"><a class="nav-link ' . $active . '" href="' . $url . '">' . $label . '</a></li>';
+            $ariaCurrent = ($url == $_SERVER['REQUEST_URI']) ? ' aria-current="page"' : '';
+            echo '<li class="nav-item"><a class="nav-link ' . $active . '" href="' . $url . '"' . $ariaCurrent . '>' . $label . '</a></li>';
           }
           ?>
         </ul>
         
-        <!-- Dark mode toggle button only (icon only, no text) -->
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" rel="tooltip" title="<?= $initialTooltip ?>">
-              <i class="fas <?= $initialIcon ?>"></i>
+        <!-- Theme picker + dark mode toggle -->
+        <ul class="navbar-nav ms-auto align-items-center" role="list">
+          <!-- Theme accent dropdown -->
+          <li class="nav-item dropdown">
+            <button class="nav-link dropdown-toggle" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Select theme">
+              Default
             </button>
+            <ul class="dropdown-menu dropdown-menu-end" id="themeDropdownMenu" aria-labelledby="themeDropdown">
+              <li><button class="dropdown-item" onclick="pickTheme('default')">Default</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('ocean')">Ocean</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('forest')">Forest</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('twilight')">Twilight</button></li>
+            </ul>
+          </li>
+          <!-- Light/dark toggle -->
+          <li class="nav-item">
+            <button class="nav-link" id="darkModeToggle" onclick="toggleScheme()" title="Switch to dark mode" aria-label="Switch to dark mode" aria-pressed="false">
+              <i class="fas fa-moon" aria-hidden="true"></i>
+              <span class="sr-only">Switch to dark mode</span>
+            </button>
+            <script>
+              (function() {
+                var a = document.documentElement.getAttribute('data-accent') || 'default';
+                var s = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                var isDark = s === 'dark';
+                var btn = document.getElementById('darkModeToggle');
+                if (btn) {
+                  btn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                  var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+                  btn.setAttribute('title', label);
+                  btn.setAttribute('aria-label', label);
+                  btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+                  var sr = btn.querySelector('.sr-only');
+                  if (sr) sr.textContent = label;
+                }
+                var td = document.getElementById('themeDropdown');
+                if (td) td.textContent = ({'default':'Default','ocean':'Ocean','forest':'Forest','twilight':'Twilight'}[a]) || a;
+              })();
+            </script>
           </li>
         </ul>
       </div>
@@ -171,13 +240,13 @@ function pageNavigation()
 function pageFooter() {
 ?>
   <!-- Footer ================================================== -->
-  <footer id="footer" class="footer">
+  <footer id="footer" class="footer" role="contentinfo">
     <div class="container-fluid">
       <div class="row">
         <div class="col">
-          Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS
-          <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" class="ms-3" target="_blank">
-            <i class="fas fa-chart-bar"></i>
+          <span class="sr-only">Copyright</span> Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS
+          <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" class="ms-3" target="_blank" aria-label="View statistics">
+            <i class="fas fa-chart-bar" aria-hidden="true"></i>
           </a>
         </div>
       </div>
@@ -483,9 +552,9 @@ function componentCertbotEnabled($deployment_descriptor, $is_label_addon = true)
  */
 function componentStatusIcon($deployment_descriptor) {
   if ($deployment_descriptor->DEPLOYMENT_STATUS == "Up") {
-    return '<i class="fas fa-circle text-success" rel="tooltip" title="Status: Up"></i>';
+    return '<i class="fas fa-circle text-success" rel="tooltip" title="Status: Up" aria-label="Status: Up" role="img"></i>';
   } else {
-    return '<i class="fas fa-circle text-danger" rel="tooltip" title="Status: Down"></i>';
+    return '<i class="fas fa-circle text-danger" rel="tooltip" title="Status: Down" aria-label="Status: Down" role="img"></i>';
   }
 }
 

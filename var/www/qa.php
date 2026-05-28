@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
     <?= pageHeader("QA environments"); ?>
 </head>
@@ -13,7 +13,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-<div id="main">
+<div id="main" role="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
@@ -26,7 +26,8 @@ $qa_instances=getGlobalQAUserInstances();
 if (isDeploymentInCategoryArray($qa_instances)) {
 ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="QA environments - QA User">
+    <caption class="sr-only">QA user environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -105,7 +106,8 @@ $qa_auto_instances=getGlobalQAAutoInstances();
 if (isDeploymentInCategoryArray($qa_auto_instances)) {
 ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="QA environments - Automatic">
+    <caption class="sr-only">QA automatic test environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>
