@@ -735,49 +735,41 @@ a[name] {
 .alert-info {
   background-color: #d1ecf1;
   color: #0a4958;
-  border-left: 4px solid #1abc9c;
 }
 
 .alert-warning {
   background-color: #fff3cd;
   color: #7a5d00;
-  border-left: 4px solid #f39c12;
 }
 
 .alert-danger {
   background-color: #f8d7da;
   color: #6b1a1e;
-  border-left: 4px solid #e74c3c;
 }
 
 .alert-success {
   background-color: #d4edda;
   color: #124d24;
-  border-left: 4px solid #27ae60;
 }
 
 [data-bs-theme="dark"] .alert-info {
   background-color: #1a2e33;
   color: #b8e6f0;
-  border-left-color: #1abc9c;
 }
 
 [data-bs-theme="dark"] .alert-warning {
   background-color: #332e18;
   color: #fce8a0;
-  border-left-color: #f39c12;
 }
 
 [data-bs-theme="dark"] .alert-danger {
   background-color: #331919;
   color: #f5b7b1;
-  border-left-color: #e74c3c;
 }
 
 [data-bs-theme="dark"] .alert-success {
   background-color: #18331e;
   color: #abebc6;
-  border-left-color: #27ae60;
 }
 
 /* Responsive adjustments */
