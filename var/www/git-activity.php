@@ -8,7 +8,7 @@ $days_back = isset($_GET['days']) ? max(1, min(365, intval($_GET['days']))) : 30
 $since = date('Y-m-d', strtotime("-{$days_back} days"));
 $projects = getRepositories();
 $repo_names = array_keys($projects);
-$ignored_authors = array('exo-swf');
+$ignored_authors = array('exo-swf', 'Crowdin Bot', 'eXo CI server');
 
 function getGitCommitActivityByDay($repos, $days) {
   $activity = array();
