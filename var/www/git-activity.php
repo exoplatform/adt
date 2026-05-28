@@ -8,6 +8,7 @@ $days_back = isset($_GET['days']) ? max(1, min(365, intval($_GET['days']))) : 30
 $since = date('Y-m-d', strtotime("-{$days_back} days"));
 $projects = getRepositories();
 $repo_names = array_keys($projects);
+$ignored_authors = array('exo-swf');
 
 function getGitCommitActivityByDay($repos, $days) {
   $activity = array();
@@ -49,7 +50,9 @@ function getGitCommitsByRepo($projects, $days) {
   return $result;
 }
 
-function getGitCommitsByAuthor($repos, $days) {
+function getGitCommitsByAuthor($repos, $days, $ignored = array()) {
+  global $ignored_authors;
+  $ignored = array_merge($ignored, $ignored_authors);
   $result = array();
   $since = date('Y-m-d', strtotime("-{$days} days"));
   $author_counts = array();
@@ -62,7 +65,7 @@ function getGitCommitsByAuthor($repos, $days) {
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $author) {
         $author = trim($author);
-        if (empty($author)) continue;
+        if (empty($author) || in_array($author, $ignored)) continue;
         $author_counts[$author] = ($author_counts[$author] ?? 0) + 1;
       }
     } catch (Exception $e) {}
@@ -74,7 +77,9 @@ function getGitCommitsByAuthor($repos, $days) {
   return $result;
 }
 
-function getGitRecentCommits($projects, $limit = 50) {
+function getGitRecentCommits($projects, $ignored = array(), $limit = 50) {
+  global $ignored_authors;
+  $ignored = array_merge($ignored, $ignored_authors);
   $all_commits = array();
   $since = date('Y-m-d', strtotime("-90 days"));
   foreach ($projects as $repo => $label) {
@@ -82,18 +87,20 @@ function getGitRecentCommits($projects, $limit = 50) {
     if (!is_dir($path)) continue;
     try {
       $repoObject = new PHPGit_Repository($path);
-      $output = $repoObject->git("log --after=\"{$since}\" --date=short --format=format:%H|%an|%ae|%ad|%s --all -100");
+      $output = $repoObject->git("log --after=\"{$since}\" --format=format:\"%H|%an|%ae|%ai|%s\" --all -100");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 5);
         if (count($parts) >= 5) {
+          if (in_array($parts[1], $ignored)) continue;
+          if (in_array($parts[2], $ignored)) continue;
           $all_commits[] = array(
             'repo' => $repo,
             'label' => $label,
             'hash' => substr($parts[0], 0, 8),
             'author' => $parts[1],
             'email' => $parts[2],
-            'date' => $parts[3],
+            'date' => substr($parts[3], 0, 10),
             'message' => $parts[4]
           );
         }
