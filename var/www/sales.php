@@ -95,7 +95,7 @@ if (isDeploymentInCategoryArray($sales_user_instances)) {
 </table>
 </div>
 
-    <div class="alert alert-info mt-4">
+    <div class="alert alert-info">
         <i class="fas fa-chart-pie me-2"></i>
         These instances are deployed for <strong>eXo Demo</strong> purpose usage only.
     </div>
@@ -172,7 +172,7 @@ if (isDeploymentInCategoryArray($sales_demo_instances)) {
 </table>
 </div>
 
-    <div class="alert alert-info mt-4">
+    <div class="alert alert-info">
         <i class="fas fa-chart-bar me-2"></i>
         These instances are deployed for <strong>Evaluation by Leads</strong> purpose usage only.
     </div>
