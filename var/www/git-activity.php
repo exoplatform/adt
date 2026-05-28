@@ -323,7 +323,7 @@ foreach ($github_orgs as $org) {
                   <td><span class="badge bg-secondary"><?= $c['label'] ?></span></td>
                   <td><?= htmlspecialchars($c['author']) ?></td>
                   <td><code><?= $c['hash'] ?></code></td>
-                  <td class="commit-msg" rel="tooltip" title="<?= htmlspecialchars($c['message']) ?>"><?= htmlspecialchars(mb_strimwidth($c['message'], 0, 80, '...')) ?></td>
+                  <td class="commit-msg" rel="tooltip" title="<?= htmlspecialchars($c['message']) ?>"><?= htmlspecialchars(function_exists('mb_strimwidth') ? mb_strimwidth($c['message'], 0, 80, '...') : (strlen($c['message']) > 80 ? substr($c['message'], 0, 77) . '...' : $c['message'])) ?></td>
                 </tr>
                 <?php endforeach; ?>
                 <?php endif; ?>
