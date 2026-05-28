@@ -275,6 +275,99 @@ function pageFooter() {
           }
         });
       });
+
+      // ── Deployment notifications ─────────────────────────
+      var POLL_INTERVAL = 60000; // 60 seconds
+
+      function getSubscriptions() {
+        try {
+          return JSON.parse(localStorage.getItem('deploy_subs') || '{}');
+        } catch(e) { return {}; }
+      }
+
+      function setSubscriptions(subs) {
+        try { localStorage.setItem('deploy_subs', JSON.stringify(subs)); } catch(e) {}
+      }
+
+      function updateBellIcons() {
+        var subs = getSubscriptions();
+        document.querySelectorAll('.bell-subscribe i').forEach(function(icon) {
+          var key = icon.closest('.bell-subscribe').getAttribute('data-instance-key');
+          if (subs[key]) {
+            icon.className = 'fas fa-bell';
+            icon.closest('.bell-subscribe').setAttribute('title', 'Unsubscribe from deployment notifications');
+          } else {
+            icon.className = 'far fa-bell';
+            icon.closest('.bell-subscribe').setAttribute('title', 'Subscribe to deployment notifications');
+          }
+        });
+      }
+
+      function requestNotificationPermission() {
+        if ('Notification' in window && Notification.permission === 'default') {
+          Notification.requestPermission();
+        }
+      }
+
+      function sendNotification(title, body) {
+        if (!('Notification' in window) || Notification.permission !== 'granted') return;
+        try {
+          var n = new Notification(title, { body: body, icon: '/images/favicon.ico' });
+          setTimeout(function() { n.close(); }, 8000);
+        } catch(e) {}
+      }
+
+      // Bell click toggle
+      $(document).on('click', '.bell-subscribe', function(e) {
+        e.preventDefault();
+        requestNotificationPermission();
+        var key = this.getAttribute('data-instance-key');
+        var label = this.getAttribute('data-instance-label');
+        var subs = getSubscriptions();
+        if (subs[key]) {
+          delete subs[key];
+        } else {
+          subs[key] = { label: label, lastDeployment: '' };
+        }
+        setSubscriptions(subs);
+        updateBellIcons();
+        // Re-init tooltip on this element
+        var tip = bootstrap.Tooltip.getInstance(this);
+        if (tip) tip.dispose();
+        new bootstrap.Tooltip(this);
+      });
+
+      // Poll for deployment changes
+      function pollDeployments() {
+        var subs = getSubscriptions();
+        var keys = Object.keys(subs);
+        if (keys.length === 0) return;
+
+        $.get('/rest/local-instances.php', function(data) {
+          var now = new Date();
+          Object.keys(data).forEach(function(branch) {
+            (data[branch] || []).forEach(function(inst) {
+              var key = inst.INSTANCE_KEY;
+              var sub = subs[key];
+              if (!sub) return;
+              var newDate = inst.DEPLOYMENT_DATE || '';
+              var oldDate = sub.lastDeployment || '';
+              if (newDate && newDate !== oldDate) {
+                sub.lastDeployment = newDate;
+                var label = sub.label || key;
+                sendNotification('Instance Redeployed: ' + label, 'Deployment detected at ' + now.toLocaleTimeString());
+              }
+              subs[key] = sub;
+            });
+          });
+          setSubscriptions(subs);
+        });
+      }
+
+      updateBellIcons();
+      setInterval(pollDeployments, POLL_INTERVAL);
+      // Fire once on page load to record current deployment dates
+      setTimeout(pollDeployments, 2000);
     });
   </script>
 <?php
@@ -786,6 +879,9 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
     $content.='<i class="fas fa-lock text-success"></i>';
     $content.='</a>';
   }
+  $instanceKey = htmlspecialchars($deployment_descriptor->INSTANCE_KEY, ENT_QUOTES);
+  $label = htmlspecialchars(($deployment_descriptor->PRODUCT_NAME ?? '') . ' ' . ($deployment_descriptor->PRODUCT_VERSION ?? ''), ENT_QUOTES);
+  $content .= ' <a href="#" class="bell-subscribe" rel="tooltip" title="Subscribe to deployment notifications" data-instance-key="' . $instanceKey . '" data-instance-label="' . $label . '"><i class="far fa-bell"></i></a>';
   return $content;
 }
 
