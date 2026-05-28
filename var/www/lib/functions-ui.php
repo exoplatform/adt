@@ -15,6 +15,13 @@ function pageHeader($title = "")
   <meta http-equiv="refresh" content="120">
   <title>Acceptance<?= (empty($title) ? "" : " - " . $title) ?></title>
   <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
+  <!-- PWA -->
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/images/icon-192.png" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="ADT" />
+  <meta name="theme-color" content="#1b4f72" />
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome 6 -->
@@ -113,6 +120,12 @@ function pageHeader($title = "")
           applyTheme(a, s, false);
         }
       });
+    }
+  </script>
+  <!-- Service worker registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js', { scope: '/' });
     }
   </script>
 <?php
