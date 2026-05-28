@@ -123,17 +123,39 @@ function pageHeader($title = "")
     function setPinnedKeys(keys) {
       setPref('pinned_instances', JSON.stringify(keys));
     }
-    function togglePin(key, btn) {
+    function pinToggleClick(e) {
+      var toggle = e.target.closest('.pin-toggle');
+      if (!toggle) return;
+      e.preventDefault();
+      var key = toggle.getAttribute('data-instance-key');
+      if (!key) return;
       var keys = getPinnedKeys();
       var idx = keys.indexOf(key);
       if (idx >= 0) { keys.splice(idx, 1); } else { keys.push(key); }
       setPinnedKeys(keys);
-      applyPinnedState();
+
+      // Toggle icon + row class immediately
+      var icon = toggle.querySelector('.pin-icon');
+      var row = toggle.closest('tr');
+      if (keys.indexOf(key) >= 0) {
+        icon.classList.remove('fa-regular');
+        icon.classList.add('fa-solid');
+        if (row) row.classList.add('pinned-row');
+        toggle.setAttribute('title', 'Unpin this instance');
+        toggle.setAttribute('aria-label', 'Unpin this instance');
+      } else {
+        icon.classList.remove('fa-solid');
+        icon.classList.add('fa-regular');
+        if (row) row.classList.remove('pinned-row');
+        toggle.setAttribute('title', 'Pin this instance to top');
+        toggle.setAttribute('aria-label', 'Pin this instance to top');
+      }
+
+      reorderPinned();
     }
     function applyPinnedState() {
       var keys = getPinnedKeys();
-
-      // Update icon states and row classes
+      // Update all pin icons and row classes to match localStorage
       document.querySelectorAll('.pin-toggle').forEach(function(el) {
         var key = el.getAttribute('data-instance-key');
         var isPinned = keys.indexOf(key) >= 0;
@@ -153,52 +175,61 @@ function pageHeader($title = "")
           el.setAttribute('aria-label', 'Pin this instance to top');
         }
       });
+    }
+    function reorderPinned() {
+      var keys = getPinnedKeys();
+      if (keys.length === 0) return;
+      document.querySelectorAll('table.table tbody').forEach(function(tbody) {
+        var catRows = tbody.querySelectorAll('tr.category-row');
 
-      // Reorder pinned rows to top within each section (between category rows)
-      document.querySelectorAll('table.table').forEach(function(table) {
-        table.querySelectorAll('tbody').forEach(function(tbody) {
-          var children = Array.from(tbody.children);
-          if (children.length === 0) return;
-
-          // Split into sections delimited by category-row
-          var sections = [];
-          var current = { category: null, rows: [] };
-          children.forEach(function(child) {
-            if (child.classList.contains('category-row')) {
-              if (current.category !== null || current.rows.length > 0) {
-                sections.push(current);
-              }
-              current = { category: child, rows: [] };
-            } else {
-              current.rows.push(child);
-            }
+        if (catRows.length === 0) {
+          var allRows = Array.from(tbody.querySelectorAll('tr'));
+          var pinned = [], unpinned = [];
+          allRows.forEach(function(r) {
+            var k = r.getAttribute('data-instance-key');
+            if (k && keys.indexOf(k) >= 0) { pinned.push(r); }
+            else { unpinned.push(r); }
           });
-          sections.push(current);
-
-          // Sort pinned rows to top within each section, preserving original order otherwise
-          sections.forEach(function(section) {
-            section.rows.sort(function(a, b) {
-              var ka = a.getAttribute('data-instance-key') || '';
-              var kb = b.getAttribute('data-instance-key') || '';
-              var pa = keys.indexOf(ka) >= 0 ? 0 : 1;
-              var pb = keys.indexOf(kb) >= 0 ? 0 : 1;
-              return pa - pb;
-            });
-          });
-
-          // Flatten and re-append
+          if (pinned.length === 0) return;
           var frag = document.createDocumentFragment();
-          sections.forEach(function(section) {
-            if (section.category) frag.appendChild(section.category);
-            section.rows.forEach(function(row) { frag.appendChild(row); });
-          });
+          pinned.forEach(function(r) { frag.appendChild(r); });
+          unpinned.forEach(function(r) { frag.appendChild(r); });
           tbody.appendChild(frag);
+          return;
+        }
+
+        // Move pinned rows right after their category row
+        Array.from(catRows).forEach(function(catRow) {
+          var nextCat = catRow.nextElementSibling;
+          var sectionRows = [];
+          while (nextCat) {
+            var next = nextCat.nextElementSibling;
+            if (nextCat.classList.contains('category-row')) break;
+            sectionRows.push(nextCat);
+            nextCat = next;
+          }
+
+          var pinned = sectionRows.filter(function(r) {
+            var k = r.getAttribute('data-instance-key');
+            return k && keys.indexOf(k) >= 0;
+          });
+          if (pinned.length === 0) return;
+
+          var ref = catRow.nextElementSibling;
+          pinned.forEach(function(r) { catRow.parentNode.insertBefore(r, ref); });
         });
       });
     }
+    function initPinned() {
+      applyPinnedState();
+      reorderPinned();
+    }
 
-    // ── Initialise pin state on DOM ready ────────────────────
-    document.addEventListener('DOMContentLoaded', applyPinnedState);
+    // ── Event delegation for pin clicks ─────────────────────
+    document.addEventListener('click', pinToggleClick);
+
+    // ── Restore pinned state on page load ───────────────────
+    document.addEventListener('DOMContentLoaded', initPinned);
   </script>
 <?php
 }
@@ -637,7 +668,7 @@ function componentCertbotEnabled($deployment_descriptor, $is_label_addon = true)
  */
 function componentPinIcon($deployment_descriptor) {
   $key = htmlspecialchars($deployment_descriptor->INSTANCE_KEY, ENT_QUOTES, 'UTF-8');
-  return '<a href="#" class="pin-toggle" data-instance-key="' . $key . '" rel="tooltip" title="Pin this instance to top" aria-label="Pin this instance to top" onclick="event.preventDefault();togglePin(\'' . $key . '\',this)">'
+  return '<a href="#" class="pin-toggle" data-instance-key="' . $key . '" title="Pin this instance to top" aria-label="Pin this instance to top">'
     . '<i class="fa-regular fa-star pin-icon text-warning"></i>'
     . '</a>';
 }
