@@ -189,17 +189,11 @@
         Satisfy any
     </Location>
     <Location /sw.js>
-        Order deny,allow
-        Allow from all
-        Satisfy any
+        Require all granted
     </Location>
     <Location /manifest.json>
-        Order deny,allow
-        Allow from all
-        Satisfy any
+        Require all granted
     </Location>
     <LocationMatch "/images/icon.*\.(png|svg)$">
-        Order deny,allow
-        Allow from all
-        Satisfy any
+        Require all granted
     </LocationMatch>
