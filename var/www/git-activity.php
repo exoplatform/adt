@@ -39,7 +39,7 @@ function getGitCommitActivityByDay($repos, $days) {
     try {
       $repoObject = new PHPGit_Repository($path);
       $branches = targetBranchArgs($repoObject);
-      $output = $repoObject->git("log --after=\"{$since}\" --date=short --format=format:%ad|%cn --no-merges {$branches}");
+      $output = $repoObject->git("log --after=\"{$since}\" --date=short --format='format:%ad|%cn' --no-merges {$branches}");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 2);
@@ -86,7 +86,7 @@ function getGitCommitsByAuthor($repos, $days) {
     try {
       $repoObject = new PHPGit_Repository($path);
       $branches = targetBranchArgs($repoObject);
-      $output = $repoObject->git("log --after=\"{$since}\" --format=format:%an|%cn --no-merges {$branches}");
+      $output = $repoObject->git("log --after=\"{$since}\" --format='format:%an|%cn' --no-merges {$branches}");
       if (empty($output)) continue;
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 2);
