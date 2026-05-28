@@ -343,25 +343,30 @@ function pageFooter() {
         var keys = Object.keys(subs);
         if (keys.length === 0) return;
 
-        $.get('/rest/local-instances.php', function(data) {
-          var now = new Date();
-          Object.keys(data).forEach(function(branch) {
-            (data[branch] || []).forEach(function(inst) {
-              var key = inst.INSTANCE_KEY;
-              var sub = subs[key];
-              if (!sub) return;
-              var newDate = inst.DEPLOYMENT_DATE || '';
-              var oldDate = sub.lastDeployment || '';
-              if (newDate && newDate !== oldDate) {
-                sub.lastDeployment = newDate;
-                var label = sub.label || key;
-                sendNotification('Instance Redeployed: ' + label, 'Deployment detected at ' + now.toLocaleTimeString());
-              }
-              subs[key] = sub;
+        $.get('/rest/local-instances.php')
+          .done(function(data) {
+            if (!data || typeof data !== 'object' || Array.isArray(data)) return;
+            var now = new Date();
+            Object.keys(data).forEach(function(branch) {
+              var instances = data[branch];
+              if (!Array.isArray(instances)) return;
+              instances.forEach(function(inst) {
+                var key = inst.INSTANCE_KEY;
+                var sub = subs[key];
+                if (!sub) return;
+                var newDate = inst.DEPLOYMENT_DATE || '';
+                var oldDate = sub.lastDeployment || '';
+                if (newDate && newDate !== oldDate) {
+                  sub.lastDeployment = newDate;
+                  var label = sub.label || key;
+                  sendNotification('Instance Redeployed: ' + label, 'Deployment detected at ' + now.toLocaleTimeString());
+                }
+                subs[key] = sub;
+              });
             });
-          });
-          setSubscriptions(subs);
-        });
+            setSubscriptions(subs);
+          })
+          .fail(function() {});
       }
 
       updateBellIcons();
