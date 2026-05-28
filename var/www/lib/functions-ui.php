@@ -72,11 +72,6 @@ function pageHeader($title = "")
       applyTheme(current === 'dark' ? 'light' : 'dark', true);
     }
 
-    // Initialise once the DOM is ready (so the toggle button exists)
-    document.addEventListener('DOMContentLoaded', function() {
-      applyTheme(resolveTheme(), false);
-    });
-
     // Listen for system preference changes (only when user hasn't explicitly saved)
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(event) {
       if (!localStorage.getItem('theme')) {
@@ -166,6 +161,7 @@ function pageNavigation()
               <i class="fas <?= $initialIcon ?>" aria-hidden="true"></i>
               <span class="sr-only"><?= $initialTooltip ?></span>
             </button>
+            <script>(function(){var t=document.getElementById('darkModeToggle'),d=t&&document.documentElement.getAttribute('data-bs-theme')==='dark',l=d?'Switch to light mode':'Switch to dark mode';if(t){t.querySelector('i').className=d?'fas fa-sun':'fas fa-moon';t.setAttribute('title',l);t.setAttribute('aria-label',l);t.setAttribute('aria-pressed',d?'true':'false');var s=t.querySelector('.sr-only');if(s)s.textContent=l}})();</script>
           </li>
         </ul>
       </div>
