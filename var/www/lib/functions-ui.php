@@ -25,59 +25,95 @@ function pageHeader($title = "")
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <!-- Bootstrap 5 JS Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Dark mode handling -->
+  <!-- Theme handling -->
   <script>
-    // Resolve the effective theme from storage or system preference
-    function resolveTheme() {
-      const saved = localStorage.getItem('theme');
-      if (saved) return saved;
-      if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) return 'dark';
-      return 'light';
+    var THEMES = ['default', 'ocean', 'forest', 'twilight'];
+    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'twilight': 'Twilight' };
+
+    // ── Storage helpers ──────────────────────────────────
+    function getPref(key, fallback) { try { var v = localStorage.getItem(key); return v !== null ? v : fallback; } catch(e) { return fallback; } }
+    function setPref(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+
+    // ── Resolve stored/effective values ──────────────────
+    function resolveAccent() {
+      var raw = getPref('theme', '');
+      if (raw.indexOf(':') > 0) return raw.split(':')[0];
+      return 'default';
+    }
+    function resolveScheme() {
+      var raw = getPref('theme', '');
+      if (raw.indexOf(':') > 0) return raw.split(':')[1];
+      if (raw === 'light' || raw === 'dark') return raw; // backward compat
+      return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+    function storeTheme(accent, scheme) { setPref('theme', accent + ':' + scheme); }
+
+    // ── Apply accent (no persist) ────────────────────────
+    function setAccent(accent) {
+      document.documentElement.setAttribute('data-accent', accent);
+      var btn = document.getElementById('themeDropdown');
+      if (btn) btn.textContent = THEME_LABELS[accent] || accent;
     }
 
-    // Apply theme to <html> immediately (no button update) – prevents FOUC
-    (function() {
-      const theme = resolveTheme();
-      document.documentElement.setAttribute('data-bs-theme', theme);
-    })();
+    // ── Full apply: scheme + accent + UI + persist ───────
+    function applyTheme(accent, scheme, persist) {
+      setAccent(accent);
+      document.documentElement.setAttribute('data-bs-theme', scheme);
+      if (persist) storeTheme(accent, scheme);
 
-    // Full apply: set theme + update button UI + persist
-    function applyTheme(theme, persist) {
-      document.documentElement.setAttribute('data-bs-theme', theme);
-      if (persist) localStorage.setItem('theme', theme);
-
-      const toggleBtn = document.getElementById('darkModeToggle');
+      // Update toggle button
+      var toggleBtn = document.getElementById('darkModeToggle');
       if (toggleBtn) {
-        const isDark = theme === 'dark';
-        const icon = toggleBtn.querySelector('i');
-        const srSpan = toggleBtn.querySelector('.sr-only');
-        const label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-
-        icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+        var isDark = scheme === 'dark';
+        var icon = toggleBtn.querySelector('i');
+        var srSpan = toggleBtn.querySelector('.sr-only');
+        var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+        if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         toggleBtn.setAttribute('title', label);
         toggleBtn.setAttribute('aria-label', label);
         toggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
         if (srSpan) srSpan.textContent = label;
-
-        // Refresh Bootstrap tooltip
-        const tooltip = bootstrap.Tooltip.getInstance(toggleBtn);
-        if (tooltip) tooltip.dispose();
+        var tip = bootstrap.Tooltip.getInstance(toggleBtn);
+        if (tip) tip.dispose();
         new bootstrap.Tooltip(toggleBtn);
       }
     }
 
-    // Toggle between dark and light
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-bs-theme') || 'light';
-      applyTheme(current === 'dark' ? 'light' : 'dark', true);
+    // ── Toggle light/dark scheme ─────────────────────────
+    function toggleScheme() {
+      var curAccent = resolveAccent();
+      var curScheme = document.documentElement.getAttribute('data-bs-theme') || 'light';
+      applyTheme(curAccent, curScheme === 'dark' ? 'light' : 'dark', true);
     }
 
-    // Listen for system preference changes (only when user hasn't explicitly saved)
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(event) {
-      if (!localStorage.getItem('theme')) {
-        applyTheme(event.matches ? 'dark' : 'light', false);
-      }
-    });
+    // ── Pick a new accent theme ──────────────────────────
+    function pickTheme(accent) {
+      var scheme = document.documentElement.getAttribute('data-bs-theme') || resolveScheme();
+      applyTheme(accent, scheme, true);
+      // Close dropdown + sync aria-expanded
+      var dd = document.getElementById('themeDropdownMenu');
+      if (dd) dd.classList.remove('show');
+      var toggler = document.getElementById('themeDropdown');
+      if (toggler) toggler.setAttribute('aria-expanded', 'false');
+    }
+
+    // ── Initialise immediately (FOUC guard) ──────────────
+    (function() {
+      document.documentElement.setAttribute('data-accent', resolveAccent());
+      document.documentElement.setAttribute('data-bs-theme', resolveScheme());
+    })();
+
+    // ── Listen for system scheme changes ─────────────────
+    if (window.matchMedia) {
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', function(e) {
+        var raw = getPref('theme', '');
+        if (raw === '' || raw === 'light' || raw === 'dark') {
+          var a = resolveAccent();
+          var s = e.matches ? 'dark' : 'light';
+          applyTheme(a, s, false);
+        }
+      });
+    }
   </script>
 <?php
 }
@@ -124,11 +160,6 @@ function pageNavigation()
     "Servers" => "/servers.php"
   );
   
-  // Server-rendered defaults (JS corrects these immediately on DOMContentLoaded)
-  $initialTheme = 'light';
-  $initialIcon = 'fa-moon';
-  $initialTooltip = 'Switch to dark mode';
-  $initialAriaPressed = 'false';
 ?>
   <!-- Skip to main content link -->
   <a href="#main" class="skip-to-content sr-only-focusable">
@@ -154,26 +185,43 @@ function pageNavigation()
           ?>
         </ul>
         
-        <!-- Dark mode toggle button -->
-        <ul class="navbar-nav ms-auto" role="list">
+        <!-- Theme picker + dark mode toggle -->
+        <ul class="navbar-nav ms-auto align-items-center" role="list">
+          <!-- Theme accent dropdown -->
+          <li class="nav-item dropdown">
+            <button class="nav-link dropdown-toggle" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Select theme">
+              Default
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" id="themeDropdownMenu" aria-labelledby="themeDropdown">
+              <li><button class="dropdown-item" onclick="pickTheme('default')">Default</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('ocean')">Ocean</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('forest')">Forest</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('twilight')">Twilight</button></li>
+            </ul>
+          </li>
+          <!-- Light/dark toggle -->
           <li class="nav-item">
-            <button class="nav-link" id="darkModeToggle" onclick="toggleTheme()" title="<?= $initialTooltip ?>" aria-label="<?= $initialTooltip ?>" aria-pressed="<?= $initialAriaPressed ?>">
-              <i class="fas <?= $initialIcon ?>" aria-hidden="true"></i>
-              <span class="sr-only"><?= $initialTooltip ?></span>
+            <button class="nav-link" id="darkModeToggle" onclick="toggleScheme()" title="Switch to dark mode" aria-label="Switch to dark mode" aria-pressed="false">
+              <i class="fas fa-moon" aria-hidden="true"></i>
+              <span class="sr-only">Switch to dark mode</span>
             </button>
             <script>
               (function() {
-                var theme = document.documentElement.getAttribute('data-bs-theme') || 'light';
-                var isDark = theme === 'dark';
+                var a = document.documentElement.getAttribute('data-accent') || 'default';
+                var s = document.documentElement.getAttribute('data-bs-theme') || 'light';
+                var isDark = s === 'dark';
                 var btn = document.getElementById('darkModeToggle');
-                if (!btn) return;
-                btn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-                var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-                btn.setAttribute('title', label);
-                btn.setAttribute('aria-label', label);
-                btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-                var sr = btn.querySelector('.sr-only');
-                if (sr) sr.textContent = label;
+                if (btn) {
+                  btn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                  var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+                  btn.setAttribute('title', label);
+                  btn.setAttribute('aria-label', label);
+                  btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+                  var sr = btn.querySelector('.sr-only');
+                  if (sr) sr.textContent = label;
+                }
+                var td = document.getElementById('themeDropdown');
+                if (td) td.textContent = ({'default':'Default','ocean':'Ocean','forest':'Forest','twilight':'Twilight'}[a]) || a;
               })();
             </script>
           </li>

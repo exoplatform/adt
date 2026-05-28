@@ -52,6 +52,89 @@
   --footer-end: #5a3b7a;
 }
 
+/* ── Accent themes ─────────────────────────────────── */
+
+/* Ocean – blue tones */
+[data-accent="ocean"] {
+  --primary-color: #1a5276;
+  --secondary-color: #2e86c1;
+  --success-color: #1abc9c;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --table-header-bg: #1a5276;
+  --category-bg: #154360;
+  --navbar-start: #1b4f72;
+  --navbar-end: #2e86c1;
+  --footer-start: #1b4f72;
+  --footer-end: #2e86c1;
+}
+[data-accent="ocean"][data-bs-theme="dark"] {
+  --primary-color: #5dade2;
+  --secondary-color: #85c1e9;
+  --success-color: #48c9b0;
+  --table-header-bg: #1a5276;
+  --category-bg: #0d2b3e;
+  --navbar-start: #154360;
+  --navbar-end: #1b6ca8;
+  --footer-start: #154360;
+  --footer-end: #1b6ca8;
+  --highlight-bg: #4a3f20;
+}
+
+/* Forest – green tones */
+[data-accent="forest"] {
+  --primary-color: #1e5631;
+  --secondary-color: #27ae60;
+  --success-color: #2ecc71;
+  --warning-color: #f1c40f;
+  --danger-color: #e74c3c;
+  --table-header-bg: #1e5631;
+  --category-bg: #0d3b1e;
+  --navbar-start: #1e5631;
+  --navbar-end: #27ae60;
+  --footer-start: #1e5631;
+  --footer-end: #27ae60;
+}
+[data-accent="forest"][data-bs-theme="dark"] {
+  --primary-color: #58d68d;
+  --secondary-color: #82e0aa;
+  --success-color: #2ecc71;
+  --table-header-bg: #1a472a;
+  --category-bg: #0a2a15;
+  --navbar-start: #1a472a;
+  --navbar-end: #1e8449;
+  --footer-start: #1a472a;
+  --footer-end: #1e8449;
+  --highlight-bg: #4a4520;
+}
+
+/* Twilight – purple tones */
+[data-accent="twilight"] {
+  --primary-color: #4a235a;
+  --secondary-color: #8e44ad;
+  --success-color: #1abc9c;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --table-header-bg: #4a235a;
+  --category-bg: #2c0e3a;
+  --navbar-start: #4a235a;
+  --navbar-end: #8e44ad;
+  --footer-start: #4a235a;
+  --footer-end: #8e44ad;
+}
+[data-accent="twilight"][data-bs-theme="dark"] {
+  --primary-color: #c39bd3;
+  --secondary-color: #d7bde2;
+  --success-color: #48c9b0;
+  --table-header-bg: #4a235a;
+  --category-bg: #1f0a2a;
+  --navbar-start: #3d1f4a;
+  --navbar-end: #6c3483;
+  --footer-start: #3d1f4a;
+  --footer-end: #6c3483;
+  --highlight-bg: #4a3f20;
+}
+
 html, body {
   height: 100%;
   margin: 0;
