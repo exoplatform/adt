@@ -101,6 +101,18 @@ echo_n_warn() {
   echo -n -e "\033[1;33m[WARN]\033[0m " $@
 }
 
+# Notify WebSocket server of an update
+notify_update() {
+  local update_type=${1:-unknown}
+  local instance_key=${2:-none}
+  echo_info "Notifying WebSocket server of update (${update_type})..."
+  set +e
+  curl -s -X POST -H "Content-Type: application/json" \
+    -d "{\"type\": \"${update_type}\", \"instance\": \"${instance_key}\", \"timestamp\": \"$(date +%s)\"}" \
+    http://localhost:3000/notify-update > /dev/null
+  set -e
+}
+
 # Display ERROR message
 echo_error() {
   echo -e "\033[1;31m[ERROR]\033[0m" $@

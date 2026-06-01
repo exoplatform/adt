@@ -2,7 +2,15 @@
 
     RewriteEngine           On
 
-    DirectoryIndex index.php
+    # WebSocket Proxy
+    RewriteCond %{HTTP:Upgrade} websocket [NC]
+    RewriteCond %{HTTP:Connection} upgrade [NC]
+    RewriteRule ^/ws/?(.*) "ws://127.0.0.1:3000/ws/$1" [P,L]
+
+    ProxyPass /ws http://127.0.0.1:3000/ws
+    ProxyPassReverse /ws http://127.0.0.1:3000/ws
+
+    DirectoryIndex index.html index.php
 
     # Error pages
     ErrorDocument 404 /404.html
@@ -87,6 +95,15 @@
         AllowOverride None
         Order allow,deny
         allow from all
+
+        # SPA Routing
+        RewriteCond %{REQUEST_FILENAME} !-f
+        RewriteCond %{REQUEST_FILENAME} !-d
+        RewriteCond %{REQUEST_URI} !^/rest/
+        RewriteCond %{REQUEST_URI} !^/stats/
+        RewriteCond %{REQUEST_URI} !^/downloads/
+        RewriteCond %{REQUEST_URI} !^/datasets/
+        RewriteRule ^ index.html [L]
     </Directory>
 
     Alias /icons/ "/usr/share/apache2/icons/"

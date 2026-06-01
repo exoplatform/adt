@@ -9,3 +9,15 @@ downloads
 conf
 sources
 .java-version
+
+# ADT SPA Artifacts
+var/www/assets/
+var/www/index.html
+var/www/favicon.svg
+var/www/icons.svg
+
+# Node.js dependencies
+node_modules/
+frontend/node_modules/
+frontend/dist/
+websocket-server/node_modules/

@@ -77,8 +77,10 @@ Action
   list             Lists all deployed servers
 
   init             Initializes the environment
+  init-full        Initializes the environment, builds the SPA, and starts the WS server
   update-repos     Update Git repositories used by the web front-end
   web-server       Starts a local PHP web server to test the front-end (requires PHP >= 5.4). It automatically activates the development mode.
+  start-ws         Starts the WebSocket server (Node.js)
 
 Environment Variables
 ---------------------

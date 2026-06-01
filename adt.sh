@@ -99,6 +99,8 @@ mkdir -p ${ETC_DIR}
 mkdir -p ${TMP_DIR}
 mkdir -p ${DL_DIR}
 mkdir -p ${DS_DIR}
+mkdir -p ${ADT_DATA}/var/log
+mkdir -p ${ADT_DATA}/var/log/apache2
 mkdir -p ${SRV_DIR}
 mkdir -p ${SRC_DIR}
 mkdir -p ${CONF_DIR}
@@ -187,10 +189,36 @@ case "${ACTION}" in
       echo_warn "Development Mode: No Apache server reload."
     fi
   ;;
+  init-full)
+    # 1. Base initialization
+    ${0} init
+    
+    # 2. Build Frontend
+    ${0} build-frontend
+
+    # 3. Setup WebSocket Server dependencies
+    echo_info "Setting up WebSocket server dependencies..."
+    cd "${SCRIPT_DIR}/websocket-server"
+    npm install
+    
+    # 4. Start WebSocket Server
+    ${0} start-ws
+  ;;
+  build-frontend)
+    echo_info "Building Frontend SPA..."
+    cd "${SCRIPT_DIR}/frontend"
+    npm install
+    npm run build
+    echo_info "Deploying assets to ${ADT_DATA}/var/www/..."
+    rm -rf "${ADT_DATA}/var/www/assets"
+    cp -rf dist/* "${ADT_DATA}/var/www/"
+    echo_info "Frontend build and deployment completed."
+  ;;
   deploy)
     configurable_env_var "DEPLOYMENT_MODE" "NO_DATA"
     initialize_product_settings
     do_deploy
+    notify_update "deploy" "${INSTANCE_KEY}"
   ;;
   download-dataset)
     initialize_product_settings
@@ -199,10 +227,12 @@ case "${ACTION}" in
   start)
     initialize_product_settings
     do_start
+    notify_update "start" "${INSTANCE_KEY}"
   ;;
   stop)
     initialize_product_settings
     do_stop
+    notify_update "stop" "${INSTANCE_KEY}"
   ;;
   restart)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
@@ -228,26 +258,32 @@ case "${ACTION}" in
       ;;
     esac
     do_start
+    notify_update "restart" "${INSTANCE_KEY}"
   ;;
   undeploy)
     initialize_product_settings
     do_undeploy
+    notify_update "undeploy" "${INSTANCE_KEY}"
   ;;
   list)
     do_list
   ;;
   start-all)
     do_start_all
+    notify_update "start-all"
   ;;
   stop-all)
     do_stop_all
+    notify_update "stop-all"
   ;;
   restart-all)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
     do_restart_all
+    notify_update "restart-all"
   ;;
   undeploy-all)
     do_undeploy_all
+    notify_update "undeploy-all"
   ;;
   update-repos)
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
@@ -256,6 +292,13 @@ case "${ACTION}" in
     env_var "ADT_DEV_MODE" "true"
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
     do_load_php_server
+  ;;
+  start-ws)
+    echo_info "Starting WebSocket server..."
+    cd "${SCRIPT_DIR}/websocket-server"
+    # Run in background
+    nohup node index.js > "${ADT_DATA}/var/log/websocket-server.log" 2>&1 &
+    echo_info "WebSocket server started in background."
   ;;
   *)
     echo_error "Invalid action \"${ACTION}\""
