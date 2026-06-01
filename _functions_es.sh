@@ -266,6 +266,8 @@ do_upgrade(){
         -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
         -e "node.name=${INSTANCE_KEY}" \
         -e "cluster.name=${INSTANCE_KEY}" \
+        -e "discovery.type=single-node" \
+        -e "xpack.security.enabled=false" \
         -h 'search-old' \
         --health-cmd='curl --silent --fail search-old:9200/_cluster/health || exit 1' \
         --health-interval=30s \
