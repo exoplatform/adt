@@ -191,6 +191,7 @@ Environment Variables
   DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
   DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
   DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
+  DEPLOYMENT_ES9_MIGRATION_ENABLED  : Enable elastic serach migration to version 9
   DEPLOYMENT_GZIP_ENABLED           : Enable Gzip Compression on the Tomcat Server
   DEPLOYMENT_LOGBACK_LOGGERS        : Enable Debug logging for java packages (comma seperated eg: org.exoplatform:DEBUG,org.hibernate,org.springframework:ERROR), Default logging level is DEBUG
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
@@ -414,6 +415,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS" ""
       
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
+      configurable_env_var "DEPLOYMENT_ES9_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
       configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS" ""
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
@@ -911,7 +913,7 @@ initialize_product_settings() {
         if [[ "${PRODUCT_VERSION}" =~ ^(7.2) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
               env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.3.5"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.19.15"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0" # Default version of the mysql driver addon to use
@@ -1105,7 +1107,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(7.2) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.3.5"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.19.15"
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0" # Default version of the mysql driver addon to use
@@ -2374,7 +2376,32 @@ do_start() {
       echo_info "Elasticsearch 7 Migration is successfully done. Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
     fi
   fi
+  if ${DEPLOYMENT_ES9_MIGRATION_ENABLED:-false}; then
+    # Anyway no way to handle the error case. hard luck!
+    END_MIGRATION_ES_MSG_ERROR="Elasticsearch upgrade failed due to previous errors"
+    END_MIGRATION_ES_MSG_SUCCESS="Elasticsearch upgrade proceeded successfully"
 
+    # Check for the end of ES migration
+    set +e
+    while true; do
+      if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}" || \
+         grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
+        break
+      fi
+      sleep 1
+    done
+    set -e
+
+    echo_info "ES9 Upgrade is finished. Cleaning up old Elasticsearch..."
+    do_drop_es_old
+    echo_info "Cleanup finished!"
+
+    if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}"; then
+      echo_warn "Elasticsearch 9 migration completed with errors. This operation cannot be repeated! Please remove DEPLOYMENT_ES9_MIGRATION_ENABLED property!"
+    elif grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
+      echo_info "Elasticsearch 9 migration completed successfully. Please remove DEPLOYMENT_ES9_MIGRATION_ENABLED property!"
+    fi
+  fi
 
   )
 }

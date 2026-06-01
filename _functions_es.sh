@@ -76,7 +76,10 @@ do_start_es() {
     fi
     if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then 
       do_upgrade
-    fi  
+    fi
+    if ${DEPLOYMENT_ES9_MIGRATION_ENABLED:-false}; then 
+      do_upgrade
+    fi    
   fi
 
   echo_info "Starting elasticsearch container ${DEPLOYMENT_ES_CONTAINER_NAME} based on image ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}"
@@ -85,9 +88,12 @@ do_start_es() {
   delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
 
   if [[ ! "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^1.[0-9.]+$ ]]; then
-    if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
-      # Need to get the docker internal ip address of the container to ensure ES trust mechanism works fine.
-      env_var DEPLOYMENT_ES_OLD_INTERNAL_ADDR $(${DOCKER_CMD} inspect --format '{{ .NetworkSettings.IPAddress }}' ${DEPLOYMENT_ES_CONTAINER_NAME}_old)
+     if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false} || ${DEPLOYMENT_ES9_MIGRATION_ENABLED:-false}; then
+
+      # Need to get the docker internal ip address of the old container
+      env_var DEPLOYMENT_ES_OLD_INTERNAL_ADDR \
+        $(${DOCKER_CMD} inspect --format '{{ .NetworkSettings.IPAddress }}' ${DEPLOYMENT_ES_CONTAINER_NAME}_old)
+
       ${DOCKER_CMD} run \
         -d \
         -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
@@ -104,7 +110,9 @@ do_start_es() {
         --health-interval=30s \
         --health-timeout=30s \
         --health-retries=3 \
-        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+        --name ${DEPLOYMENT_ES_CONTAINER_NAME} \
+        ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
+
     else 
       ${DOCKER_CMD} run \
         -d \
@@ -234,6 +242,40 @@ do_upgrade(){
         --name ${DEPLOYMENT_ES_CONTAINER_NAME}_old ${DEPLOYMENT_ES_IMAGE}:1.2.2 # FIXME VARIABLIZE IT 
 
       check_es_availability ${DEPLOYMENT_ES_OLD_HTTP_PORT}
+      do_drop_es_data
+      do_create_es
+    ;;
+    ${DEPLOYMENT_ES9_MIGRATION_ENABLED:-false})
+      echo_info "Elasticsearch migration to version 9.3.5 is enabled! Starting..."
+      echo_warn "Please remove DEPLOYMENT_ES9_MIGRATION_ENABLED when the migration is done."
+      echo_info "Starting old ES..."
+
+      ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+      delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
+
+      local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
+      [ -z "${mount_point:-}" ] && return 0
+
+      sudo mv -v ${mount_point} ${mount_point}_old
+      sudo chown 1000:1000 -R ${mount_point}_old
+
+      ${DOCKER_CMD} run \
+        -d \
+        -p "127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}:9200" \
+        -v ${mount_point}_old:/usr/share/elasticsearch/data \
+        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
+        -e "node.name=${INSTANCE_KEY}" \
+        -e "cluster.name=${INSTANCE_KEY}" \
+        -h 'search-old' \
+        --health-cmd='curl --silent --fail search-old:9200/_cluster/health || exit 1' \
+        --health-interval=30s \
+        --health-timeout=30s \
+        --health-retries=3 \
+        --name ${DEPLOYMENT_ES_CONTAINER_NAME}_old \
+        ${DEPLOYMENT_ES_IMAGE}:8.14.3
+
+      check_es_availability ${DEPLOYMENT_ES_OLD_HTTP_PORT}
+
       do_drop_es_data
       do_create_es
     ;;
