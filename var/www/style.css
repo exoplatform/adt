@@ -999,6 +999,57 @@ a[name] {
   }
 }
 
+/* ── Mobile: wrap action button groups ─────────────── */
+@media (max-width: 768px) {
+  td .btn-group,
+  .table td .btn-group {
+    flex-wrap: wrap;
+    gap: 0.25rem;
+  }
+
+  .table td .btn-group .btn {
+    border-radius: 0.375rem !important;
+  }
+
+  .table td,
+  .table th {
+    padding: 8px 4px;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 576px) {
+  #main {
+    padding-top: 56px;
+    padding-bottom: 40px;
+  }
+
+  .table td,
+  .table th {
+    padding: 6px 3px;
+    font-size: 0.8rem;
+  }
+
+  td.category-row {
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+  }
+
+  .label {
+    font-size: 0.65em;
+    padding: 0.25em 0.5em;
+  }
+
+  .badge {
+    font-size: 0.7rem;
+  }
+
+  td .btn-group .btn {
+    padding: 0.2rem 0.3rem;
+    font-size: 0.7rem;
+  }
+}
+
 /* Print styles */
 @media print {
   .navbar,
