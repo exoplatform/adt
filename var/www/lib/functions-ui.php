@@ -27,8 +27,8 @@ function pageHeader($title = "")
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Theme handling -->
   <script>
-    var THEMES = ['default', 'ocean', 'forest', 'twilight'];
-    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'twilight': 'Twilight' };
+    var THEMES = ['default', 'ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson'];
+    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'twilight': 'Twilight', 'sunset': 'Sunset', 'midnight': 'Midnight', 'lavender': 'Lavender', 'crimson': 'Crimson' };
 
     // ── Storage helpers ──────────────────────────────────
     function getPref(key, fallback) { try { var v = localStorage.getItem(key); return v !== null ? v : fallback; } catch(e) { return fallback; } }
@@ -197,6 +197,11 @@ function pageNavigation()
               <li><button class="dropdown-item" onclick="pickTheme('ocean')">Ocean</button></li>
               <li><button class="dropdown-item" onclick="pickTheme('forest')">Forest</button></li>
               <li><button class="dropdown-item" onclick="pickTheme('twilight')">Twilight</button></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item" onclick="pickTheme('sunset')">Sunset</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('midnight')">Midnight</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('lavender')">Lavender</button></li>
+              <li><button class="dropdown-item" onclick="pickTheme('crimson')">Crimson</button></li>
             </ul>
           </li>
           <!-- Light/dark toggle -->
@@ -221,7 +226,7 @@ function pageNavigation()
                   if (sr) sr.textContent = label;
                 }
                 var td = document.getElementById('themeDropdown');
-                if (td) td.textContent = ({'default':'Default','ocean':'Ocean','forest':'Forest','twilight':'Twilight'}[a]) || a;
+                if (td) td.textContent = ({'default':'Default','ocean':'Ocean','forest':'Forest','twilight':'Twilight','sunset':'Sunset','midnight':'Midnight','lavender':'Lavender','crimson':'Crimson'}[a]) || a;
               })();
             </script>
           </li>

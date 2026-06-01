@@ -135,6 +135,114 @@
   --highlight-bg: #4a3f20;
 }
 
+/* Sunset – warm orange/coral tones */
+[data-accent="sunset"] {
+  --primary-color: #8b4513;
+  --secondary-color: #e67e22;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --table-header-bg: #8b4513;
+  --category-bg: #6b3410;
+  --navbar-start: #e74c3c;
+  --navbar-end: #f39c12;
+  --footer-start: #e74c3c;
+  --footer-end: #f39c12;
+}
+[data-accent="sunset"][data-bs-theme="dark"] {
+  --primary-color: #e67e22;
+  --secondary-color: #f0b27a;
+  --success-color: #58d68d;
+  --table-header-bg: #8b4513;
+  --category-bg: #4a2508;
+  --navbar-start: #c0392b;
+  --navbar-end: #d68910;
+  --footer-start: #c0392b;
+  --footer-end: #d68910;
+  --highlight-bg: #4a3f20;
+}
+
+/* Midnight – deep indigo/navy tones */
+[data-accent="midnight"] {
+  --primary-color: #1a1a4e;
+  --secondary-color: #3949ab;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --table-header-bg: #1a1a4e;
+  --category-bg: #0f0f3a;
+  --navbar-start: #0d1b2a;
+  --navbar-end: #1b2838;
+  --footer-start: #0d1b2a;
+  --footer-end: #1b2838;
+}
+[data-accent="midnight"][data-bs-theme="dark"] {
+  --primary-color: #7986cb;
+  --secondary-color: #9fa8da;
+  --success-color: #58d68d;
+  --table-header-bg: #1a1a4e;
+  --category-bg: #0a0a2e;
+  --navbar-start: #1a237e;
+  --navbar-end: #283593;
+  --footer-start: #1a237e;
+  --footer-end: #283593;
+  --highlight-bg: #3a3f20;
+}
+
+/* Lavender – soft purple/lilac tones */
+[data-accent="lavender"] {
+  --primary-color: #5b2c6f;
+  --secondary-color: #8e44ad;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --table-header-bg: #5b2c6f;
+  --category-bg: #3d1f4a;
+  --navbar-start: #7d3c98;
+  --navbar-end: #bb8fce;
+  --footer-start: #7d3c98;
+  --footer-end: #bb8fce;
+}
+[data-accent="lavender"][data-bs-theme="dark"] {
+  --primary-color: #bb8fce;
+  --secondary-color: #d2b4de;
+  --success-color: #58d68d;
+  --table-header-bg: #5b2c6f;
+  --category-bg: #2d0f3a;
+  --navbar-start: #6c3483;
+  --navbar-end: #a569bd;
+  --footer-start: #6c3483;
+  --footer-end: #a569bd;
+  --highlight-bg: #4a3f20;
+}
+
+/* Crimson – rich red/burgundy tones */
+[data-accent="crimson"] {
+  --primary-color: #7b241c;
+  --secondary-color: #c0392b;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+  --table-header-bg: #7b241c;
+  --category-bg: #5b1e14;
+  --navbar-start: #922b21;
+  --navbar-end: #e74c3c;
+  --footer-start: #922b21;
+  --footer-end: #e74c3c;
+}
+[data-accent="crimson"][data-bs-theme="dark"] {
+  --primary-color: #ec7063;
+  --secondary-color: #f1948a;
+  --success-color: #58d68d;
+  --table-header-bg: #7b241c;
+  --category-bg: #3e130c;
+  --navbar-start: #641e16;
+  --navbar-end: #b03a2e;
+  --footer-start: #641e16;
+  --footer-end: #b03a2e;
+  --highlight-bg: #4a3f20;
+}
+
 html {
   height: 100%;
 }
