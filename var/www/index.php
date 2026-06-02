@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
     <?= pageHeader(); ?>
 </head>
@@ -13,7 +13,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-<div id="main">
+<div id="main" role="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
@@ -23,7 +23,8 @@ checkCaches();
     </div>
 
     <div class="table-responsive">
-        <table class="table table-hover">
+        <table class="table table-hover" aria-label="Deployment instances">
+            <caption class="sr-only">Acceptance test deployment instances with status, version, database and action information</caption>
             <thead>
                 <tr>
                     <th class="col-center">S</th>
@@ -39,7 +40,7 @@ checkCaches();
             <tbody>
                 <tr>
                     <td colspan="15" class="category-row">
-                        <i class="fas fa-globe me-2"></i>Translation deployments
+                        <i class="fas fa-globe me-2" aria-hidden="true"></i>Translation deployments
                     </td>
                 </tr>
                 <?php

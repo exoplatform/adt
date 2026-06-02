@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
     <?= pageHeader("Company environments"); ?>
 </head>
@@ -13,7 +13,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-<div id="main">
+<div id="main" role="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
@@ -49,7 +49,8 @@ $company_instances=getGlobalCompanyInstances();
 if (isDeploymentInCategoryArray($company_instances)) {
   ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="Company internal environments">
+    <caption class="sr-only">Company internal project environment instances</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>

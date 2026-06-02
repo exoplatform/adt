@@ -4,7 +4,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
     <?= pageHeader("Customer projects"); ?>
 </head>
@@ -13,7 +13,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-<div id="main">
+<div id="main" role="main">
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
@@ -27,7 +27,8 @@ $cp_instances=getGlobalCPInstances();
 if (isDeploymentInCategoryArray($cp_instances)) {
   ?>
   <div class="table-responsive">
-  <table class="table table-hover">
+  <table class="table table-hover" aria-label="Customer project deployments">
+    <caption class="sr-only">Customer project deployment instances with status and version information</caption>
     <thead>
     <tr>
       <th class="col-center">Status</th>
@@ -38,7 +39,7 @@ if (isDeploymentInCategoryArray($cp_instances)) {
     </thead>
     <tbody>
       <tr>
-        <td colspan="15" class="category-row"><i class="fas fa-briefcase me-2"></i><?= "Customer Projects integration environments"; ?></td>
+        <td colspan="15" class="category-row"><i class="fas fa-briefcase me-2" aria-hidden="true"></i><?= "Customer Projects integration environments"; ?></td>
       </tr>
 <?php
   foreach ($cp_instances as $plf_branch => $descriptor_arrays) {
@@ -90,11 +91,13 @@ if (isDeploymentInCategoryArray($cp_instances)) {
     <?php
     }
   }
-}
 ?>
     </tbody>
 </table>
 </div>
+<?php
+}
+?>
 
   <!-- Info cards with synchronized design -->
   <div class="row mt-4">

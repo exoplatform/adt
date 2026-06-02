@@ -4,9 +4,9 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
-    <?= pageHeader(); ?>
+    <?= pageHeader("Servers"); ?>
     <style>
         /* ── Server summary cards ───────────────────────────── */
         .server-cards {
@@ -144,7 +144,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-    <div id="main">
+    <div id="main" role="main">
         <div class="container-fluid">
 
             <?php
@@ -208,7 +208,7 @@ checkCaches();
 
             <!-- ══ Section 1 – Server overview cards ══════════════════ -->
             <div class="section-title mt-3">
-                <i class="fas fa-server"></i> Acceptance Servers
+                <i class="fas fa-server" aria-hidden="true"></i> Acceptance Servers
             </div>
             <div class="server-cards">
                 <?php foreach ($server_specs as $hostname => $spec):
@@ -259,6 +259,7 @@ checkCaches();
             </div>
             <div class="table-responsive mb-5">
                 <table class="table table-hover align-middle" aria-label="Deployment port registry">
+                    <caption class="sr-only">Deployment port registry listing all instances with their assigned ports</caption>
                     <thead>
                         <tr class="table-dark">
                             <th class="col-center" colspan="4">Product</th>

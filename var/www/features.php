@@ -4,18 +4,12 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
     <?= pageHeader("features"); ?>
     <script type="text/javascript">
         $(document).ready(function () {
-            $(".feature-card").on("click", function (event) {
-                if (!$(event.target).closest('a').length) {
-                    $(".feature-card").removeClass('highlight');
-                    $(this).addClass('highlight');
-                }
-            });
-            
+            // Handle hash-based navigation to highlight feature cards
             if (window.location.hash.length > 0) {
                 $trSelector = "a[name=" + window.location.hash.substring(1, window.location.hash.length) + "]";
                 $($trSelector).closest('.feature-card').addClass('highlight');
@@ -34,12 +28,12 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-    <div id="main">
+    <div id="main" role="main">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
                     <div class="alert alert-info d-flex align-items-center">
-                        <i class="fas fa-code-branch fa-2x me-3"></i>
+                        <i class="fas fa-code-branch fa-2x me-3" aria-hidden="true"></i>
                         <div>
                             <h5 class="alert-heading mb-1">Feature Branches Overview</h5>
                             <p class="mb-0">This page summarizes all Git feature branches (<code>feature/.*</code>) and provides an overview of branches health.</p>
@@ -87,18 +81,18 @@ checkCaches();
                                     <!-- Feature Header -->
                                     <div class="feature-title">
                                         <a href="<?= currentPageURL() . "#feature-" . str_replace(array("/", "."), "-", $feature) ?>" class="text-warning">
-                                            <i class="fas fa-bookmark"></i>
+                                            <i class="fas fa-bookmark" aria-hidden="true"></i>
                                         </a>
                                         <h5 class="feature-branch-link">
                                             <code><?= $feature ?></code>
                                         </h5>
                                         <div class="feature-actions ms-auto">
-                                            <a href="https://ci.exoplatform.org/job/exo-<?= $feature ?>-fb-rebase-branch/" target="_blank" 
-                                               class="btn btn-sm btn-outline-primary" rel="tooltip" title="Rebase this feature branch">
-                                                <i class="fas fa-sync-alt"></i> Rebase
+                                        <a href="https://ci.exoplatform.org/job/exo-<?= $feature ?>-fb-rebase-branch/" target="_blank" 
+                                           class="btn btn-sm btn-outline-primary" rel="tooltip" title="Rebase this feature branch">
+                                                <i class="fas fa-sync-alt" aria-hidden="true"></i> Rebase
                                             </a>
                                             <img src="https://ci.exoplatform.org/buildStatus/icon?job=exo-<?= $feature ?>-fb-rebase-branch" 
-                                                 class="ci-badge" alt="Build Status">
+                                                 class="ci-badge" alt="Rebase build status for <?= $feature ?>">
                                         </div>
                                     </div>
                                     
@@ -108,7 +102,7 @@ checkCaches();
                                             <?php if (array_key_exists($project, $FBProjects)): ?>
                                             <div class="project-chip">
                                                 <div class="project-chip-header">
-                                                    <i class="fas fa-cube me-1"></i>
+                                                    <i class="fas fa-cube me-1" aria-hidden="true"></i>
                                                     <?= $projectsNames[$project] ?>
                                                 </div>
                                                 <div class="text-center">
@@ -116,9 +110,9 @@ checkCaches();
                                                 </div>
                                                 <div class="text-center mt-2">
                                                     <a href="https://ci.exoplatform.org/job/FB/job/<?= getModuleCiPrefix($project) ?><?= $project ?>-<?= $feature ?>-fb-ci/" 
-                                                       target="_blank" rel="tooltip" title="CI Job">
-                                                        <img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/<?= getModuleCiPrefix($project) ?><?= $project ?>-<?= $feature ?>-fb-ci" 
-                                                             class="ci-badge" alt="CI Status">
+                                                       target="_blank" rel="tooltip" title="CI Job for <?= $projectsNames[$project] ?>">
+                                                         <img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/<?= getModuleCiPrefix($project) ?><?= $project ?>-<?= $feature ?>-fb-ci" 
+                                                              class="ci-badge" alt="CI build status for <?= $projectsNames[$project] ?>">
                                                     </a>
                                                 </div>
                                             </div>
@@ -154,7 +148,7 @@ checkCaches();
                                         <div class="card-body">
                                             <div class="feature-title">
                                                 <a href="<?= currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature) ?>" class="text-warning">
-                                                    <i class="fas fa-bookmark"></i>
+                                                    <i class="fas fa-bookmark" aria-hidden="true"></i>
                                                 </a>
                                                 <code class="small"><?= $feature ?></code>
                                             </div>
@@ -215,7 +209,7 @@ checkCaches();
                                 <div class="card-body">
                                     <div class="feature-title">
                                         <a href="<?= currentPageURL() . "#branch-" . str_replace(array("/", "."), "-", $baseBranch) ?>" class="text-warning">
-                                            <i class="fas fa-bookmark"></i>
+                                            <i class="fas fa-bookmark" aria-hidden="true"></i>
                                         </a>
                                         <h5 class="mb-0"><?= $baseBranch ?></h5>
                                         <div class="feature-actions ms-auto">

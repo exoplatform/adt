@@ -6,7 +6,7 @@ $file_path = $_GET['file'];
 $log_type = $_GET['type'];
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
 <?= pageHeader("log visualization"); ?>
 </head>
@@ -15,7 +15,7 @@ checkCaches();
 <?php pageNavigation(); ?>
 <!-- Main ================================================== -->
 <div id="wrap">
-    <div id="main">
+    <div id="main" role="main">
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">

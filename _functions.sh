@@ -339,7 +339,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_MAILPIT_ENABLED" false
       configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE" "axllent/mailpit"
-      configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE_VERSION" "v1.30.0"
+      configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE_VERSION" "v1.30.1"
 
       # Matrix
       configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
@@ -375,7 +375,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "26.0.5-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "26.1.0-acc"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
 
       configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
