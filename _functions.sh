@@ -925,7 +925,7 @@ initialize_product_settings() {
         if [[ "${PRODUCT_VERSION}" =~ ^(7.3) ]]; then
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
               env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.3.4"
               env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.3.0" # Default version of the mysql driver addon to use
@@ -1128,6 +1128,7 @@ initialize_product_settings() {
           elif [[ "${PRODUCT_VERSION}" =~ ^(7.2) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
+
               env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0" # Default version of the mysql driver addon to use
@@ -1144,7 +1145,7 @@ initialize_product_settings() {
               configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
           elif [[ "${PRODUCT_VERSION}" =~ ^(7.3) ]]; then
               env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
+              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.3.4"
 
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.3.0" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.4" # Default version of the jdbc postgresql driver addon to use
