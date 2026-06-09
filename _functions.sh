@@ -35,6 +35,7 @@ source "${SCRIPT_DIR}/_functions_iframely.sh"
 source "${SCRIPT_DIR}/_functions_mailpit.sh"
 source "${SCRIPT_DIR}/_functions_matrix.sh"
 source "${SCRIPT_DIR}/_functions_clamav.sh"
+source "${SCRIPT_DIR}/_functions_ai.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
 source "${SCRIPT_DIR}/_functions_mongoexpress.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
@@ -357,6 +358,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CLAMAV_IMAGE" "clamav/clamav"
       configurable_env_var "DEPLOYMENT_CLAMAV_IMAGE_VERSION" "1.5.1"
       
+      # AI-Ollama
+      configurable_env_var "DEPLOYMENT_AI_ENABLED" false
+      configurable_env_var "DEPLOYMENT_AI_IMAGE" "ollama/ollama"
+      configurable_env_var "DEPLOYMENT_AI_IMAGE_VERSION" "0.12.10"
 
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "hbenali/frontail"
@@ -1319,6 +1324,7 @@ initialize_product_settings() {
    do_get_mailpit_settings
    do_get_matrix_settings
    do_get_clamav_settings
+   do_get_ai_settings
    do_get_frontail_settings
    do_get_mongo_express_settings
    do_get_keycloak_settings
@@ -1535,6 +1541,10 @@ do_init_empty_data(){
   if ${DEPLOYMENT_CLAMAV_ENABLED}; then
     do_drop_clamav_data
     do_create_clamav
+  fi
+  if ${DEPLOYMENT_AI_ENABLED}; then
+    do_drop_ai_data
+    do_create_ai
   fi
   do_init_empty_chat_database
 
@@ -1949,6 +1959,9 @@ do_deploy() {
   # Clamav port
   env_var "DEPLOYMENT_CLAMAV_PORT" "${DEPLOYMENT_PORT_PREFIX}33"
   
+  # AI port
+  env_var "DEPLOYMENT_AI_PORT" "${DEPLOYMENT_PORT_PREFIX}34"
+
   # SFTP port
   env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
   
@@ -2193,6 +2206,7 @@ do_start() {
   do_start_mailpit
   do_start_matrix
   do_start_clamav
+  do_start_ai
   do_start_frontail
   do_start_keycloak
   do_start_jitsi
@@ -2482,6 +2496,7 @@ do_stop() {
       do_stop_mailpit
       do_stop_matrix
       do_stop_clamav
+      do_stop_ai
       do_stop_frontail
       do_stop_phpldapadmin
       do_stop_mongo_express
@@ -2531,6 +2546,7 @@ do_undeploy() {
     do_drop_mailpit_data
     do_drop_matrix_data
     do_drop_clamav_data
+    do_drop_ai_data
     do_drop_frontail_data
     do_drop_keycloak_data
     do_drop_phpldapadmin_data
