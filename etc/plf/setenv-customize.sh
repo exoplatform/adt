@@ -236,5 +236,11 @@ if ${DEPLOYMENT_MATRIX_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.matrix.jwt.secret=${DEPLOYMENT_MATRIX_JWT_SECRET}"
 fi
 
+# AI integration
+if ${DEPLOYMENT_AI_ENABLED}; then
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.ai.ollama.url=http://localhost:${DEPLOYMENT_AI_PORT}"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.ai.mcp.base-url=http://localhost:${EXO_TOMCAT_HTTP_PORT}"
+fi
+
 # Unpack tomcat wars
 EXO_TOMCAT_UNPACK_WARS=${DEPLOYMENT_TOMCAT_UNPACK_WARS}
