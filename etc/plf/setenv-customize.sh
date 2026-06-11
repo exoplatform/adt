@@ -239,7 +239,7 @@ fi
 # AI integration
 if ${DEPLOYMENT_AI_ENABLED}; then
   CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.ai.ollama.url=http://localhost:${DEPLOYMENT_AI_PORT}"
-  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.ai.mcp.base-url=http://localhost:${EXO_TOMCAT_HTTP_PORT}"
+  CATALINA_OPTS="${CATALINA_OPTS} -Dmeeds.ai.mcp.base-url=http://localhost:${DEPLOYMENT_HTTP_PORT}"
 fi
 
 # Unpack tomcat wars
