@@ -17,95 +17,102 @@ checkCaches();
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
-<div class="alert alert-info">
-    <i class="fas fa-building me-2"></i>
-    Company environments and deployments
+<div class="page-header">
+    <h1 class="page-header__title">Company</h1>
+    <p class="page-header__subtitle">Internal company environments and deployments</p>
 </div>
 
-<!-- Company links list with proper dark mode support via CSS class -->
+<!-- Company links -->
 <ul class="list-unstyled company-links-list p-3 rounded">
   <li class="mb-2">
-    <i class="fas fa-globe text-primary me-2"></i>eXo Website :
-    <a href="https://www-dev.exoplatform.com/" target="_blank" class="badge bg-info text-decoration-none">(development) www-dev.exoplatform.com</a>
-    <span class="mx-1">-</span>
-    <a href="https://www-preprod.exoplatform.com/" target="_blank" class="badge bg-warning text-decoration-none">(pre-production) www-preprod.exoplatform.com</a>
+    <i class="fas fa-globe me-2" style="color:var(--accent)"></i>eXo Website :
+    <a href="https://www-dev.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--success);color:#000">dev</a>
+    <span class="mx-1">·</span>
+    <a href="https://www-preprod.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--warning);color:#000">preprod</a>
   </li>
   <li class="mb-2">
-    <i class="fas fa-users text-primary me-2"></i>eXo Tribe :
-    <a href="https://community-dev.exoplatform.com/" target="_blank" class="badge bg-info text-decoration-none">(development) community-dev.exoplatform.com</a>
-    <span class="mx-1">-</span>
-    <a href="https://community-preprod.exoplatform.com/" target="_blank" class="badge bg-warning text-decoration-none">(pre-production) community-preprod.exoplatform.com</a>
+    <i class="fas fa-users me-2" style="color:var(--accent)"></i>eXo Tribe :
+    <a href="https://community-dev.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--success);color:#000">dev</a>
+    <span class="mx-1">·</span>
+    <a href="https://community-preprod.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--warning);color:#000">preprod</a>
   </li>
   <li class="mb-2">
-    <i class="fas fa-blog text-primary me-2"></i>eXo Blog :
-    <a href="https://blog-dev.exoplatform.com/" target="_blank" class="badge bg-info text-decoration-none">(development) blog-dev.exoplatform.com/</a>
-    <span class="mx-1">-</span>
-    <a href="https://blog-preprod.exoplatform.com/blog/" target="_blank" class="badge bg-warning text-decoration-none">(pre-production) www-preprod.exoplatform.com/blog/</a>
+    <i class="fas fa-blog me-2" style="color:var(--accent)"></i>eXo Blog :
+    <a href="https://blog-dev.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--success);color:#000">dev</a>
+    <span class="mx-1">·</span>
+    <a href="https://blog-preprod.exoplatform.com/blog/" target="_blank" class="badge text-decoration-none" style="background:var(--warning);color:#000">preprod</a>
   </li>
 </ul>
 
+<div class="instances-search">
+    <i class="fas fa-search instances-search__icon"></i>
+    <input type="text" id="instanceSearch" class="instances-search__input" placeholder="Filter instances...">
+</div>
 <?php
 $company_instances=getGlobalCompanyInstances();
 if (isDeploymentInCategoryArray($company_instances)) {
-  ?>
-  <div class="table-responsive">
-  <table class="table table-hover" aria-label="Company internal environments">
-    <caption class="sr-only">Company internal project environment instances</caption>
-    <thead>
-    <tr>
-      <th class="col-center">Status</th>
-      <th class="col-center">Name</th>
-      <th class="col-center">Version</th>
-      <th class="col-center" colspan="4">Characteristics</th>
-    </tr>
-    </thead>
-    <tbody>
-  <?php
   foreach (getGlobalCompanyInstances() as $plf_branch => $descriptor_arrays) {
-    ?>
-    <tr>
-      <td colspan="15" class="category-row"><i class="fas fa-code-branch me-2"></i><?= "Company developments : " . $plf_branch; ?></td>
-    </tr>
+  ?>
+  <div class="instances-section">
+    <div class="instances-section__header">
+        <i class="fas fa-code-branch"></i> Company developments: <?= $plf_branch ?>
+    </div>
+    <div class="instance-grid">
     <?php
-    foreach ($descriptor_arrays as $descriptor_array) {
+    foreach ($descriptor_arrays as $inst) {
       ?>
-      <tr>
-        <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-        <td>
-          <div class="d-flex align-items-center">
-            <?= componentProductInfoIcon($descriptor_array) ?>&nbsp;
-            <div class="ms-1">
-              <?= componentUpgradeEligibility($descriptor_array, false); ?>
-              <?= componentPatchInstallation($descriptor_array, false); ?>
-              <?= componentCertbotEnabled($descriptor_array, false); ?>
-              <?= componentDevModeEnabled($descriptor_array, false); ?>
-              <?= componentStagingModeEnabled($descriptor_array, false); ?>
-              <?= componentDebugModeEnabled($descriptor_array, false); ?>
-              <?= componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success'); ?>&nbsp;
-              <?= componentProductOpenLink($descriptor_array, "", true) ?>
-            </div>
-            <span class="ms-auto">
-              <?= componentEditNoteIcon($descriptor_array) ?>
-            </span>
+      <div class="instance-card">
+          <div class="instance-card__top">
+              <div class="instance-card__status">
+                  <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
+                      <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+                  <?php else: ?>
+                      <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+                  <?php endif; ?>
+              </div>
+              <div class="instance-card__info">
+                  <div class="instance-card__name">
+                      <?= componentProductInfoIcon($inst); ?>
+                      <?= componentVisibilityIcon($inst, empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success'); ?>
+                      <?= componentProductOpenLink($inst, "", true) ?>
+                  </div>
+                  <div class="instance-card__meta">
+                      <?= componentProductVersion($inst); ?>
+                      <?= componentDownloadIcon($inst); ?>
+                  </div>
+              </div>
+              <div class="instance-card__actions-top">
+                  <?= componentEditNoteIcon($inst) ?>
+              </div>
           </div>
-        </td>
-        <td class="col-center">
-          <?= componentDownloadIcon($descriptor_array); ?>
-          &nbsp;
-          <?= componentProductVersion($descriptor_array); ?>
-        </td>
-        <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i>built <?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-        <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-        <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-        <td class="col-left"><?= componentDeploymentActions($descriptor_array) ?></td>
-      </tr>
+          <div class="instance-card__details">
+              <?= componentDatabaseIcon($inst) ?>
+              <div class="instance-card__ages">
+                  <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
+                  <span><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+              </div>
+          </div>
+          <div class="instance-card__badges">
+              <?= componentUpgradeEligibility($inst, false); ?>
+              <?= componentPatchInstallation($inst, false); ?>
+              <?= componentCertbotEnabled($inst, false); ?>
+              <?= componentDevModeEnabled($inst, false); ?>
+              <?= componentStagingModeEnabled($inst, false); ?>
+              <?= componentDebugModeEnabled($inst, false); ?>
+          </div>
+          <div class="instance-card__actions">
+              <?= componentDeploymentActions($inst) ?>
+          </div>
+      </div>
       <?php
     }
-  }
-  ?>
-    </tbody>
-  </table>
+    ?>
+    </div>
   </div>
+  <?php
+  }
+}
+?>
   <div class="row mt-4">
     <div class="col-md-4">
       <div class="card">
@@ -142,13 +149,6 @@ if (isDeploymentInCategoryArray($company_instances)) {
       </div>
     </div>
   </div>
-  <?php
-} else {
-  echo '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Nothing yet ;-)</div>';
-}
-?>
-
-</div>
 </div>
 </div>
 <!-- /container -->

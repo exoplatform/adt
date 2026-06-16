@@ -17,80 +17,79 @@ checkCaches();
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
-<div class="alert alert-info">
-    <i class="fas fa-flask me-2"></i>
-    These instances are deployed for <strong>eXo QA Team members</strong> usage only.
+<div class="page-header">
+    <h1 class="page-header__title">QA Environments</h1>
+    <p class="page-header__subtitle">Instances deployed for <strong>eXo QA Team members</strong> usage only</p>
+</div>
+<div class="instances-search">
+    <i class="fas fa-search instances-search__icon"></i>
+    <input type="text" id="instanceSearch" class="instances-search__input" placeholder="Filter instances...">
 </div>
 <?php
 $qa_instances=getGlobalQAUserInstances();
 if (isDeploymentInCategoryArray($qa_instances)) {
 ?>
-  <div class="table-responsive">
-  <table class="table table-hover" aria-label="QA environments - QA User">
-    <caption class="sr-only">QA user environment instances</caption>
-    <thead>
-    <tr>
-      <th class="col-center">Status</th>
-      <th class="col-center">Name</th>
-      <th class="col-center">Version</th>
-      <th class="col-center" colspan="3">Characteristics</th>
-    </tr>
-    </thead>
-    <tbody>
+  <div class="instances-section">
+    <div class="instances-section__header">
+        <i class="fas fa-tag"></i> QA User Environments
+    </div>
+    <div class="instance-grid">
   <?php
   foreach ($qa_instances as $plf_branch => $descriptor_arrays) {
-    ?>
-    <tr>
-        <td colspan="15" class="category-row"><i class="fas fa-tag me-2"></i><?= "Platform " . $plf_branch . " QA environments"; ?></td>
-    </tr>
-    <?php
-    foreach ($descriptor_arrays as $descriptor_array) {
+    foreach ($descriptor_arrays as $inst) {
         ?>
-        <tr>
-            <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <div>
-                        <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-                        <?= componentProductOpenLink($descriptor_array); ?>
-                        <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-                        <?= componentCertbotEnabled($descriptor_array); ?>
-                        <?= componentDevModeEnabled($descriptor_array); ?>
-                        <?= componentStagingModeEnabled($descriptor_array); ?>
-                        <?= componentDebugModeEnabled($descriptor_array); ?>
-                        <?= componentAddonsTags($descriptor_array); ?>
+        <div class="instance-card">
+            <div class="instance-card__top">
+                <div class="instance-card__status">
+                    <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
+                        <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+                    <?php else: ?>
+                        <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+                    <?php endif; ?>
+                </div>
+                <div class="instance-card__info">
+                    <div class="instance-card__name">
+                        <?= componentProductInfoIcon($inst); ?>
+                        <?= componentProductOpenLink($inst); ?>
                     </div>
-                    <span class="ms-auto">
-                    <?php 
-                    if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
-                      ?>
-                      <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
-                      <?php 
-                    } else { 
-                      ?>
-                      <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
-                      <?php 
+                    <div class="instance-card__meta">
+                        <?= componentProductVersion($inst); ?>
+                        <?= componentDownloadIcon($inst); ?>
+                    </div>
+                </div>
+                <div class="instance-card__actions-top">
+                    <?php
+                    if(isset($inst->DEPLOYMENT_BUILD_URL)) {
+                        echo '<a href="'.$inst->DEPLOYMENT_BUILD_URL.'/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
+                    } else {
+                        echo '<a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-'.$inst->BASE_VERSION.'-'.$inst->INSTANCE_ID.'-acc/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
                     }
                     ?>
-                      <i class="fas fa-sync-alt"></i>
-                    </a>
-                    </span>
                 </div>
-            </td>
-            <td class="col-center">
-                <?= componentDownloadIcon($descriptor_array); ?>&nbsp;
-                <?= componentProductVersion($descriptor_array); ?>
-            </td>
-            <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-            <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-            <td class="col-left"><?= componentDeploymentActions($descriptor_array) ?></td>
-        </tr>
+            </div>
+            <div class="instance-card__details">
+                <?= componentDatabaseIcon($inst) ?>
+                <div class="instance-card__ages">
+                    <span><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                </div>
+            </div>
+            <div class="instance-card__badges">
+                <?= componentUpgradeEligibility($inst); ?>
+                <?= componentCertbotEnabled($inst); ?>
+                <?= componentDevModeEnabled($inst); ?>
+                <?= componentStagingModeEnabled($inst); ?>
+                <?= componentDebugModeEnabled($inst); ?>
+                <?= componentAddonsTags($inst); ?>
+            </div>
+            <div class="instance-card__actions">
+                <?= componentDeploymentActions($inst) ?>
+            </div>
+        </div>
         <?php
     }
   }
   ?>
-    </tbody>
-  </table>
+    </div>
   </div>
   <?php
 } else {
@@ -105,73 +104,68 @@ if (isDeploymentInCategoryArray($qa_instances)) {
 $qa_auto_instances=getGlobalQAAutoInstances();
 if (isDeploymentInCategoryArray($qa_auto_instances)) {
 ?>
-  <div class="table-responsive">
-  <table class="table table-hover" aria-label="QA environments - Automatic">
-    <caption class="sr-only">QA automatic test environment instances</caption>
-    <thead>
-    <tr>
-      <th class="col-center">Status</th>
-      <th class="col-center">Name</th>
-      <th class="col-center">Version</th>
-      <th class="col-center" colspan="3">Characteristics</th>
-    </tr>
-    </thead>
-    <tbody>
+  <div class="instances-section">
+    <div class="instances-section__header">
+        <i class="fas fa-robot"></i> Automatic QA Environments
+    </div>
+    <div class="instance-grid">
   <?php
   foreach ($qa_auto_instances as $plf_branch => $descriptor_arrays) {
-    ?>
-    <tr>
-        <td colspan="15" class="category-row"><i class="fas fa-robot me-2"></i><?= "Platform " . $plf_branch . " Automatic QA environments"; ?></td>
-    </tr>
-    <?php
-    foreach ($descriptor_arrays as $descriptor_array) {
+    foreach ($descriptor_arrays as $inst) {
         ?>
-        <tr>
-            <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <div>
-                        <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-                        <?= componentProductOpenLink($descriptor_array); ?>
-                        <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-                        <?= componentPatchInstallation($descriptor_array); ?>
-                        <?= componentCertbotEnabled($descriptor_array); ?>
-                        <?= componentDevModeEnabled($descriptor_array); ?>
-                        <?= componentStagingModeEnabled($descriptor_array); ?>
-                        <?= componentDebugModeEnabled($descriptor_array); ?>
-                        <?= componentAddonsTags($descriptor_array); ?>
+        <div class="instance-card">
+            <div class="instance-card__top">
+                <div class="instance-card__status">
+                    <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
+                        <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+                    <?php else: ?>
+                        <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+                    <?php endif; ?>
+                </div>
+                <div class="instance-card__info">
+                    <div class="instance-card__name">
+                        <?= componentProductInfoIcon($inst); ?>
+                        <?= componentProductOpenLink($inst); ?>
                     </div>
-                    <span class="ms-auto">
-                    <?php 
-                    if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
-                      ?>
-                      <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
-                      <?php 
-                    } else { 
-                      ?>
-                      <a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-<?= $descriptor_array->BASE_VERSION ?>-<?= $descriptor_array->INSTANCE_ID ?>-acc/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
-                      <?php 
+                    <div class="instance-card__meta">
+                        <?= componentProductVersion($inst); ?>
+                        <?= componentDownloadIcon($inst); ?>
+                    </div>
+                </div>
+                <div class="instance-card__actions-top">
+                    <?php
+                    if(isset($inst->DEPLOYMENT_BUILD_URL)) {
+                        echo '<a href="'.$inst->DEPLOYMENT_BUILD_URL.'/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
+                    } else {
+                        echo '<a href="https://ci.exoplatform.org/view/°%20ACCEPTANCE%20°/job/platform-enterprise-'.$inst->BASE_VERSION.'-'.$inst->INSTANCE_ID.'-acc/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
                     }
                     ?>
-                      <i class="fas fa-sync-alt"></i>
-                    </a>
-                    </span>
                 </div>
-            </td>
-            <td class="col-center">
-                <?= componentDownloadIcon($descriptor_array); ?>&nbsp;
-                <?= componentProductVersion($descriptor_array); ?>
-            </td>
-            <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-            <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-            <td class="col-left"><?= componentDeploymentActions($descriptor_array) ?></td>
-        </tr>
+            </div>
+            <div class="instance-card__details">
+                <?= componentDatabaseIcon($inst) ?>
+                <div class="instance-card__ages">
+                    <span><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                </div>
+            </div>
+            <div class="instance-card__badges">
+                <?= componentUpgradeEligibility($inst); ?>
+                <?= componentPatchInstallation($inst); ?>
+                <?= componentCertbotEnabled($inst); ?>
+                <?= componentDevModeEnabled($inst); ?>
+                <?= componentStagingModeEnabled($inst); ?>
+                <?= componentDebugModeEnabled($inst); ?>
+                <?= componentAddonsTags($inst); ?>
+            </div>
+            <div class="instance-card__actions">
+                <?= componentDeploymentActions($inst) ?>
+            </div>
+        </div>
         <?php
     }
   }
   ?>
-    </tbody>
-  </table>
+    </div>
   </div>
   <?php
 } else {

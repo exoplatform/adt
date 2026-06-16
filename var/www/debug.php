@@ -3,7 +3,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
   <?= pageHeader("debug"); ?>
 </head>
@@ -13,6 +13,9 @@ checkCaches();
 <!-- Main ================================================== -->
 <div id="wrap">
   <div id="main">
+    <div class="page-header">
+      <h1 class="page-header__title">Debug</h1>
+    </div>
     <div class="container-fluid">
       <div class="row">
         <div class="col-12">

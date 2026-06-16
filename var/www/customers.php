@@ -17,85 +17,83 @@ checkCaches();
 <div class="container-fluid">
 <div class="row">
 <div class="col-12">
-<div class="alert alert-info">
-    <i class="fas fa-users me-2"></i>
-    These instances are deployed for <strong>Customer Projects</strong> development Team deployment usage only.
+<div class="page-header">
+    <h1 class="page-header__title">Customer Projects</h1>
+    <p class="page-header__subtitle">Instances deployed for <strong>Customer Projects</strong> development team usage only</p>
+</div>
+<div class="instances-search">
+    <i class="fas fa-search instances-search__icon"></i>
+    <input type="text" id="instanceSearch" class="instances-search__input" placeholder="Filter instances...">
 </div>
 <?php
-// List all Customer Project environments
 $cp_instances=getGlobalCPInstances();
 if (isDeploymentInCategoryArray($cp_instances)) {
-  ?>
-  <div class="table-responsive">
-  <table class="table table-hover" aria-label="Customer project deployments">
-    <caption class="sr-only">Customer project deployment instances with status and version information</caption>
-    <thead>
-    <tr>
-      <th class="col-center">Status</th>
-      <th class="col-center">Name</th>
-      <th class="col-center">Version</th>
-      <th class="col-center" colspan="3">Characteristics</th>
-    </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td colspan="15" class="category-row"><i class="fas fa-briefcase me-2" aria-hidden="true"></i><?= "Customer Projects integration environments"; ?></td>
-      </tr>
-<?php
+?>
+  <div class="instances-section">
+    <div class="instances-section__header">
+        <i class="fas fa-briefcase"></i> Customer Projects Integration
+    </div>
+    <div class="instance-grid">
+  <?php
   foreach ($cp_instances as $plf_branch => $descriptor_arrays) {
-    foreach ($descriptor_arrays as $descriptor_array) {
+    foreach ($descriptor_arrays as $inst) {
         ?>
-        <tr>
-            <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-            <td>
-              <div class="d-flex align-items-center">
-                <div>
-                  <?= componentProductOpenLink($descriptor_array); ?>
-                  <br/><?= componentUpgradeEligibility($descriptor_array); ?>
-                  <?= componentPatchInstallation($descriptor_array); ?>
-                  <?= componentCertbotEnabled($descriptor_array); ?>
-                  <?= componentDevModeEnabled($descriptor_array); ?>
-                  <?= componentStagingModeEnabled($descriptor_array); ?>
-                  <?= componentDebugModeEnabled($descriptor_array); ?>
-                  <?= componentAddonsTags($descriptor_array); ?>
+        <div class="instance-card">
+            <div class="instance-card__top">
+                <div class="instance-card__status">
+                    <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
+                        <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+                    <?php else: ?>
+                        <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+                    <?php endif; ?>
                 </div>
-                <span class="ms-auto">
-                <?php 
-                if(isset($descriptor_array->DEPLOYMENT_BUILD_URL)) {
-                  ?>
-                  <a href="<?=$descriptor_array->DEPLOYMENT_BUILD_URL ?>/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
-                    <i class="fas fa-sync-alt"></i>
-                  </a>
-                  <?php 
-                } else { 
-                  ?>
-                  <a href="https://ci.exoplatform.org/job/platform-enterprise-<?= $descriptor_array->PLF_BRANCH ?>-<?= $descriptor_array->INSTANCE_ID ?>-deploy-acc/build?delay=0sec" target="_blank" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Restart your instance or reset your instance's data">
-                    <i class="fas fa-sync-alt"></i>
-                  </a>
-                  <?php 
-                }
-                ?>
-                <?= componentEditNoteIcon($descriptor_array) ?>
-                </span>
-              </div>
-            </td>
-            <td class="col-center">
-                <?= componentProductInfoIcon($descriptor_array); ?>&nbsp;
-                <?= componentProductVersion($descriptor_array); ?>&nbsp;
-                <?= componentDownloadIcon($descriptor_array); ?>
-            </td>
-            <td class="col-right"><i class="fas fa-clock me-1"></i>deployed <?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-            <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-            <td class="col-left"><?= componentDeploymentActions($descriptor_array) ?></td>
-        </tr>
-    <?php
+                <div class="instance-card__info">
+                    <div class="instance-card__name">
+                        <?= componentProductInfoIcon($inst); ?>
+                        <?= componentProductOpenLink($inst); ?>
+                    </div>
+                    <div class="instance-card__meta">
+                        <?= componentProductVersion($inst); ?>
+                        <?= componentDownloadIcon($inst); ?>
+                    </div>
+                </div>
+                <div class="instance-card__actions-top">
+                    <?php
+                    if(isset($inst->DEPLOYMENT_BUILD_URL)) {
+                        echo '<a href="'.$inst->DEPLOYMENT_BUILD_URL.'/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
+                    } else {
+                        echo '<a href="https://ci.exoplatform.org/job/platform-enterprise-'.$inst->PLF_BRANCH.'-'.$inst->INSTANCE_ID.'-deploy-acc/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
+                    }
+                    ?>
+                    <?= componentEditNoteIcon($inst) ?>
+                </div>
+            </div>
+            <div class="instance-card__details">
+                <?= componentDatabaseIcon($inst) ?>
+                <div class="instance-card__ages">
+                    <span><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                </div>
+            </div>
+            <div class="instance-card__badges">
+                <?= componentUpgradeEligibility($inst); ?>
+                <?= componentPatchInstallation($inst); ?>
+                <?= componentCertbotEnabled($inst); ?>
+                <?= componentDevModeEnabled($inst); ?>
+                <?= componentStagingModeEnabled($inst); ?>
+                <?= componentDebugModeEnabled($inst); ?>
+                <?= componentAddonsTags($inst); ?>
+            </div>
+            <div class="instance-card__actions">
+                <?= componentDeploymentActions($inst) ?>
+            </div>
+        </div>
+        <?php
     }
   }
-?>
-    </tbody>
-</table>
-</div>
-<?php
+  ?>
+    </div>
+  </div>
+  <?php
 }
 ?>
 

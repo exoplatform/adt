@@ -3,6 +3,31 @@
 require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
+
+// Compute stats for bento grid
+$all_merged = getGlobalAcceptanceInstances();
+$total_instances = 0;
+$running = 0;
+$stopped = 0;
+foreach ($all_merged as $branch => $instances) {
+    foreach ($instances as $inst) {
+        $total_instances++;
+        if ($inst->DEPLOYMENT_STATUS == "Up") $running++;
+        else $stopped++;
+    }
+}
+$translation_instances = getGlobalTranslationInstances();
+$translation_count = 0;
+if (isDeploymentInCategoryArray($translation_instances)) {
+    foreach ($translation_instances as $arr) {
+        $translation_count += count($arr);
+    }
+}
+$dev_instances = getGlobalDevInstances();
+$dev_count = 0;
+foreach ($dev_instances as $arr) {
+    $dev_count += count($arr);
+}
 ?>
 <html lang="en">
 <head>
@@ -14,152 +39,188 @@ checkCaches();
 <!-- Main ================================================== -->
 <div id="wrap">
 <div id="main" role="main">
-<div class="container-fluid">
-<div class="row">
-<div class="col-12">
-    <div class="alert alert-info">
-        <i class="fas fa-flask me-2"></i>
-        These instances are deployed to be used for acceptance tests.
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-header__title">Dashboard</h1>
+        <p class="page-header__subtitle">Acceptance test deployment instances</p>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-hover" aria-label="Deployment instances">
-            <caption class="sr-only">Acceptance test deployment instances with status, version, database and action information</caption>
-            <thead>
-                <tr>
-                    <th class="col-center">S</th>
-                    <th class="col-center">Name</th>
-                    <th class="col-center">Version</th>
-                    <th class="col-center">Database</th>
-                    <th class="col-center" colspan="4">Feature Branch</th>
-                    <th class="col-center">Built</th>
-                    <th class="col-center">Deployed</th>
-                    <th class="col-center">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td colspan="15" class="category-row">
-                        <i class="fas fa-globe me-2" aria-hidden="true"></i>Translation deployments
-                    </td>
-                </tr>
-                <?php
-                $translation_instances = getGlobalTranslationInstances();
-                if (isDeploymentInCategoryArray($translation_instances)) {
-                    foreach ($translation_instances as $plf_branch => $descriptor_arrays) {
-                        foreach ($descriptor_arrays as $descriptor_array) { ?>
-                            <tr>
-                                <td class="col-center"><?= componentStatusIcon($descriptor_array) ?></td>
-                                <td>
-                                    <div class="d-flex align-items-center">
-                                        <?= componentProductInfoIcon($descriptor_array); ?>
-                                        <div class="ms-2">
-                                            <?php
-                                            $product_deployment_url_label = componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success');
-                                            $product_deployment_url_label .= ' ' . componentAppServerIcon($descriptor_array);
-                                            $product_deployment_url_label .= ' ' . componentProductHtmlLabel($descriptor_array);
-                                            echo componentProductOpenLink($descriptor_array, $product_deployment_url_label);
-                                            ?>
-                                        </div>
-                                        <div class="ms-auto">
-                                            <?= componentEditNoteIcon($descriptor_array) ?>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td class="col-left">
-                                    <?= componentDownloadIcon($descriptor_array); ?>
-                                    <?= componentProductVersion($descriptor_array); ?>
-                                </td>
-                                <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-                                <td class="col-center" colspan="4"></td>
-                                <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-                                <td class="col-right"><i class="fas fa-clock me-1"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-                                <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
-                            </tr>
-                        <?php }
-                    }
-                }
-                ?>
-
-                <?php
-                $dev_instances = getGlobalDevInstances();
-                foreach ($dev_instances as $plf_branch => $descriptor_arrays) {
-                ?>
-                    <tr>
-                        <td colspan="15" class="category-row"><?= buildTableTitleDev($plf_branch) ?></td>
-                    </tr>
-                    <?php foreach ($descriptor_arrays as $descriptor_array) { ?>
-                        <tr>
-                            <td class="col-center"><?= componentStatusIcon($descriptor_array); ?></td>
-                            <td>
-                                <div class="d-flex align-items-center">
-                                    <?= componentProductInfoIcon($descriptor_array); ?>
-                                    <div class="ms-2">
-                                        <?php
-                                        $product_deployment_url_label = componentVisibilityIcon($descriptor_array, empty($descriptor_array->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success');
-                                        $product_deployment_url_label .= ' ' . componentAppServerIcon($descriptor_array);
-                                        $product_deployment_url_label .= ' ' . componentProductHtmlLabel($descriptor_array);
-                                        echo componentProductOpenLink($descriptor_array, $product_deployment_url_label);
-                                        ?>
-                                    </div>
-                                    <div class="ms-auto">
-                                        <?= componentSpecificationIcon($descriptor_array) ?>
-                                        <?php
-                                        // add edit note option icon if not a feature branch
-                                        if (!isInstanceFeatureBranch($descriptor_array)) {
-                                            echo componentEditNoteIcon($descriptor_array);
-                                        }
-                                        ?>
-                                    </div>
-                                </div>
-                                <div class="mt-2">
-                                    <?= componentUpgradeEligibility($descriptor_array); ?>
-                                    <?= componentPatchInstallation($descriptor_array); ?>
-                                    <?= componentCertbotEnabled($descriptor_array); ?>
-                                    <?= componentDevModeEnabled($descriptor_array); ?>
-                                    <?= componentStagingModeEnabled($descriptor_array); ?>
-                                    <?= componentDebugModeEnabled($descriptor_array); ?>
-                                    <?= componentAddonsTags($descriptor_array); ?>
-                                    <?= componentLabels($descriptor_array); ?>
-                                </div>
-                            </td>
-                            <td class="col-left">
-                                <?= componentDownloadIcon($descriptor_array); ?>
-                                <?= componentProductVersion($descriptor_array); ?>
-                            </td>
-                            <td class="col-center"><?= componentDatabaseIcon($descriptor_array) ?></td>
-                            <?php if (isInstanceFeatureBranch($descriptor_array)) { ?>
-                                <td class="col-center"><?= componentFBStatusLabel($descriptor_array) ?></td>
-                                <td class="col-center"><?= componentFBScmLabel($descriptor_array) ?></td>
-                                <td class="col-center"><?= componentFBIssueLabel($descriptor_array) ?></td>
-                                <td class="col-center">
-                                    <?= componentFBEditIcon($descriptor_array) ?>
-                                    <?= componentFBDeployIcon($descriptor_array) ?>
-                                </td>
-                            <?php } else { ?>
-                                <td class="col-center" colspan="4"></td>
-                            <?php } ?>
-                            <td class="col-right <?= $descriptor_array->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $descriptor_array->ARTIFACT_AGE_STRING ?></td>
-                            <td class="col-right"><i class="fas fa-clock me-1"></i><?= $descriptor_array->DEPLOYMENT_AGE_STRING ?></td>
-                            <td class="col-left"><?= componentDeploymentActions($descriptor_array); ?></td>
-                        </tr>
-                    <?php
-                    }
-                }
-                ?>
-            </tbody>
-        </table>
+    <!-- Bento Metric Grid -->
+    <div class="bento">
+        <div class="bento__item bento__item--3" style="--card-accent: var(--accent)">
+            <div class="metric">
+                <span class="metric__label"><i class="fas fa-server"></i> Total Instances</span>
+                <span class="metric__value"><?= $total_instances ?></span>
+            </div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--success)">
+            <div class="metric">
+                <span class="metric__label"><span class="pulse-dot on"></span> Running</span>
+                <span class="metric__value"><?= $running ?></span>
+                <?php if ($running > 0): ?>
+                <span class="metric__change up"><?= round(($running / max($total_instances, 1)) * 100) ?>% active</span>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--danger)">
+            <div class="metric">
+                <span class="metric__label"><span class="pulse-dot off"></span> Stopped</span>
+                <span class="metric__value"><?= $stopped ?></span>
+            </div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--accent2)">
+            <div class="metric">
+                <span class="metric__label"><i class="fas fa-code-branch"></i> Dev Branches</span>
+                <span class="metric__value"><?= $dev_count ?></span>
+                <span class="metric__change"><?= count($dev_instances) ?> active</span>
+            </div>
+        </div>
+    </div>
+    <!-- Search -->
+    <div class="instances-search">
+        <i class="fas fa-search instances-search__icon"></i>
+        <input type="text" id="instanceSearch" class="instances-search__input" placeholder="Search by name, version, or branch...">
     </div>
 
-    <!-- Info cards with synchronized design -->
-    <div class="row mt-4">
+    <!-- Translation Instances -->
+    <?php if (isDeploymentInCategoryArray($translation_instances)): ?>
+    <div class="instances-section">
+        <div class="instances-section__header">
+            <i class="fas fa-globe" aria-hidden="true"></i> Translation deployments
+        </div>
+        <div class="instance-grid">
+            <?php foreach ($translation_instances as $plf_branch => $descriptor_arrays):
+                foreach ($descriptor_arrays as $inst): ?>
+            <div class="instance-card">
+                <div class="instance-card__top">
+                    <div class="instance-card__status">
+                        <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
+                            <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+                        <?php else: ?>
+                            <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="instance-card__info">
+                        <div class="instance-card__name">
+                            <?= componentProductInfoIcon($inst); ?>
+                            <?php
+                            $label = componentVisibilityIcon($inst, empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success');
+                            $label .= ' ' . componentAppServerIcon($inst);
+                            $label .= ' ' . componentProductHtmlLabel($inst);
+                            echo componentProductOpenLink($inst, $label);
+                            ?>
+                        </div>
+                        <div class="instance-card__meta">
+                            <?= componentDownloadIcon($inst); ?>
+                            <?= componentProductVersion($inst); ?>
+                        </div>
+                    </div>
+                    <div class="instance-card__actions-top">
+                        <?= componentEditNoteIcon($inst) ?>
+                    </div>
+                </div>
+                <div class="instance-card__details">
+                    <?= componentDatabaseIcon($inst) ?>
+                    <div class="instance-card__ages">
+                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $inst->ARTIFACT_AGE_STRING ?></span>
+                        <span><i class="fas fa-clock me-1"></i><?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                    </div>
+                </div>
+                <div class="instance-card__actions">
+                    <?= componentDeploymentActions($inst); ?>
+                </div>
+            </div>
+            <?php endforeach; endforeach; ?>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- Dev Instances -->
+    <?php foreach ($dev_instances as $plf_branch => $descriptor_arrays): ?>
+    <div class="instances-section">
+        <div class="instances-section__header">
+            <i class="fas fa-code-branch"></i> <?= buildTableTitleDev($plf_branch) ?>
+        </div>
+        <div class="instance-grid">
+            <?php foreach ($descriptor_arrays as $inst): ?>
+            <div class="instance-card">
+                <div class="instance-card__top">
+                    <div class="instance-card__status">
+                        <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
+                            <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+                        <?php else: ?>
+                            <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+                        <?php endif; ?>
+                    </div>
+                    <div class="instance-card__info">
+                        <div class="instance-card__name">
+                            <?= componentProductInfoIcon($inst); ?>
+                            <?php
+                            $label = componentVisibilityIcon($inst, empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success');
+                            $label .= ' ' . componentAppServerIcon($inst);
+                            $label .= ' ' . componentProductHtmlLabel($inst);
+                            echo componentProductOpenLink($inst, $label);
+                            ?>
+                        </div>
+                        <div class="instance-card__meta">
+                            <?= componentDownloadIcon($inst); ?>
+                            <?= componentProductVersion($inst); ?>
+                        </div>
+                    </div>
+                    <div class="instance-card__actions-top">
+                        <?= componentSpecificationIcon($inst) ?>
+                        <?php if (!isInstanceFeatureBranch($inst)) echo componentEditNoteIcon($inst); ?>
+                    </div>
+                </div>
+                <div class="instance-card__details">
+                    <?= componentDatabaseIcon($inst) ?>
+                    <?php if (isInstanceFeatureBranch($inst)): ?>
+                        <span class="instance-card__feature">
+                            <?= componentFBScmLabel($inst) ?>
+                        </span>
+                    <?php endif; ?>
+                    <div class="instance-card__ages">
+                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $inst->ARTIFACT_AGE_STRING ?></span>
+                        <span><i class="fas fa-clock me-1"></i><?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                    </div>
+                </div>
+                <?php if (isInstanceFeatureBranch($inst)): ?>
+                <div class="instance-card__badges">
+                    <?= componentFBStatusLabel($inst) ?>
+                    <?= componentFBIssueLabel($inst) ?>
+                    <?= componentFBEditIcon($inst) ?>
+                    <?= componentFBDeployIcon($inst) ?>
+                </div>
+                <?php endif; ?>
+                <div class="instance-card__badges">
+                    <?= componentUpgradeEligibility($inst); ?>
+                    <?= componentPatchInstallation($inst); ?>
+                    <?= componentCertbotEnabled($inst); ?>
+                    <?= componentDevModeEnabled($inst); ?>
+                    <?= componentStagingModeEnabled($inst); ?>
+                    <?= componentDebugModeEnabled($inst); ?>
+                    <?= componentAddonsTags($inst); ?>
+                    <?= componentLabels($inst); ?>
+                </div>
+                <div class="instance-card__actions">
+                    <?= componentDeploymentActions($inst); ?>
+                </div>
+            </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+    <?php endforeach; ?>
+
+    <!-- Info cards -->
+    <div class="row g-3 mt-3">
         <div class="col-md-4">
             <div class="card h-100">
                 <div class="card-header">
                     <i class="fas fa-plug me-2"></i>JMX Access
                 </div>
                 <div class="card-body">
-                    <p class="card-text">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
+                    <p class="card-text opacity-60">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials are available on CI Build.</p>
                 </div>
             </div>
         </div>
@@ -169,8 +230,8 @@ checkCaches();
                     <i class="fas fa-key me-2"></i>Keycloak Access
                 </div>
                 <div class="card-body">
-                    <p class="card-text">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
-                    <div class="mt-2 p-2 rounded code-bg">
+                    <p class="card-text opacity-60">Each deployed Keycloak can be accessed using the Keycloak icon:</p>
+                    <div class="mt-2 p-3 rounded code-bg">
                         <code class="d-block">root / password</code>
                     </div>
                 </div>
@@ -182,8 +243,8 @@ checkCaches();
                     <i class="fas fa-address-book me-2"></i>LDAP Access
                 </div>
                 <div class="card-body">
-                    <p class="card-text">Each LDAP deployed can be accessed with:</p>
-                    <div class="mt-2 p-2 rounded code-bg">
+                    <p class="card-text opacity-60">Each LDAP deployment can be accessed with:</p>
+                    <div class="mt-2 p-3 rounded code-bg">
                         <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
                         <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
                         <code class="d-block mt-1">password: exo</code>
@@ -192,9 +253,7 @@ checkCaches();
             </div>
         </div>
     </div>
-</div>
-</div>
-</div>
+
 <!-- /container -->
 </div>
 </div>

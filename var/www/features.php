@@ -32,12 +32,10 @@ checkCaches();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
-                    <div class="alert alert-info d-flex align-items-center">
-                        <i class="fas fa-code-branch fa-2x me-3" aria-hidden="true"></i>
-                        <div>
-                            <h5 class="alert-heading mb-1">Feature Branches Overview</h5>
-                            <p class="mb-0">This page summarizes all Git feature branches (<code>feature/.*</code>) and provides an overview of branches health.</p>
-                        </div>
+                    <!-- Page Header -->
+                    <div class="page-header">
+                        <h1 class="page-header__title">Feature Branches</h1>
+                        <p class="page-header__subtitle">Git feature branches (<code>feature/.*</code>) with branch health overview</p>
                     </div>
 
                     <?php
@@ -128,8 +126,8 @@ checkCaches();
 
                     <!-- Others branches -->
                     <?php if (!empty($otherFeatures)): ?>
-                    <div class="card mb-4 border-warning">
-                        <div class="card-header bg-warning bg-opacity-10">
+                    <div class="card mb-4">
+                        <div class="card-header">
                             <div class="d-flex align-items-center">
                                 <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                                 <h5 class="mb-0">Other branches</h5>

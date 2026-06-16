@@ -147,6 +147,12 @@ checkCaches();
     <div id="main" role="main">
         <div class="container-fluid">
 
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-header__title">Servers</h1>
+                <p class="page-header__subtitle">Acceptance server hardware overview and port registry</p>
+            </div>
+
             <?php
             /* ── Data preparation ──────────────────────────────────── */
             $merged_list = getGlobalAcceptanceInstances();
@@ -258,34 +264,23 @@ checkCaches();
                 <i class="fas fa-network-wired"></i> Deployment Port Registry
             </div>
             <div class="table-responsive mb-5">
-                <table class="table table-hover align-middle" aria-label="Deployment port registry">
+                <table class="table table-hover align-middle table-sm" aria-label="Deployment port registry">
                     <caption class="sr-only">Deployment port registry listing all instances with their assigned ports</caption>
                     <thead>
-                        <tr class="table-dark">
-                            <th class="col-center" colspan="4">Product</th>
-                            <th class="col-center" colspan="3">Deployment</th>
-                            <th class="col-center" colspan="7">Ports</th>
-                        </tr>
-                        <tr class="table-secondary">
-                            <th class="col-left">Name</th>
+                        <tr>
+                            <th class="col-left">Instance</th>
                             <th class="col-center">Version</th>
-                            <th class="col-center">Feature Branch</th>
                             <th class="col-center">Bundle</th>
-                            <th class="col-center">Database</th>
-                            <th class="col-center">Mongo</th>
+                            <th class="col-center">DB</th>
                             <th class="col-center">Server</th>
-                            <th class="col-center">S</th>
+                            <th class="col-center">Status</th>
                             <th class="col-center">Prefix</th>
                             <th class="col-center">HTTP</th>
                             <th class="col-center">ES</th>
                             <th class="col-center">Mongo</th>
                             <th class="col-center">AJP</th>
-                            <th class="col-center">
-                                <span data-bs-toggle="tooltip" title="JMX RMI Registration port / JMX RMI Server port">JMX RMI</span>
-                            </th>
-                            <th class="col-center">
-                                <span data-bs-toggle="tooltip" title="CRaSH SSH port">CRaSH</span>
-                            </th>
+                            <th class="col-center">JMX</th>
+                            <th class="col-center">CRaSH</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -320,15 +315,9 @@ checkCaches();
                                     <?= componentLabels($descriptor_array); ?>
                                 </div>
                             </td>
-                            <td class="col-left"><?= componentProductVersion($descriptor_array); ?></td>
-                            <td class="col-center">
-                                <?php if (!empty($feature_branch)): ?>
-                                    <code class="small"><?= htmlspecialchars($feature_branch) ?></code>
-                                <?php endif; ?>
-                            </td>
+                            <td class="col-left"><span class="text-mono small"><?= componentProductVersion($descriptor_array); ?></span></td>
                             <td class="col-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_APPSRV_TYPE) ?></td>
                             <td class="col-center"><?= htmlspecialchars($descriptor_array->DATABASE) ?></td>
-                            <td class="col-center"><?= htmlspecialchars($descriptor_array->CHAT_DB) ?></td>
                             <td class="col-center">
                                 <span class="host-pill <?= $meta['css'] ?>">
                                     <?= htmlspecialchars($meta['short']) ?>
@@ -351,8 +340,8 @@ checkCaches();
                                 <span class="port-badge"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_AJP_PORT) ?></span>
                             </td>
                             <td class="col-center">
-                                <span class="port-badge">
-                                    <?= htmlspecialchars($descriptor_array->DEPLOYMENT_RMI_REG_PORT) ?> / <?= htmlspecialchars($descriptor_array->DEPLOYMENT_RMI_SRV_PORT) ?>
+                                <span class="port-badge" title="JMX RMI Reg / Server">
+                                    <?= htmlspecialchars($descriptor_array->DEPLOYMENT_RMI_REG_PORT) ?>/<?= htmlspecialchars($descriptor_array->DEPLOYMENT_RMI_SRV_PORT) ?>
                                 </span>
                             </td>
                             <td class="col-center">

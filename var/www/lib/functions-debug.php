@@ -12,7 +12,7 @@ function debug_var($var, $html = false) {
   ob_start();
   var_export($var);
   if ($html) {
-    $content = "<pre class='bg-dark text-light p-3 rounded'><code>" . ob_get_clean() . "</code></pre>";
+    $content = "<pre class='debug-dump'><code>" . ob_get_clean() . "</code></pre>";
   } else {
     $content = ob_get_clean();
   }

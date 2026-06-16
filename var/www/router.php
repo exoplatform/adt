@@ -30,7 +30,7 @@ if (!empty($config['hostsAllowed'])) {
 
 // running under built-in server so
 // route static assets and return false
-$extensions = array("php", "jpg", "jpeg", "gif", "css", "svg", "png");
+$extensions = array("php", "jpg", "jpeg", "gif", "css", "svg", "png", "js", "json", "ico");
 
 // if requesting a directory then serve the default index
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);

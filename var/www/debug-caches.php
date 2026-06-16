@@ -3,7 +3,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 ?>
-<html>
+<html lang="en">
 <head>
   <?= pageHeader("debug - caches"); ?>
 </head>
@@ -13,6 +13,10 @@ checkCaches();
   <!-- Main ================================================== -->
   <div id="wrap">
     <div id="main">
+      <div class="page-header">
+        <h1 class="page-header__title">Debug Caches</h1>
+        <p class="page-header__subtitle">APC / APCu / Memcache status</p>
+      </div>
       <div class="container-fluid">
         <div class="row">
           <div class="col-12">

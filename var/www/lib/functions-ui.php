@@ -13,8 +13,10 @@ function pageHeader($title = "")
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <meta http-equiv="refresh" content="120">
-  <title>Acceptance<?= (empty($title) ? "" : " - " . $title) ?></title>
+  <meta name="theme-color" content="#6c5ce7">
+  <title>eXo Acceptance<?= (empty($title) ? "" : " · " . $title) ?></title>
   <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
+  <link rel="manifest" href="/manifest.json">
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome 6 -->
@@ -52,7 +54,10 @@ function pageHeader($title = "")
     function setAccent(accent) {
       document.documentElement.setAttribute('data-accent', accent);
       var btn = document.getElementById('themeDropdown');
-      if (btn) btn.textContent = THEME_LABELS[accent] || accent;
+      if (btn) {
+        var span = btn.querySelector('span');
+        if (span) span.textContent = THEME_LABELS[accent] || accent;
+      }
     }
 
     // ── Full apply: scheme + accent + UI + persist ───────
@@ -61,21 +66,25 @@ function pageHeader($title = "")
       document.documentElement.setAttribute('data-bs-theme', scheme);
       if (persist) storeTheme(accent, scheme);
 
-      // Update toggle button
       var toggleBtn = document.getElementById('darkModeToggle');
       if (toggleBtn) {
         var isDark = scheme === 'dark';
         var icon = toggleBtn.querySelector('i');
-        var srSpan = toggleBtn.querySelector('.sr-only');
+        var span = toggleBtn.querySelector('span');
         var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
         if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
         toggleBtn.setAttribute('title', label);
         toggleBtn.setAttribute('aria-label', label);
         toggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-        if (srSpan) srSpan.textContent = label;
+        if (span) span.textContent = isDark ? 'Light mode' : 'Dark mode';
         var tip = bootstrap.Tooltip.getInstance(toggleBtn);
         if (tip) tip.dispose();
         new bootstrap.Tooltip(toggleBtn);
+      }
+      // Update mobile theme icon
+      var mobileIcon = document.getElementById('mobileThemeIcon');
+      if (mobileIcon) {
+        mobileIcon.className = (scheme === 'dark') ? 'fas fa-sun' : 'fas fa-moon';
       }
     }
 
@@ -101,6 +110,11 @@ function pageHeader($title = "")
     (function() {
       document.documentElement.setAttribute('data-accent', resolveAccent());
       document.documentElement.setAttribute('data-bs-theme', resolveScheme());
+      // Init mobile theme icon
+      var mIcon = document.getElementById('mobileThemeIcon');
+      if (mIcon) {
+        mIcon.className = resolveScheme() === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+      }
     })();
 
     // ── Listen for system scheme changes ─────────────────
@@ -113,6 +127,82 @@ function pageHeader($title = "")
           applyTheme(a, s, false);
         }
       });
+    }
+
+    // ── Mobile sidebar ───────────────────────────────────
+    function toggleSidebar() {
+      var sb = document.getElementById('sidebar');
+      var overlay = document.getElementById('sidebarOverlay');
+      if (sb && overlay) {
+        sb.classList.toggle('open');
+        overlay.classList.toggle('show');
+        document.body.style.overflow = sb.classList.contains('open') ? 'hidden' : '';
+      }
+    }
+
+    // ── Sidebar pin/unpin ────────────────────────────────
+    function toggleSidebarPin() {
+      var collapsed = document.body.classList.toggle('sidebar-collapsed');
+      setPref('sidebarCollapsed', collapsed ? '1' : '0');
+      updatePinButton(collapsed);
+    }
+    function updatePinButton(collapsed) {
+      var btn = document.getElementById('sidebarPinBtn');
+      if (!btn) return;
+      var icon = btn.querySelector('i');
+      var span = btn.querySelector('span');
+      if (collapsed) {
+        if (icon) icon.className = 'fas fa-chevron-right';
+        if (span) span.textContent = 'Expand';
+        btn.setAttribute('title', 'Expand sidebar');
+      } else {
+        if (icon) icon.className = 'fas fa-chevron-left';
+        if (span) span.textContent = 'Collapse';
+        btn.setAttribute('title', 'Collapse sidebar');
+      }
+    }
+    // ── Instance search ──────────────────────────────────
+    function initSearch() {
+      var searchInput = document.getElementById('instanceSearch');
+      if (!searchInput) return;
+      // Restore saved query
+      var pageKey = 'search-' + window.location.pathname;
+      var saved = getPref(pageKey, '');
+      if (saved) { searchInput.value = saved; doSearch(saved); }
+      searchInput.addEventListener('input', function() {
+        var query = this.value;
+        setPref(pageKey, query);
+        doSearch(query);
+      });
+    }
+    function doSearch(raw) {
+      var query = raw.toLowerCase().trim();
+      document.querySelectorAll('.instances-section').forEach(function(section) {
+        var visible = 0;
+        section.querySelectorAll('.instance-card').forEach(function(card) {
+          if (!query) {
+            card.classList.remove('hidden');
+            visible++;
+          } else {
+            var name = (card.querySelector('.instance-card__name') || {}).textContent || '';
+            var meta = (card.querySelector('.instance-card__meta') || {}).textContent || '';
+            var feature = (card.querySelector('.instance-card__feature') || {}).textContent || '';
+            var haystack = (name + ' ' + meta + ' ' + feature).toLowerCase();
+            if (haystack.indexOf(query) === -1) {
+              card.classList.add('hidden');
+            } else {
+              card.classList.remove('hidden');
+              visible++;
+            }
+          }
+        });
+        section.classList.toggle('empty', query && visible === 0);
+      });
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initSearch);
+    } else {
+      initSearch();
     }
   </script>
 <?php
@@ -146,7 +236,7 @@ function pageTracker($id = 'UA-1292368-28') {
 }
 
 /**
- * Insert the navigation bar
+ * Insert the navigation sidebar
  */
 function pageNavigation()
 {
@@ -159,82 +249,137 @@ function pageNavigation()
     "Features" => "/features.php",
     "Servers" => "/servers.php"
   );
-  
+  $icons = array(
+    "Home" => "fa-th-large",
+    "QA" => "fa-flask",
+    "Sales" => "fa-chart-line",
+    "CP" => "fa-briefcase",
+    "Company" => "fa-building",
+    "Features" => "fa-code-branch",
+    "Servers" => "fa-server"
+  );
+
 ?>
-  <!-- Skip to main content link -->
+  <!-- Skip to main content -->
   <a href="#main" class="skip-to-content sr-only-focusable">
     <i class="fas fa-arrow-down me-1" aria-hidden="true"></i>Skip to main content
   </a>
-  <!-- navbar ================================================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark fixed-top" aria-label="Main navigation">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/" aria-label="Home page">
-        <i class="fas fa-cloud me-2" aria-hidden="true"></i><?= $_SERVER['SERVER_NAME'] ?>
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
+
+  <!-- Mobile top bar -->
+  <div class="mobile-bar d-md-none">
+    <button class="mobile-bar__btn" onclick="toggleSidebar()" aria-label="Open navigation menu">
+      <i class="fas fa-bars"></i>
+    </button>
+    <span class="mobile-bar__brand" title="<?= htmlspecialchars($_SERVER['SERVER_NAME']) ?>">Acceptance</span>
+    <div class="mobile-bar__actions">
+      <button class="mobile-bar__theme-btn" onclick="toggleScheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <i class="fas fa-moon" id="mobileThemeIcon"></i>
       </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav" role="list">
-          <?php
-          foreach ($nav as $label => $url) {
-            $active = ($url == $_SERVER['REQUEST_URI']) ? 'active' : '';
-            $ariaCurrent = ($url == $_SERVER['REQUEST_URI']) ? ' aria-current="page"' : '';
-            echo '<li class="nav-item"><a class="nav-link ' . $active . '" href="' . $url . '"' . $ariaCurrent . '>' . $label . '</a></li>';
-          }
-          ?>
-        </ul>
-        
-        <!-- Theme picker + dark mode toggle -->
-        <ul class="navbar-nav ms-auto align-items-center" role="list">
-          <!-- Theme accent dropdown -->
-          <li class="nav-item dropdown">
-            <button class="nav-link dropdown-toggle" id="themeDropdown" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Select theme">
-              Default
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end" id="themeDropdownMenu" aria-labelledby="themeDropdown">
-              <li><button class="dropdown-item" onclick="pickTheme('default')">Default</button></li>
-              <li><button class="dropdown-item" onclick="pickTheme('ocean')">Ocean</button></li>
-              <li><button class="dropdown-item" onclick="pickTheme('forest')">Forest</button></li>
-              <li><button class="dropdown-item" onclick="pickTheme('twilight')">Twilight</button></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><button class="dropdown-item" onclick="pickTheme('sunset')">Sunset</button></li>
-              <li><button class="dropdown-item" onclick="pickTheme('midnight')">Midnight</button></li>
-              <li><button class="dropdown-item" onclick="pickTheme('lavender')">Lavender</button></li>
-              <li><button class="dropdown-item" onclick="pickTheme('crimson')">Crimson</button></li>
-            </ul>
-          </li>
-          <!-- Light/dark toggle -->
-          <li class="nav-item">
-            <button class="nav-link" id="darkModeToggle" onclick="toggleScheme()" title="Switch to dark mode" aria-label="Switch to dark mode" aria-pressed="false">
-              <i class="fas fa-moon" aria-hidden="true"></i>
-              <span class="sr-only">Switch to dark mode</span>
-            </button>
-            <script>
-              (function() {
-                var a = document.documentElement.getAttribute('data-accent') || 'default';
-                var s = document.documentElement.getAttribute('data-bs-theme') || 'light';
-                var isDark = s === 'dark';
-                var btn = document.getElementById('darkModeToggle');
-                if (btn) {
-                  btn.querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-                  var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
-                  btn.setAttribute('title', label);
-                  btn.setAttribute('aria-label', label);
-                  btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
-                  var sr = btn.querySelector('.sr-only');
-                  if (sr) sr.textContent = label;
-                }
-                var td = document.getElementById('themeDropdown');
-                if (td) td.textContent = ({'default':'Default','ocean':'Ocean','forest':'Forest','twilight':'Twilight','sunset':'Sunset','midnight':'Midnight','lavender':'Lavender','crimson':'Crimson'}[a]) || a;
-              })();
-            </script>
-          </li>
-        </ul>
+    </div>
+  </div>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay d-md-none" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <div class="sidebar__brand">
+      <div class="sidebar__brand-icon" style="background:transparent">
+        <img src="/images/favicon.ico" alt="eXo" width="28" height="28">
+      </div>
+      <div>
+        <div class="sidebar__brand-text" title="<?= htmlspecialchars($_SERVER['SERVER_NAME']) ?>">Acceptance</div>
+        <div class="sidebar__brand-version"><?= htmlspecialchars($_SERVER['SERVER_NAME']) ?></div>
       </div>
     </div>
-  </nav>
-  <!-- /navbar -->
+
+    <nav class="sidebar__nav">
+      <div class="sidebar__section">Navigation</div>
+      <?php
+      foreach ($nav as $label => $url) {
+        $active = ($url == $_SERVER['REQUEST_URI']) ? 'active' : '';
+        $ariaCurrent = ($url == $_SERVER['REQUEST_URI']) ? ' aria-current="page"' : '';
+        $icon = isset($icons[$label]) ? $icons[$label] : 'fa-circle';
+        echo '<a class="sidebar__link ' . $active . '" href="' . $url . '"' . $ariaCurrent . ' title="' . $label . '">';
+        echo '<i class="fas ' . $icon . ' sidebar__icon" aria-hidden="true"></i>';
+        echo '<span>' . $label . '</span>';
+        echo '</a>';
+      }
+      ?>
+    </nav>
+
+    <div class="sidebar__footer">
+      <!-- Pin/unpin toggle -->
+      <button class="sidebar__footer-btn" id="sidebarPinBtn" onclick="toggleSidebarPin()" title="Collapse sidebar">
+        <i class="fas fa-chevron-left"></i> <span>Collapse</span>
+      </button>
+
+      <!-- Theme accent dropdown -->
+      <div class="dropdown">
+        <button class="sidebar__footer-btn dropdown-toggle" id="themeDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-label="Select theme" title="Change theme">
+          <i class="fas fa-palette"></i> <span>Default</span>
+        </button>
+        <ul class="dropdown-menu" id="themeDropdownMenu" aria-labelledby="themeDropdown" style="min-width:160px">
+          <li><button class="dropdown-item" onclick="pickTheme('default')"><i class="fas fa-circle me-2" style="color:#6c5ce7;font-size:0.65rem"></i>Default</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('ocean')"><i class="fas fa-circle me-2" style="color:#0ea5e9;font-size:0.65rem"></i>Ocean</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('forest')"><i class="fas fa-circle me-2" style="color:#10b981;font-size:0.65rem"></i>Forest</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('twilight')"><i class="fas fa-circle me-2" style="color:#8b5cf6;font-size:0.65rem"></i>Twilight</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item" onclick="pickTheme('sunset')"><i class="fas fa-circle me-2" style="color:#f97316;font-size:0.65rem"></i>Sunset</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('midnight')"><i class="fas fa-circle me-2" style="color:#6366f1;font-size:0.65rem"></i>Midnight</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('lavender')"><i class="fas fa-circle me-2" style="color:#c084fc;font-size:0.65rem"></i>Lavender</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('crimson')"><i class="fas fa-circle me-2" style="color:#ef4444;font-size:0.65rem"></i>Crimson</button></li>
+        </ul>
+      </div>
+
+      <!-- Light/dark toggle -->
+      <button class="sidebar__footer-btn" id="darkModeToggle" onclick="toggleScheme()" title="Switch to light mode" aria-label="Switch to light mode" aria-pressed="false">
+        <i class="fas fa-sun" aria-hidden="true"></i> <span>Light mode</span>
+      </button>
+
+      <!-- PWA Install -->
+      <button class="sidebar__footer-btn" id="pwaInstallBtn" onclick="pwaInstall()" title="Install app" style="display:none">
+        <i class="fas fa-download"></i> <span>Install app</span>
+      </button>
+    </div>
+
+    <script>
+      (function() {
+        var a = document.documentElement.getAttribute('data-accent') || 'default';
+        var s = document.documentElement.getAttribute('data-bs-theme') || 'dark';
+        var isDark = s === 'dark';
+
+        // Update toggle
+        var btn = document.getElementById('darkModeToggle');
+        if (btn) {
+          var icon = btn.querySelector('i');
+          var span = btn.querySelector('span');
+          if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+          var label = isDark ? 'Switch to light mode' : 'Switch to dark mode';
+          btn.setAttribute('title', label);
+          btn.setAttribute('aria-label', label);
+          btn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
+          if (span) span.textContent = isDark ? 'Light mode' : 'Dark mode';
+        }
+
+        // Update theme dropdown label
+        var td = document.getElementById('themeDropdown');
+        if (td) {
+          var tdspan = td.querySelector('span');
+          var name = ({'default':'Default','ocean':'Ocean','forest':'Forest','twilight':'Twilight','sunset':'Sunset','midnight':'Midnight','lavender':'Lavender','crimson':'Crimson'}[a]) || a;
+          if (tdspan) tdspan.textContent = name;
+        }
+      })();
+    </script>
+  </aside>
+
+  <script>
+    // Restore sidebar collapse state
+    if (getPref('sidebarCollapsed', '0') === '1') {
+      document.body.classList.add('sidebar-collapsed');
+      updatePinButton(true);
+    }
+  </script>
 <?php
 }
 
@@ -245,17 +390,11 @@ function pageNavigation()
 function pageFooter() {
 ?>
   <!-- Footer ================================================== -->
-  <footer id="footer" class="footer" role="contentinfo">
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col">
-          <span class="sr-only">Copyright</span> Copyright &copy; 2006-<?= date("Y") ?>. All rights Reserved, eXo Platform SAS
-          <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" class="ms-3" target="_blank" aria-label="View statistics">
-            <i class="fas fa-chart-bar" aria-hidden="true"></i>
-          </a>
-        </div>
-      </div>
-    </div>
+  <footer id="footer" role="contentinfo">
+    <span class="sr-only">Copyright</span> &copy; 2006-<?= date("Y") ?> eXo Platform SAS
+    <a href="/stats/awstats.pl?config=<?= $_SERVER['SERVER_NAME'] ?>" target="_blank" aria-label="View statistics" class="ms-3">
+      <i class="fas fa-chart-bar" aria-hidden="true"></i> Stats
+    </a>
   </footer>
   <script type="text/javascript">
     $(document).ready(function() {
@@ -281,6 +420,31 @@ function pageFooter() {
         });
       });
     });
+
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js');
+    }
+
+    // PWA Install prompt
+    var deferredPrompt;
+    window.addEventListener('beforeinstallprompt', function(e) {
+      e.preventDefault();
+      deferredPrompt = e;
+      var btn = document.getElementById('pwaInstallBtn');
+      if (btn) btn.style.display = 'flex';
+    });
+    function pwaInstall() {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      deferredPrompt.userChoice.then(function(result) {
+        if (result.outcome === 'accepted') {
+          var btn = document.getElementById('pwaInstallBtn');
+          if (btn) btn.style.display = 'none';
+        }
+        deferredPrompt = null;
+      });
+    }
   </script>
 <?php
 }
@@ -592,7 +756,7 @@ function componentAppServerIcon($deployment_descriptor) {
 function componentEditNoteIcon($deployment_descriptor)
 {
   $modalId = 'edit-note-' . str_replace(".", "_", $deployment_descriptor->INSTANCE_KEY);
-  $content = '<a href="#" rel="tooltip" title="Add/Edit Instance Note" data-bs-toggle="modal" data-bs-target="#' . $modalId . '"><i class="fas fa-pencil-alt"></i></a>';
+  $content = '<a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#' . $modalId . '" title="Edit note"><i class="fas fa-pencil-alt"></i></a>';
   $content .= getFormEditNote($deployment_descriptor);
   return $content;
 }
@@ -804,17 +968,17 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
 function componentProductVersion ($deployment_descriptor) {
   if (preg_match("/.*-M(LT|BL)$/", $deployment_descriptor->BASE_VERSION)) {
     $tooltipmessage=(preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION) ? "Before latest" : "Latest")." milestone continuous deployment enabled";
-    $content=$deployment_descriptor->ARTIFACT_TIMESTAMP.' <span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$tooltipmessage.'">Auto</span>';
+    $content='<span class="text-mono" rel="tooltip" data-original-title="'.$tooltipmessage.'">'.$deployment_descriptor->ARTIFACT_TIMESTAMP.' Auto</span>';
   } else {
     $content=$deployment_descriptor->BASE_VERSION;
     $timestamp=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
     if (!empty($timestamp)) {
-      $content.='<span style="font-size: small" class="muted" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">';
       if (!empty($deployment_descriptor->BRANCH_NAME)) {
         $content.='-'.$deployment_descriptor->BRANCH_NAME;
       }
-      $content.='-SNAPSHOT</span>';
+      $content.='-SNAPSHOT';
     }
+    $content='<span class="text-mono" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">'.$content.'</span>';
   }
   return $content;
 }
@@ -1074,7 +1238,7 @@ function componentFBIssueLabel($deployment_descriptor)
 function componentFBEditIcon($deployment_descriptor)
 {
   $modalId = 'edit-' . str_replace(".", "_", $deployment_descriptor->INSTANCE_KEY);
-  $content = '<a href="#" rel="tooltip" title="Edit feature branch details" data-bs-toggle="modal" data-bs-target="#' . $modalId . '"><i class="fas fa-pencil-alt"></i></a>';
+  $content = '<a role="button" data-bs-toggle="modal" data-bs-target="#' . $modalId . '" title="Edit feature branch"><i class="fas fa-pencil-alt"></i></a>';
   $content .= getFormEditFeatureBranch($deployment_descriptor);
   return $content;
 }
