@@ -45,6 +45,7 @@ source "${SCRIPT_DIR}/_functions_jitsi.sh"
 source "${SCRIPT_DIR}/_functions_sftp.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
 source "${SCRIPT_DIR}/_functions_certbot.sh"
+source "${SCRIPT_DIR}/_functions_caldav.sh"
 
 # #################################################################################
 #
@@ -408,6 +409,15 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_SFTP_ENABLED" false
       configurable_env_var "DEPLOYMENT_SFTP_IMAGE" "atmoz/sftp"
       configurable_env_var "DEPLOYMENT_SFTP_IMAGE_VERSION" "latest"
+
+      configurable_env_var "DEPLOYMENT_CALDAV_ENABLED" false
+      configurable_env_var "DEPLOYMENT_CALDAV_IMAGE" "ckulka/baikal"
+      configurable_env_var "DEPLOYMENT_CALDAV_IMAGE_VERSION" "nginx"
+      configurable_env_var "DEPLOYMENT_CALDAV_ADMIN_PASSWORD" "ba1kalAdm1n"
+      configurable_env_var "DEPLOYMENT_CALDAV_CALENDAR_USERNAME" "calendar"
+      configurable_env_var "DEPLOYMENT_CALDAV_CALENDAR_PASSWORD" "ba1kalUs3r"
+      configurable_env_var "DEPLOYMENT_CALDAV_TIMEZONE" "UTC"
+      configurable_env_var "DEPLOYMENT_CALDAV_DB_ENCRYPTION_KEY" ""
 
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
@@ -1332,6 +1342,7 @@ initialize_product_settings() {
    do_get_phpldapadmin_settings
    do_get_jitsi_settings
    do_get_sftp_settings
+   do_get_caldav_settings
    do_get_database_settings
    do_get_es_settings
    do_get_chat_settings
@@ -1554,11 +1565,13 @@ do_init_empty_data(){
   do_drop_frontail_data
   do_drop_keycloak_data
   do_drop_phpldapadmin_data
+  do_drop_caldav_data
 
   do_create_data
   do_create_es
   do_create_mailpit
   do_create_keycloak
+  do_create_caldav
   echo_info "Done"
 }
 
@@ -1971,6 +1984,9 @@ do_deploy() {
   # CMIS server  port
   env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
 
+  # CalDAV server port
+  env_var "DEPLOYMENT_CALDAV_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}28"
+
   if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then
     env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "${DEPLOYMENT_PORT_PREFIX}17"
   fi
@@ -2025,6 +2041,13 @@ do_deploy() {
     DEPLOYMENT_SFTP_LINK="sftp://root:password@${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_SFTP_PORT}//upload"   
   fi
 
+  if ${DEPLOYMENT_CALDAV_ENABLED}; then
+    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-caldav-integration.* ]]; then
+      echo_error "CalDAV deployment is enabled, the exo-caldav-integration addon must be specified on the addon list."
+      exit 1
+    fi
+  fi
+
   if [ ! -z "${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS:-}" ]; then 
     if [[ ! "${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS}" =~  ^([1-9]\.[0-9] ?)+$ ]]; then 
       echo_error "Invalid intermediate mongo upgrade version!. Should contain only a list of major version eg 6.0 6.1 ..."
@@ -2072,6 +2095,7 @@ do_deploy() {
       do_create_mailpit
       do_create_keycloak
       do_create_jitsi
+      do_create_caldav
     else
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
@@ -2118,6 +2142,7 @@ do_deploy() {
         do_create_mailpit
         do_create_keycloak
         do_create_jitsi
+        do_create_caldav
       fi
       )
     fi
@@ -2212,6 +2237,7 @@ do_start() {
   do_start_jitsi
   do_start_sftp
   do_start_cmis
+  do_start_caldav
   do_start_database
   do_start_cloudbeaver
   do_start_phpldapadmin
@@ -2348,6 +2374,11 @@ do_start() {
   echo_info " - Write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
   if [ ! -z "${DEPLOYMENT_MATRIX_ENABLED}" ]; then
     echo_info "Matrix : ${DEPLOYMENT_MATRIX_ADMIN_USERNAME}/${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}"
+  fi
+  if [ ! -z "${DEPLOYMENT_CALDAV_ENABLED:-}" ] && ${DEPLOYMENT_CALDAV_ENABLED}; then
+    echo_info "CalDAV :"
+    echo_info " - Admin  : admin/${DEPLOYMENT_CALDAV_ADMIN_PASSWORD}"
+    echo_info " - User   : ${DEPLOYMENT_CALDAV_CALENDAR_USERNAME}/${DEPLOYMENT_CALDAV_CALENDAR_PASSWORD}"
   fi
   if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
     echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
@@ -2506,6 +2537,7 @@ do_stop() {
       do_stop_sftp
       do_stop_onlyoffice
       do_stop_cmis
+      do_stop_caldav
       do_stop_database
       do_stop_es
       do_stop_chat_server
@@ -2554,6 +2586,7 @@ do_undeploy() {
     do_drop_jitsi_data
     do_drop_sftp_data
     do_drop_cmis_data
+    do_drop_caldav_data
     do_drop_chat
     do_drop_es_data
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."

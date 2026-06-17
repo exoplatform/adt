@@ -166,6 +166,12 @@ if ${DEPLOYMENT_CMISSERVER_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dclouddrive.service.host=${DEPLOYMENT_CMIS_HOST}"
 fi
 
+#Caldav integration
+if ${DEPLOYMENT_CALDAV_ENABLED}; then
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.agenda.caldav.connector.enabled=true"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dexo.agenda.caldav.connector.url=${EXO_DEPLOYMENT_URL}/baikal/cal.php/calendars/{username}/"
+fi
+
 # Skip register form
 if ${DEPLOYMENT_SKIP_REGISTER}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dexo.registration.skip=true"
