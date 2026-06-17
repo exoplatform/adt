@@ -59,6 +59,13 @@
 
     ProxyRequests           Off
     ProxyPreserveHost       On
+
+    RewriteEngine on
+    RewriteRule ^/\.well-known/caldav$ /baikal/dav.php [R]
+    RewriteRule ^/\.well-known/carddav$ /baikal/dav.php [R]
+    RewriteRule ^/baikal$ /baikal/ [R]
+    RewriteRule ^/baikal/admin$ /baikal/admin/ [R]
+
     ProxyPass               /404.html            !
     ProxyPass               /500.html            !
     ProxyPass               /502.html            !
@@ -97,6 +104,9 @@
 
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
+
+    ProxyPass               /baikal       http://localhost:${DEPLOYMENT_CALDAV_HTTP_PORT}/baikal
+    ProxyPassReverse        /baikal       http://localhost:${DEPLOYMENT_CALDAV_HTTP_PORT}/baikal
 
     ProxyPass               /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth
     ProxyPassReverse        /auth            http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth

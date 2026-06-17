@@ -1157,6 +1157,13 @@ function componentDeploymentActions($deployment_descriptor)
     $content .= '</a>';
   }
   
+  // Baikal CalDAV
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CALDAV_ENABLED') && $deployment_descriptor->DEPLOYMENT_CALDAV_ENABLED) {
+    $content .= '<a href="http://' . $deploymentURL . '/baikal" rel="tooltip" title="CalDAV Server (Baikal)" class="btn btn-outline-secondary">';
+    $content .= '<i class="fas fa-calendar-alt"></i>';
+    $content .= '</a>';
+  }
+  
   // Frontail
   if (property_exists($deployment_descriptor, 'DEPLOYMENT_FRONTAIL_ENABLED') && $deployment_descriptor->DEPLOYMENT_FRONTAIL_ENABLED) {
     $content .= '<a href="http://' . $deploymentURL . '/livelogs/" rel="tooltip" title="Instance Live logs" target="_blank" class="btn btn-outline-secondary">';

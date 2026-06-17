@@ -65,9 +65,13 @@
     </Directory>
 
     RewriteEngine on 
+    RewriteRule ^/\.well-known/caldav$ /baikal/dav.php [R]
+    RewriteRule ^/\.well-known/carddav$ /baikal/dav.php [R]
     RewriteRule ^/mailpit$ /mailpit/ [R]
     RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
+    RewriteRule ^/baikal$ /baikal/ [R]
+    RewriteRule ^/baikal/admin$ /baikal/admin/ [R]
     RewriteRule ^/_matrix/push/v1/notify$ /matrix/rest/matrix/notify [PT]
 
     ProxyRequests           Off
@@ -145,6 +149,9 @@
 
     ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
+
+    ProxyPass               /baikal       http://localhost:${DEPLOYMENT_CALDAV_HTTP_PORT}/baikal
+    ProxyPassReverse        /baikal       http://localhost:${DEPLOYMENT_CALDAV_HTTP_PORT}/baikal
 
     ProxyPass               /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
     ProxyPassReverse        /elasticsearch       http://localhost:${DEPLOYMENT_ES_HTTP_PORT}
