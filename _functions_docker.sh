@@ -75,20 +75,24 @@ delete_docker_network() {
 # Bring a compose project up (detached).
 # $1 : project dir
 # Optional $2 : extra up args (e.g. "--pull=always")
+# Optional $3 : service name (to start only one service)
 compose_up() {
   local _project_dir=$1
   local _extra="${2:-}"
+  local _service="${3:-}"
   echo_info "Starting compose project in ${_project_dir} ..."
-  $(compose_cmd ${_project_dir}) up -d ${_extra}
+  $(compose_cmd ${_project_dir}) up -d ${_extra} ${_service}
   echo_info "Done."
 }
 
 # Stop a compose project (containers kept).
 # $1 : project dir
+# Optional $2 : service name (to stop only one service)
 compose_stop() {
   local _project_dir=$1
+  local _service="${2:-}"
   echo_info "Stopping compose project in ${_project_dir} ..."
-  $(compose_cmd ${_project_dir}) stop
+  $(compose_cmd ${_project_dir}) stop ${_service}
   echo_info "Done."
 }
 

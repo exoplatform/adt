@@ -20,25 +20,28 @@ source "${SCRIPT_DIR}/_functions_database.sh"
 #
 # Two mechanisms:
 #  1) Within-v2 dump/restore : tar each named docker volume + DB SQL dump into a
-#     single tar.zst archive. Restore = untar into fresh volumes + DB SQL restore.
+#     single tar.gz archive. Restore = untar into fresh volumes + DB SQL restore.
 #  2) v1 -> v2 import        : extract a v1 dataset tarball (exo/ data dir, ES,
 #     backup.sql, codec) and map it into v2 docker volumes.
 # #############################################################################
 
 # Dump the current instance into a dataset archive.
-# Output: ${DS_DIR}/${INSTANCE_KEY}-${CURR_DATE}.tar.zst
+# Output: ${DS_DIR}/${INSTANCE_KEY}-${CURR_DATE}.tar.gz
 do_dump_dataset() {
-  local _archive="${DS_DIR}/${INSTANCE_KEY}-${CURR_DATE}.tar.zst"
+  local _archive="${DS_DIR}/${INSTANCE_KEY}-${CURR_DATE}.tar.gz"
   local _workdir="${TMP_DIR}/dump-${INSTANCE_KEY}-${CURR_DATE}"
-  mkdir -p "${_workdir}"
+  mkdir -p "${_workdir}" "${DS_DIR}"
 
   echo_info "Dumping dataset for ${INSTANCE_KEY} -> ${_archive} ..."
 
-  # Stop the app to get a cold consistent snapshot
-  compose_stop "${PROJECT_DIR}"
+  # Stop only the app service (keep db running for the dump)
+  compose_stop "${PROJECT_DIR}" "${APP_SERVICE_NAME}"
 
-  # Dump the DB
+  # Dump the DB (db is still running)
   do_dump_database "${_workdir}/backup.sql"
+
+  # Stop the db too for a consistent volume snapshot
+  compose_stop "${PROJECT_DIR}" db
 
   # Dump each named volume of the project
   local _project="${COMPOSE_PROJECT}"
@@ -49,11 +52,11 @@ do_dump_dataset() {
     dump_docker_volume "${_vol}" "${_workdir}/volumes/${_name}.tar.gz"
   done
 
-  # Bundle everything
-  tar --use-compress-program="zstd -T0 -3" -cf "${_archive}" -C "${_workdir}" .
+  # Bundle everything (gzip for portability)
+  tar czf "${_archive}" -C "${_workdir}" .
   echo_info "Dataset dumped to ${_archive}"
 
-  # Restart the app
+  # Restart everything
   compose_start "${PROJECT_DIR}"
 
   # Cleanup
@@ -61,11 +64,11 @@ do_dump_dataset() {
 }
 
 # Restore a dataset archive into the current instance's volumes.
-# Uses DEPLOYMENT_DATASET_FILE (set by caller) or ${DS_DIR}/${INSTANCE_KEY}-*.tar.zst (latest).
+# Uses DEPLOYMENT_DATASET_FILE (set by caller) or ${DS_DIR}/${INSTANCE_KEY}-*.tar.gz (latest).
 do_restore_dataset() {
   local _archive="${DEPLOYMENT_DATASET_FILE:-}"
   if [ -z "${_archive}" ]; then
-    _archive=$(ls -t ${DS_DIR}/${INSTANCE_KEY}-*.tar.zst 2>/dev/null | head -1)
+    _archive=$(ls -t "${DS_DIR}"/${INSTANCE_KEY}-*.tar.gz 2>/dev/null | head -1)
   fi
   if [ -z "${_archive}" ] || [ ! -f "${_archive}" ]; then
     echo_error "No dataset archive found for ${INSTANCE_KEY}. Set DEPLOYMENT_DATASET_FILE."
@@ -76,23 +79,26 @@ do_restore_dataset() {
   mkdir -p "${_workdir}"
   echo_info "Restoring dataset ${_archive} -> ${INSTANCE_KEY} ..."
 
-  tar --use-compress-program="zstd -d" -xf "${_archive}" -C "${_workdir}"
+  tar xzf "${_archive}" -C "${_workdir}"
 
-  # Bring up the DB only, to restore the SQL dump
-  compose_up "${PROJECT_DIR}"
+  # Start only the db to restore the SQL dump
+  compose_up "${PROJECT_DIR}" "" db
   wait_service_healthy "${PROJECT_DIR}" db 120
 
   if [ -f "${_workdir}/backup.sql" ]; then
     do_restore_database "${_workdir}/backup.sql"
   fi
 
-  # Restore volumes (the app must be stopped while we restore its data volume)
-  compose_stop "${PROJECT_DIR}"
+  # Stop the db before restoring volumes
+  compose_stop "${PROJECT_DIR}" db
+
+  # Restore volumes
   if [ -d "${_workdir}/volumes" ]; then
     local _project="${COMPOSE_PROJECT}"
-    for _volgz in ${_workdir}/volumes/*.tar.gz; do
+    for _volgz in "${_workdir}"/volumes/*.tar.gz; do
       [ -f "${_volgz}" ] || continue
-      local _name=$(basename ${_volgz} .tar.gz)
+      local _name
+      _name=$(basename "${_volgz}" .tar.gz)
       restore_docker_volume "${_volgz}" "${_project}_${_name}"
     done
   fi
@@ -122,21 +128,23 @@ do_import_v1_dataset() {
   mkdir -p "${_workdir}"
   echo_info "Importing v1 dataset ${_archive} -> ${INSTANCE_KEY} ..."
 
-  tar -xf "${_archive}" -C "${_workdir}"
+  tar xf "${_archive}" -C "${_workdir}"
 
-  # Bring up the DB to restore the SQL dump
-  compose_up "${PROJECT_DIR}"
+  # Start only the db to restore the SQL dump
+  compose_up "${PROJECT_DIR}" "" db
   wait_service_healthy "${PROJECT_DIR}" db 120
 
   if [ -f "${_workdir}/backup.sql" ]; then
     do_restore_database "${_workdir}/backup.sql"
   fi
 
+  # Stop the db before restoring volumes
+  compose_stop "${PROJECT_DIR}" db
+
   # Map v1 paths -> v2 volumes
   local _project="${COMPOSE_PROJECT}"
-  compose_stop "${PROJECT_DIR}"
 
-  # exo data dir -> exo_data volume (path depends on product: /srv/meeds or /srv/exo)
+  # exo data dir -> exo_data volume
   local _data_vol="${_project}_exo_data"
   if [ -d "${_workdir}/exo" ]; then
     create_docker_volume "${_data_vol}"
@@ -161,6 +169,7 @@ do_import_v1_dataset() {
       sh -c "cp -a /src/search/. /target/ && chown -R 1000:1000 /target"
   fi
 
+  # Start everything
   compose_start "${PROJECT_DIR}"
   do_create_deployment_descriptor
   rm -rf "${_workdir}"

@@ -135,7 +135,7 @@ services:
       - exo_codec:/etc/exo/codec
       - exo_logs:/var/log/exo
       - ./exo.properties:/etc/exo/exo.properties:ro
-      {% if PRODUCT_REQUIRES_LICENSE == true and EXO_LICENSE_FILE %}- {{ EXO_LICENSE_FILE }}:/etc/exo/license.xml:ro{% endif %}
+      {% if PRODUCT_REQUIRES_LICENSE == 'true' and EXO_LICENSE_FILE %}- {{ EXO_LICENSE_FILE }}:/etc/exo/license.xml:ro{% endif %}
     networks: [default]
     restart: unless-stopped
     logging:
