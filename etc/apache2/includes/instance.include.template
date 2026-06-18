@@ -64,6 +64,7 @@
     RewriteRule ^/\.well-known/caldav$ /baikal/dav.php [R]
     RewriteRule ^/\.well-known/carddav$ /baikal/dav.php [R]
     RewriteRule ^/baikal$ /baikal/ [R]
+    RewriteRule ^/logs$ /logs/ [R]
     RewriteRule ^/baikal/admin$ /baikal/admin/ [R]
 
     ProxyPass               /404.html            !

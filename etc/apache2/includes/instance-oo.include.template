@@ -71,6 +71,7 @@
     RewriteRule ^/livelogs$ /livelogs/ [R]
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
     RewriteRule ^/baikal$ /baikal/ [R]
+    RewriteRule ^/logs$ /logs/ [R]
     RewriteRule ^/baikal/admin$ /baikal/admin/ [R]
     RewriteRule ^/_matrix/push/v1/notify$ /matrix/rest/matrix/notify [PT]
 
