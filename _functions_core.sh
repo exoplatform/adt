@@ -22,8 +22,9 @@ fi
 # Checks that the env var with the name provided in param is defined
 validate_env_var() {
   set +u
-  PARAM_NAME=$1
-  PARAM_VALUE=$(eval echo \${$1-UNSET})
+  local PARAM_NAME=$1
+  local PARAM_VALUE
+  PARAM_VALUE=$(eval "echo \"\${${PARAM_NAME}-UNSET}\"")
   if [ "${PARAM_VALUE}" = "UNSET" ]; then
     echo_error "Environment variable $PARAM_NAME is not set";
     echo_error "Please set it either : "
@@ -40,12 +41,13 @@ validate_env_var() {
 # In that case the default value won't be used.
 configurable_env_var() {
   set +u
-  PARAM_NAME=$1
-  PARAM_VALUE=$(eval echo \${$1-UNSET})
+  local PARAM_NAME=$1
+  local PARAM_VALUE
+  PARAM_VALUE=$(eval "echo \"\${${PARAM_NAME}-UNSET}\"")
   if [ "${PARAM_VALUE}" = "UNSET" ]; then
     PARAM_VALUE=$2
-    eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
-    export eval ${PARAM_NAME}
+    eval "${PARAM_NAME}=\"\${PARAM_VALUE}\""
+    export "${PARAM_NAME}"
   fi
   echo_debug "$PARAM_NAME=$PARAM_VALUE"
   set -u
@@ -55,10 +57,10 @@ configurable_env_var() {
 # The user cannot override the value
 env_var() {
   set +u
-  PARAM_NAME=$1
-  PARAM_VALUE=$2
-  eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
-  export eval ${PARAM_NAME}
+  local PARAM_NAME=$1
+  local PARAM_VALUE=$2
+  eval "${PARAM_NAME}=\"\${PARAM_VALUE}\""
+  export "${PARAM_NAME}"
   echo_debug "$PARAM_NAME=$PARAM_VALUE"
   set -u
 }
@@ -70,45 +72,45 @@ env_var() {
 # Display DEBUG message
 echo_debug() {
   set +u
-  ${ADT_DEBUG} && echo -e "\033[1;36m[DEBUG]\033[0m " $@
+  ${ADT_DEBUG:-false} && echo -e "\033[1;36m[DEBUG]\033[0m " "$@"
   set -u
 }
 
 # Display DEBUG message without trailing newline character
 echo_n_debug() {
   set +u
-  ${ADT_DEBUG} && echo -n -e "\033[1;36m[DEBUG]\033[0m " $@
+  ${ADT_DEBUG:-false} && echo -n -e "\033[1;36m[DEBUG]\033[0m " "$@"
   set -u
 }
 
 # Display INFO message
 echo_info() {
-  echo -e "\033[1;32m[INFO]\033[0m " $@
+  echo -e "\033[1;32m[INFO]\033[0m " "$@"
 }
 
 # Display INFO message without trailing newline character
 echo_n_info() {
-  echo -n -e "\033[1;32m[INFO]\033[0m " $@
+  echo -n -e "\033[1;32m[INFO]\033[0m " "$@"
 }
 
 # Display WARN message
 echo_warn() {
-  echo -e "\033[1;33m[WARN]\033[0m " $@
+  echo -e "\033[1;33m[WARN]\033[0m " "$@"
 }
 
 # Display WARN message without trailing newline character
 echo_n_warn() {
-  echo -n -e "\033[1;33m[WARN]\033[0m " $@
+  echo -n -e "\033[1;33m[WARN]\033[0m " "$@"
 }
 
 # Display ERROR message
 echo_error() {
-  echo -e "\033[1;31m[ERROR]\033[0m" $@
+  echo -e "\033[1;31m[ERROR]\033[0m" "$@"
 }
 
 # Display ERROR message without trailing newline character
 echo_n_error() {
-  echo -n -e "\033[1;31m[ERROR]\033[0m" $@
+  echo -n -e "\033[1;31m[ERROR]\033[0m" "$@"
 }
 
 # Configurable env vars. These variables can be loaded

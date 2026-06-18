@@ -1,0 +1,561 @@
+{# ADT v2 master docker-compose template.
+   Rendered by _functions_compose.sh (do_render_instance) into PROJECT_DIR.
+   One isolated compose project per instance. nginx is dual-homed (isolated
+   default network + external reverse_proxy network) and carries Traefik
+   TCP-passthrough labels for SNI routing. All state in named docker volumes. #}
+name: {{ COMPOSE_PROJECT }}
+
+services:
+  {# ---- Reverse proxy (nginx) ---- #}
+  web:
+    image: nginx:1.28-alpine
+    container_name: {{ COMPOSE_PROJECT }}-web
+    hostname: {{ INSTANCE_KEY }}
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./error_pages:/var/www/error_pages:ro
+      - {{ INSTANCE_SSL_CERTIFICATE_FILE }}:/etc/nginx/certificate.pem:ro
+      - {{ INSTANCE_SSL_CERTIFICATE_KEY_FILE }}:/etc/nginx/certificate.key:ro
+      {% if INSTANCE_SSL_CERTIFICATE_CHAIN_FILE %}- {{ INSTANCE_SSL_CERTIFICATE_CHAIN_FILE }}:/etc/nginx/certificate-chain.pem:ro{% endif %}
+      - web_logs:/var/log/nginx
+      - web_cache:/var/cache/nginx
+    networks:
+      default: {}
+      reverse_proxy: {}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ DEPLOYMENT_FRONTEND_NETWORK }}"
+      - "traefik.tcp.routers.{{ INSTANCE_KEY }}.rule=HostSNI(`{{ DEPLOYMENT_EXT_HOST }}`)"
+      - "traefik.tcp.routers.{{ INSTANCE_KEY }}.entrypoints={{ DEPLOYMENT_TRAEFIK_ENTRYPOINT }}"
+      - "traefik.tcp.routers.{{ INSTANCE_KEY }}.tls.passthrough=true"
+      - "traefik.tcp.services.{{ INSTANCE_KEY }}.loadbalancer.server.port=443"
+    restart: unless-stopped
+    logging: &default_logging
+      driver: json-file
+      options: { max-size: "200m", max-file: "5" }
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  {# ---- Application (eXo/Meeds) ---- #}
+  {% if PRODUCT_NAME == 'meeds' %}
+  meeds:
+    image: {{ IMAGE }}:{{ IMAGE_TAG }}
+    container_name: {{ COMPOSE_PROJECT }}-meeds
+    hostname: meeds
+    environment:
+      MEEDS_PROXY_VHOST: "{{ DEPLOYMENT_EXT_HOST }}"
+      MEEDS_PROXY_SSL: "true"
+      MEEDS_JVM_SIZE_MIN: "{{ DEPLOYMENT_JVM_SIZE_MIN }}"
+      MEEDS_JVM_SIZE_MAX: "{{ DEPLOYMENT_JVM_SIZE_MAX }}"
+      MEEDS_UPLOAD_MAX_FILE_SIZE: "{{ DEPLOYMENT_UPLOAD_MAX_FILE_SIZE }}"
+      MEEDS_DB_TYPE: "{{ DEPLOYMENT_DB_TYPE }}"
+      MEEDS_DB_HOST: db
+      MEEDS_DB_PORT: "{{ DB_PORT }}"
+      MEEDS_DB_NAME: "{{ DEPLOYMENT_DB_NAME }}"
+      MEEDS_DB_USER: "{{ DEPLOYMENT_DB_USER }}"
+      MEEDS_DB_PASSWORD: "{{ DEPLOYMENT_DB_PASSWORD }}"
+      MEEDS_ES_HOST: search
+      MEEDS_ES_PORT: "9200"
+      MEEDS_ES_SCHEME: "http"
+      MEEDS_ES_INDEX_REPLICA_NB: "0"
+      MEEDS_ES_INDEX_SHARD_NB: "1"
+      {% if DEPLOYMENT_ADDONS %}MEEDS_ADDONS_LIST: "{{ DEPLOYMENT_ADDONS }}"{% endif %}
+      {% if DEPLOYMENT_ADDONS_REMOVE_LIST %}MEEDS_ADDONS_REMOVE_LIST: "{{ DEPLOYMENT_ADDONS_REMOVE_LIST }}"{% endif %}
+      {% if DEPLOYMENT_ADDONS_CATALOG %}MEEDS_ADDONS_CATALOG_URL: "{{ DEPLOYMENT_ADDONS_CATALOG }}"{% endif %}
+      {% if DEPLOYMENT_ADDONS_CONFLICT_MODE %}MEEDS_ADDONS_CONFLICT_MODE: "{{ DEPLOYMENT_ADDONS_CONFLICT_MODE }}"{% endif %}
+      {% if DEPLOYMENT_PATCHES_LIST %}MEEDS_PATCHES_LIST: "{{ DEPLOYMENT_PATCHES_LIST }}"{% endif %}
+      {% if DEPLOYMENT_PATCHES_CATALOG_URL %}MEEDS_PATCHES_CATALOG_URL: "{{ DEPLOYMENT_PATCHES_CATALOG_URL }}"{% endif %}
+      {% if DEPLOYMENT_OPTS %}MEEDS_JVM_OPTS: "{{ DEPLOYMENT_OPTS }}"{% endif %}
+      MEEDS_JMX_ENABLED: "true"
+      MEEDS_JMX_RMI_REGISTRY_PORT: "10001"
+      MEEDS_JMX_RMI_SERVER_PORT: "10002"
+      MEEDS_JMX_RMI_SERVER_HOSTNAME: "{{ INSTANCE_KEY }}"
+    volumes:
+      - exo_data:/srv/meeds
+      - exo_codec:/etc/meeds/codec
+      - exo_logs:/var/log/meeds
+      - ./exo.properties:/etc/meeds/exo.properties:ro
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+  {% else %}
+  exo:
+    image: {{ IMAGE }}:{{ IMAGE_TAG }}
+    container_name: {{ COMPOSE_PROJECT }}-exo
+    hostname: exo
+    environment:
+      EXO_REGISTRATION: "false"
+      EXO_PROFILES: "all"
+      EXO_PROXY_VHOST: "{{ DEPLOYMENT_EXT_HOST }}"
+      EXO_PROXY_SSL: "true"
+      EXO_JVM_SIZE_MIN: "{{ DEPLOYMENT_JVM_SIZE_MIN }}"
+      EXO_JVM_SIZE_MAX: "{{ DEPLOYMENT_JVM_SIZE_MAX }}"
+      EXO_UPLOAD_MAX_FILE_SIZE: "{{ DEPLOYMENT_UPLOAD_MAX_FILE_SIZE }}"
+      EXO_DB_TYPE: "{{ DEPLOYMENT_DB_TYPE }}"
+      EXO_DB_HOST: db
+      EXO_DB_PORT: "{{ DB_PORT }}"
+      EXO_DB_NAME: "{{ DEPLOYMENT_DB_NAME }}"
+      EXO_DB_USER: "{{ DEPLOYMENT_DB_USER }}"
+      EXO_DB_PASSWORD: "{{ DEPLOYMENT_DB_PASSWORD }}"
+      EXO_DB_POOL_IDM_MAX_SIZE: "20"
+      EXO_DB_POOL_JCR_MAX_SIZE: "20"
+      EXO_DB_POOL_JPA_MAX_SIZE: "20"
+      EXO_ES_HOST: search
+      EXO_ES_PORT: "9200"
+      EXO_ES_SCHEME: "http"
+      EXO_ES_INDEX_REPLICA_NB: "0"
+      EXO_ES_INDEX_SHARD_NB: "1"
+      EXO_JCR_FS_STORAGE_ENABLED: "true"
+      EXO_FILE_STORAGE_TYPE: "fs"
+      {% if DEPLOYMENT_ADDONS %}EXO_ADDONS_LIST: "{{ DEPLOYMENT_ADDONS }}"{% endif %}
+      {% if DEPLOYMENT_ADDONS_REMOVE_LIST %}EXO_ADDONS_REMOVE_LIST: "{{ DEPLOYMENT_ADDONS_REMOVE_LIST }}"{% endif %}
+      {% if DEPLOYMENT_ADDONS_CATALOG %}EXO_ADDONS_CATALOG_URL: "{{ DEPLOYMENT_ADDONS_CATALOG }}"{% endif %}
+      {% if DEPLOYMENT_ADDONS_CONFLICT_MODE %}EXO_ADDONS_CONFLICT_MODE: "{{ DEPLOYMENT_ADDONS_CONFLICT_MODE }}"{% endif %}
+      {% if DEPLOYMENT_PATCHES_LIST %}EXO_PATCHES_LIST: "{{ DEPLOYMENT_PATCHES_LIST }}"{% endif %}
+      {% if DEPLOYMENT_PATCHES_CATALOG_URL %}EXO_PATCHES_CATALOG_URL: "{{ DEPLOYMENT_PATCHES_CATALOG_URL }}"{% endif %}
+      {% if DEPLOYMENT_OPTS %}EXO_JVM_OPTS: "{{ DEPLOYMENT_OPTS }}"{% endif %}
+      EXO_JMX_ENABLED: "true"
+      EXO_JMX_RMI_REGISTRY_PORT: "10001"
+      EXO_JMX_RMI_SERVER_PORT: "10002"
+      EXO_JMX_RMI_SERVER_HOSTNAME: "{{ INSTANCE_KEY }}"
+      EXO_MAIL_SMTP_HOST: "{{ MAIL_SMTP_HOST }}"
+      EXO_MAIL_SMTP_PORT: "{{ MAIL_SMTP_PORT }}"
+    volumes:
+      - exo_data:/srv/exo
+      - exo_codec:/etc/exo/codec
+      - exo_logs:/var/log/exo
+      - ./exo.properties:/etc/exo/exo.properties:ro
+      {% if PRODUCT_REQUIRES_LICENSE == true and EXO_LICENSE_FILE %}- {{ EXO_LICENSE_FILE }}:/etc/exo/license.xml:ro{% endif %}
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8080/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+  {% endif %}
+
+  {# ---- Database ---- #}
+  db:
+    image: {{ DB_IMAGE }}
+    container_name: {{ COMPOSE_PROJECT }}-db
+    hostname: db
+    {% if DEPLOYMENT_DB_TYPE == 'postgres' %}
+    environment:
+      POSTGRES_DB: "{{ DEPLOYMENT_DB_NAME }}"
+      POSTGRES_USER: "{{ DEPLOYMENT_DB_USER }}"
+      POSTGRES_PASSWORD: "{{ DEPLOYMENT_DB_PASSWORD }}"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    {% endif %}
+    {% if DEPLOYMENT_DB_TYPE == 'mysql' %}
+    environment:
+      MYSQL_DATABASE: "{{ DEPLOYMENT_DB_NAME }}"
+      MYSQL_USER: "{{ DEPLOYMENT_DB_USER }}"
+      MYSQL_PASSWORD: "{{ DEPLOYMENT_DB_PASSWORD }}"
+      MYSQL_ROOT_PASSWORD: "{{ DEPLOYMENT_DB_PASSWORD }}"
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./mysql.cnf:/etc/mysql/conf.d/exo.cnf:ro
+    {% endif %}
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+    healthcheck:
+      {% if DEPLOYMENT_DB_TYPE == 'postgres' %}
+      test: ["CMD-SHELL", "pg_isready -U {{ DEPLOYMENT_DB_USER }} -d {{ DEPLOYMENT_DB_NAME }} || exit 1"]
+      {% endif %}
+      {% if DEPLOYMENT_DB_TYPE == 'mysql' %}
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u{{ DEPLOYMENT_DB_USER }} -p{{ DEPLOYMENT_DB_PASSWORD }} --silent || exit 1"]
+      {% endif %}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    {% if DEPLOYMENT_EXPOSE_MANAGEMENT_PORTS == 'true' %}
+    ports:
+      - "127.0.0.1:{{ DB_MANAGEMENT_PORT }}:{{ DB_PORT }}"
+    {% endif %}
+
+  {# ---- Elasticsearch ---- #}
+  search:
+    image: {{ ES_IMAGE }}
+    container_name: {{ COMPOSE_PROJECT }}-search
+    hostname: search
+    environment:
+      discovery.type: single-node
+      xpack.security.enabled: "false"
+      ES_JAVA_OPTS: "-Xms{{ ES_HEAP }} -Xmx{{ ES_HEAP }}"
+      bootstrap.memory_lock: "true"
+      cluster.name: "{{ INSTANCE_KEY }}-es"
+    ulimits:
+      memlock: { soft: -1, hard: -1 }
+    volumes:
+      - es_data:/usr/share/elasticsearch/data
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:9200/_cluster/health || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 15
+      start_period: 60s
+
+  {# ---- OnlyOffice ---- #}
+  {% if DEPLOYMENT_ONLYOFFICE_ENABLED == 'true' %}
+  onlyoffice:
+    image: onlyoffice/documentserver:{{ ONLYOFFICE_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-onlyoffice
+    hostname: onlyoffice
+    environment:
+      JWT_ENABLED: "false"
+    volumes:
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_lib:/var/lib/onlyoffice
+      - onlyoffice_db:/var/lib/postgresql
+      - onlyoffice_logs:/var/log/onlyoffice
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost/healthcheck || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 120s
+  {% endif %}
+
+  {# ---- Mailpit ---- #}
+  {% if DEPLOYMENT_MAILPIT_ENABLED == 'true' %}
+  mailpit:
+    image: axllent/mailpit:{{ MAILPIT_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-mailpit
+    hostname: mailpit
+    environment:
+      MP_SMTP_AUTH_ACCEPT_ANY: "true"
+      MP_SMTP_AUTH_ALLOW_INSECURE: "true"
+    volumes:
+      - mailpit_data:/data
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail http://localhost:8025/ || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+  {% endif %}
+
+  {# ---- Dozzle (container log viewer) ---- #}
+  {% if DEPLOYMENT_DOZZLE_ENABLED == 'true' %}
+  dozzle:
+    image: amir20/dozzle:{{ DOZZLE_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-dozzle
+    hostname: dozzle
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- Frontail (live log viewer) ---- #}
+  {% if DEPLOYMENT_FRONTAIL_ENABLED == 'true' %}
+  frontail:
+    image: hbenali/frontail:{{ FRONTAIL_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-frontail
+    hostname: frontail
+    volumes:
+      - exo_logs:/logs:ro
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- CloudBeaver (DB web UI) ---- #}
+  {% if DEPLOYMENT_CLOUDBEAVER_ENABLED == 'true' %}
+  cloudbeaver:
+    image: exoplatform/cloudbeaver:{{ CLOUDBEAVER_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-cloudbeaver
+    hostname: cloudbeaver
+    volumes:
+      - cloudbeaver_data:/opt/cloudbeaver/workspace
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- Iframely (oEmbed) ---- #}
+  {% if DEPLOYMENT_IFRAMELY_ENABLED == 'true' %}
+  iframely:
+    image: jolt/iframely:{{ IFRAMELY_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-iframely
+    hostname: iframely
+    environment:
+      IFONLY: "true"
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- AI / Ollama ---- #}
+  {% if DEPLOYMENT_AI_ENABLED == 'true' %}
+  ollama:
+    image: ollama/ollama:{{ OLLAMA_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-ollama
+    hostname: ollama
+    volumes:
+      - ollama_data:/root/.ollama
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- Keycloak ---- #}
+  {% if DEPLOYMENT_KEYCLOAK_ENABLED == 'true' %}
+  keycloak:
+    image: quay.io/keycloak/keycloak:{{ KEYCLOAK_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-keycloak
+    hostname: keycloak
+    command: ["start-dev"]
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: "{{ KEYCLOAK_ADMIN_PASSWORD }}"
+      KC_DB: dev-file
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- LDAP + phpLDAPadmin ---- #}
+  {% if DEPLOYMENT_LDAP_ENABLED == 'true' %}
+  ldap:
+    image: dinkel/openldap:{{ LDAP_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-ldap
+    hostname: ldap
+    environment:
+      SLAPD_DOMAIN: "example.org"
+      SLAPD_PASSWORD: "{{ LDAP_ADMIN_PASSWORD }}"
+    volumes:
+      - ldap_data:/var/lib/ldap
+      - ldap_config:/etc/ldap/slapd.d
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  phpldapadmin:
+    image: osixia/phpldapadmin:{{ PHPLDAPADMIN_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-phpldapadmin
+    hostname: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ldap
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- CalDAV / Baikal ---- #}
+  {% if DEPLOYMENT_CALDAV_ENABLED == 'true' %}
+  baikal:
+    image: ckulka/baikal:{{ BAIKAL_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-baikal
+    hostname: baikal
+    volumes:
+      - baikal_data:/var/www/baikal/Specific
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- ClamAV ---- #}
+  {% if DEPLOYMENT_CLAMAV_ENABLED == 'true' %}
+  clamav:
+    image: clamav/clamav:{{ CLAMAV_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-clamav
+    hostname: clamav
+    volumes:
+      - clamav_data:/var/lib/clamav
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- Matrix + its postgres ---- #}
+  {% if DEPLOYMENT_MATRIX_ENABLED == 'true' %}
+  postgres_matrix:
+    image: postgres:17-alpine
+    container_name: {{ COMPOSE_PROJECT }}-postgres-matrix
+    hostname: postgres-matrix
+    environment:
+      POSTGRES_DB: synapse
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: "{{ MATRIX_DB_PASSWORD }}"
+    volumes:
+      - postgres_matrix_data:/var/lib/postgresql/data
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  matrix:
+    image: matrixdotorg/synapse:{{ MATRIX_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-matrix
+    hostname: matrix
+    environment:
+      SYNAPSE_SERVER_NAME: "{{ DEPLOYMENT_EXT_HOST }}"
+      SYNAPSE_REPORT_STATS: "no"
+      POSTGRES_HOST: postgres-matrix
+      POSTGRES_USER: synapse
+      POSTGRES_PASSWORD: "{{ MATRIX_DB_PASSWORD }}"
+      POSTGRES_DB: synapse
+    volumes:
+      - matrix_data:/data
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+  {# ---- Jitsi (full stack) ---- #}
+  {% if DEPLOYMENT_JITSI_ENABLED == 'true' %}
+  jitsi-web:
+    image: jitsi/web:{{ JITSI_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-jitsi-web
+    hostname: jitsi-web
+    environment:
+      PUBLIC_URL: "https://{{ DEPLOYMENT_EXT_HOST }}/jitsi"
+      JICOFO_AUTH: "none"
+    volumes:
+      - jitsi_web_config:/config
+      - jitsi_web_crontabs:/crontabs
+      - jitsi_web_transcripts:/usr/share/jitsi-meet/transcripts
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  jitsi-prosody:
+    image: jitsi/prosody:{{ JITSI_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-jitsi-prosody
+    hostname: jitsi-prosody
+    environment:
+      JICOFO_AUTH: "none"
+    volumes:
+      - jitsi_prosody_config:/config
+      - jitsi_prosody_data:/prosody-plugins-data
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  jitsi-jicofo:
+    image: jitsi/jicofo:{{ JITSI_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-jitsi-jicofo
+    hostname: jitsi-jicofo
+    environment:
+      JICOFO_AUTH: "none"
+    volumes:
+      - jitsi_jicofo_config:/config
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  jitsi-jvb:
+    image: jitsi/jvb:{{ JITSI_VERSION }}
+    container_name: {{ COMPOSE_PROJECT }}-jitsi-jvb
+    hostname: jitsi-jvb
+    environment:
+      JICOFO_AUTH: "none"
+      JVB_PORT: "10000"
+    ports:
+      - "10000:10000/udp"
+    volumes:
+      - jitsi_jvb_config:/config
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      <<: *default_logging
+  {% endif %}
+
+{# ---- Networks ---- #}
+networks:
+  default: {}
+  reverse_proxy:
+    external: true
+    name: {{ DEPLOYMENT_FRONTEND_NETWORK }}
+
+{# ---- Volumes ---- #}
+volumes:
+  exo_data: {}
+  exo_codec: {}
+  exo_logs: {}
+  db_data: {}
+  es_data: {}
+  web_logs: {}
+  web_cache: {}
+  {% if DEPLOYMENT_ONLYOFFICE_ENABLED == 'true' %}
+  onlyoffice_data: {}
+  onlyoffice_lib: {}
+  onlyoffice_db: {}
+  onlyoffice_logs: {}
+  {% endif %}
+  {% if DEPLOYMENT_MAILPIT_ENABLED == 'true' %}
+  mailpit_data: {}
+  {% endif %}
+  {% if DEPLOYMENT_CLOUDBEAVER_ENABLED == 'true' %}
+  cloudbeaver_data: {}
+  {% endif %}
+  {% if DEPLOYMENT_AI_ENABLED == 'true' %}
+  ollama_data: {}
+  {% endif %}
+  {% if DEPLOYMENT_KEYCLOAK_ENABLED == 'true' %}
+  keycloak_data: {}
+  {% endif %}
+  {% if DEPLOYMENT_LDAP_ENABLED == 'true' %}
+  ldap_data: {}
+  ldap_config: {}
+  {% endif %}
+  {% if DEPLOYMENT_CALDAV_ENABLED == 'true' %}
+  baikal_data: {}
+  {% endif %}
+  {% if DEPLOYMENT_CLAMAV_ENABLED == 'true' %}
+  clamav_data: {}
+  {% endif %}
+  {% if DEPLOYMENT_MATRIX_ENABLED == 'true' %}
+  postgres_matrix_data: {}
+  matrix_data: {}
+  {% endif %}
+  {% if DEPLOYMENT_JITSI_ENABLED == 'true' %}
+  jitsi_web_config: {}
+  jitsi_web_crontabs: {}
+  jitsi_web_transcripts: {}
+  jitsi_prosody_config: {}
+  jitsi_prosody_data: {}
+  jitsi_jicofo_config: {}
+  jitsi_jvb_config: {}
+  {% endif %}

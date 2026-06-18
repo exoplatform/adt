@@ -49,7 +49,7 @@ configurable_env_var "ADT_DATA" "${SCRIPT_DIR}"
 if [ -d ${ADT_DATA} ]; then
   # Convert to an absolute path
   pushd ${ADT_DATA} > /dev/null
-  ADT_DATA=`pwd -P`
+  ADT_DATA=$(pwd -P)
   popd > /dev/null
 fi
 echo_info "ADT_DATA = ${ADT_DATA}"
@@ -59,23 +59,49 @@ env_var "TMP_DIR" "${ADT_DATA}/tmp"
 export TMPDIR=${TMP_DIR}
 env_var "DL_DIR" "${ADT_DATA}/downloads"
 env_var "DS_DIR" "${ADT_DATA}/datasets"
-env_var "SRV_DIR" "${ADT_DATA}/servers"
+env_var "PROJECTS_DIR" "${ADT_DATA}/projects"
 env_var "SRC_DIR" "${ADT_DATA}/sources"
 env_var "CONF_DIR" "${ADT_DATA}/conf"
-env_var "APACHE_CONF_DIR" "${ADT_DATA}/conf/apache"
-env_var "AWSTATS_CONF_DIR" "${ADT_DATA}/conf/awstats"
 env_var "ADT_CONF_DIR" "${ADT_DATA}/conf/adt"
-env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
 env_var "INSTANCES_CONF_DIR" "${ADT_DATA}/conf/instances"
-env_var "ETC_DIR" "${ADT_DATA}/etc"
+env_var "ETC_DIR" "${SCRIPT_DIR}/etc"
 
-env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`
-env_var "REPOS_LIST" "meeds-io:gatein-wci meeds-io:kernel meeds-io:core meeds-io:ws meeds-io:gatein-sso meeds-io:portlet-container meeds-io:portal meeds-io:maven-depmgt-pom meeds-io:platform-ui meeds-io:commons meeds-io:social meeds-io:layout meeds-io:auth-server meeds-io:mcp-server Meeds-io:analytics meeds-io:gamification meeds-io:poll meeds-io:gamification-github meeds-io:gamification-twitter meeds-io:gamification-crowdin meeds-io:gamification-evm meeds-io:wallet meeds-io:kudos meeds-io:perk-store meeds-io:app-center meeds-io:push-notifications meeds-io:notes meeds-io:content Meeds-io:task Meeds-io:pwa Meeds-io:ide Meeds-io:ai Meeds-io:matrix meeds-io:deeds-tenant meeds-io:addons-manager meeds-io:meeds exoplatform:agenda exoplatform:agenda-connectors exoplatform:maven-exo-depmgt-pom exoplatform:commons-exo exoplatform:jcr exoplatform:ecms exoplatform:chat-application exoplatform:data-upgrade exoplatform:digital-workplace exoplatform:layout-management exoplatform:news exoplatform:onlyoffice exoplatform:saml2-addon exoplatform:processes exoplatform:web-conferencing exoplatform:jitsi exoplatform:jitsi-call exoplatform:external-visio-connector exoplatform:multifactor-authentication exoplatform:microservices exoplatform:automatic-translation exoplatform:documents exoplatform:dlp exoplatform:mail-integration exoplatform:email-connector exoplatform:anti-malware exoplatform:anti-bruteforce exoplatform:platform-private-distributions"
+env_var "CURR_DATE" "$(date -u "+%Y%m%d.%H%M%S")"
+
+# Docker / j2cli defaults
+configurable_env_var "DEPLOYMENT_DOCKER_CMD" "docker"
+configurable_env_var "DEPLOYMENT_DOCKER_HOST" "unix://"
+env_var "DOCKER_CMD" "${DEPLOYMENT_DOCKER_CMD} -H ${DEPLOYMENT_DOCKER_HOST}"
+configurable_env_var "DEPLOYMENT_J2CLI_IMAGE" "exoplatform/j2cli"
+configurable_env_var "DEPLOYMENT_J2CLI_VERSION" "1.0.0"
+
+# Frontend network & Traefik
+configurable_env_var "DEPLOYMENT_FRONTEND_NETWORK" "reverse_proxy"
+configurable_env_var "DEPLOYMENT_TRAEFIK_ENTRYPOINT" "websecure"
+
+# TLS defaults (set in /etc/default/adt or ~/.adtrc)
+configurable_env_var "ADT_SSL_CERTIFICATE_FILE" ""
+configurable_env_var "ADT_SSL_CERTIFICATE_KEY_FILE" ""
+configurable_env_var "ADT_SSL_CERTIFICATE_CHAIN_FILE" ""
+configurable_env_var "MEEDSIO_SSL_CERTIFICATE_FILE" ""
+configurable_env_var "MEEDSIO_SSL_CERTIFICATE_KEY_FILE" ""
+configurable_env_var "MEEDSIO_SSL_CERTIFICATE_CHAIN_FILE" ""
+
+# Repository
+configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
+configurable_env_var "REPOSITORY_USERNAME" ""
+configurable_env_var "REPOSITORY_PASSWORD" ""
+
+# Start timeout (seconds to wait for app healthcheck)
+configurable_env_var "DEPLOYMENT_START_TIMEOUT" 600
+
+# Repos list for the dashboard feature-branch scanning (Meeds + eXo public orgs)
+env_var "REPOS_LIST" "meeds-io:gatein-wci meeds-io:kernel meeds-io:core meeds-io:ws meeds-io:gatein-sso meeds-io:portlet-container meeds-io:portal meeds-io:maven-depmgt-pom meeds-io:platform-ui meeds-io:commons meeds-io:social meeds-io:layout meeds-io:auth-server meeds-io:mcp-server meeds-io:analytics meeds-io:gamification meeds-io:poll meeds-io:gamification-github meeds-io:gamification-twitter meeds-io:gamification-crowdin meeds-io:gamification-evm meeds-io:wallet meeds-io:kudos meeds-io:perk-store meeds-io:app-center meeds-io:push-notifications meeds-io:notes meeds-io:content meeds-io:task meeds-io:pwa meeds-io:ide meeds-io:ai meeds-io:matrix meeds-io:deeds-tenant meeds-io:addons-manager meeds-io:meeds exoplatform:agenda exoplatform:agenda-connectors exoplatform:maven-exo-depmgt-pom exoplatform:commons-exo exoplatform:jcr exoplatform:ecms exoplatform:chat-application exoplatform:data-upgrade exoplatform:digital-workplace exoplatform:layout-management exoplatform:news exoplatform:onlyoffice exoplatform:saml2-addon exoplatform:processes exoplatform:web-conferencing exoplatform:jitsi exoplatform:jitsi-call exoplatform:external-visio-connector exoplatform:multifactor-authentication exoplatform:microservices exoplatform:automatic-translation exoplatform:documents exoplatform:dlp exoplatform:mail-integration exoplatform:email-connector exoplatform:anti-malware exoplatform:anti-bruteforce exoplatform:platform-private-distributions"
 
 if ${ADT_DEV_MODE}; then
-  configurable_env_var "ACCEPTANCE_SCHEME"  "http"
+  configurable_env_var "ACCEPTANCE_SCHEME"  "https"
   configurable_env_var "ACCEPTANCE_HOST"    "localhost"
-  configurable_env_var "ACCEPTANCE_PORT"    "8080"
+  configurable_env_var "ACCEPTANCE_PORT"    "443"
   configurable_env_var "ACCEPTANCE_SERVERS" "localhost"
 else
   configurable_env_var "ACCEPTANCE_SCHEME"  "https"
@@ -83,39 +109,19 @@ else
   configurable_env_var "ACCEPTANCE_PORT"    "443"
   configurable_env_var "ACCEPTANCE_SERVERS" "https://acceptance.exoplatform.org"
 fi
+
 validate_env_var "SCRIPT_DIR"
 validate_env_var "ADT_DATA"
 validate_env_var "ETC_DIR"
 validate_env_var "TMP_DIR"
 validate_env_var "DL_DIR"
 validate_env_var "DS_DIR"
-validate_env_var "SRV_DIR"
+validate_env_var "PROJECTS_DIR"
 validate_env_var "CONF_DIR"
-validate_env_var "APACHE_CONF_DIR"
 validate_env_var "ADT_CONF_DIR"
-validate_env_var "FEATURES_CONF_DIR"
 validate_env_var "INSTANCES_CONF_DIR"
-mkdir -p ${ETC_DIR}
-mkdir -p ${TMP_DIR}
-mkdir -p ${DL_DIR}
-mkdir -p ${DS_DIR}
-mkdir -p ${SRV_DIR}
-mkdir -p ${SRC_DIR}
-mkdir -p ${CONF_DIR}
-mkdir -p ${APACHE_CONF_DIR}/conf.d
-mkdir -p ${APACHE_CONF_DIR}/sites-available
-mkdir -p ${APACHE_CONF_DIR}/includes
-mkdir -p ${ADT_CONF_DIR}
-mkdir -p ${FEATURES_CONF_DIR}
-chmod 777 ${FEATURES_CONF_DIR} # apache needs to write here
-mkdir -p ${INSTANCES_CONF_DIR}
-chmod 777 ${INSTANCES_CONF_DIR} # apache needs to write here
-# Recopy default data
-# Copy everything in it
-if [[ "${SCRIPT_DIR}" != "${ADT_DATA}" ]]; then
-  rm -rf ${ETC_DIR}/*
-  cp -rf ${SCRIPT_DIR}/* ${ADT_DATA}
-fi
+
+mkdir -p ${TMP_DIR} ${DL_DIR} ${DS_DIR} ${PROJECTS_DIR} ${SRC_DIR} ${CONF_DIR} ${ADT_CONF_DIR} ${INSTANCES_CONF_DIR}
 
 # no action ? provide help
 if [ $# -lt 1 ]; then
@@ -125,7 +131,7 @@ if [ $# -lt 1 ]; then
 fi
 
 # If help is asked
-if [ $1 == "-h" ]; then
+if [ $1 == "-h" ] || [ $1 == "--help" ]; then
   print_usage
   exit
 fi
@@ -136,101 +142,46 @@ shift
 
 case "${ACTION}" in
   init)
-    clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
-    validate_env_var "ADT_DATA"
-    validate_env_var "ACCEPTANCE_SCHEME"
-    validate_env_var "ACCEPTANCE_HOST"
-    # Create the main vhost from the template
-    configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
-    configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
-    configurable_env_var "APACHE_SSL_CERTIFICATE_FILE" ""
-    configurable_env_var "APACHE_SSL_CERTIFICATE_KEY_FILE" ""
-    configurable_env_var "APACHE_SSL_CERTIFICATE_CHAIN_FILE" ""
-    validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
-    validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
-    evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
-    evaluate_file_content ${ETC_DIR}/apache2/includes/frontend.include.template ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
-    # Fix : Remove any include in the wrong directory
-    rm -f ${APACHE_CONF_DIR}/sites-available/*.include
-    case "${ACCEPTANCE_SCHEME}" in
-      http)
-        echo_info "Deploying Apache FrontEnd configuration for HTTP"
-        evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-        echo_info "Done."
-      ;;
-      https)
-        if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
-          echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-full-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
-          echo_info "Done."
-        else
-          echo_error "Deploying Front End with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
-          print_usage
-          exit 1
-        fi
-      ;;
-      *)
-        echo_error "Invalid scheme \"${ACCEPTANCE_SCHEME}\""
-        print_usage
-        exit 1
-      ;;
-    esac
-    if ! ${ADT_DEV_MODE}; then
-      if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
-        echo_info "Reloading Apache server ..."
-        sudo /usr/sbin/service apache2 reload
-        echo_info "Done."
-      else
-        echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
-      fi
-    else
-      echo_warn "Development Mode: No Apache server reload."
-    fi
+    do_init
   ;;
   deploy)
     configurable_env_var "DEPLOYMENT_MODE" "NO_DATA"
+    validate_env_var "PRODUCT_NAME"
+    validate_env_var "PRODUCT_VERSION"
+    compute_instance_key
     initialize_product_settings
     do_deploy
   ;;
   download-dataset)
+    validate_env_var "PRODUCT_NAME"
+    validate_env_var "PRODUCT_VERSION"
+    compute_instance_key
     initialize_product_settings
     do_download_dataset
   ;;
-  start)
+  dump-dataset)
+    load_instance
+    do_dump_dataset
+  ;;
+  import-dataset)
+    validate_env_var "PRODUCT_NAME"
+    validate_env_var "PRODUCT_VERSION"
+    validate_env_var "DEPLOYMENT_DATASET_FILE"
+    compute_instance_key
     initialize_product_settings
+    do_import_v1_dataset
+  ;;
+  start)
     do_start
   ;;
   stop)
-    initialize_product_settings
     do_stop
   ;;
   restart)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
-    initialize_product_settings
-    do_stop
-    case "${DEPLOYMENT_MODE}" in
-      NO_DATA)
-        do_init_empty_data
-      ;;
-      KEEP_DATA)
-        # We have nothing to touch
-      ;;
-      RESTORE_DATASET)
-        do_restore_dataset
-      ;;
-      DUMP_DATASET)
-        do_dump_dataset
-      ;;
-      *)
-        echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
-        print_usage
-        exit 1
-      ;;
-    esac
-    do_start
+    do_restart
   ;;
   undeploy)
-    initialize_product_settings
     do_undeploy
   ;;
   list)

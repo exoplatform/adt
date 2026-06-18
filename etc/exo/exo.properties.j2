@@ -1,0 +1,100 @@
+{# eXo/Meeds extra properties injected into the container at
+   /etc/meeds/exo.properties or /etc/exo/exo.properties.
+   The image's setenv-docker-customize.sh reads this file and merges it
+   with the generated docker.properties. Values here override defaults. #}
+{# Common to all products #}
+exo.base.url=https://{{ DEPLOYMENT_EXT_HOST }}
+exo.secure={% if PRODUCT_NAME == 'meeds' %}true{% else %}true{% endif %}
+
+{# Cluster / single-node #}
+exo.cluster.enabled=false
+
+{# JCR / File storage #}
+exo.jcr.storage.enabled=true
+exo.files.binaries.storage.type=fs
+
+{# Elasticsearch #}
+exo.es.embedded.enabled=false
+exo.es.index.replica.nb=0
+exo.es.index.shard.nb=1
+
+{# Database pool tuning #}
+gatein.jcr.datasource.dialect=auto
+gatein.jcr.datasource.driver=auto
+
+{# Mail #}
+exo.mail.from=noreply@{{ INSTANCE_DOMAIN }}
+{% if DEPLOYMENT_MAILPIT_ENABLED == 'true' %}
+exo.mail.smtp.host=mailpit
+exo.mail.smtp.port=1025
+exo.mail.smtp.starttls=false
+exo.mail.smtp.ssl.enabled=false
+{% else %}
+exo.mail.smtp.host=localhost
+exo.mail.smtp.port=25
+{% endif %}
+
+{# OnlyOffice integration #}
+{% if DEPLOYMENT_ONLYOFFICE_ENABLED == 'true' %}
+onlyoffice.documentserver.host={{ DEPLOYMENT_EXT_HOST }}
+onlyoffice.documentserver.schema=https
+onlyoffice.documentserver.uri=/onlyoffice
+{% endif %}
+
+{# AI / Ollama #}
+{% if DEPLOYMENT_AI_ENABLED == 'true' %}
+exo.ai.provider=ollama
+exo.ai.ollama.host=http://ollama:11434
+{% endif %}
+
+{# Iframely #}
+{% if DEPLOYMENT_IFRAMELY_ENABLED == 'true' %}
+exo.oembed.provider=iframely
+exo.oembed.iframely.host=http://iframely:8061
+{% endif %}
+
+{# ClamAV #}
+{% if DEPLOYMENT_CLAMAV_ENABLED == 'true' %}
+exo.clamav.host=clamav
+exo.clamav.port=3310
+{% endif %}
+
+{# LDAP #}
+{% if DEPLOYMENT_LDAP_ENABLED == 'true' %}
+exo.ldap.url=ldap://ldap:389
+exo.ldap.admin.dn=cn=admin,dc=example,dc=org
+exo.ldap.admin.password={{ LDAP_ADMIN_PASSWORD }}
+exo.ldap.user.dn=ou=users,dc=example,dc=org
+exo.ldap.group.dn=ou=groups,dc=example,dc=org
+{% endif %}
+
+{# Matrix #}
+{% if DEPLOYMENT_MATRIX_ENABLED == 'true' %}
+exo.matrix.host=matrix
+exo.matrix.port=8008
+{% endif %}
+
+{# Keycloak / OIDC #}
+{% if DEPLOYMENT_KEYCLOAK_ENABLED == 'true' %}
+exo.oauth.openid.enabled=true
+exo.oauth.openid.provider=keycloak
+exo.oauth.openid.clientId=exo-platform
+exo.oauth.openid.clientSecret={{ KEYCLOAK_CLIENT_SECRET }}
+exo.oauth.openid.authURL=https://{{ DEPLOYMENT_EXT_HOST }}/auth/realms/exo/protocol/openid-connect/auth
+exo.oauth.openid.tokenURL=https://{{ DEPLOYMENT_EXT_HOST }}/auth/realms/exo/protocol/openid-connect/token
+exo.oauth.openid.redirectURL=https://{{ DEPLOYMENT_EXT_HOST }}/portal/openidAuth
+{% endif %}
+
+{# CalDAV #}
+{% if DEPLOYMENT_CALDAV_ENABLED == 'true' %}
+exo.caldav.enabled=true
+exo.caldav.host=baikal
+exo.caldav.port=80
+{% endif %}
+
+{# Upload limit #}
+exo.upload.max.file.size={{ DEPLOYMENT_UPLOAD_MAX_FILE_SIZE }}
+
+{# Remember-me #}
+exo.token.rememberme.expiration.value=7
+exo.token.rememberme.expiration.unit=DAY

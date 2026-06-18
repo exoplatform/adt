@@ -3,9 +3,9 @@
 .vscode
 .DS_Store
 tmp
-servers
-acceptance.exoplatform.org
 downloads
+datasets
+projects
 conf
 sources
 .java-version

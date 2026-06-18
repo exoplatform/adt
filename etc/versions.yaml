@@ -1,0 +1,134 @@
+# ADT v2 version matrix
+#
+# This file maps each product+branch to the docker image tags and sidecar
+# versions to use. It is read by _functions_features.sh (initialize_product_settings)
+# using yq. To bump a version, edit this file - no bash code changes needed.
+#
+# Structure:
+#   defaults:        global defaults for sidecar images and feature toggles
+#   products:        per-product image, env prefix, tag patterns and per-branch pins
+#   features:        per-branch version pins for heavy sidecars (jitsi, matrix, ollama)
+
+# ----------------------------------------------------------------------------
+# Global defaults
+# ----------------------------------------------------------------------------
+defaults:
+  # Database images (the compose 'db' service)
+  db_image:
+    postgres: "postgres:17-alpine"
+    mysql: "mysql:8.4"
+  # Elasticsearch (the compose 'search' service). eXo/Meeds 7.2 requires ES 8.x.
+  es_image: "elasticsearch:8.18.8"
+  # Feature toggles default value (overridable per-deploy via DEPLOYMENT_*_ENABLED)
+  DEPLOYMENT_ONLYOFFICE_ENABLED: false
+  DEPLOYMENT_MAILPIT_ENABLED: false
+  DEPLOYMENT_MATRIX_ENABLED: false
+  DEPLOYMENT_JITSI_ENABLED: false
+  DEPLOYMENT_AI_ENABLED: false
+  DEPLOYMENT_IFRAMELY_ENABLED: false
+  DEPLOYMENT_CLOUDBEAVER_ENABLED: false
+  DEPLOYMENT_KEYCLOAK_ENABLED: false
+  DEPLOYMENT_LDAP_ENABLED: false
+  DEPLOYMENT_CALDAV_ENABLED: false
+  DEPLOYMENT_CLAMAV_ENABLED: false
+  DEPLOYMENT_FRONTAIL_ENABLED: false
+  DEPLOYMENT_DOZZLE_ENABLED: true
+
+# ----------------------------------------------------------------------------
+# Products (Tomcat only, 7.2+)
+# ----------------------------------------------------------------------------
+products:
+  # Meeds.io - community distribution
+  # Image: meedsio/meeds (Alpine + Azul Zulu JDK 21, Tomcat bundled)
+  # Env prefix: MEEDS_*
+  # Floating tags: 'alpine' tracks current 7.2 development
+  meeds:
+    image: "meedsio/meeds"
+    env_prefix: "MEEDS"
+    requires_license: false
+    tag_patterns:
+      release: "{v}"
+      snapshot: "alpine"
+      continuous: "alpine"
+    versions:
+      "7.2.x":
+        es: "elasticsearch:8.18.8"
+        db:
+          postgres: "postgres:17-alpine"
+          mysql: "mysql:8.4"
+
+  # eXo Platform Community Edition
+  # Image: exoplatform/exo-enterprise (Ubuntu + OpenJDK 21, Tomcat bundled)
+  # The same enterprise image is used; community mode is driven by add-ons and
+  # the absence of a license file.
+  # Env prefix: EXO_*
+  # Floating tags: 'latest' (7.2.x), 'develop'
+  plfcom:
+    image: "exoplatform/exo-enterprise"
+    env_prefix: "EXO"
+    requires_license: false
+    tag_patterns:
+      release: "{v}_0"
+      snapshot: "latest"
+      continuous: "latest"
+    versions:
+      "7.2.x":
+        es: "elasticsearch:8.18.8"
+        db:
+          postgres: "postgres:17-alpine"
+          mysql: "mysql:8.4"
+
+  # eXo Platform Enterprise Edition
+  # Image: exoplatform/exo-enterprise (Ubuntu + OpenJDK 21, Tomcat bundled)
+  # Env prefix: EXO_*
+  # Requires a license file mounted at /etc/exo/license.xml
+  # Floating tags: 'latest' (7.2.x), 'develop', '7.2_latest'
+  plfent:
+    image: "exoplatform/exo-enterprise"
+    env_prefix: "EXO"
+    requires_license: true
+    tag_patterns:
+      release: "{v}_0"
+      snapshot: "7.2_latest"
+      continuous: "develop"
+    versions:
+      "7.2.x":
+        es: "elasticsearch:8.18.8"
+        db:
+          postgres: "postgres:17-alpine"
+          mysql: "mysql:8.4"
+
+# ----------------------------------------------------------------------------
+# Feature sidecar version pins (per product branch)
+# These are TAGS only - the image name is hardcoded in docker-compose.yml.j2
+# (image names rarely change; tags do, so only tags are versioned here).
+# ----------------------------------------------------------------------------
+features:
+  jitsi:
+    "7.2.x": "stable-10888"
+  matrix:
+    "7.2.x": "latest"
+  ollama:
+    "7.2.x": "latest"
+  onlyoffice:
+    "7.2.x": "9.4"
+  mailpit:
+    "7.2.x": "1.30"
+  iframely:
+    "7.2.x": "latest"
+  cloudbeaver:
+    "7.2.x": "latest"
+  keycloak:
+    "7.2.x": "latest"
+  ldap:
+    "7.2.x": "latest"
+  phpldapadmin:
+    "7.2.x": "latest"
+  baikal:
+    "7.2.x": "latest"
+  clamav:
+    "7.2.x": "latest"
+  frontail:
+    "7.2.x": "latest"
+  dozzle:
+    "7.2.x": "latest"

@@ -1,0 +1,27 @@
+# Traefik v3 is expected to be deployed and managed outside adt (by a puppet
+# agent). This directory documents the expected Traefik static + dynamic
+# configuration that adt v2 relies on.
+#
+# Expected Traefik setup:
+#  - Running as a docker container on the 'reverse_proxy' network.
+#  - A TCP entrypoint named 'websecure' listening on :443 (SNI passthrough).
+#  - Docker provider enabled with:
+#      exposedByDefault = false
+#      network = "reverse_proxy"
+#      watch = true
+#  - No HTTP entrypoint needed (adt v2 is HTTPS-only).
+#
+# adt instances register themselves by adding labels on their nginx container:
+#   traefik.enable=true
+#   traefik.docker.network=reverse_proxy
+#   traefik.tcp.routers.<INSTANCE_KEY>.rule=HostSNI(`<INSTANCE_KEY>.<ACCEPTANCE_HOST>`)
+#   traefik.tcp.routers.<INSTANCE_KEY>.entrypoints=websecure
+#   traefik.tcp.routers.<INSTANCE_KEY>.tls.passthrough=true
+#   traefik.tcp.services.<INSTANCE_KEY>.loadbalancer.server.port=443
+#
+# Because Traefik watches the docker provider, registering/deregistering an
+# instance (compose up / compose down) is automatic - no Traefik restart needed.
+#
+# TLS is terminated inside each instance's nginx (not by Traefik), so Traefik
+# never needs to know about certificate file paths. This allows per-instance
+# custom certificates without touching Traefik.

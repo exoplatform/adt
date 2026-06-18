@@ -1,1 +1,0 @@
-signature_algorithm = "HS384"

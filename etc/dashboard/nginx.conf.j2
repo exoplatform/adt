@@ -1,0 +1,20 @@
+# Placeholder dashboard nginx.conf.j2 - will be expanded in step 8.
+events {}
+http {
+  server {
+    listen 443 ssl;
+    server_name {{ DASHBOARD_EXT_HOST }};
+    ssl_certificate /etc/nginx/certificate.pem;
+    ssl_certificate_key /etc/nginx/certificate.key;
+    root /var/www;
+    index index.php;
+    location / {
+      try_files $uri $uri/ /index.php?$query_string;
+    }
+    location ~ \.php$ {
+      include fastcgi_params;
+      fastcgi_pass php:9000;
+      fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+    }
+  }
+}

@@ -1,3 +1,0 @@
-# Disallows all Web Spiders for the entire site (SWF-2917)
-User-agent: *
-Disallow: /

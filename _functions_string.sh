@@ -39,26 +39,16 @@ do_build_url() {
     echo_error "No enough parameters for function do_build_url !"
     exit 1;
   fi
-
-  #
-  # Function parameters
-  #
-  local _scheme="$1";
-  shift;
-  local _host="$1";
-  shift;
-  local _port="$1";
-  shift;
-  local _path="$1";
-  shift;
-
-  local _result="${_scheme}://${_host}";
-  if [ "$_port" == "80" ]; then
-    _result="${_result}${_path}";
+  local _scheme="$1"; shift
+  local _host="$1"; shift
+  local _port="$1"; shift
+  local _path="$1"; shift
+  local _result="${_scheme}://${_host}"
+  if [ "$_port" == "80" ] || [ "$_port" == "443" ]; then
+    _result="${_result}${_path}"
   else
-    _result="${_result}:${_port}${_path}";
+    _result="${_result}:${_port}${_path}"
   fi
-
   echo ${_result}
 }
 
@@ -67,9 +57,16 @@ getrandomstring() {
   cat /dev/urandom | tr -dc '[:alpha:][0-9]' | fold -w ${1:-12} | head -n 1
 }
 
-# $1 : url 
+# $1 : url
 getdomainfromUrl() {
   echo "$1" | sed -E 's|^[a-z]+://||; s|:.*||; s|/.*||'
+}
+
+# Sanitize a string to be used as a docker compose project/volume/network name.
+# Replaces any char not in [a-z0-9_-] with '-' and lowercases the result.
+# $1 : string
+sanitize_name() {
+  echo "$1" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9_.-]/-/g; s/\./-/g'
 }
 
 # $1: length
@@ -80,13 +77,10 @@ fqdn_rand_string() {
   local salt="$2"
   local fqdn="$3"
   local seed="${fqdn}-${salt}"
-
-  # Compute a SHA-256 hash and convert to base64 for a diverse charset
   local hash
   hash=$(echo -n "$seed" | sha256sum | awk '{print $1}')
   local b64
   b64=$(echo -n "$hash" | xxd -r -p | base64 | tr -d '=' | tr '/+' 'AB')
-
   echo "${b64:0:$length}"
 }
 

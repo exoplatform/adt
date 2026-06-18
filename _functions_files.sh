@@ -24,75 +24,66 @@ source "${SCRIPT_DIR}/_functions_core.sh"
 # Files related functions
 # #############################################################################
 
-#
 # Replace in file $1 the value $2 by $3
-#
 replace_in_file() {
   mv $1 $1.orig
   ${CMD_SED} "s|$2|$3|g" $1.orig > $1
   rm $1.orig
 }
 
-#
 # find_file <VAR> <PATH1> ..  <PATHx>
 # test all paths and the path of the latest one existing in parameters is set as VAR
-#
 find_file() {
   set +u
   local _varName=$1
   shift;
   # default value set to UNSET
   env_var ${_varName} "UNSET"
-  for i in $*
+  for i in "$@"
   do
     [ -e "$i" ] && env_var ${_varName} "$i"
   done
   set -u
 }
 
-#
-# Apply Jinja2 template from $1 file
-#
+# Render a Jinja2 template file $1 into the output file $2 using the current
+# environment as variables. Uses the local `j2` binary when available, else
+# falls back to the exoplatform/j2cli docker image (no host python needed).
 j2() {
-  if ! which j2 &>/dev/null; then 
-    local tmpfile=$(mktemp)
-    env > $tmpfile
-    ${DOCKER_CMD} run --env-file $tmpfile --rm -v "$2":"$2" ${DEPLOYMENT_J2CLI_IMAGE}:${DEPLOYMENT_J2CLI_VERSION} $1 $2
-    rm $tmpfile
-  else 
-    j2 $1 $2
+  local _template=$1
+  local _output=$2
+  if which j2 &>/dev/null; then
+    j2 --undefined ${_template} > ${_output}
+  else
+    local _envfile=$(mktemp)
+    env > ${_envfile}
+    ${DOCKER_CMD:-docker} run --env-file ${_envfile} --rm \
+      -v "${_template}":"${_template}" \
+      ${DEPLOYMENT_J2CLI_IMAGE}:${DEPLOYMENT_J2CLI_VERSION} \
+      ${_template} > ${_output}
+    rm ${_envfile}
   fi
 }
 
-#
-# Replace in file $1 all environment variables (${XXX}) and push the result in $2
-#
+# Render a template file $1 into the output file $2.
+# .j2 files are rendered with Jinja2 (j2 function above).
+# Other files are copied as-is.
 evaluate_file_content() {
   local _file_in=$1
   local _file_out=$2
-  if [ ${_file_in##*.} = "j2" ]; then 
-    j2 --undefined ${_file_in} > ${_file_out}
-  else 
-    if which perl &>/dev/null; then 
-      perl -pe 's/\$\{([^}]+)\}/$ENV{$1} || ""/ge' < ${_file_in} > ${_file_out}
-    else 
-      awk '{while(match($0,"[$]{[^}]*}")) {var=substr($0,RSTART+2,RLENGTH -3);gsub("[$]{"var"}",ENVIRON[var])}}1' < ${_file_in} > ${_file_out}
-    fi
-    # escape any single quote
-    if ${LINUX}; then
-      replace_in_file ${_file_out} "'" "\\\'"
-    else
-      replace_in_file ${_file_out} "\'" "\\\'"
-    fi
+  mkdir -p "$(dirname ${_file_out})"
+  if [ "${_file_in##*.}" = "j2" ]; then
+    j2 ${_file_in} ${_file_out}
+  else
+    cp ${_file_in} ${_file_out}
   fi
 }
 
 # Backup the file passed as parameter
 backup_file() {
   if [ -d $1 ]; then
-    # We need to backup existing file if they already exist
     cd $1
-    local _start_date=`date -u "+%Y%m%d-%H%M%S-UTC"`
+    local _start_date=$(date -u "+%Y%m%d-%H%M%S-UTC")
     for file in $2
     do
       if [ -e ${file} ]; then
@@ -101,7 +92,7 @@ backup_file() {
         echo_info "Done."
       fi
     done
-    cd -
+    cd - > /dev/null
   fi
 }
 

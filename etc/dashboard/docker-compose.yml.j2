@@ -1,0 +1,24 @@
+# Placeholder dashboard docker-compose.yml.j2 - will be expanded in step 8.
+name: {{ DASHBOARD_PROJECT }}
+services:
+  web:
+    image: nginx:1.28-alpine
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - {{ ADT_VAR_WWW }}:/var/www:ro
+      - {{ INSTANCE_SSL_CERTIFICATE_FILE }}:/etc/nginx/certificate.pem:ro
+      - {{ INSTANCE_SSL_CERTIFICATE_KEY_FILE }}:/etc/nginx/certificate.key:ro
+    networks: [default, reverse_proxy]
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network={{ DEPLOYMENT_FRONTEND_NETWORK }}"
+      - "traefik.tcp.routers.dashboard.rule=HostSNI(`{{ DASHBOARD_EXT_HOST }}`)"
+      - "traefik.tcp.routers.dashboard.entrypoints={{ DEPLOYMENT_TRAEFIK_ENTRYPOINT }}"
+      - "traefik.tcp.routers.dashboard.tls.passthrough=true"
+      - "traefik.tcp.services.dashboard.loadbalancer.server.port=443"
+    restart: unless-stopped
+networks:
+  default: {}
+  reverse_proxy:
+    external: true
+    name: {{ DEPLOYMENT_FRONTEND_NETWORK }}

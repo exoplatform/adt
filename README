@@ -1,193 +1,89 @@
-This project is a set of tools used to automate the deployment of eXo products for testing purpose.
+ADT - Acceptance Deployment Tool (v2)
+=====================================
 
-How to use ?
-============
+This project automates the deployment of eXo/Meeds products for testing purpose.
+
+Each instance is deployed as an isolated docker compose project, fronted by an
+nginx reverse-proxy registered with a Traefik v3 (TCP SNI passthrough) running
+on an external docker network. All data is stored in named docker volumes.
 
 Prerequisites
-------------------------
+-------------
 
-Mandatory :
+Mandatory:
+  * Docker (with the compose v2 plugin)
+  * `yq` (mikefarah/yq v4) in the PATH
+  * `jq` in the PATH
+  * A Traefik v3 running on a docker network named `reverse_proxy` (deployed by
+    your configuration management, e.g. puppet). See `etc/traefik/README` for
+    the expected setup.
 
-  * A Java 6 JVM available in the PATH
+Optional:
+  * `j2` (jinja2-cli) in the PATH - else the `exoplatform/j2cli` docker image
+    is used to render templates.
+  * `php` >= 7.4 for the dev web-server (`adt.sh web-server`).
 
-Optional :
-
-  * A mysql server with a local configuration (~/.my.cnf) that allows the current system user to create databases and grant rights. You can activate the usage of MySQL with the environment variable : 
-  * An apache server (with PHP and its APC module) to display the list of instances and to create a reverse proxy for all instances.
-  * An UFW firewall to protect your (ubuntu server). The script will automatically open or close required ports (HTTP, JMX, ...).
-  * An awstats instance to keep statistics of usage.
-
-Prepare your environment
-------------------------
-Fork this project :
-
-    git clone git://github.com/exoplatform/adt.git
-
-Define the environment variable ADT_DATA, which will be the path to a working directory used by ADT.
+Configure
+---------
 
     export ADT_DATA=$HOME/adt_data
 
-You can also define your settings in $HOME/.adtrc or in /etc/default/adt
+You can also define your settings in `$HOME/.adtrc` or `/etc/default/adt`.
 
-You're ready to go
-------------------
-
-Deploy a server : download and configure it
-
-    # adt.sh deploy plfcom 4.0.0-SNAPSHOT
-
-Start a server : start a deployed instance
-
-    # adt.sh start plfcom 4.0.0-SNAPSHOT
-
-Stop a server : stop a deployed instance
-
-    # adt.sh stop plfcom 4.0.0-SNAPSHOT
-
-Restart a server : restart a deployed instance
-
-    # adt.sh restart plfcom 4.0.0-SNAPSHOT
-
-Undeploy a server : stop a deployed instance if already running and delete it.
-
-    # adt.sh undeploy plfcom 4.0.0-SNAPSHOT
-
-List all deployed instances
-
-    # adt.sh list
+TLS certificates (for the per-instance nginx) must be provided via env vars:
+  ADT_SSL_CERTIFICATE_FILE / _KEY_FILE / _CHAIN_FILE   (global default)
+  MEEDSIO_SSL_CERTIFICATE_FILE / _KEY_FILE / _CHAIN_FILE (for *.meeds.io)
 
 Usage
 -----
 
-      usage: ./adt.sh <action>
+    usage: ./adt.sh <action>
 
-    This script manages automated deployment of eXo products for testing purpose.
+  deploy            Deploys the instance
+  download-dataset  Downloads the dataset for the instance
+  dump-dataset      Dumps the instance data into a dataset archive
+  import-dataset    Imports a v1 dataset tarball into the instance volumes
+  start             Starts the instance
+  stop              Stops the instance
+  restart           Restarts the instance
+  undeploy          Undeploys (deletes) the instance
 
-    Action
-    ------
-      deploy           Deploys (Download+Configure) the server
-      download-dataset Downloads the dataset required by the server
-      start            Starts the server
-      stop             Stops the server
-      restart          Restarts the server
-      undeploy         Undeploys (deletes) the server
+  start-all         Starts all deployed instances
+  stop-all          Stops all deployed instances
+  restart-all       Restarts all deployed instances
+  undeploy-all      Undeploys (deletes) all deployed instances
+  list              Lists all deployed instances
 
-      start-all        Starts all deployed servers
-      stop-all         Stops all deployed servers
-      restart-all      Restarts all deployed servers
-      undeploy-all     Undeploys (deletes) all deployed servers
-      list             Lists all deployed servers
+  init              Initializes the environment (frontend network + dashboard)
+  update-repos      Update Git repositories used by the web front-end
+  web-server        Starts a local PHP web server (dev mode)
 
-      init             Initializes the environment
-      update-repos     Update Git repositories used by the web front-end
-      web-server       Starts a local PHP web server to test the front-end (requires PHP >= 5.4). It automatically activates the development mode.
+Products
+--------
 
-    Environment Variables
-    ---------------------
+  meeds    Meeds.io                                   (Tomcat, docker image)
+  plfcom   eXo Platform Community Edition             (Tomcat, docker image)
+  plfent   eXo Platform Express/Enterprise Edition    (Tomcat, docker image)
 
-      They may be configured in the current shell environment or /etc/default/adt or $HOME/.adtrc
+Versions 7.2+ are supported. See `etc/versions.yaml` for the image tag mapping.
 
-      Global Settings
-      ===============
+Examples
+--------
 
-      ADT_DATA                          : The path where data have to be stored (default: under the script path - /Users/arnaud/Code/eXo/adt)
+  # Initialize the environment (network + dashboard)
+  ./adt.sh init
 
-      ACCEPTANCE_SCHEME                 : The scheme to use to deploy the acceptance server (default: 'http' if ADT_DEV_MODE=true, 'https' otherwise; values : http | https)
-      ACCEPTANCE_HOST                   : The hostname (vhost) where is deployed the acceptance server (default: 'localhost' if ADT_DEV_MODE=true, 'acceptance.exoplatform.org' otherwise)
-      ACCEPTANCE_PORT                   : The server port on which the acceptance front-end is listening (default: '8080' if ADT_DEV_MODE=true, '80' otherwise)
-      ACCEPTANCE_SERVERS                : A comma separated list of all acceptance front-end URLs to aggregate (default: 'http://localhost:8080' if ADT_DEV_MODE=true, 'https://acceptance.exoplatform.org' otherwise)
-      CROWD_ACCEPTANCE_APP_NAME         : The crowd application used to authenticate the front-end (default: none)
-      CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application''s password used to authenticate the front-end (default: none)
-      LDAP_ACCEPTANCE_BIND_DN           : The LDAP Bind DN used to authenticate the front-end (default: none)
-      LDAP_ACCEPTANCE_BIND_PASSWORD     : The LDAP Bind DN''s password used to authenticate the front-end (default: none)
-      APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup
-      APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
-      APACHE_SSL_CERTIFICATE_CHAIN_FILE : Apache SSLCertificateChainFile for HTTPS setup
+  # Deploy Meeds 7.2.0-SNAPSHOT on PostgreSQL
+  ./adt-dev.sh deploy -n meeds -v 7.2.0-SNAPSHOT -d postgres:17
 
-      REPOSITORY_SERVER_BASE_URL        : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
-      REPOSITORY_USERNAME               : The username to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
-      REPOSITORY_PASSWORD               : The password to logon on $REPOSITORY_SERVER_BASE_URL if necessary (default: none)
+  # Deploy eXo Platform Enterprise 7.2.0 on MySQL
+  ./adt-dev.sh deploy -n plfent -v 7.2.0 -d mysql:8.4
 
-      ADT_DEBUG                         : Display debug details (default: false; values : true | false)
-      ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false; values : true | false)
-      ADT_OFFLINE                       : Use only local resources, don't do any remote operations. (default: false; values : true | false)
+  # List deployed instances
+  ./adt.sh list
 
-      DEPLOYMENT_LABELS                         : Comma separated labels for a deployment (default: none)
-      DEPLOYMENT_EXTENSIONS                     : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
-      DEPLOYMENT_ADDONS                         : Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
-      DEPLOYMENT_ADDONS_CATALOG                 : The url of an eXo Add-on Manager catalog file (default: none)
-      DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE   : Used for add-on manager --conflict parameter (default: none) (possible values: fail / skip / overwrite)
-      DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE   : Used for add-on manager --no-compat parameter (default: none) (possible values: true / false)
-      DEPLOYMENT_ADDONS_MANAGER_UNSTABLE_MODE   : Used for add-on manager --unstable parameter (default: none) (possible values: true / false)
-      DEPLOYMENT_ADDONS_MANAGER_PATCHES_NOCOMPAT_MODE   : Used for add-on manager --no-compat parameter when installing patches (default: none) (possible values: true / false)
-      Instance Settings
-      =================
+  # Undeploy an instance
+  ./adt-dev.sh undeploy -n meeds -v 7.2.0-SNAPSHOT -d postgres:17
 
-      PRODUCT_NAME                      : The product you want to manage. Possible values are :
-        gatein         GateIn Community edition                - Apache Tomcat bundle
-        exogtn         GateIn eXo edition                      - Apache Tomcat bundle
-        plf            eXo Platform Standard Edition           - Apache Tomcat bundle
-        plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
-        plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
-        plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
-        plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
-        plfsales       eXo Platform Trial Edition FOR SALES ENVT - Apache Tomcat bundle
-        plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
-        addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
-        compint        eXo Company Intranet                    - Apache Tomcat bundle
-        community      eXo Community Website                   - Apache Tomcat bundle
-        docs           eXo Platform Documentations Website     - Apache Tomcat bundle
-      PRODUCT_VERSION                   : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
-      INSTANCE_ID                       : The id of the instance. Use this property to deploy several time the same PRODUCT_NAME and PRODUCT_VERSION couple (default: none)
-
-      DEPLOYMENT_SKIP_ACCOUNT_SETUP     : Do you want to skip the account creation form and use default accounts (default: false; values : true | false)
-      DEPLOYMENT_SKIP_REGISTER          : Do you want to skip the register step (default: false; values : true | false)
-
-      DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private; values : private | public)
-      DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
-      DEPLOYMENT_APACHE_HTTPS_ENABLED   : Do you want to add an HTTPs VirtualHost (default: false; values : true | false)
-      DEPLOYMENT_APACHE_HTTPSONLY_ENABLED : Do you want to use a HTTPs VirtualHost (default: false; values : true | false)
-      DEPLOYMENT_PORT_PREFIX            : Default prefix for all ports (2 digits will be added after it for each required port)
-
-      DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
-      DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
-      DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
-
-      DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape charters like \" (default: none)
-
-      DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
-      DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
-
-      DEPLOYMENT_DB_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE)
-      DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (default: a default version is defined for each eXo version)
-
-      DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The latest dataset - if exists -  is restored) | DUMP_DATASET - Dump instance data
-      DEPLOYMENT_LDAP_URL               : LDAP URL to use if the server is using one (default: none)
-      DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
-      DEPLOYMENT_LDAP_ADMIN_PWD         : LDAP password to use to logon into the LDAP server
-
-      DEPLOYMENT_OAUTH_FACEBOOK_CLIENT_ID     : Identifier for Facebook OAuth integration (used by community)
-      DEPLOYMENT_OAUTH_FACEBOOK_CLIENT_SECRET : Secret for Facebook OAuth integration (used by community)
-      DEPLOYMENT_OAUTH_GOOGLE_CLIENT_ID       : Identifier for Google OAuth integration (used by community)
-      DEPLOYMENT_OAUTH_GOOGLE_CLIENT_SECRET   : Secret for Facebook OAuth integration (used by community)
-      DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_ID     : Identifier for LinkedIn OAuth integration (used by community)
-      DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_SECRET : Secret for Facebook OAuth integration (used by community)
-
-      DEPLOYMENT_ES_ENABLED             : Do we need to configure elasticsearch (default: true; values : true|false)
-      DEPLOYMENT_ES_EMBEDDED            : Do we use an embedded Elasticsearch deployment or not (default: true; values: true|false)
-      DEPLOYMENT_ES_IMAGE               : Which docker image to use for standalone elasticsearch (default: exoplatform/elasticsearch)
-      DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the ES image to use (default 1.1.0)
-      DEPLOYMENT_ES_HEAP                : Size of Elasticsearch heap (default: 512m)
-  
-      DEPLOYMENT_CHAT_ENABLE            : Do we need to initiallize chat environment
-      DEPLOYMENT_CHAT_EMBEDDED          : Do we use the embedded Chat Server or not (default: true; values: true|false)
-      DEPLOYMENT_CHAT_SERVER_IMAGE      : Which chat server image to use (default: exoplatform/chat-server)"
-      DEPLOYMENT_CHAT_SERVER_VERSION    : Which version of chat server to use with the chat server
-      DEPLOYMENT_CHAT_MONGODB_TYPE      : Type of mongodb deployment (default: DOCKER if chat embedded is true, HOST otherwise, values: HOST|DOCKER) 
-      DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
-      DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
-
-      DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
-      DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
-
-
+  # Undeploy all instances
+  ./adt.sh undeploy-all

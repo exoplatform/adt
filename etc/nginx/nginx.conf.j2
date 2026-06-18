@@ -1,0 +1,275 @@
+{# ADT v2 nginx reverse-proxy config (per-instance).
+   Terminates TLS (Traefik passes TLS through by SNI). Proxies to the app
+   container and sidecars over the isolated compose network. #}
+user nginx;
+worker_processes 1;
+
+events {
+  worker_connections 512;
+}
+
+http {
+  include       mime.types;
+  default_type  application/octet-stream;
+  server_tokens off;
+
+  log_format main '$remote_addr - $remote_user [$time_local] "$request" '
+                  '$status $body_bytes_sent "$http_referer" "$http_user_agent"';
+  access_log /var/log/nginx/access.log main;
+  error_log  /var/log/nginx/error.log warn;
+
+  sendfile    on;
+  tcp_nopush  on;
+  keepalive_timeout 65;
+
+  gzip              on;
+  gzip_proxied      any;
+  gzip_http_version 1.1;
+  gzip_comp_level   6;
+  gzip_types        text/plain text/css text/javascript application/json application/x-javascript text/xml application/xml application/xml+rss;
+  gzip_disable      msie6;
+
+  client_max_body_size {{ DEPLOYMENT_UPLOAD_MAX_FILE_SIZE }}m;
+  client_body_buffer_size 1m;
+  proxy_buffering on;
+  proxy_buffers 8 16k;
+  proxy_buffer_size 16k;
+
+  {# WebSocket upgrade maps #}
+  map $http_upgrade $proxy_connection {
+    default upgrade;
+    ""      close;
+  }
+
+  {# App upstream #}
+  {% if PRODUCT_NAME == 'meeds' %}
+  upstream exo-app {
+    server meeds:8080;
+  }
+  {% else %}
+  upstream exo-app {
+    server exo:8080;
+  }
+  {% endif %}
+
+  {# ---- Main HTTPS vhost (TLS terminated here, Traefik passes through) ---- #}
+  server {
+    listen 443 ssl;
+    http2 on;
+    server_name {{ DEPLOYMENT_EXT_HOST }};
+
+    ssl_certificate     /etc/nginx/certificate.pem;
+    ssl_certificate_key /etc/nginx/certificate.key;
+    {% if INSTANCE_SSL_CERTIFICATE_CHAIN_FILE %}
+    ssl_certificate_chain /etc/nginx/certificate-chain.pem;
+    {% endif %}
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    ssl_session_cache shared:SSL:5m;
+    ssl_session_timeout 1h;
+
+    {# Security headers #}
+    add_header X-Content-Type-Options nosniff always;
+    add_header X-Frame-Options SAMEORIGIN always;
+    add_header X-XSS-Protection "1; mode=block" always;
+    add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+
+    {# Proxy headers forwarded to the app #}
+    proxy_set_header X-Real-IP       $remote_addr;
+    proxy_set_header Host            $host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_set_header X-Forwarded-Host $host;
+
+    {# ---- eXo/Meeds catch-all ---- #}
+    location / {
+      proxy_pass http://exo-app;
+    }
+
+    {# Cometd WebSocket #}
+    location /cometd/cometd {
+      proxy_pass http://exo-app;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+      proxy_read_timeout 3600s;
+    }
+
+    {# Upload endpoints - disable buffering, allow large bodies #}
+    location /portal/rest/wcmDriver/uploadFile/upload {
+      proxy_pass http://exo-app;
+      client_max_body_size {{ DEPLOYMENT_UPLOAD_MAX_FILE_SIZE }}m;
+      proxy_http_version 1.1;
+      proxy_request_buffering off;
+    }
+    location /portal/rest/managedocument/uploadFile/upload {
+      proxy_pass http://exo-app;
+      client_max_body_size {{ DEPLOYMENT_UPLOAD_MAX_FILE_SIZE }}m;
+      proxy_http_version 1.1;
+      proxy_request_buffering off;
+    }
+    location ^~ /rest/private/jcr/repository/collaboration/ {
+      proxy_pass http://exo-app;
+      client_max_body_size {{ DEPLOYMENT_UPLOAD_MAX_FILE_SIZE }}m;
+      proxy_http_version 1.1;
+      proxy_request_buffering off;
+    }
+    location /portal/upload {
+      proxy_pass http://exo-app;
+      client_max_body_size 5m;
+      proxy_http_version 1.1;
+      proxy_request_buffering off;
+    }
+    location ^~ /rest/v1/platform/branding {
+      proxy_pass http://exo-app;
+      proxy_http_version 1.1;
+      proxy_request_buffering off;
+    }
+
+    {# AI streaming (ollama) #}
+    {% if DEPLOYMENT_AI_ENABLED == 'true' %}
+    location /rest/private/ai/chat {
+      proxy_pass http://exo-app;
+      proxy_http_version 1.1;
+      proxy_buffering off;
+      proxy_request_buffering off;
+      proxy_set_header X-Accel-Buffering no;
+      proxy_read_timeout 600s;
+    }
+    {% endif %}
+
+    {# ---- OnlyOffice ---- #}
+    {% if DEPLOYMENT_ONLYOFFICE_ENABLED == 'true' %}
+    location /onlyoffice/ {
+      rewrite ^/onlyoffice/(.*)$ /$1 break;
+      proxy_pass http://onlyoffice/;
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+    {# OnlyOffice co-editing websocket #}
+    location ~ ((/websocket)|(\/[\d]+\.[\d]+\.[\d]+[\.|-][\w]+(.+)\/websocket)|^(\/[\d]+\.[\d]+\.[\d]+[\.|-].+)?(\/doc\/.*)) {
+      proxy_pass http://onlyoffice$1$2$is_args$args;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $proxy_connection;
+      proxy_set_header Host $http_host;
+      proxy_set_header X-Forwarded-Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+      proxy_read_timeout 300s;
+      proxy_send_timeout 300s;
+    }
+    {% endif %}
+
+    {# ---- Mailpit ---- #}
+    {% if DEPLOYMENT_MAILPIT_ENABLED == 'true' %}
+    location /mailpit/ {
+      proxy_pass http://mailpit:8025/mailpit/;
+      proxy_set_header Host $host;
+    }
+    location /mailpit/api/v2/websocket {
+      proxy_pass http://mailpit:8025/mailpit/api/v2/websocket;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+    {% endif %}
+
+    {# ---- CloudBeaver ---- #}
+    {% if DEPLOYMENT_CLOUDBEAVER_ENABLED == 'true' %}
+    location /cloudbeaver/ {
+      proxy_pass http://cloudbeaver:8978/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    {% endif %}
+
+    {# ---- Dozzle ---- #}
+    {% if DEPLOYMENT_DOZZLE_ENABLED == 'true' %}
+    location /dozzle/ {
+      proxy_pass http://dozzle:8080/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+    {% endif %}
+
+    {# ---- Frontail ---- #}
+    {% if DEPLOYMENT_FRONTAIL_ENABLED == 'true' %}
+    location /frontail/ {
+      proxy_pass http://frontail:9001/;
+      proxy_set_header Host $host;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+    {% endif %}
+
+    {# ---- phpLDAPadmin ---- #}
+    {% if DEPLOYMENT_LDAP_ENABLED == 'true' %}
+    location /phpldapadmin/ {
+      proxy_pass http://phpldapadmin:80/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    {% endif %}
+
+    {# ---- Baikal (CalDAV) ---- #}
+    {% if DEPLOYMENT_CALDAV_ENABLED == 'true' %}
+    location /baikal/ {
+      proxy_pass http://baikal:80/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    {% endif %}
+
+    {# ---- Keycloak ---- #}
+    {% if DEPLOYMENT_KEYCLOAK_ENABLED == 'true' %}
+    location /auth/ {
+      proxy_pass http://keycloak:8080/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    {% endif %}
+
+    {# ---- Iframely ---- #}
+    {% if DEPLOYMENT_IFRAMELY_ENABLED == 'true' %}
+    location /oembed {
+      proxy_pass http://iframely:8061;
+      proxy_set_header Host $host;
+    }
+    {% endif %}
+
+    {# ---- Matrix ---- #}
+    {% if DEPLOYMENT_MATRIX_ENABLED == 'true' %}
+    location /_matrix {
+      proxy_pass http://matrix:8008;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+    }
+    {% endif %}
+
+    {# ---- Jitsi ---- #}
+    {% if DEPLOYMENT_JITSI_ENABLED == 'true' %}
+    location /jitsi/ {
+      proxy_pass http://jitsi-web:80/;
+      proxy_set_header Host $host;
+      proxy_set_header X-Forwarded-Proto $scheme;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection "upgrade";
+    }
+    {% endif %}
+
+    {# Custom error pages #}
+    error_page 502 503 504 /custom_50x.html;
+    location = /custom_50x.html {
+      root /var/www/error_pages;
+      internal;
+    }
+  }
+}
