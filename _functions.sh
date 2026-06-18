@@ -213,6 +213,7 @@ do_deploy() {
     echo_warn "Service ${APP_SERVICE_NAME} did not become healthy within ${DEPLOYMENT_START_TIMEOUT}s. Check logs with: docker compose -f ${PROJECT_DIR}/docker-compose.yml logs ${APP_SERVICE_NAME}"
 
   echo_info "Instance ${INSTANCE_KEY} deployed. URL: ${ACCEPTANCE_SCHEME}://${DEPLOYMENT_EXT_HOST}"
+  update_descriptor_status deployed
 }
 
 #
@@ -225,6 +226,7 @@ do_start() {
   wait_service_healthy "${PROJECT_DIR}" "${APP_SERVICE_NAME}" ${DEPLOYMENT_START_TIMEOUT} || \
     echo_warn "Service ${APP_SERVICE_NAME} did not become healthy within ${DEPLOYMENT_START_TIMEOUT}s."
   echo_info "Instance ${INSTANCE_KEY} started. URL: ${ACCEPTANCE_SCHEME}://${DEPLOYMENT_EXT_HOST}"
+  update_descriptor_status started
 }
 
 #
@@ -235,6 +237,7 @@ do_stop() {
   echo_info "Stopping ${INSTANCE_KEY} ..."
   compose_stop "${PROJECT_DIR}"
   echo_info "Instance ${INSTANCE_KEY} stopped."
+  update_descriptor_status stopped
 }
 
 #
@@ -376,6 +379,20 @@ do_create_deployment_descriptor() {
   local _descriptor="${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
   evaluate_file_content "${ETC_DIR}/adt/config.template.j2" "${_descriptor}"
   echo_info "Deployment descriptor written to ${_descriptor}"
+}
+
+# Update the INSTANCE_STATUS field in an existing descriptor.
+# $1 : new status (deployed|started|stopped|undeployed)
+update_descriptor_status() {
+  local _status=$1
+  local _descriptor="${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+  if [ -f "${_descriptor}" ]; then
+    if grep -q "^INSTANCE_STATUS=" "${_descriptor}"; then
+      sed -i "s/^INSTANCE_STATUS=.*/INSTANCE_STATUS=${_status}/" "${_descriptor}"
+    else
+      echo "INSTANCE_STATUS=${_status}" >> "${_descriptor}"
+    fi
+  fi
 }
 
 # Delete the deployment descriptor.

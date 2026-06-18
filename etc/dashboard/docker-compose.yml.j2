@@ -1,14 +1,25 @@
-# Placeholder dashboard docker-compose.yml.j2 - will be expanded in step 8.
+{# ADT v2 dashboard compose project.
+   Serves the PHP frontend (var/www/) on the reverse_proxy network, registered
+   with Traefik as the acceptance host (TCP SNI passthrough).
+   Rendered by do_deploy_dashboard() in _functions_frontend.sh. #}
 name: {{ DASHBOARD_PROJECT }}
+
 services:
   web:
     image: nginx:1.28-alpine
+    container_name: {{ DASHBOARD_PROJECT }}-web
+    hostname: {{ DASHBOARD_EXT_HOST }}
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
-      - {{ ADT_VAR_WWW }}:/var/www:ro
+      - {{ ADT_VAR_WWW }}:/var/www/html:ro
+      - {{ ADT_DATA }}/conf:/data/conf:ro
+      - {{ ADT_DATA }}/sources:/data/sources:ro
       - {{ INSTANCE_SSL_CERTIFICATE_FILE }}:/etc/nginx/certificate.pem:ro
       - {{ INSTANCE_SSL_CERTIFICATE_KEY_FILE }}:/etc/nginx/certificate.key:ro
-    networks: [default, reverse_proxy]
+      {% if INSTANCE_SSL_CERTIFICATE_CHAIN_FILE %}- {{ INSTANCE_SSL_CERTIFICATE_CHAIN_FILE }}:/etc/nginx/certificate-chain.pem:ro{% endif %}
+    networks:
+      default: {}
+      reverse_proxy: {}
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network={{ DEPLOYMENT_FRONTEND_NETWORK }}"
@@ -17,6 +28,34 @@ services:
       - "traefik.tcp.routers.dashboard.tls.passthrough=true"
       - "traefik.tcp.services.dashboard.loadbalancer.server.port=443"
     restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "50m", max-file: "3" }
+    healthcheck:
+      test: ["CMD-SHELL", "nginx -t || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    depends_on: [php]
+
+  php:
+    image: php:8.3-fpm-alpine
+    container_name: {{ DASHBOARD_PROJECT }}-php
+    hostname: php
+    volumes:
+      - {{ ADT_VAR_WWW }}:/var/www/html:ro
+      - {{ ADT_DATA }}/conf:/data/conf:ro
+      - {{ ADT_DATA }}/sources:/data/sources:ro
+    networks: [default]
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options: { max-size: "50m", max-file: "3" }
+    environment:
+      ADT_DATA: "/data"
+      ACCEPTANCE_HOST: "{{ DASHBOARD_EXT_HOST }}"
+      ACCEPTANCE_SCHEME: "{{ ACCEPTANCE_SCHEME }}"
+
 networks:
   default: {}
   reverse_proxy:
