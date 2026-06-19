@@ -15,7 +15,11 @@ function pageHeader($title = "")
   <meta http-equiv="refresh" content="120">
   <meta name="theme-color" content="#6c5ce7">
   <title>eXo Acceptance<?= (empty($title) ? "" : " · " . $title) ?></title>
-  <link rel="shortcut icon" type="image/x-icon" href="/images/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
   <link rel="manifest" href="/manifest.json">
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -285,7 +289,7 @@ function pageNavigation()
   <aside class="sidebar" id="sidebar" aria-label="Main navigation">
     <div class="sidebar__brand">
       <div class="sidebar__brand-icon" style="background:transparent">
-        <img src="/images/favicon.ico" alt="eXo" width="28" height="28">
+        <img src="/images/icon-192.png" alt="eXo" width="28" height="28" srcset="/images/icon-192.png 2x, /images/icon-512.png 3x">
       </div>
       <div>
         <div class="sidebar__brand-text" title="<?= htmlspecialchars($_SERVER['SERVER_NAME']) ?>">Acceptance</div>
