@@ -89,11 +89,6 @@
     ProxyPass               /.well-known/acme-challenge/  !
     ProxyPass               /icons/              !
     ProxyPass               /images/favicon.ico  !
-    ProxyPass               /images/Arrow.gif    !
-    ProxyPass               /images/BgBlock.jpg  !
-    ProxyPass               /images/Header.png   !
-    ProxyPass               /images/Footer.png   !
-    ProxyPass               /images/Logo.png     !
 
     # Proxify of websocket url pattern
     <IfModule mod_proxy_wstunnel.c>
