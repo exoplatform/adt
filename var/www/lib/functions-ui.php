@@ -251,6 +251,7 @@ function pageNavigation()
     "CP" => "/customers.php",
     "Company" => "/company.php",
     "Features" => "/features.php",
+    "Git Activity" => "/git-activity.php",
     "Servers" => "/servers.php"
   );
   $icons = array(
