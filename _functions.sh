@@ -222,7 +222,7 @@ do_deploy() {
 do_start() {
   load_instance
   echo_info "Starting ${INSTANCE_KEY} ..."
-  compose_up "${PROJECT_DIR}" "--no-recreate"
+  compose_up "${PROJECT_DIR}" ""
   wait_service_healthy "${PROJECT_DIR}" "${APP_SERVICE_NAME}" ${DEPLOYMENT_START_TIMEOUT} || \
     echo_warn "Service ${APP_SERVICE_NAME} did not become healthy within ${DEPLOYMENT_START_TIMEOUT}s."
   echo_info "Instance ${INSTANCE_KEY} started. URL: ${ACCEPTANCE_SCHEME}://${DEPLOYMENT_EXT_HOST}"
