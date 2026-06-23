@@ -36,12 +36,16 @@ defaults:
 
 # ----------------------------------------------------------------------------
 # Products (Tomcat only, 7.2+)
+#
+# Tag pattern variables:
+#   {v}      = raw PRODUCT_VERSION  (e.g. "7.3.0")
+#   {branch} = short branch         (e.g. "7.3", derived from PRODUCT_VERSION)
 # ----------------------------------------------------------------------------
 products:
   # Meeds.io - community distribution
   # Image: meedsio/meeds (Alpine + Azul Zulu JDK 21, Tomcat bundled)
   # Env prefix: MEEDS_*
-  # Floating tags: 'alpine' tracks current 7.2 development
+  # Floating tags: 'alpine' tracks current development
   meeds:
     image: "meedsio/meeds"
     env_prefix: "MEEDS"
@@ -56,13 +60,18 @@ products:
         db:
           postgres: "postgres:17-alpine"
           mysql: "mysql:8.4"
+      "7.3.x":
+        es: "elasticsearch:8.18.8"
+        db:
+          postgres: "postgres:17-alpine"
+          mysql: "mysql:8.4"
 
   # eXo Platform Community Edition
   # Image: exoplatform/exo-enterprise (Ubuntu + OpenJDK 21, Tomcat bundled)
   # The same enterprise image is used; community mode is driven by add-ons and
   # the absence of a license file.
   # Env prefix: EXO_*
-  # Floating tags: 'latest' (7.2.x), 'develop'
+  # Floating tags: 'latest', 'develop'
   plfcom:
     image: "exoplatform/exo-enterprise"
     env_prefix: "EXO"
@@ -77,22 +86,32 @@ products:
         db:
           postgres: "postgres:17-alpine"
           mysql: "mysql:8.4"
+      "7.3.x":
+        es: "elasticsearch:8.18.8"
+        db:
+          postgres: "postgres:17-alpine"
+          mysql: "mysql:8.4"
 
   # eXo Platform Enterprise Edition
   # Image: exoplatform/exo-enterprise (Ubuntu + OpenJDK 21, Tomcat bundled)
   # Env prefix: EXO_*
   # Requires a license file mounted at /etc/exo/license.xml
-  # Floating tags: 'latest' (7.2.x), 'develop', '7.2_latest'
+  # Floating tags: 'latest', 'develop', '{branch}_latest'
   plfent:
     image: "exoplatform/exo-enterprise"
     env_prefix: "EXO"
     requires_license: true
     tag_patterns:
       release: "{v}_0"
-      snapshot: "7.2_latest"
+      snapshot: "{branch}_latest"
       continuous: "develop"
     versions:
       "7.2.x":
+        es: "elasticsearch:8.18.8"
+        db:
+          postgres: "postgres:17-alpine"
+          mysql: "mysql:8.4"
+      "7.3.x":
         es: "elasticsearch:8.18.8"
         db:
           postgres: "postgres:17-alpine"
@@ -106,29 +125,43 @@ products:
 features:
   jitsi:
     "7.2.x": "stable-10888"
+    "7.3.x": "stable-10888"
   matrix:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   ollama:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   onlyoffice:
     "7.2.x": "9.4"
+    "7.3.x": "9.4"
   mailpit:
     "7.2.x": "1.30"
+    "7.3.x": "1.30"
   iframely:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   cloudbeaver:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   keycloak:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   ldap:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   phpldapadmin:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   baikal:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   clamav:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   frontail:
     "7.2.x": "latest"
+    "7.3.x": "latest"
   dozzle:
     "7.2.x": "latest"
+    "7.3.x": "latest"

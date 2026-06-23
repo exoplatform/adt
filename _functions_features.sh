@@ -70,8 +70,9 @@ resolve_image_tag() {
 
   local _pattern
   _pattern=$(yq_read ".products.\"${PRODUCT_NAME}\".tag_patterns.\"${_kind}\" // .products.\"${PRODUCT_NAME}\".tag_patterns.release")
-  # Substitute {v} with the raw version
+  # Substitute {v} with the raw version, {branch} with the short branch (e.g. 7.3)
   local _tag="${_pattern/\{v\}/${PRODUCT_VERSION}}"
+  _tag="${_tag/\{branch\}/${PRODUCT_VERSION_SHORT}}"
   env_var "IMAGE_TAG" "${DEPLOYMENT_IMAGE_TAG:-${_tag}}"
 }
 
