@@ -34,10 +34,10 @@ resolve_instance_certs() {
     env_var "INSTANCE_DOMAIN" "$(echo ${ACCEPTANCE_HOST} | cut -d'.' -f2,3)"
   fi
 
-  # Default to global ADT_SSL_*
-  configurable_env_var "INSTANCE_SSL_CERTIFICATE_FILE"      "${ADT_SSL_CERTIFICATE_FILE}"
-  configurable_env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${ADT_SSL_CERTIFICATE_KEY_FILE}"
-  configurable_env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${ADT_SSL_CERTIFICATE_CHAIN_FILE}"
+  # Default to global ADT_SSL_* (forced, so stale descriptor values don't stick)
+  env_var "INSTANCE_SSL_CERTIFICATE_FILE"      "${ADT_SSL_CERTIFICATE_FILE}"
+  env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${ADT_SSL_CERTIFICATE_KEY_FILE}"
+  env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${ADT_SSL_CERTIFICATE_CHAIN_FILE}"
 
   # meeds.io domain override
   case "${INSTANCE_DOMAIN}" in
