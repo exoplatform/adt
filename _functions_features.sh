@@ -93,7 +93,11 @@ initialize_product_settings() {
   local _prefix
   _prefix=$(yq_read ".products.\"${PRODUCT_NAME}\".env_prefix")
   env_var "PRODUCT_ENV_PREFIX" "${_prefix}"
-  env_var "APP_SERVICE_NAME" "${PRODUCT_NAME}"
+  # Compose service name: 'meeds' for meeds, 'exo' for plfcom/plfent
+  case "${PRODUCT_NAME}" in
+    meeds) env_var "APP_SERVICE_NAME" "meeds" ;;
+    *)     env_var "APP_SERVICE_NAME" "exo" ;;
+  esac
 
   # License requirement (plfent)
   local _lic
