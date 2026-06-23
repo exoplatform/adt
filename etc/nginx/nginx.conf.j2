@@ -52,6 +52,20 @@ http {
   }
   {% endif %}
 
+  {# ---- Default server: return 421 for unknown hostnames to prevent HTTP/2 connection coalescing ---- #}
+  server {
+    listen 443 ssl default_server;
+    http2 on;
+    ssl_certificate     /etc/nginx/certificate.pem;
+    ssl_certificate_key /etc/nginx/certificate.key;
+    {% if INSTANCE_SSL_CERTIFICATE_CHAIN_FILE %}
+    ssl_trusted_certificate /etc/nginx/certificate-chain.pem;
+    {% endif %}
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    return 421;
+  }
+
   {# ---- Main HTTPS vhost (TLS terminated here, Traefik passes through) ---- #}
   server {
     listen 443 ssl;

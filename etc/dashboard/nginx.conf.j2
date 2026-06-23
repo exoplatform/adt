@@ -23,6 +23,19 @@ http {
   gzip_types text/plain text/css text/javascript application/json application/javascript text/xml application/xml;
 
   server {
+    listen 443 ssl default_server;
+    http2 on;
+    ssl_certificate     /etc/nginx/certificate.pem;
+    ssl_certificate_key /etc/nginx/certificate.key;
+    {% if INSTANCE_SSL_CERTIFICATE_CHAIN_FILE %}
+    ssl_trusted_certificate /etc/nginx/certificate-chain.pem;
+    {% endif %}
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5;
+    return 421;
+  }
+
+  server {
     listen 443 ssl;
     http2 on;
     server_name {{ DASHBOARD_EXT_HOST }};
