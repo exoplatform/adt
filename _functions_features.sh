@@ -102,7 +102,7 @@ initialize_product_settings() {
 
   # Compute instance hostname
   compute_instance_key
-  env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+  configurable_env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
 
   # DB
   configurable_env_var "DEPLOYMENT_DB_TYPE" "postgres"
