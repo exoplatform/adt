@@ -25,10 +25,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network={{ DEPLOYMENT_FRONTEND_NETWORK }}"
-      - "traefik.tcp.routers.{{ INSTANCE_KEY }}.rule=HostSNI(`{{ DEPLOYMENT_EXT_HOST }}`)"
-      - "traefik.tcp.routers.{{ INSTANCE_KEY }}.entrypoints={{ DEPLOYMENT_TRAEFIK_ENTRYPOINT }}"
-      - "traefik.tcp.routers.{{ INSTANCE_KEY }}.tls.passthrough=true"
-      - "traefik.tcp.services.{{ INSTANCE_KEY }}.loadbalancer.server.port=443"
+      - "traefik.tcp.routers.{{ COMPOSE_PROJECT }}.rule=HostSNI(`{{ DEPLOYMENT_EXT_HOST }}`)"
+      - "traefik.tcp.routers.{{ COMPOSE_PROJECT }}.entrypoints={{ DEPLOYMENT_TRAEFIK_ENTRYPOINT }}"
+      - "traefik.tcp.routers.{{ COMPOSE_PROJECT }}.tls.passthrough=true"
+      - "traefik.tcp.services.{{ COMPOSE_PROJECT }}.loadbalancer.server.port=443"
     restart: unless-stopped
     logging: &default_logging
       driver: json-file
