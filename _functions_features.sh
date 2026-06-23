@@ -143,7 +143,14 @@ initialize_product_settings() {
   # DB connection defaults (compose service 'db')
   configurable_env_var "DEPLOYMENT_DB_NAME"   "${PRODUCT_NAME}"
   configurable_env_var "DEPLOYMENT_DB_USER"   "${PRODUCT_NAME}"
-  configurable_env_var "DEPLOYMENT_DB_PASSWORD" "$(getrandomstring 16)"
+  # Reuse existing password from descriptor on KEEP_DATA/RESTORE to avoid
+  # breaking MySQL auth when the volume is preserved
+  local _saved_password
+  _saved_password=""
+  if [ -f "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+    _saved_password=$(grep "^DEPLOYMENT_DB_PASSWORD=" "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" | cut -d'=' -f2-)
+  fi
+  configurable_env_var "DEPLOYMENT_DB_PASSWORD" "${_saved_password:-$(getrandomstring 16)}"
 
   # JVM
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "3g"
