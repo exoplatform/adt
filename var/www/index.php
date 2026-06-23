@@ -123,8 +123,8 @@ foreach ($dev_instances as $arr) {
                 <div class="instance-card__details">
                     <?= componentDatabaseIcon($inst) ?>
                     <div class="instance-card__ages">
-                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $inst->ARTIFACT_AGE_STRING ?></span>
-                        <span><i class="fas fa-clock me-1"></i><?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>" title="Time since artifact was built"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
+                        <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
                     </div>
                 </div>
                 <div class="instance-card__actions">
@@ -181,8 +181,8 @@ foreach ($dev_instances as $arr) {
                         </span>
                     <?php endif; ?>
                     <div class="instance-card__ages">
-                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>"><i class="fas fa-calendar-alt me-1"></i><?= $inst->ARTIFACT_AGE_STRING ?></span>
-                        <span><i class="fas fa-clock me-1"></i><?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>" title="Time since artifact was built"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
+                        <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
                     </div>
                 </div>
                 <?php if (isInstanceFeatureBranch($inst)): ?>
