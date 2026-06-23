@@ -100,9 +100,8 @@ initialize_product_settings() {
   _lic=$(yq_read ".products.\"${PRODUCT_NAME}\".requires_license // false")
   env_var "PRODUCT_REQUIRES_LICENSE" "${_lic}"
 
-  # Compute instance hostname
+  # Compute instance hostname (also sets DEPLOYMENT_EXT_HOST with sanitized dots)
   compute_instance_key
-  configurable_env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
 
   # DB
   configurable_env_var "DEPLOYMENT_DB_TYPE" "postgres"

@@ -372,6 +372,12 @@ compute_instance_key() {
     env_var "INSTANCE_KEY" "${PRODUCT_NAME}-${PRODUCT_VERSION}"
   fi
   env_var "COMPOSE_PROJECT" "$(compose_project_name ${INSTANCE_KEY})"
+  # Compute the default deployment hostname. Replace dots in the version
+  # part (e.g. 7.2.0) with hyphens to produce a valid DNS hostname where
+  # the entire instance key is a single subdomain label.
+  local _sanitized_key
+  _sanitized_key=$(echo "${INSTANCE_KEY}" | tr '.' '-')
+  configurable_env_var "DEPLOYMENT_EXT_HOST" "${_sanitized_key}.${ACCEPTANCE_HOST}"
 }
 
 # Write the deployment descriptor (INI-style, readable by bash `source` and PHP parse_ini_file).
