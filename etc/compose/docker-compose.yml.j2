@@ -269,6 +269,8 @@ services:
     image: amir20/dozzle:{{ DOZZLE_VERSION }}
     container_name: {{ COMPOSE_PROJECT }}-dozzle
     hostname: dozzle
+    environment:
+      DOZZLE_BASE: "/dozzle"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     networks: [default]
