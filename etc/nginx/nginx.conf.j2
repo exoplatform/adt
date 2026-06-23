@@ -61,7 +61,7 @@ http {
     ssl_certificate     /etc/nginx/certificate.pem;
     ssl_certificate_key /etc/nginx/certificate.key;
     {% if INSTANCE_SSL_CERTIFICATE_CHAIN_FILE %}
-    ssl_certificate_chain /etc/nginx/certificate-chain.pem;
+    ssl_trusted_certificate /etc/nginx/certificate-chain.pem;
     {% endif %}
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers HIGH:!aNULL:!MD5;
