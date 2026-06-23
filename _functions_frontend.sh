@@ -73,7 +73,7 @@ do_deploy_dashboard() {
     "${_dir}/nginx.conf"
 
   echo_info "Starting dashboard compose project ..."
-  $(compose_cmd "${_dir}") up -d --pull=always
+  $(compose_cmd "${_dir}") up -d --pull=always --force-recreate
   echo_info "Dashboard started."
 }
 
