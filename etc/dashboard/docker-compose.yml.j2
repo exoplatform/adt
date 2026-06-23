@@ -23,10 +23,10 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network={{ DEPLOYMENT_FRONTEND_NETWORK }}"
-      - "traefik.tcp.routers.dashboard.rule=HostSNI(`{{ DASHBOARD_EXT_HOST }}`)"
-      - "traefik.tcp.routers.dashboard.entrypoints={{ DEPLOYMENT_TRAEFIK_ENTRYPOINT }}"
-      - "traefik.tcp.routers.dashboard.tls.passthrough=true"
-      - "traefik.tcp.services.dashboard.loadbalancer.server.port=443"
+      - "traefik.tcp.routers.{{ DASHBOARD_PROJECT }}.rule=HostSNI(`{{ DASHBOARD_EXT_HOST }}`)"
+      - "traefik.tcp.routers.{{ DASHBOARD_PROJECT }}.entrypoints={{ DEPLOYMENT_TRAEFIK_ENTRYPOINT }}"
+      - "traefik.tcp.routers.{{ DASHBOARD_PROJECT }}.tls.passthrough=true"
+      - "traefik.tcp.services.{{ DASHBOARD_PROJECT }}.loadbalancer.server.port=443"
     restart: unless-stopped
     logging:
       driver: json-file
