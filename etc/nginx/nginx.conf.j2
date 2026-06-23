@@ -189,7 +189,7 @@ http {
     {# ---- Dozzle ---- #}
     {% if DEPLOYMENT_DOZZLE_ENABLED == 'true' %}
     location /dozzle/ {
-      proxy_pass http://dozzle:8080/;
+      proxy_pass http://dozzle:8080;
       proxy_set_header Host $host;
       proxy_set_header X-Forwarded-Proto $scheme;
       proxy_http_version 1.1;
