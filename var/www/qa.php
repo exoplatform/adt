@@ -70,7 +70,7 @@ if (isDeploymentInCategoryArray($qa_instances)) {
             <div class="instance-card__details">
                 <?= componentDatabaseIcon($inst) ?>
                 <div class="instance-card__ages">
-                    <span><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                    <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
                 </div>
             </div>
             <div class="instance-card__badges">
@@ -145,7 +145,7 @@ if (isDeploymentInCategoryArray($qa_auto_instances)) {
             <div class="instance-card__details">
                 <?= componentDatabaseIcon($inst) ?>
                 <div class="instance-card__ages">
-                    <span><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+                    <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
                 </div>
             </div>
             <div class="instance-card__badges">
