@@ -31,6 +31,11 @@ do_drop_keycloak_data() {
     echo_info "Drops Keycloak container ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
     delete_docker_volume ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
+    if [ -d ${DEPLOYMENT_DIR}/logs/keycloak ]; then
+      ${DOCKER_CMD} run --rm -v ${DEPLOYMENT_DIR}/logs/keycloak:/opt/keycloak/data/log alpine \
+      sh -c "rm -rf /opt/keycloak/data/log/*"
+      rmdir ${DEPLOYMENT_DIR}/logs/keycloak
+    fi
     echo_info "Done."
     echo_info "Keycloak data dropped"
   else

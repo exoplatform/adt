@@ -1663,6 +1663,11 @@ do_unpack_server() {
   DEPLOYMENT_PID_FILE=${SRV_DIR}/${INSTANCE_KEY}.pid
   mkdir -p ${SRV_DIR}
   echo_info "Deleting existing server ..."
+  local _kc_log_dir=$(find ${SRV_DIR}/${INSTANCE_KEY} -maxdepth 4 -name keycloak -type d -path "*/logs/keycloak" 2>/dev/null | head -1)
+  if [ -n "${_kc_log_dir}" ] && [ -d "${_kc_log_dir}" ]; then
+    ${DOCKER_CMD} run --rm -v ${_kc_log_dir}:/opt/keycloak/data/log alpine \
+    sh -c "rm -rf /opt/keycloak/data/log/*"
+  fi
   rm -rf ${SRV_DIR}/${INSTANCE_KEY}
   echo_info "Done"
   cp -rf ${TMP_DIR}/${INSTANCE_KEY} ${SRV_DIR}/${INSTANCE_KEY}
