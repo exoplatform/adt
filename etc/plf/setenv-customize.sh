@@ -117,9 +117,16 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url=${DEP_URL}/auth/realms/master/protocol/saml"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.url.logout=${DEP_URL}/auth/realms/master/protocol/saml"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.alias=master"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
+    if ${DEPLOYMENT_SAML_SP_NAMING:-false}; then
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.sp.alias=exo-sp"
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.sp.signingkeypass=store123"
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystorepass=store123"
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/keystore.jks"
+    else
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.signingkeypass=test123"
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.keystorepass=store123"
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
+    fi
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.config.file=${DEPLOYMENT_DIR}/gatein/conf/saml2/picketlink-sp.xml"
   else
     # Fetch admin token, then acquire exooidc client Id, then get client Secret; adminToken has short life
