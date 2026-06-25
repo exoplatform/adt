@@ -1334,6 +1334,13 @@ initialize_product_settings() {
         fi
       fi
 
+      # Keycloak SAML SP naming (7.2+): use gatein.sso.sp.* / gatein.sso.picketlink.* instead of gatein.sso.idp.*
+      if [[ "${PRODUCT_VERSION}" =~ ^(7\.[2-9]|[89]\.|[1-9][0-9]\.) ]]; then
+        env_var "DEPLOYMENT_SAML_SP_NAMING" "true"
+      else
+        env_var "DEPLOYMENT_SAML_SP_NAMING" "false"
+      fi
+
       ## Global configuration checks
       if ${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED:-} && [ -z "${DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE}" ]; then
         echo_warn "Push notification are enabled but the firebase configuration file is not specified (\"DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE\" property)"

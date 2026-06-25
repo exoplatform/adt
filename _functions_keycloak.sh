@@ -102,6 +102,7 @@ do_start_keycloak() {
   check_keycloak_availability
   do_provision_keycloak_permanent_admin
   do_provision_keycloak_clients
+  do_provision_saml_keystore
 }
 
 check_keycloak_availability() {
@@ -231,11 +232,102 @@ do_provision_keycloak_clients() {
    -H 'Content-type: application/json' \
    -H "Authorization: Bearer ${token}" \
    -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":\"root@gatein.com\",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
-    && echo_info "Keycloak root user updated"
-  curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
-   -H 'Content-type: application/json' \
-   -H "Authorization: Bearer ${token}" \
-   -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client added"
+     && echo_info "Keycloak root user updated"
+  # Upsert client: update if exists, create if new
+  local _clientId=$(curl -s -H "Authorization: Bearer ${token}" \
+    "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients?clientId=${DEP_URL}/portal/dologin" | jq -r '.[0].id')
+  if [ -n "${_clientId}" ] && [ "${_clientId}" != "null" ]; then
+    curl -s -X PUT --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients/${_clientId}" \
+      -H 'Content-type: application/json' \
+      -H "Authorization: Bearer ${token}" \
+      -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client updated"
+  else
+    curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
+      -H 'Content-type: application/json' \
+      -H "Authorization: Bearer ${token}" \
+      -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client added"
+  fi
+}
+
+# Provision SAML keystore from Keycloak (SP keypair + IDP public cert)
+do_provision_saml_keystore() {
+  if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" != "SAML" ]; then
+    return
+  fi
+  echo_info "Provisioning SAML keystore from Keycloak..."
+
+  local _kc_api="http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth"
+  local _token=$(curl -s -X POST "${_kc_api}/realms/master/protocol/openid-connect/token" \
+    -H "Content-Type: application/x-www-form-urlencoded" \
+    -d "username=root" \
+    -d "password=password" \
+    -d 'grant_type=password' \
+    -d 'client_id=admin-cli' | jq -r '.access_token')
+
+  local _clientId=$(curl -s -H "Authorization: Bearer ${_token}" \
+    "${_kc_api}/admin/realms/master/clients?clientId=${DEP_URL}/portal/dologin" | jq -r '.[0].id')
+
+  if [ -z "${_clientId}" ] || [ "${_clientId}" = "null" ]; then
+    echo_warn "Keycloak SAML client not found, skipping keystore provisioning"
+    return
+  fi
+
+  local _samlDir="${DEPLOYMENT_DIR}/gatein/conf/saml2"
+  mkdir -p "${_samlDir}"
+
+  local _keystorePass="store123"
+  local _keyPass="store123"
+
+  # Fetch realm public cert (IDP)
+  local _idpCertB64=$(curl -s -H "Authorization: Bearer ${_token}" \
+    "${_kc_api}/admin/realms/master/keys" | jq -r '.keys[] | select(.algorithm=="RS256") | .certificate')
+
+  # Fetch client SP cert + private key
+  local _spCerts=$(curl -s -H "Authorization: Bearer ${_token}" \
+    "${_kc_api}/admin/realms/master/clients/${_clientId}/certificates/saml.signing")
+  local _spCertB64=$(echo "${_spCerts}" | jq -r '.certificate')
+  local _spKeyB64=$(echo "${_spCerts}" | jq -r '.privateKey')
+
+  local _tmpdir="${TMP_DIR}/keycloak-saml-${INSTANCE_KEY}"
+  rm -rf "${_tmpdir}"
+  mkdir -p "${_tmpdir}"
+
+  # Convert base64 DER to PEM files
+  echo "${_idpCertB64}" | base64 -d > "${_tmpdir}/idp-cert.der" 2>/dev/null
+  openssl x509 -in "${_tmpdir}/idp-cert.der" -inform DER -out "${_tmpdir}/idp-cert.pem" 2>/dev/null
+
+  echo "${_spCertB64}" | base64 -d > "${_tmpdir}/sp-cert.der" 2>/dev/null
+  openssl x509 -in "${_tmpdir}/sp-cert.der" -inform DER -out "${_tmpdir}/sp-cert.pem" 2>/dev/null
+
+  echo "${_spKeyB64}" | base64 -d > "${_tmpdir}/sp-key.der" 2>/dev/null
+  openssl rsa -in "${_tmpdir}/sp-key.der" -inform DER -out "${_tmpdir}/sp-key.pem" 2>/dev/null
+
+  # Create PKCS12 with SP keypair
+  openssl pkcs12 -export -out "${_tmpdir}/sp-keystore.p12" \
+    -inkey "${_tmpdir}/sp-key.pem" -in "${_tmpdir}/sp-cert.pem" \
+    -passout pass:"${_keystorePass}" -name exo-sp 2>/dev/null
+
+  # Create fresh JKS with IDP cert + SP keypair
+  local _keystoreFile="${_samlDir}/keystore.jks"
+  rm -f "${_keystoreFile}"
+  keytool -genkeypair -alias _dummy -keyalg RSA -keysize 2048 \
+    -keystore "${_keystoreFile}" -storepass "${_keystorePass}" -keypass "${_keyPass}" \
+    -storetype JKS -dname "CN=temp" -validity 1 2>/dev/null
+  keytool -delete -alias _dummy -keystore "${_keystoreFile}" -storepass "${_keystorePass}" -storetype JKS 2>/dev/null
+
+  # Import IDP public cert (used to validate IDP signatures)
+  keytool -import -noprompt -keystore "${_keystoreFile}" -file "${_tmpdir}/idp-cert.pem" \
+    -alias master -storepass "${_keystorePass}" -storetype JKS 2>/dev/null
+
+  # Import SP private key (used by eXo to sign SP assertions)
+  keytool -v -importkeystore -srckeystore "${_tmpdir}/sp-keystore.p12" -srcstoretype PKCS12 \
+    -destkeystore "${_keystoreFile}" -deststoretype JKS \
+    -srcalias exo-sp -destalias exo-sp \
+    -srcstorepass "${_keystorePass}" -deststorepass "${_keystorePass}" \
+    -destkeypass "${_keyPass}" 2>/dev/null
+
+  rm -rf "${_tmpdir}"
+  echo_info "SAML keystore provisioned at ${_keystoreFile}"
 }
 
 
