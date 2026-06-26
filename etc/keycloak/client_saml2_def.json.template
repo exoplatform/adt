@@ -29,7 +29,7 @@
         "saml.multivalued.roles": "false",
         "saml_single_logout_service_url_post": "${DEP_URL}/portal/dologin?GLO=true",
         "saml.encrypt": "false",
-        "login_theme": "keycloak",
+        "login_theme": "exo",
         "saml.server.signature": "true",
         "saml.server.signature.keyinfo.ext": "false",
         "exclude.session.state.from.auth.response": "false",

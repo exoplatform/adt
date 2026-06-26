@@ -1675,6 +1675,11 @@ do_unpack_server() {
     ${DOCKER_CMD} run --rm -v ${_kc_log_dir}:/opt/keycloak/data/log alpine \
     sh -c "rm -rf /opt/keycloak/data/log/*"
   fi
+  local _kc_theme_dir=$(find ${SRV_DIR}/${INSTANCE_KEY} -maxdepth 4 -name keycloak -type d -path "*/themes/keycloak" 2>/dev/null | head -1)
+  if [ -n "${_kc_theme_dir}" ] && [ -d "${_kc_theme_dir}" ]; then
+    ${DOCKER_CMD} run --rm -v ${_kc_theme_dir}:/mnt/themes alpine \
+    sh -c "rm -rf /mnt/themes/*"
+  fi
   rm -rf ${SRV_DIR}/${INSTANCE_KEY}
   echo_info "Done"
   cp -rf ${TMP_DIR}/${INSTANCE_KEY} ${SRV_DIR}/${INSTANCE_KEY}

@@ -36,6 +36,11 @@ do_drop_keycloak_data() {
       sh -c "rm -rf /opt/keycloak/data/log/*"
       rmdir ${DEPLOYMENT_DIR}/logs/keycloak
     fi
+    if [ -d ${DEPLOYMENT_DIR}/themes/keycloak ]; then
+      ${DOCKER_CMD} run --rm -v ${DEPLOYMENT_DIR}/themes/keycloak:/mnt/themes alpine \
+      sh -c "rm -rf /mnt/themes/*"
+      rmdir ${DEPLOYMENT_DIR}/themes/keycloak
+    fi
     echo_info "Done."
     echo_info "Keycloak data dropped"
   else
@@ -84,6 +89,10 @@ do_start_keycloak() {
   mkdir -p ${DEPLOYMENT_DIR}/logs/keycloak
   ${DOCKER_CMD} run --rm -v ${DEPLOYMENT_DIR}/logs/keycloak:/opt/keycloak/data/log alpine \
   sh -c "chown -R 1000:1000 /opt/keycloak/data/log"
+  mkdir -p ${DEPLOYMENT_DIR}/themes/keycloak
+  cp -r ${ETC_DIR}/keycloak/themes/exo ${DEPLOYMENT_DIR}/themes/keycloak/
+  ${DOCKER_CMD} run --rm -v ${DEPLOYMENT_DIR}/themes/keycloak:/mnt/themes alpine \
+  sh -c "chown -R 1000:1000 /mnt/themes"
   ${DOCKER_CMD} run \
   -d \
   -e KC_BOOTSTRAP_ADMIN_USERNAME=bootstrap_admin \
@@ -93,11 +102,12 @@ do_start_keycloak() {
   -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
   -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/keycloak/data \
   -v ${DEPLOYMENT_DIR}/logs/keycloak:/opt/keycloak/data/log \
+  -v ${DEPLOYMENT_DIR}/themes/keycloak:/opt/keycloak/themes \
   --health-cmd="timeout 2 /bin/bash -c '</dev/tcp/localhost/8080' || exit 1" \
   --health-interval=30s \
   --health-timeout=30s \
   --health-retries=3 \
-  --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} start-dev --log=console,file --db-username=sa --db-password=password ${_startArgs}
+  --name ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} ${DEPLOYMENT_KEYCLOAK_IMAGE}:${DEPLOYMENT_KEYCLOAK_IMAGE_VERSION} start-dev --log=console,file --db-username=sa --db-password=password --spi-login-theme-default=exo ${_startArgs}
   echo_info "${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME} container started"  
   check_keycloak_availability
   do_provision_keycloak_permanent_admin
@@ -216,6 +226,25 @@ do_provision_keycloak_permanent_admin() {
     fi
     echo_info "Admin role assigned to user root successfully."
   fi
+  echo_info "Updating realm login theme to exo..."
+  local _rootToken=$(curl -s -X POST \
+    -d "client_id=admin-cli" \
+    -d "username=root" \
+    -d "password=password" \
+    -d "grant_type=password" \
+    "$KEYCLOAK_URL/realms/master/protocol/openid-connect/token" | jq -r '.access_token')
+  local _realmJson=$(curl -s -X GET -H "Authorization: Bearer $_rootToken" "$KEYCLOAK_URL/admin/realms/master")
+  local _updatedRealm=$(echo "$_realmJson" | jq '.loginTheme = "exo" | .rememberMe = true | .internationalizationEnabled = true | .supportedLocales = ["en","fr"] | .defaultLocale = "en"')
+  local _realmUpdateResp=$(curl -s -o /dev/null -w "%{http_code}" -X PUT \
+    -H "Content-Type: application/json" \
+    -H "Authorization: Bearer $_rootToken" \
+    -d "$_updatedRealm" \
+    "$KEYCLOAK_URL/admin/realms/master")
+  if [ "$_realmUpdateResp" -ne 204 ]; then
+    echo_error "Failed to update realm theme. HTTP status code: $_realmUpdateResp"
+    exit 1
+  fi
+  echo_info "Realm login theme set to exo."
 }
 
 # Provision Keycloak clients
