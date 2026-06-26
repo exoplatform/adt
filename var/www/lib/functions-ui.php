@@ -425,9 +425,49 @@ function pageFooter() {
       });
     });
 
-    // Service Worker registration
+    // Service Worker registration with update handling
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/sw.js');
+      var updateToast = null;
+
+      function showUpdateToast() {
+        if (updateToast) return;
+        var toast = document.createElement('div');
+        toast.id = 'pwa-update-toast';
+        toast.innerHTML = '<i class="fas fa-sync-alt"></i> New version available \u2014 click to refresh';
+        toast.onclick = function() { window.doUpdate(); };
+        document.body.appendChild(toast);
+        updateToast = toast;
+      }
+
+      window.doUpdate = function() {
+        if (window.waitingWorker) {
+          window.waitingWorker.postMessage({ action: 'skipWaiting' });
+        }
+      };
+
+      navigator.serviceWorker.register('/sw.js').then(function(reg) {
+        if (reg.waiting) {
+          window.waitingWorker = reg.waiting;
+          showUpdateToast();
+        }
+        reg.addEventListener('updatefound', function() {
+          var newWorker = reg.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              window.waitingWorker = newWorker;
+              showUpdateToast();
+            }
+          });
+        });
+      });
+
+      var refreshing = false;
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        if (refreshing) return;
+        refreshing = true;
+        window.location.reload();
+      });
     }
 
     // PWA Install prompt
