@@ -1,3 +1,19 @@
+<#--
+ Copyright (C) 2026 eXo Platform SAS.
+
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU Affero General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU Affero General Public License for more details.
+
+ You should have received a copy of the GNU Affero General Public License
+ along with this program.  If not, see <https://www.gnu.org/licenses/>.
+-->
 <#macro registrationLayout displayInfo=false displayMessage=true displayRequiredFields=false>
 <!DOCTYPE html>
 <html lang="${(locale.currentLanguageTag)!'en'}">
@@ -51,10 +67,13 @@
 
                     <#if !(auth?has_content && auth.showUsername() && !auth.showResetCredentials())>
                         <div class="exo-login-card">
-                            <div class="exo-locale-bar">
-                                <a class="exo-locale-link exo-locale-active" onclick="switchLocale('en')" href="#">EN</a>
-                                <span class="exo-locale-sep">|</span>
-                                <a class="exo-locale-link" onclick="switchLocale('fr')" href="#">FR</a>
+                            <div class="exo-top-bar">
+                                <div class="exo-locale-bar">
+                                    <a class="exo-locale-link" data-locale="en" onclick="switchLocale('en')" href="#">EN</a>
+                                    <span class="exo-locale-sep">|</span>
+                                    <a class="exo-locale-link" data-locale="fr" onclick="switchLocale('fr')" href="#">FR</a>
+                                </div>
+                                <button class="exo-theme-toggle" onclick="toggleTheme()" aria-label="Toggle dark mode" title="Toggle dark mode">&#9788;</button>
                             </div>
                             <#nested "header">
                             <#nested "form">
@@ -82,6 +101,35 @@ function switchLocale(locale) {
     u.searchParams.set('kc_locale', locale);
     window.location.href = u.toString();
 }
+(function(){
+    var cur = new URL(window.location.href).searchParams.get('kc_locale') || 'en';
+    var active = document.querySelector('.exo-locale-link[data-locale="' + cur + '"]');
+    if (active) {
+        document.querySelectorAll('.exo-locale-link').forEach(function(l){ l.classList.remove('exo-locale-active'); });
+        active.classList.add('exo-locale-active');
+    }
+})();
+(function(){
+    var html = document.documentElement;
+    var stored = null;
+    try { stored = localStorage.getItem('exo-theme'); } catch(e){}
+    if (stored === 'dark' || stored === 'light') {
+        html.setAttribute('data-theme', stored);
+    }
+    function toggleTheme() {
+        var current = html.getAttribute('data-theme');
+        var next = (current === 'dark') ? 'light' : 'dark';
+        html.setAttribute('data-theme', next);
+        try { localStorage.setItem('exo-theme', next); } catch(e){}
+        updateToggleIcon(next);
+    }
+    function updateToggleIcon(theme) {
+        var btn = document.querySelector('.exo-theme-toggle');
+        if (btn) btn.innerHTML = theme === 'dark' ? '&#9789;' : '&#9788;';
+    }
+    updateToggleIcon(html.getAttribute('data-theme') || 'light');
+    window.toggleTheme = toggleTheme;
+})();
 </script>
 </body>
 </html>

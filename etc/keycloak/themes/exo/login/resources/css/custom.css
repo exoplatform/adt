@@ -1,6 +1,22 @@
+/*
+ * Copyright (C) 2026 eXo Platform SAS.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Affero General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 :root {
   --exo-brand: #2b5fe0;
-  --exo-brand-hover: #1e4fcc;
+  --exo-brand-hover: #3d73f2;
   --exo-text: #1a1a2e;
   --exo-text-muted: #6b7280;
   --exo-border: #e2e4e9;
@@ -9,6 +25,91 @@
   --exo-shadow: 0 2px 12px rgba(0,0,0,0.06);
   --exo-shadow-lg: 0 8px 32px rgba(0,0,0,0.10);
   --exo-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --exo-bg-right: #f8f9fb;
+  --exo-card-bg: #fff;
+  --exo-input-bg: #f8f9fb;
+  --exo-input-focus-bg: #fff;
+  --exo-toggle-bg: rgba(255,255,255,0.10);
+  --exo-footer-color: #b0b6c1;
+  --exo-locale-link: #b0b6c1;
+}
+
+[data-theme="dark"] {
+  --exo-text: #e2e4e9;
+  --exo-text-muted: #9ca3af;
+  --exo-border: #2d3348;
+  --exo-shadow: 0 2px 12px rgba(0,0,0,0.25);
+  --exo-shadow-lg: 0 8px 32px rgba(0,0,0,0.40);
+  --exo-bg-right: #0f1119;
+  --exo-card-bg: #1a1d2e;
+  --exo-input-bg: #141725;
+  --exo-input-focus-bg: #1a1d2e;
+  --exo-footer-color: #4b5563;
+  --exo-locale-link: #6b7280;
+}
+
+[data-theme="dark"] .pf-c-button.pf-m-control {
+  --pf-c-button--m-control--BackgroundColor: var(--exo-input-bg) !important;
+  --pf-c-button--m-control--BorderColor: var(--exo-border) !important;
+  --pf-c-button--m-control--BorderTopColor: var(--exo-border) !important;
+  --pf-c-button--m-control--BorderRightColor: var(--exo-border) !important;
+  --pf-c-button--m-control--BorderBottomColor: var(--exo-border) !important;
+  --pf-c-button--m-control--BorderLeftColor: var(--exo-border) !important;
+  --pf-c-button--m-control--Color: var(--exo-text-muted) !important;
+  --pf-c-button--m-control--hover--BackgroundColor: #2a2d3a !important;
+  border-color: var(--exo-border) !important;
+  background: var(--exo-input-bg) !important;
+  background-color: var(--exo-input-bg) !important;
+  color: var(--exo-text-muted) !important;
+  box-shadow: none !important;
+}
+
+[data-theme="dark"] .pf-c-button.pf-m-control:hover {
+  --pf-c-button--m-control--BackgroundColor: #2a2d3a !important;
+  background: #2a2d3a !important;
+  background-color: #2a2d3a !important;
+}
+
+[data-theme="dark"] .pf-c-input-group .pf-c-form-control,
+[data-theme="dark"] .pf-c-input-group {
+  border-color: var(--exo-border) !important;
+  background: var(--exo-input-bg) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .pf-c-button.pf-m-control {
+    --pf-c-button--m-control--BackgroundColor: var(--exo-input-bg) !important;
+    --pf-c-button--m-control--BorderColor: var(--exo-border) !important;
+    --pf-c-button--m-control--BorderTopColor: var(--exo-border) !important;
+    --pf-c-button--m-control--BorderRightColor: var(--exo-border) !important;
+    --pf-c-button--m-control--BorderBottomColor: var(--exo-border) !important;
+    --pf-c-button--m-control--BorderLeftColor: var(--exo-border) !important;
+    --pf-c-button--m-control--Color: var(--exo-text-muted) !important;
+    --pf-c-button--m-control--hover--BackgroundColor: #2a2d3a !important;
+    border-color: var(--exo-border) !important;
+    background: var(--exo-input-bg) !important;
+    background-color: var(--exo-input-bg) !important;
+    color: var(--exo-text-muted) !important;
+    box-shadow: none !important;
+  }
+
+  :root:not([data-theme="light"]) .pf-c-button.pf-m-control:hover {
+    --pf-c-button--m-control--BackgroundColor: #2a2d3a !important;
+    background: #2a2d3a !important;
+    background-color: #2a2d3a !important;
+  }
+
+  :root:not([data-theme="light"]) .pf-c-input-group .pf-c-form-control,
+  :root:not([data-theme="light"]) .pf-c-input-group {
+    border-color: var(--exo-border) !important;
+    background: var(--exo-input-bg) !important;
+  }
+
+  :root:not([data-theme="light"]) .pf-c-form-control {
+    border-color: var(--exo-border) !important;
+    background: var(--exo-input-bg) !important;
+    color: var(--exo-text) !important;
+  }
 }
 
 *, *::before, *::after {
@@ -119,7 +220,7 @@ body {
 }
 
 .exo-split-right {
-  background: #f8f9fb;
+  background: var(--exo-bg-right);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -169,8 +270,68 @@ body {
   border: 1px solid #bfdbfe;
 }
 
+[data-theme="dark"] .exo-alert-error {
+  background: #45171d;
+  color: #fca5a5;
+  border: 1px solid #7f1d1d;
+}
+
+[data-theme="dark"] .exo-alert-warning {
+  background: #3d2e0a;
+  color: #fcd34d;
+  border: 1px solid #78350f;
+}
+
+[data-theme="dark"] .exo-alert-success {
+  background: #0a2e1a;
+  color: #6ee7a8;
+  border: 1px solid #14532d;
+}
+
+[data-theme="dark"] .exo-alert-info {
+  background: #0c1929;
+  color: #93c5fd;
+  border: 1px solid #1e3a5f;
+}
+
+[data-theme="dark"] .pf-c-form__helper-text.pf-m-error,
+[data-theme="dark"] .kc-feedback-text {
+  color: #fca5a5 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .exo-alert-error {
+    background: #45171d;
+    color: #fca5a5;
+    border: 1px solid #7f1d1d;
+  }
+
+  :root:not([data-theme="light"]) .exo-alert-warning {
+    background: #3d2e0a;
+    color: #fcd34d;
+    border: 1px solid #78350f;
+  }
+
+  :root:not([data-theme="light"]) .exo-alert-success {
+    background: #0a2e1a;
+    color: #6ee7a8;
+    border: 1px solid #14532d;
+  }
+
+  :root:not([data-theme="light"]) .exo-alert-info {
+    background: #0c1929;
+    color: #93c5fd;
+    border: 1px solid #1e3a5f;
+  }
+
+  :root:not([data-theme="light"]) .pf-c-form__helper-text.pf-m-error,
+  :root:not([data-theme="light"]) .kc-feedback-text {
+    color: #fca5a5 !important;
+  }
+}
+
 .exo-login-card {
-  background: #fff;
+  background: var(--exo-card-bg);
   border-radius: var(--exo-radius-lg);
   padding: 2.5rem 2rem 2rem;
   box-shadow: var(--exo-shadow-lg);
@@ -189,15 +350,23 @@ body {
   background: none;
 }
 
-.exo-locale-bar {
-  text-align: right;
+.exo-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
+}
+
+.exo-locale-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
   font-size: 0.8rem;
   font-weight: 500;
 }
 
 .exo-locale-link {
-  color: #b0b6c1;
+  color: var(--exo-locale-link);
   text-decoration: none;
   padding: 0 0.15rem;
   transition: color 0.15s;
@@ -218,6 +387,28 @@ body {
   user-select: none;
 }
 
+.exo-theme-toggle {
+  background: none;
+  border: 1px solid var(--exo-border);
+  border-radius: var(--exo-radius);
+  color: var(--exo-text-muted);
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  line-height: 1;
+}
+
+.exo-theme-toggle:hover {
+  border-color: var(--exo-brand);
+  color: var(--exo-brand);
+}
+
 #kc-page-title {
   display: none;
 }
@@ -232,7 +423,7 @@ body {
   font-size: 0.95rem;
   font-family: inherit;
   color: var(--exo-text);
-  background: #f8f9fb;
+  background: var(--exo-input-bg);
   border: 1.5px solid var(--exo-border);
   border-radius: var(--exo-radius);
   outline: none;
@@ -243,7 +434,7 @@ body {
 #username:focus, #password:focus {
   border-color: var(--exo-brand);
   box-shadow: 0 0 0 3px rgba(43,95,224,0.12);
-  background: #fff;
+  background: var(--exo-input-focus-bg);
 }
 
 .form-group {
@@ -301,7 +492,7 @@ body {
   height: 46px;
   flex-shrink: 0;
   border-radius: 0 var(--exo-radius) var(--exo-radius) 0;
-  background: #f8f9fb;
+  background: var(--exo-input-bg);
   border: 1.5px solid var(--exo-border);
   border-left: none;
   color: var(--exo-text-muted);
@@ -385,7 +576,7 @@ body {
   text-align: center;
   margin-top: 2rem;
   font-size: 0.75rem;
-  color: #b0b6c1;
+  color: var(--exo-footer-color);
 }
 
 .exo-page-footer p {
