@@ -61,8 +61,6 @@
     <Directory ${ADT_DATA}/var/www/>
         Options Indexes FollowSymLinks MultiViews
         AllowOverride None
-        Order allow,deny
-        Allow from all
         Require all granted
     </Directory>
 
@@ -70,23 +68,21 @@
     <Directory "/usr/share/apache2/icons">
         Options Indexes MultiViews
         AllowOverride None
-        Order allow,deny
-        Allow from all
+        Require all granted
     </Directory>
 
     Alias /logs/ "${DEPLOYMENT_DIR}/logs/"
     <Directory "${DEPLOYMENT_DIR}/logs/">
         Options Indexes MultiViews
         AllowOverride None
-        Order allow,deny
-        Allow from all
+        Require all granted
     </Directory>
 
 	Alias /.well-known/matrix/ "${DEPLOYMENT_DIR}/matrix/"
     <Directory "${DEPLOYMENT_DIR}/matrix/">
         Options Indexes MultiViews
         AllowOverride None
-        Allow from all
+        Require all granted
     </Directory>
 
     # Serve Certbot challenge files directly
@@ -124,7 +120,7 @@
     ProxyPass               /images/favicon.ico  !
 
     <IfModule mod_proxy_wstunnel.c>
-        ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5 disablereuse=on flushpackets=on
+        ProxyPass /cometd ws://localhost:${DEPLOYMENT_HTTP_PORT}/cometd max=200 acquire=5000 retry=5
 
         <Location "/cloudbeaver/api/ws">
             ProxyPass "ws://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/api/ws"
@@ -170,7 +166,7 @@
         H2Push Off
     </IfModule>
 
-    ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30 disablereuse=on flushpackets=on
+    ProxyPass               /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis acquire=1000 retry=30
     ProxyPassReverse        /cmis       http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis
 
     ProxyPass               /baikal       http://localhost:${DEPLOYMENT_CALDAV_HTTP_PORT}/baikal
@@ -219,7 +215,5 @@
     ProxyPass               /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
     ProxyPassReverse        /_synapse            http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse
     # Matrix well-known for client & server
-    # ACC-90: need to force disablereuse and flushpackets to avoid WebSocket interferences
-    # Can be remove if apache version is >= 2.4.13
-    ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30 disablereuse=on flushpackets=on
+    ProxyPass               /       http://localhost:${DEPLOYMENT_HTTP_PORT}/ acquire=1000 retry=30
     ProxyPassReverse        /       http://localhost:${DEPLOYMENT_HTTP_PORT}/
