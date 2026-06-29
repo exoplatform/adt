@@ -429,7 +429,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS" ""
       
       configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
-      configurable_env_var "DEPLOYMENT_GZIP_ENABLED" true
+      configurable_env_var "DEPLOYMENT_GZIP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS" ""
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
