@@ -195,7 +195,6 @@ checkCaches();
 
             /* Hostname → accent CSS class + short label */
             $host_meta = array(
-                'acceptance7.exoplatform.org'  => ['css' => 'acc7',  'short' => 'acceptance7'],
                 'acceptance12.exoplatform.org' => ['css' => 'acc12', 'short' => 'acceptance12'],
                 'acceptance13.exoplatform.org' => ['css' => 'acc13', 'short' => 'acceptance13'],
                 'acceptance14.exoplatform.org' => ['css' => 'acc14', 'short' => 'acceptance14'],
@@ -204,7 +203,6 @@ checkCaches();
 
             /* Static server hardware specs */
             $server_specs = array(
-                'acceptance7.exoplatform.org'  => ['alias' => 'prd05', 'ram' => '128 GB', 'cpu' => 'Xeon E5-1650 v2 @ 3.50 GHz', 'cores' => '6 cores / 12 threads', 'disks' => '3 × 300 GB SSD'],
                 'acceptance12.exoplatform.org' => ['alias' => 'acc02', 'ram' => '128 GB', 'cpu' => 'AMD Ryzen 9 5900X @ 3.7/4.8 GHz', 'cores' => '12 cores / 24 threads', 'disks' => '2 × 1.92 TB NVMe'],
                 'acceptance13.exoplatform.org' => ['alias' => 'acc03', 'ram' => '128 GB', 'cpu' => 'Xeon E2388G @ 3.2/4.6 GHz', 'cores' => '8 cores / 16 threads', 'disks' => '2 × 960 GB NVMe'],
                 'acceptance14.exoplatform.org' => ['alias' => 'acc04', 'ram' => '128 GB', 'cpu' => 'Xeon E2388G @ 3.2/4.6 GHz', 'cores' => '8 cores / 16 threads', 'disks' => '2 × 960 GB NVMe'],

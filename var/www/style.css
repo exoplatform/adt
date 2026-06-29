@@ -909,7 +909,6 @@ img.icon:hover { transform: scale(1.2); }
 .green  { font-weight: 600; color: var(--success); }
 .blue   { font-weight: 600; color: var(--accent); }
 .gray, .color-acceptanceX { color: var(--text-muted); }
-.color-acceptance7  { color: #8b5cf6; }
 .color-acceptance12 { color: #f97316; }
 .color-acceptance13 { color: #0ea87a; }
 .color-acceptance14 { color: #0ea5e9; }
