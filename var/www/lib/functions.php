@@ -1577,21 +1577,7 @@ function human_filesize($bytes, $decimals = 2)
  */
 function getGitBaseBranchToCompareWith($org, $repo, $branch)
 {
-  $fbBaseBranch = array(
-    "feature/meedsv2" => "develop-meed",
-    "feature/meeds-qaui" => "develop-meed",
-    "feature/whitepaper" => "develop-meed",
-    "feature/mips" => "develop"
-  );
-
-  if (strtolower($org) == "meeds-io") {
-    if(isset($fbBaseBranch[$branch])) {
-      return $fbBaseBranch[$branch];
-    }
-    return "develop-exo";
-  }
   return 'develop';
-
 }
 
 /**
