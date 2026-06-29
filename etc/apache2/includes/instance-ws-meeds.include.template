@@ -19,6 +19,39 @@
     # configures the footer on server-generated documents
     ServerSignature Off
 
+    <IfModule brotli_module>
+        #
+        # Compression using Brotli
+        #
+        SetOutputFilter BROTLI_COMPRESS
+        BrotliCompressionQuality 5
+        BrotliFilterNote Input instream
+        BrotliFilterNote Output outstream
+        BrotliFilterNote Ratio ratio
+
+        # Don't compress images
+        SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png|webp)$" no-brotli dont-vary
+        # Make sure proxies don't deliver the wrong content
+        Header append Vary User-Agent env=!dont-vary
+    </IfModule>
+    <IfModule !brotli_module>
+        <IfModule deflate_module>
+            #
+            # Compression using Gzip (fallback)
+            #
+            SetOutputFilter DEFLATE
+            DeflateCompressionLevel 5
+            DeflateFilterNote Input instream
+            DeflateFilterNote Output outstream
+            DeflateFilterNote Ratio ratio
+
+            # Don't compress images
+            SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png|webp)$" no-gzip dont-vary
+            # Make sure proxies don't deliver the wrong content
+            Header append Vary User-Agent env=!dont-vary
+        </IfModule>
+    </IfModule>
+
     <Directory />
         Options FollowSymLinks
         AllowOverride None

@@ -14,29 +14,38 @@
     LogLevel        warn
     CustomLog       ${ADT_DATA}/var/log/apache2/${ACCEPTANCE_HOST}-access.log combined
 
-    #
-    # Compression using GZIP
-    #
-    # Insert filter
-    SetOutputFilter DEFLATE
-    SetInputFilter DEFLATE
-    DeflateFilterNote Input instream
-    DeflateFilterNote Output outstream
-    DeflateFilterNote Ratio ratio
-    # Higher Compression 9 - Medium 5
-    DeflateCompressionLevel 5
+    <IfModule brotli_module>
+        #
+        # Compression using Brotli
+        #
+        SetOutputFilter BROTLI_COMPRESS
+        BrotliCompressionQuality 5
+        BrotliFilterNote Input instream
+        BrotliFilterNote Output outstream
+        BrotliFilterNote Ratio ratio
 
-    # Netscape 4.x has some problems...
-    BrowserMatch ^Mozilla/4 gzip-only-text/html
-    # Netscape 4.06-4.08 have some more problems
-    BrowserMatch ^Mozilla/4\.0[678] no-gzip
-    # MSIE masquerades as Netscape, but it is fine
-    BrowserMatch \bMSIE !no-gzip !gzip-only-text/html
+        # Don't compress images
+        SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png|webp)$" no-brotli dont-vary
+        # Make sure proxies don't deliver the wrong content
+        Header append Vary User-Agent env=!dont-vary
+    </IfModule>
+    <IfModule !brotli_module>
+        <IfModule deflate_module>
+            #
+            # Compression using Gzip (fallback)
+            #
+            SetOutputFilter DEFLATE
+            DeflateCompressionLevel 5
+            DeflateFilterNote Input instream
+            DeflateFilterNote Output outstream
+            DeflateFilterNote Ratio ratio
 
-    # Don't compress images
-    SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png)$" no-gzip dont-vary
-    # Make sure proxies don't deliver the wrong content
-    Header append Vary User-Agent env=!dont-vary
+            # Don't compress images
+            SetEnvIfNoCase Request_URI "\.(?:gif|jpe?g|png|webp)$" no-gzip dont-vary
+            # Make sure proxies don't deliver the wrong content
+            Header append Vary User-Agent env=!dont-vary
+        </IfModule>
+    </IfModule>
 
     # Turn on Expires and set default to 0
     ExpiresActive On
