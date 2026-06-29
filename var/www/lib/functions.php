@@ -1577,21 +1577,7 @@ function human_filesize($bytes, $decimals = 2)
  */
 function getGitBaseBranchToCompareWith($org, $repo, $branch)
 {
-  $fbBaseBranch = array(
-    "feature/meedsv2" => "develop-meed",
-    "feature/meeds-qaui" => "develop-meed",
-    "feature/whitepaper" => "develop-meed",
-    "feature/mips" => "develop"
-  );
-
-  if (strtolower($org) == "meeds-io") {
-    if(isset($fbBaseBranch[$branch])) {
-      return $fbBaseBranch[$branch];
-    }
-    return "develop-exo";
-  }
   return 'develop';
-
 }
 
 /**
@@ -1640,46 +1626,6 @@ function getBaseBranchView($branch) {
     return $baseBranchView[$branch];
   }
   return 'PLF';  
-}
-
-/**
- * Return base branch Jenkins Rebase CI jobname
- *
- * @param      $branch                  base branch name
- *
- * @return string
- */
-
-function getRebaseJobName($branch) {
-  
-  $rebaseJobName = array(
-    "develop-exo" => "Rebase-Branch-eXo",
-    "develop-meed" => "Rebase-Branch-Meed"
-  );
-  if(isset($rebaseJobName[$branch])) {
-    return $rebaseJobName[$branch];
-  }
-  return null;  
-}
-
-/**
- * Return if cherry commits compare is required
- *
- * @param      $branch                  base branch name
- *
- * @return boolean
- */
-
-function isCherryCompare($branch) {
-  
-  $rebaseJobName = array(
-    "develop-exo" => true,
-    "develop-meed" => false
-  );
-  if(isset($rebaseJobName[$branch])) {
-    return $rebaseJobName[$branch];
-  }
-  return false;  
 }
 
 ?>
