@@ -40,9 +40,8 @@ do_generate_certbot_certificate() {
       echo_warn "Certificate ${certFile} will expire soon. Ask ITOP for checking certbot's cron job issues"
       certbotAction="renew"
     else 
-      env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${certbot_certs_folder}/${certbot_domain}/cert.pem"
+      env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${certbot_certs_folder}/${certbot_domain}/fullchain.pem"
       env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${certbot_certs_folder}/${certbot_domain}/privkey.pem"
-      env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${certbot_certs_folder}/${certbot_domain}/chain.pem"
       return 0
     fi
   fi
