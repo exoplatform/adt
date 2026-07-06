@@ -287,15 +287,15 @@ function pageNavigation()
 
   <!-- Sidebar -->
   <aside class="sidebar" id="sidebar" aria-label="Main navigation">
-    <div class="sidebar__brand">
+    <a class="sidebar__brand" href="/" title="Home">
       <div class="sidebar__brand-icon" style="background:transparent">
         <img src="/images/icon-192.png" alt="eXo" width="28" height="28" srcset="/images/icon-192.png 2x, /images/icon-512.png 3x">
       </div>
-      <div>
+      <div class="sidebar__brand-info">
         <div class="sidebar__brand-text" title="<?= htmlspecialchars($_SERVER['SERVER_NAME']) ?>">Acceptance</div>
         <div class="sidebar__brand-version"><?= htmlspecialchars($_SERVER['SERVER_NAME']) ?></div>
       </div>
-    </div>
+    </a>
 
     <nav class="sidebar__nav">
       <div class="sidebar__section">Navigation</div>
@@ -319,7 +319,7 @@ function pageNavigation()
       </button>
 
       <!-- Theme accent dropdown -->
-      <div class="dropdown">
+      <div class="dropdown dropup">
         <button class="sidebar__footer-btn dropdown-toggle" id="themeDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-label="Select theme" title="Change theme">
           <i class="fas fa-palette"></i> <span>Default</span>
         </button>
@@ -342,7 +342,7 @@ function pageNavigation()
       </button>
 
       <!-- PWA Install -->
-      <button class="sidebar__footer-btn" id="pwaInstallBtn" onclick="pwaInstall()" title="Install app" style="display:none">
+      <button class="sidebar__footer-btn" id="pwaInstallBtn" onclick="pwaInstall()" title="Install app" style="visibility:hidden">
         <i class="fas fa-download"></i> <span>Install app</span>
       </button>
     </div>
@@ -476,7 +476,7 @@ function pageFooter() {
       e.preventDefault();
       deferredPrompt = e;
       var btn = document.getElementById('pwaInstallBtn');
-      if (btn) btn.style.display = 'flex';
+      if (btn) btn.style.visibility = 'visible';
     });
     function pwaInstall() {
       if (!deferredPrompt) return;
@@ -484,7 +484,7 @@ function pageFooter() {
       deferredPrompt.userChoice.then(function(result) {
         if (result.outcome === 'accepted') {
           var btn = document.getElementById('pwaInstallBtn');
-          if (btn) btn.style.display = 'none';
+          if (btn) btn.style.visibility = 'hidden';
         }
         deferredPrompt = null;
       });

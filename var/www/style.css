@@ -47,6 +47,7 @@
   --warning: #ffb142;
   --danger:  #ff5252;
   --info:    #54a0ff;
+  --info-soft: rgba(84,160,255,0.16);
 
   /* Glass */
   --glass-bg:      rgba(20,20,40,0.55);
@@ -262,10 +263,16 @@ code, .code {
 .sidebar__brand {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1rem;
+  gap: 0.65rem;
+  padding: 1rem 1.15rem;
   border-bottom: 1px solid var(--border-subtle);
   flex-shrink: 0;
+  text-decoration: none;
+  transition: background var(--dur-fast);
+}
+.sidebar__brand:hover {
+  background: var(--bg-field);
+  text-decoration: none;
 }
 .sidebar__brand-icon {
   width: 36px; height: 36px;
@@ -398,8 +405,7 @@ body.sidebar-collapsed {
 body.sidebar-collapsed .sidebar {
   width: var(--sidebar-collapsed-w);
 }
-body.sidebar-collapsed .sidebar__brand-text,
-body.sidebar-collapsed .sidebar__brand-version,
+body.sidebar-collapsed .sidebar__brand-info,
 body.sidebar-collapsed .sidebar__section,
 body.sidebar-collapsed .sidebar__link span:not(.sr-only),
 body.sidebar-collapsed .sidebar__footer-btn span:not(.sr-only) {
@@ -424,6 +430,7 @@ body.sidebar-collapsed .sidebar__footer-btn {
   padding: 0.55rem 0.5rem;
 }
 body.sidebar-collapsed .sidebar__footer-btn i { margin: 0; font-size: 1.05rem; }
+body.sidebar-collapsed .sidebar__footer-btn.dropdown-toggle::after { display: none; }
 body.sidebar-collapsed .sidebar__nav,
 body.sidebar-collapsed .sidebar__footer { padding: 0.5rem 0.25rem; }
 body.sidebar-collapsed .sidebar .dropdown-menu {
@@ -752,6 +759,12 @@ table th.col-left,   table td.col-left   { text-align: left; }
   padding: 0.22em 0.55em;
   border-radius: var(--r-full);
   border: 1px solid transparent;
+}
+/* Swap Bootstrap's harsh stock cyan for a soft-tinted pill matching the app's accent-soft look */
+.badge.bg-info {
+  background-color: var(--info-soft) !important;
+  color: var(--info);
+  border-color: rgba(84,160,255,0.35);
 }
 .label {
   display: inline-block;
@@ -1550,6 +1563,9 @@ a[name] {
   display: flex;
   flex-wrap: wrap;
   gap: 0.3rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-subtle);
 }
 /* Allow btn-group to wrap inside cards */
 .instance-card .btn-group {
@@ -1559,6 +1575,7 @@ a[name] {
 .instance-card .btn-group .btn {
   border-radius: var(--r-sm) !important;
   white-space: nowrap;
+  flex: 0 0 auto;
 }
 
 /* Pulse-dot in instance card */
