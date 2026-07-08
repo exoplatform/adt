@@ -6,25 +6,17 @@
 
     # No security for gadgets
     <ProxyMatch "^.*/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)/.*$">
-        Order allow,deny
-        Allow from all
-        Satisfy any
+        Require all granted
     </ProxyMatch>
 
     # No security for chat local access
     <ProxyMatch "^.*/chatServer/.*$">
-        Order deny,allow
-        Deny from all
-        Allow from exoplatform.org
-        Satisfy any
+        Require host exoplatform.org
     </ProxyMatch>
 
     # Everything else is secured
     <Proxy *>
         <IfModule authnz_crowd_module>
-            Order deny,allow
-            Allow from all
-
             AuthName "eXo Employees only"
             AuthType Basic
             AuthBasicProvider crowd
