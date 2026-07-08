@@ -760,11 +760,46 @@ table th.col-left,   table td.col-left   { text-align: left; }
   border-radius: var(--r-full);
   border: 1px solid transparent;
 }
-/* Swap Bootstrap's harsh stock cyan for a soft-tinted pill matching the app's accent-soft look */
+/* Swap Bootstrap's flat solid fills for soft-tinted pills matching the app's accent-soft look */
 .badge.bg-info {
   background-color: var(--info-soft) !important;
   color: var(--info);
   border-color: rgba(84,160,255,0.35);
+}
+.badge.bg-secondary {
+  background-color: color-mix(in srgb, var(--text-muted) 20%, transparent) !important;
+  color: var(--text-secondary);
+  border-color: color-mix(in srgb, var(--text-muted) 40%, transparent);
+}
+.badge.bg-success {
+  background-color: color-mix(in srgb, var(--success) 16%, transparent) !important;
+  color: var(--success);
+  border-color: color-mix(in srgb, var(--success) 35%, transparent);
+}
+.badge.bg-warning {
+  background-color: color-mix(in srgb, var(--warning) 18%, transparent) !important;
+  color: var(--warning);
+  border-color: color-mix(in srgb, var(--warning) 35%, transparent);
+}
+.badge.bg-danger {
+  background-color: color-mix(in srgb, var(--danger) 16%, transparent) !important;
+  color: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 35%, transparent);
+}
+.badge.bg-primary {
+  background-color: var(--accent-soft) !important;
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+}
+.badge.bg-dark {
+  background-color: var(--bg-field) !important;
+  color: var(--text-secondary);
+  border-color: var(--border-card);
+}
+.badge.bg-light {
+  background-color: var(--bg-elevated) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-card);
 }
 .label {
   display: inline-block;
@@ -781,7 +816,7 @@ table th.col-left,   table td.col-left   { text-align: left; }
   letter-spacing: 0.02em;
 }
 .label-addon      { background: var(--accent); }
-.label-label      { background: var(--text-muted); }
+.label-label      { background: color-mix(in srgb, var(--text-muted) 18%, transparent); color: var(--text-secondary); }
 .label-commit     { background: var(--bg-field); color: var(--text-secondary); font-size: 0.65rem; }
 .label-info       { background: var(--accent); }
 .label-warning    { background: var(--warning); color: #000; }
