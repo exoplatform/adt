@@ -16,16 +16,16 @@ checkCaches();
             margin-bottom: 2rem;
         }
         .server-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 10px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border-card);
+            border-radius: var(--r-md);
             padding: 1.1rem 1.25rem;
-            box-shadow: 0 2px 6px rgba(0,0,0,.07);
-            transition: box-shadow .2s ease, transform .2s ease;
+            transition: box-shadow var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
             border-top: 4px solid var(--card-accent, #6c757d);
         }
         .server-card:hover {
-            box-shadow: 0 6px 18px rgba(0,0,0,.12);
+            border-color: var(--border-active);
+            box-shadow: var(--shadow-card);
             transform: translateY(-2px);
         }
         .server-card__header {
@@ -49,9 +49,10 @@ checkCaches();
             display: inline-flex;
             align-items: center;
             gap: .3rem;
-            background: var(--card-accent, #6c757d);
-            color: #fff;
-            border-radius: 20px;
+            background: color-mix(in srgb, var(--card-accent, #6c757d) 16%, transparent);
+            color: var(--card-accent, #6c757d);
+            border: 1px solid color-mix(in srgb, var(--card-accent, #6c757d) 35%, transparent);
+            border-radius: var(--r-full);
             padding: .2rem .65rem;
             font-size: .8rem;
             font-weight: 600;
@@ -108,28 +109,25 @@ checkCaches();
 
         /* ── Port badge (monospace chip) ────────────────────── */
         .port-badge {
-            font-family: 'Courier New', monospace;
+            font-family: var(--font-mono);
             font-size: .78rem;
-            background: var(--body-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: .1rem .4rem;
+            background: var(--bg-field);
+            border: 1px solid var(--border-card);
+            border-radius: var(--r-sm);
+            padding: .15rem .5rem;
             white-space: nowrap;
-            color: var(--bs-body-color);
+            color: var(--text-secondary);
         }
 
         /* ── Host pill ──────────────────────────────────────── */
         .host-pill {
             display: inline-block;
             padding: .15rem .55rem;
-            border-radius: 20px;
+            border-radius: var(--r-full);
             font-size: .78rem;
             font-weight: 600;
-            background: rgba(0,0,0,.05);
+            background: var(--bg-field);
             white-space: nowrap;
-        }
-        [data-bs-theme="dark"] .host-pill {
-            background: rgba(255,255,255,.07);
         }
         .host-pill.acc7  { color: #9b59b6; border: 1px solid #9b59b6; }
         .host-pill.acc12 { color: #f39c12; border: 1px solid #f39c12; }
