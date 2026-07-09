@@ -19,7 +19,7 @@ source "${SCRIPT_DIR}/_functions_files.sh"
 source "${SCRIPT_DIR}/_functions_download.sh"
 source "${SCRIPT_DIR}/_functions_git.sh"
 source "${SCRIPT_DIR}/_functions_ufw.sh"
-source "${SCRIPT_DIR}/_functions_apache.sh"
+source "${SCRIPT_DIR}/_functions_nginx.sh"
 source "${SCRIPT_DIR}/_functions_logrotate.sh"
 source "${SCRIPT_DIR}/_functions_awstats.sh"
 source "${SCRIPT_DIR}/_functions_plf.sh"
@@ -1770,33 +1770,32 @@ do_configure_apache() {
     ;;
   esac
 
-  echo_info "Creating Apache Virtual Host ..."
-  mkdir -p ${APACHE_CONF_DIR}
+  echo_info "Creating nginx Virtual Host ..."
+  mkdir -p ${NGINX_CONF_DIR}
 
-  # Apache configuration matrix
   if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/nginx/includes/instance-chat-standalone-oo.include.template ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
       echo_info "used template is : instance-chat-standalone-oo.include.template"
     else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/nginx/includes/instance-chat-standalone.include.template ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
       echo_info "used template is : instance-chat-standalone.include.template"
     fi
   elif ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/nginx/includes/instance-ws-oo.include.template ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
       echo_info "used template is : instance-ws-oo.include.template"
     elif [ "${PRODUCT_NAME:-}" = "meeds" ];then 
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-meeds.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/nginx/includes/instance-ws-meeds.include.template ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
       echo_info "used template is : instance-ws-meeds.include.template"
     else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+      evaluate_file_content ${ETC_DIR}/nginx/includes/instance-ws.include.template ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
       echo_info "used template is : instance-ws.include.template"
     fi
   elif ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include-oo.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    evaluate_file_content ${ETC_DIR}/nginx/includes/instance-oo.include.template ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   else  
-    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    evaluate_file_content ${ETC_DIR}/nginx/includes/instance.include.template ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
   fi
 
   if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then 
@@ -1808,11 +1807,11 @@ do_configure_apache() {
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
         if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]); then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
-            echo_n_info "Deploying Apache instance configuration for HTTPS only..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+            echo_n_info "Deploying nginx instance configuration for HTTPS only..."
+            evaluate_file_content ${ETC_DIR}/nginx/sites-available/instance-public-with-httpsonly.template ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
           else 
-            echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+            echo_n_info "Deploying nginx instance configuration for HTTP and HTTPS..."
+            evaluate_file_content ${ETC_DIR}/nginx/sites-available/instance-public-with-https.template ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
           fi  
           echo "OK."
         else
@@ -1821,8 +1820,8 @@ do_configure_apache() {
           exit 1
         fi
       else
-          echo_n_info "Deploying Apache instance configuration for HTTP only..."
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          echo_n_info "Deploying nginx instance configuration for HTTP only..."
+          evaluate_file_content ${ETC_DIR}/nginx/sites-available/instance-public.template ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
           echo "OK."
       fi
     ;;
@@ -1830,11 +1829,11 @@ do_configure_apache() {
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
         if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]); then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
-            echo_n_info "Deploying Apache instance configuration for HTTPS only..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+            echo_n_info "Deploying nginx instance configuration for HTTPS only..."
+            evaluate_file_content ${ETC_DIR}/nginx/sites-available/instance-private-with-httpsonly.template ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
           else 
-            echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+            echo_n_info "Deploying nginx instance configuration for HTTP and HTTPS..."
+            evaluate_file_content ${ETC_DIR}/nginx/sites-available/instance-private-with-https.template ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
           fi  
           echo "OK."
         else
@@ -1843,8 +1842,8 @@ do_configure_apache() {
           exit 1
         fi
       else
-          echo_n_info "Deploying Apache instance configuration for HTTP only..."
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+          echo_n_info "Deploying nginx instance configuration for HTTP only..."
+          evaluate_file_content ${ETC_DIR}/nginx/sites-available/instance-private.template ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
           echo "OK."
       fi
     ;;
@@ -2634,10 +2633,9 @@ do_undeploy() {
     # Delete Awstat config
     rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
     # Delete the vhost
-    rm -f ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-    rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-    # Reload Apache to deactivate the config
-    do_reload_apache ${ADT_DEV_MODE}
+    rm -f ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+    rm -f ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+    do_reload_nginx ${ADT_DEV_MODE}
     # Delete the server
     rm -rf ${SRV_DIR}/${INSTANCE_KEY}
     # Close firewall ports

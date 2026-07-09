@@ -62,7 +62,7 @@ env_var "DS_DIR" "${ADT_DATA}/datasets"
 env_var "SRV_DIR" "${ADT_DATA}/servers"
 env_var "SRC_DIR" "${ADT_DATA}/sources"
 env_var "CONF_DIR" "${ADT_DATA}/conf"
-env_var "APACHE_CONF_DIR" "${ADT_DATA}/conf/apache"
+env_var "NGINX_CONF_DIR" "${ADT_DATA}/conf/nginx"
 env_var "AWSTATS_CONF_DIR" "${ADT_DATA}/conf/awstats"
 env_var "ADT_CONF_DIR" "${ADT_DATA}/conf/adt"
 env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
@@ -91,7 +91,6 @@ validate_env_var "DL_DIR"
 validate_env_var "DS_DIR"
 validate_env_var "SRV_DIR"
 validate_env_var "CONF_DIR"
-validate_env_var "APACHE_CONF_DIR"
 validate_env_var "ADT_CONF_DIR"
 validate_env_var "FEATURES_CONF_DIR"
 validate_env_var "INSTANCES_CONF_DIR"
@@ -102,12 +101,12 @@ mkdir -p ${DS_DIR}
 mkdir -p ${SRV_DIR}
 mkdir -p ${SRC_DIR}
 mkdir -p ${CONF_DIR}
-mkdir -p ${APACHE_CONF_DIR}/conf.d
-mkdir -p ${APACHE_CONF_DIR}/sites-available
-mkdir -p ${APACHE_CONF_DIR}/includes
+mkdir -p ${NGINX_CONF_DIR}/conf.d
+mkdir -p ${NGINX_CONF_DIR}/sites-available
+mkdir -p ${NGINX_CONF_DIR}/includes
 mkdir -p ${ADT_CONF_DIR}
 mkdir -p ${FEATURES_CONF_DIR}
-chmod 777 ${FEATURES_CONF_DIR} # apache needs to write here
+chmod 777 ${FEATURES_CONF_DIR} # nginx needs to write here
 mkdir -p ${INSTANCES_CONF_DIR}
 chmod 777 ${INSTANCES_CONF_DIR} # apache needs to write here
 # Recopy default data
@@ -148,20 +147,19 @@ case "${ACTION}" in
     configurable_env_var "APACHE_SSL_CERTIFICATE_CHAIN_FILE" ""
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
-    evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
-    evaluate_file_content ${ETC_DIR}/apache2/includes/frontend.include.template ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
-    # Fix : Remove any include in the wrong directory
-    rm -f ${APACHE_CONF_DIR}/sites-available/*.include
+    evaluate_file_content ${ETC_DIR}/nginx/conf.d/adt.conf.template ${NGINX_CONF_DIR}/conf.d/adt.conf
+    evaluate_file_content ${ETC_DIR}/nginx/includes/frontend.include.template ${NGINX_CONF_DIR}/includes/acceptance-frontend.include
+    rm -f ${NGINX_CONF_DIR}/sites-available/*.include
     case "${ACCEPTANCE_SCHEME}" in
       http)
-        echo_info "Deploying Apache FrontEnd configuration for HTTP"
-        evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+        echo_info "Deploying nginx FrontEnd configuration for HTTP"
+        evaluate_file_content ${ETC_DIR}/nginx/sites-available/frontend.template ${NGINX_CONF_DIR}/sites-available/acceptance.exoplatform.org
         echo_info "Done."
       ;;
       https)
         if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}" ]; then
-          echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-full-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+          echo_info "Deploying nginx FrontEnd configuration for HTTP/HTTPS"
+          evaluate_file_content ${ETC_DIR}/nginx/sites-available/frontend-full-https.template ${NGINX_CONF_DIR}/sites-available/acceptance.exoplatform.org
           echo_info "Done."
         else
           echo_error "Deploying Front End with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\"),\${APACHE_SSL_CERTIFICATE_CHAIN_FILE} (\"${APACHE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
@@ -176,15 +174,10 @@ case "${ACTION}" in
       ;;
     esac
     if ! ${ADT_DEV_MODE}; then
-      if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
-        echo_info "Reloading Apache server ..."
-        sudo /usr/sbin/service apache2 reload
-        echo_info "Done."
-      else
-        echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
-      fi
+      source "${SCRIPT_DIR}/_functions_nginx.sh"
+      do_reload_nginx ${ADT_DEV_MODE}
     else
-      echo_warn "Development Mode: No Apache server reload."
+      echo_warn "Development Mode: No nginx server reload."
     fi
   ;;
   deploy)

@@ -1,0 +1,8 @@
+server {
+    listen 80;
+    server_name ${DEPLOYMENT_EXT_HOST} ${DEPLOYMENT_APACHE_VHOST_ALIAS};
+
+    location /.well-known/acme-challenge/ {
+        alias ${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/;
+    }
+}

@@ -1,0 +1,34 @@
+server {
+    listen 80;
+    server_name ${DEPLOYMENT_EXT_HOST} ${DEPLOYMENT_APACHE_VHOST_ALIAS};
+
+    include ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include;
+
+    location ~ ^/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)(/.*)?$ {
+        proxy_pass http://localhost:$server_port$request_uri;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location ~ ^/chatServer(/.*)?$ {
+        allow exoplatform.org;
+        deny all;
+        proxy_pass http://localhost:$server_port$request_uri;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        auth_ldap "eXo Employees only";
+        auth_ldap_servers adt_group_auth;
+        proxy_pass http://localhost:${DEPLOYMENT_HTTP_PORT}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}

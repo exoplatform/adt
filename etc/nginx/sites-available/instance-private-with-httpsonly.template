@@ -1,0 +1,52 @@
+server {
+    listen 80;
+    server_name ${DEPLOYMENT_EXT_HOST} ${DEPLOYMENT_APACHE_VHOST_ALIAS};
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${DEPLOYMENT_EXT_HOST} ${DEPLOYMENT_APACHE_VHOST_ALIAS};
+
+    ssl_certificate     ${INSTANCE_SSL_CERTIFICATE_FILE};
+    ssl_certificate_key ${INSTANCE_SSL_CERTIFICATE_KEY_FILE};
+    ssl_trusted_certificate ${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE};
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers on;
+
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    proxy_set_header X-Forwarded-Proto https;
+
+    include ${NGINX_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include;
+
+    location ~ ^/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)(/.*)?$ {
+        proxy_pass http://localhost:$server_port$request_uri;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location ~ ^/chatServer(/.*)?$ {
+        allow exoplatform.org;
+        deny all;
+        proxy_pass http://localhost:$server_port$request_uri;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+
+    location / {
+        auth_ldap "eXo Employees only";
+        auth_ldap_servers adt_group_auth;
+        proxy_pass http://localhost:${DEPLOYMENT_HTTP_PORT}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+}

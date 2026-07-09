@@ -65,9 +65,9 @@ do_generate_certbot_certificate() {
     domainOptions="-d ${certbot_domain}"
   fi
 
-  echo_info "Deploying Basic Apache instance configuration for generating/renewing certificate..."
-  evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-certbot.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-  do_reload_apache ${ADT_DEV_MODE}
+  echo_info "Deploying Basic nginx instance configuration for generating/renewing certificate..."
+  evaluate_file_content ${ETC_DIR}/nginx/sites-available/instance-certbot.template ${NGINX_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  do_reload_nginx ${ADT_DEV_MODE}
 
   sudo certbot --config-dir "${DEPLOYMENT_CERTBOT_CONFIG_FOLDER}" --text --agree-tos --non-interactive ${certbotAction} \
     --rsa-key-size 4096 -a ${certbotMethodArgs} \

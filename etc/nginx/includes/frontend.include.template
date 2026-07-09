@@ -1,0 +1,93 @@
+    root ${ADT_DATA}/var/www;
+    index index.php;
+
+    error_page 404 /404.html;
+    error_page 500 502 503 /500.html;
+
+    access_log ${ADT_DATA}/var/log/nginx/${ACCEPTANCE_HOST}-access.log;
+    error_log ${ADT_DATA}/var/log/nginx/${ACCEPTANCE_HOST}-error.log warn;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location /downloads/ {
+        alias ${ADT_DATA}/downloads/;
+        autoindex on;
+    }
+
+    location /datasets/ {
+        alias ${ADT_DATA}/datasets/;
+        autoindex on;
+    }
+
+    location /logs/ {
+        alias ${ADT_DATA}/var/log/nginx/;
+        autoindex on;
+    }
+
+    location /icons/ {
+        alias /usr/share/apache2/icons/;
+        autoindex on;
+    }
+
+    location /awstatsclasses/ {
+        alias /usr/share/awstats/lib/;
+    }
+
+    location /awstats-icon/ {
+        alias /usr/share/awstats/icon/;
+    }
+
+    location /stats/ {
+        alias /usr/lib/cgi-bin/;
+        gzip off;
+        try_files $uri /cgi-bin/awstats.pl;
+    }
+
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php-fpm.sock;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+
+    location /rest/ {
+        allow exoplatform.org;
+        deny all;
+        proxy_pass http://localhost:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /info.php {
+        allow 127.0.0.1;
+        deny all;
+    }
+
+    location ~ ^/google.*\.html$ {
+        auth_ldap off;
+    }
+
+    location = /robots.txt {
+        auth_ldap off;
+    }
+
+    location = /manifest.json {
+        auth_ldap off;
+    }
+
+    location = /sw.js {
+        auth_ldap off;
+    }
+
+    location /images/ {
+        auth_ldap off;
+    }
+
+    location / {
+        auth_ldap "eXo Employees only";
+        auth_ldap_servers adt_group_auth;
+    }

@@ -1,0 +1,6 @@
+server {
+    listen 80;
+    server_name ${ACCEPTANCE_HOST};
+
+    include ${NGINX_CONF_DIR}/includes/acceptance-frontend.include;
+}

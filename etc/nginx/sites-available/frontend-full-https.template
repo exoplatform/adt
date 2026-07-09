@@ -1,0 +1,25 @@
+server {
+    listen 80;
+    server_name ${ACCEPTANCE_HOST};
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    server_name ${ACCEPTANCE_HOST};
+
+    ssl_certificate     ${APACHE_SSL_CERTIFICATE_FILE};
+    ssl_certificate_key ${APACHE_SSL_CERTIFICATE_KEY_FILE};
+    ssl_trusted_certificate ${APACHE_SSL_CERTIFICATE_CHAIN_FILE};
+
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256;
+    ssl_prefer_server_ciphers on;
+
+    add_header Strict-Transport-Security "max-age=63072000" always;
+
+    include ${NGINX_CONF_DIR}/includes/acceptance-frontend.include;
+}

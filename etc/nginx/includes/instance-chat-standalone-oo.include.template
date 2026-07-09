@@ -1,0 +1,83 @@
+    server_name ${DEPLOYMENT_EXT_HOST} ${DEPLOYMENT_APACHE_VHOST_ALIAS};
+
+    access_log ${ADT_DATA}/var/log/nginx/${DEPLOYMENT_EXT_HOST}-access.log;
+    error_log ${ADT_DATA}/var/log/nginx/${DEPLOYMENT_EXT_HOST}-error.log warn;
+
+    error_page 404 /404.html;
+    error_page 500 502 503 /500.html;
+
+    root ${ADT_DATA}/var/www;
+
+    location /icons/ { alias /usr/share/apache2/icons/; }
+    location /logs/ { alias ${DEPLOYMENT_DIR}/logs/; autoindex on; }
+    location /.well-known/matrix/ { alias ${DEPLOYMENT_DIR}/matrix/; autoindex on; }
+    location /.well-known/acme-challenge/ { alias ${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/; }
+
+    rewrite ^/\.well-known/caldav$ /baikal/dav.php redirect;
+    rewrite ^/\.well-known/carddav$ /baikal/dav.php redirect;
+    rewrite ^/mailpit$ /mailpit/ redirect;
+    rewrite ^/livelogs$ /livelogs/ redirect;
+    rewrite ^/cloudbeaver$ /cloudbeaver/ redirect;
+    rewrite ^/baikal$ /baikal/ redirect;
+    rewrite ^/logs$ /logs/ redirect;
+    rewrite ^/baikal/admin$ /baikal/admin/ redirect;
+    rewrite ^/_matrix/push/v1/notify /matrix/rest/matrix/notify break;
+
+    location /cmis { proxy_pass http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /baikal { proxy_pass http://localhost:${DEPLOYMENT_CALDAV_HTTP_PORT}/baikal; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /chatServer { proxy_pass http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /elasticsearch { proxy_pass http://localhost:${DEPLOYMENT_ES_HTTP_PORT}; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /cloudbeaver/ { proxy_pass http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /livelogs { proxy_pass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /mongoexpress { proxy_pass http://localhost:${DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT}/mongoexpress; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /auth { proxy_pass http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /jitsicall { proxy_pass http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /jitsiweb { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /css/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/css/; }
+    location /libs/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/libs/; }
+    location /images/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/images/; }
+    location /sounds/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/sounds/; }
+    location /lang/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/; }
+    location /http-bind { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind; }
+    location /oembed { proxy_pass http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /mailpit/ { proxy_pass http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /_matrix { proxy_pass http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_matrix; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /_synapse { proxy_pass http://localhost:${DEPLOYMENT_MATRIX_HTTP_PORT}/_synapse; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+
+    # WebSocket
+    location /cloudbeaver/api/ws { proxy_pass http://localhost:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}/cloudbeaver/api/ws; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /mailpit/api/events { proxy_pass http://localhost:${DEPLOYMENT_MAILPIT_HTTP_PORT}/mailpit/api/events; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /livelogs/socket.io/ { proxy_pass http://localhost:${DEPLOYMENT_FRONTAIL_HTTP_PORT}/livelogs/socket.io/; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /_matrix/push/v1/notify { proxy_pass http://localhost:${DEPLOYMENT_HTTP_PORT}/matrix/rest/matrix/notify; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; add_header Access-Control-Allow-Headers "Authorization" always; }
+    location /jitsiweb/xmpp-websocket { proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/xmpp-websocket; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+    location /jitsiweb/colibri-ws/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}/colibri-ws/; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+    location /whiteboard/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}/; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+    location /socket.io/ { proxy_pass http://localhost:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}/socket.io/; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+
+    # OnlyOffice WebSocket catch-all
+    set $oo_ws 0;
+    if ($http_upgrade ~* "websocket") { set $oo_ws 1; }
+    if ($request_uri ~* "^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io)") { set $oo_ws 0; }
+    if ($oo_ws = 1) { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+
+    location /cometd { proxy_pass http://localhost:${DEPLOYMENT_HTTP_PORT}/cometd; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+    location /chatServer/cometd { proxy_pass http://localhost:${DEPLOYMENT_CHAT_SERVER_PORT}/chatServer/cometd; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+
+    # OnlyOffice proxy paths
+    location ~ ^/(v?[\d]+\.[\d]+\.[\d]+[\.|-].+/.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; }
+    location ~ ^/(OfficeWeb/.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; }
+    location ~ ^/(printfile/.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; }
+    location ~ ^/(cache/.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; }
+    location ~ ^/(web-apps/.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; }
+    location ~ ^/(coauthoring/.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; proxy_http_version 1.1; proxy_set_header Upgrade $http_upgrade; proxy_set_header Connection "upgrade"; }
+    location ~ ^/(downloadfile/.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; }
+    location ~ ^/(converter.*)$ { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/$1; }
+    location /oohealthcheck { proxy_pass http://localhost:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}/healthcheck; proxy_set_header Host $host; proxy_set_header X-Real-IP $remote_addr; proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; proxy_set_header X-Forwarded-Proto $scheme; }
+
+    location / {
+        proxy_pass http://localhost:${DEPLOYMENT_HTTP_PORT}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }

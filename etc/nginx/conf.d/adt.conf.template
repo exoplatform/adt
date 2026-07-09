@@ -1,0 +1,49 @@
+# Shared LDAP server definitions
+ldap_server adt_ldap_auth {
+    url ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn;
+    binddn "${LDAP_ACCEPTANCE_BIND_DN}";
+    binddn_passwd ${LDAP_ACCEPTANCE_BIND_PASSWORD};
+    group_attribute member;
+    group_attribute_is_dn on;
+    satisfy any;
+    require valid_user;
+}
+
+ldap_server adt_group_auth {
+    url ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn;
+    binddn "${LDAP_ACCEPTANCE_BIND_DN}";
+    binddn_passwd ${LDAP_ACCEPTANCE_BIND_PASSWORD};
+    group_attribute member;
+    group_attribute_is_dn on;
+    satisfy any;
+    require group "cn=exo-employees,ou=groups,dc=exoplatform,dc=org";
+}
+
+auth_ldap_cache_enabled on;
+auth_ldap_cache_expiration_time 30m;
+auth_ldap_cache_size 1000;
+
+# Compression
+brotli on;
+brotli_comp_level 5;
+brotli_types application/atom+xml application/javascript application/json application/rss+xml
+           application/vnd.ms-fontobject application/x-font-opentype application/x-font-truetype
+           application/x-font-ttf application/x-javascript application/xhtml+xml application/xml
+           font/eot font/opentype font/otf font/truetype image/svg+xml image/vnd.microsoft.icon
+           image/x-icon image/x-win-bitmap text/css text/html text/javascript text/plain text/xml;
+
+# Cache control mapping
+map $sent_http_content_type $expires {
+    default                    off;
+    application/pdf            29030400;
+    application/xml            7200;
+    application/json           7200;
+    text/html                  0;
+    text/xml                   7200;
+    application/javascript     7200;
+    text/css                   7200;
+    ~image/                    604800;
+    ~font/                     29030400;
+}
+
+server_tokens off;

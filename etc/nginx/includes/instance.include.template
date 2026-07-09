@@ -1,0 +1,140 @@
+    server_name ${DEPLOYMENT_EXT_HOST} ${DEPLOYMENT_APACHE_VHOST_ALIAS};
+
+    access_log ${ADT_DATA}/var/log/nginx/${DEPLOYMENT_EXT_HOST}-access.log;
+    error_log ${ADT_DATA}/var/log/nginx/${DEPLOYMENT_EXT_HOST}-error.log warn;
+
+    error_page 404 /404.html;
+    error_page 500 502 503 /500.html;
+
+    root ${ADT_DATA}/var/www;
+
+    location /icons/ {
+        alias /usr/share/apache2/icons/;
+    }
+
+    location /logs/ {
+        alias ${DEPLOYMENT_DIR}/logs/;
+        autoindex on;
+    }
+
+    location /.well-known/acme-challenge/ {
+        alias ${DEPLOYMENT_CERTBOT_WEBROOT_PATH}/.well-known/acme-challenge/;
+    }
+
+    rewrite ^/\.well-known/caldav$ /baikal/dav.php redirect;
+    rewrite ^/\.well-known/carddav$ /baikal/dav.php redirect;
+    rewrite ^/baikal$ /baikal/ redirect;
+    rewrite ^/logs$ /logs/ redirect;
+    rewrite ^/baikal/admin$ /baikal/admin/ redirect;
+
+    location /cmis {
+        proxy_pass http://localhost:${DEPLOYMENT_CMIS_HTTP_PORT}/cmis;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /baikal {
+        proxy_pass http://localhost:${DEPLOYMENT_CALDAV_HTTP_PORT}/baikal;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /auth {
+        proxy_pass http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /jitsicall {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /jitsiweb {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /css/ {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/css/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /libs/ {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/libs/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /images/ {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/images/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /sounds/ {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/sounds/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /lang/ {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/lang/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /http-bind {
+        proxy_pass http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}/http-bind;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /oembed {
+        proxy_pass http://localhost:${DEPLOYMENT_IFRAMELY_PORT}/oembed;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location /elasticsearch {
+        proxy_pass http://localhost:${DEPLOYMENT_ES_HTTP_PORT};
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    location / {
+        proxy_pass http://localhost:${DEPLOYMENT_HTTP_PORT}/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
