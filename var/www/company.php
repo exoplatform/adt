@@ -51,104 +51,35 @@ checkCaches();
 <?php
 $company_instances=getGlobalCompanyInstances();
 if (isDeploymentInCategoryArray($company_instances)) {
-  foreach (getGlobalCompanyInstances() as $plf_branch => $descriptor_arrays) {
+  foreach ($company_instances as $plf_branch => $descriptor_arrays) {
   ?>
   <div class="instances-section">
     <div class="instances-section__header">
-        <i class="fas fa-code-branch"></i> Company developments: <?= $plf_branch ?>
+        <i class="fas fa-code-branch"></i> Company developments: <?= htmlspecialchars($plf_branch) ?>
     </div>
     <div class="instance-grid">
     <?php
     foreach ($descriptor_arrays as $inst) {
-      ?>
-      <div class="instance-card">
-          <div class="instance-card__top">
-              <div class="instance-card__status">
-                  <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
-                      <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
-                  <?php else: ?>
-                      <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
-                  <?php endif; ?>
-              </div>
-              <div class="instance-card__info">
-                  <div class="instance-card__name">
-                      <?= componentProductInfoIcon($inst); ?>
-                      <?= componentVisibilityIcon($inst, empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success'); ?>
-                      <?= componentProductOpenLink($inst, "", true) ?>
-                  </div>
-                  <div class="instance-card__meta">
-                      <?= componentProductVersion($inst); ?>
-                      <?= componentDownloadIcon($inst); ?>
-                  </div>
-              </div>
-              <div class="instance-card__actions-top">
-                  <?= componentEditNoteIcon($inst) ?>
-              </div>
-          </div>
-          <div class="instance-card__details">
-              <?= componentDatabaseIcon($inst) ?>
-              <div class="instance-card__ages">
-                  <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>" title="Time since artifact was built"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
-                  <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
-              </div>
-          </div>
-          <div class="instance-card__badges">
-              <?= componentUpgradeEligibility($inst, false); ?>
-              <?= componentPatchInstallation($inst, false); ?>
-              <?= componentCertbotEnabled($inst, false); ?>
-              <?= componentDevModeEnabled($inst, false); ?>
-              <?= componentStagingModeEnabled($inst, false); ?>
-              <?= componentDebugModeEnabled($inst, false); ?>
-          </div>
-          <div class="instance-card__actions">
-              <?= componentDeploymentActions($inst) ?>
-          </div>
-      </div>
-      <?php
+      echo renderInstanceCard($inst, [
+          'visibility_icon' => empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success',
+          'enforce_ssl' => true,
+          'actions_top' => componentEditNoteIcon($inst),
+          'show_built_age' => true,
+          'badges' => ['upgrade', 'patch', 'certbot', 'dev', 'staging', 'debug'],
+          'badges_addon_style' => false,
+      ]);
     }
     ?>
     </div>
   </div>
   <?php
   }
+} else {
+  echo '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Nothing yet ;-)</div>';
 }
 ?>
-  <div class="row mt-4">
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <i class="fas fa-plug me-2"></i>JMX Access
-        </div>
-        <div class="card-body">
-          <p class="mb-0">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <i class="fas fa-key me-2"></i>Keycloak Access
-        </div>
-        <div class="card-body">
-          <p class="mb-0">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
-          <code class="d-block mt-2 p-2 rounded code-bg">root / password</code>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card">
-        <div class="card-header">
-          <i class="fas fa-address-book me-2"></i>LDAP Access
-        </div>
-        <div class="card-body">
-          <p class="mb-0">Each LDAP deployed can be accessed with:</p>
-          <code class="d-block mt-2 p-2 rounded code-bg">Base DN: dc=exoplatform,dc=com</code>
-          <code class="d-block mt-1 p-2 rounded code-bg">User DN: cn=admin,dc=exoplatform,dc=com</code>
-          <code class="d-block mt-1 p-2 rounded code-bg">password: exo</code>
-        </div>
-      </div>
-    </div>
-  </div>
+<?= componentAccessInfoCards(); ?>
+</div>
 </div>
 </div>
 <!-- /container -->

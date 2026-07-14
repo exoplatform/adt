@@ -2,8 +2,8 @@
 <?php
 require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
-$file_path = $_GET['file'];
-$log_type = $_GET['type'];
+$file_path = $_GET['file'] ?? '';
+$log_type = $_GET['type'] ?? '';
 checkCaches();
 ?>
 <html lang="en">
@@ -19,6 +19,10 @@ checkCaches();
         <div class="container-fluid">
             <div class="row">
                 <div class="col-12">
+                    <div class="page-header">
+                        <h1 class="page-header__title">Log Viewer</h1>
+                        <p class="page-header__subtitle text-mono"><?= htmlspecialchars($file_path) ?></p>
+                    </div>
                     <?php
                         // Read file only if the type of file is ok.
                         if (isAuthorizedToReadFile($log_type, $file_path) == true){
@@ -28,9 +32,9 @@ checkCaches();
                                 <i class="fas fa-download me-2 text-success"></i>Download
                             </div>
                             <div class="card-body">
-                                <p class="mb-0">Download file (<?php printf(human_filesize(filesize($file_path),0)); ?>) : 
-                                    <a href="./logsDownload.php?type=<?=$log_type?>&file=<?=$file_path?>" target="_blank" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-download me-2"></i><?=$file_path?>
+                                <p class="mb-0">Download file (<?= human_filesize(filesize($file_path), 0) ?>) :
+                                    <a href="./logsDownload.php?type=<?= urlencode($log_type) ?>&file=<?= urlencode($file_path) ?>" target="_blank" class="btn btn-primary btn-sm">
+                                        <i class="fas fa-download me-2"></i><?= htmlspecialchars(basename($file_path)) ?>
                                     </a>
                                 </p>
                             </div>
@@ -38,15 +42,15 @@ checkCaches();
                         <hr/>
                     <?php
                             if (isFileTooLargeToBeViewed($file_path)){
-                                printf("<div class='alert alert-danger'><i class='fas fa-exclamation-triangle me-2'></i><strong>This file is too large to be viewed. Please download it.</strong></div>");
+                                echo "<div class='alert alert-danger'><i class='fas fa-exclamation-triangle me-2'></i><strong>This file is too large to be viewed. Please download it.</strong></div>";
                             } else {
-                                printf("<div class='code'><pre class='mb-0'>");
+                                echo "<div class='code'><pre class='mb-0'>";
                                 $data = file_get_contents($file_path);
                                 echo htmlspecialchars($data, ENT_NOQUOTES, 'UTF-8');
-                                printf("</pre></div>");
+                                echo "</pre></div>";
                             }
                         } else {
-                            printf("<div class='alert alert-danger'><i class='fas fa-ban me-2'></i><strong>Not authorized to read this file.</strong></div>");
+                            echo "<div class='alert alert-danger'><i class='fas fa-ban me-2'></i><strong>Not authorized to read this file.</strong></div>";
                         }
                    ?>
                 </div>

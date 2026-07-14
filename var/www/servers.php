@@ -135,6 +135,21 @@ checkCaches();
         .host-pill.acc14 { color: #3498db; border: 1px solid #3498db; }
         .host-pill.acc15 { color: #9b59b6; border: 1px solid #9b59b6; }
         .host-pill.accX  { color: var(--text-muted); border: 1px solid var(--border-color); }
+
+        /* ── Port registry table ────────────────────────────── */
+        #portRegistryTable thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        .port-registry-version {
+            display: inline-block;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom;
+        }
     </style>
 </head>
 <body>
@@ -154,17 +169,13 @@ checkCaches();
             <?php
             /* ── Data preparation ──────────────────────────────────── */
             $merged_list = getGlobalAcceptanceInstances();
-            $descriptor_arrays = array();
+            $descriptor_arrays = [];
             foreach ($merged_list as $tmp_array) {
                 $descriptor_arrays = array_merge($descriptor_arrays, $tmp_array);
             }
-            function cmp($a, $b)
-            {
-                return strcmp($a->DEPLOYMENT_HTTP_PORT, $b->DEPLOYMENT_HTTP_PORT);
-            }
-            usort($descriptor_arrays, "cmp");
+            usort($descriptor_arrays, fn($a, $b) => strcmp($a->DEPLOYMENT_HTTP_PORT, $b->DEPLOYMENT_HTTP_PORT));
 
-            $servers_counter = array();
+            $servers_counter = [];
             foreach ($descriptor_arrays as $descriptor_array) {
                 $host = $descriptor_array->ACCEPTANCE_HOST;
 
@@ -192,20 +203,20 @@ checkCaches();
             }
 
             /* Hostname → accent CSS class + short label */
-            $host_meta = array(
+            $host_meta = [
                 'acceptance12.exoplatform.org' => ['css' => 'acc12', 'short' => 'acceptance12'],
                 'acceptance13.exoplatform.org' => ['css' => 'acc13', 'short' => 'acceptance13'],
                 'acceptance14.exoplatform.org' => ['css' => 'acc14', 'short' => 'acceptance14'],
                 'acceptance15.exoplatform.org' => ['css' => 'acc15', 'short' => 'acceptance15'],
-            );
+            ];
 
             /* Static server hardware specs */
-            $server_specs = array(
+            $server_specs = [
                 'acceptance12.exoplatform.org' => ['alias' => 'acc02', 'ram' => '128 GB', 'cpu' => 'AMD Ryzen 9 5900X @ 3.7/4.8 GHz', 'cores' => '12 cores / 24 threads', 'disks' => '2 × 1.92 TB NVMe'],
                 'acceptance13.exoplatform.org' => ['alias' => 'acc03', 'ram' => '128 GB', 'cpu' => 'Xeon E2388G @ 3.2/4.6 GHz', 'cores' => '8 cores / 16 threads', 'disks' => '2 × 960 GB NVMe'],
                 'acceptance14.exoplatform.org' => ['alias' => 'acc04', 'ram' => '128 GB', 'cpu' => 'Xeon E2388G @ 3.2/4.6 GHz', 'cores' => '8 cores / 16 threads', 'disks' => '2 × 960 GB NVMe'],
                 'acceptance15.exoplatform.org' => ['alias' => 'acc05', 'ram' => '128 GB', 'cpu' => 'Xeon E2388G @ 3.2/4.6 GHz', 'cores' => '8 cores / 16 threads', 'disks' => '2 × 960 GB NVMe'],
-            );
+            ];
             ?>
 
             <!-- ══ Section 1 – Server overview cards ══════════════════ -->
@@ -259,13 +270,17 @@ checkCaches();
             <div class="section-title">
                 <i class="fas fa-network-wired"></i> Deployment Port Registry
             </div>
-            <div class="table-responsive mb-5">
-                <table class="table table-hover align-middle table-sm" aria-label="Deployment port registry">
-                    <caption class="sr-only">Deployment port registry listing all instances with their assigned ports</caption>
+            <div class="instances-search">
+                <i class="fas fa-search instances-search__icon"></i>
+                <input type="text" id="portRegistrySearch" class="instances-search__input" placeholder="Filter by instance, version, server...">
+            </div>
+            <div class="table-responsive mb-5 port-registry-scroll">
+                <table class="table table-hover align-middle table-sm" id="portRegistryTable" aria-label="Deployment port registry">
+                    <caption class="sr-only">Deployment port registry listing all instances grouped by server, with their assigned ports</caption>
                     <thead>
                         <tr>
                             <th class="col-left">Instance</th>
-                            <th class="col-center">Version</th>
+                            <th class="col-left">Version</th>
                             <th class="col-center">Bundle</th>
                             <th class="col-center">DB</th>
                             <th class="col-center">Server</th>
@@ -280,21 +295,39 @@ checkCaches();
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($descriptor_arrays as $descriptor_array):
+                        <?php
+                        /* Group rows by server host (known hosts first, in the same
+                         * order as the summary cards above; any other host last),
+                         * so the registry mirrors the "Acceptance Servers" grouping
+                         * above instead of an arbitrary port-number-only ordering. */
+                        $rows_by_host = [];
+                        foreach ($descriptor_arrays as $descriptor_array) {
+                            $rows_by_host[$descriptor_array->ACCEPTANCE_HOST][] = $descriptor_array;
+                        }
+                        $ordered_hosts = array_values(array_intersect(array_keys($host_meta), array_keys($rows_by_host)));
+                        foreach (array_keys($rows_by_host) as $h) {
+                            if (!in_array($h, $ordered_hosts, true)) {
+                                $ordered_hosts[] = $h;
+                            }
+                        }
+
+                        foreach ($ordered_hosts as $host):
+                            $meta = $host_meta[$host] ?? ['css' => 'accX', 'short' => str_replace('.exoplatform.org', '', $host)];
+                        ?>
+                        <tr class="category-row" data-host-group="<?= htmlspecialchars($meta['css']) ?>" data-total="<?= count($rows_by_host[$host]) ?>">
+                            <td colspan="13">
+                                <span class="host-pill <?= htmlspecialchars($meta['css']) ?>"><?= htmlspecialchars($meta['short']) ?></span>
+                                <span class="ms-2 category-row__count"><?= count($rows_by_host[$host]) ?> instance<?= count($rows_by_host[$host]) == 1 ? '' : 's' ?></span>
+                            </td>
+                        </tr>
+                        <?php foreach ($rows_by_host[$host] as $descriptor_array):
                             if (preg_match("/([^\-]*)\-(.*\-.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
                                 $feature_branch = $matches[2];
-                            } elseif (preg_match("/(.*)\-SNAPSHOT/", $descriptor_array->PRODUCT_VERSION, $matches)) {
-                                $feature_branch = "";
                             } else {
                                 $feature_branch = "";
                             }
-
-                            $host = $descriptor_array->ACCEPTANCE_HOST;
-                            $meta = isset($host_meta[$host])
-                                ? $host_meta[$host]
-                                : ['css' => 'accX', 'short' => str_replace('.exoplatform.org', '', $host)];
                         ?>
-                        <tr>
+                        <tr data-host-group="<?= htmlspecialchars($meta['css']) ?>">
                             <td class="col-left">
                                 <div class="d-flex align-items-center gap-1">
                                     <?= componentAppServerIcon($descriptor_array); ?>
@@ -311,7 +344,12 @@ checkCaches();
                                     <?= componentLabels($descriptor_array); ?>
                                 </div>
                             </td>
-                            <td class="col-left"><span class="text-mono small"><?= componentProductVersion($descriptor_array); ?></span></td>
+                            <td class="col-left">
+                                <span class="text-mono small port-registry-version" title="<?= htmlspecialchars(strip_tags(componentProductVersion($descriptor_array))) ?>"><?= componentProductVersion($descriptor_array); ?></span>
+                                <?php if (!empty($feature_branch)): ?>
+                                    <span class="port-badge d-block mt-1" title="Feature branch"><i class="fas fa-code-branch me-1"></i><?= htmlspecialchars($feature_branch) ?></span>
+                                <?php endif; ?>
+                            </td>
                             <td class="col-center"><?= htmlspecialchars($descriptor_array->DEPLOYMENT_APPSRV_TYPE) ?></td>
                             <td class="col-center"><?= htmlspecialchars($descriptor_array->DATABASE) ?></td>
                             <td class="col-center">
@@ -345,9 +383,39 @@ checkCaches();
                             </td>
                         </tr>
                         <?php endforeach; ?>
+                        <?php endforeach; ?>
                     </tbody>
                 </table>
             </div>
+            <script>
+                (function () {
+                    var input = document.getElementById('portRegistrySearch');
+                    var table = document.getElementById('portRegistryTable');
+                    if (!input || !table) return;
+                    input.addEventListener('input', function () {
+                        var query = this.value.toLowerCase().trim();
+                        var visibleCountByGroup = {};
+                        table.querySelectorAll('tbody > tr:not(.category-row)').forEach(function (row) {
+                            var match = !query || row.textContent.toLowerCase().indexOf(query) !== -1;
+                            row.classList.toggle('hidden', !match);
+                            if (match) {
+                                var group = row.getAttribute('data-host-group');
+                                visibleCountByGroup[group] = (visibleCountByGroup[group] || 0) + 1;
+                            }
+                        });
+                        table.querySelectorAll('tbody > tr.category-row').forEach(function (row) {
+                            var group = row.getAttribute('data-host-group');
+                            var visible = visibleCountByGroup[group] || 0;
+                            row.classList.toggle('hidden', visible === 0);
+                            var total = row.getAttribute('data-total');
+                            var countEl = row.querySelector('.category-row__count');
+                            countEl.textContent = query && visible !== Number(total)
+                                ? visible + ' of ' + total + ' instance' + (total == 1 ? '' : 's')
+                                : total + ' instance' + (total == 1 ? '' : 's');
+                        });
+                    });
+                })();
+            </script>
 
         </div><!-- /container-fluid -->
     </div>

@@ -1,7 +1,7 @@
 <?php
 require_once(dirname(__FILE__) . '/lib/functions.php');
-$file = $_GET['file'];
-$type = $_GET['type'];
+$file = $_GET['file'] ?? '';
+$type = $_GET['type'] ?? '';
 
 if (file_exists($file) && isAuthorizedToReadFile($type, $file)) {
     header('Content-Description: File Transfer');
@@ -14,6 +14,7 @@ if (file_exists($file) && isAuthorizedToReadFile($type, $file)) {
     readfile($file);
     exit;
 } else {
-    printf("<span style=\"color:red\"><strong>Not authorized to download this file.</strong></span>");
+    http_response_code(403);
+    echo '<div class="alert alert-danger">Not authorized to download this file.</div>';
 }
 ?>

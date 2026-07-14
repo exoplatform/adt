@@ -11,16 +11,15 @@
 function debug_var($var, $html = false) {
   ob_start();
   var_export($var);
+  $dump = ob_get_clean();
   if ($html) {
-    $content = "<pre class='debug-dump'><code>" . ob_get_clean() . "</code></pre>";
-  } else {
-    $content = ob_get_clean();
+    return "<pre class='debug-dump'><code>" . htmlspecialchars($dump) . "</code></pre>";
   }
-  return $content;
+  return $dump;
 }
 
 function debug_var_toggle($var) {
-  $html_id = rand();
+  $html_id = random_int(0, PHP_INT_MAX);
   $content = "";
   $content .= '<button type="button" class="btn btn-sm btn-outline-primary mb-2" data-bs-toggle="collapse" data-bs-target="#' . $html_id . '">';
   $content .= '<i class="fas fa-code me-2"></i>Toggle Details';

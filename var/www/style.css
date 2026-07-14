@@ -23,13 +23,22 @@
   --r-full: 9999px;
 
   /* Palette — dark-first */
-  --bg-deep:    #06060e;
-  --bg-surface: #0c0c1a;
-  --bg-elevated:#141428;
-  --bg-field:   #1a1a32;
+  /* "-base" tokens hold the mode's raw color; the public token composes
+     base + accent-theme tint (see "Accent Themes" below) without ever
+     self-referencing, so light/dark mode and accent theme layer safely. */
+  --bg-deep-base:    #06060e;
+  --bg-surface-base: #0c0c1a;
+  --bg-elevated-base:#141428;
+  --bg-field-base:   #1a1a32;
+  --border-card-base:   rgba(255,255,255,0.10);
+  --border-active-base: rgba(255,255,255,0.18);
+  --bg-deep:    var(--bg-deep-base);
+  --bg-surface: var(--bg-surface-base);
+  --bg-elevated:var(--bg-elevated-base);
+  --bg-field:   var(--bg-field-base);
   --border-subtle: rgba(255,255,255,0.06);
-  --border-card:   rgba(255,255,255,0.10);
-  --border-active: rgba(255,255,255,0.18);
+  --border-card:   var(--border-card-base);
+  --border-active: var(--border-active-base);
 
   --text-primary:   #f0f0f8;
   --text-secondary: #9898b8;
@@ -97,13 +106,13 @@
 
 /* ── Light mode overrides (default is dark) ─────────────── */
 [data-bs-theme="light"] {
-  --bg-deep:    #f4f4fa;
-  --bg-surface: #ffffff;
-  --bg-elevated:#f8f8fe;
-  --bg-field:   #eeeef8;
+  --bg-deep-base:    #f4f4fa;
+  --bg-surface-base: #ffffff;
+  --bg-elevated-base:#f8f8fe;
+  --bg-field-base:   #eeeef8;
+  --border-card-base:   rgba(0,0,0,0.08);
+  --border-active-base: rgba(0,0,0,0.14);
   --border-subtle: rgba(0,0,0,0.06);
-  --border-card:   rgba(0,0,0,0.08);
-  --border-active: rgba(0,0,0,0.14);
 
   --text-primary:   #0f0f1a;
   --text-secondary: #585878;
@@ -132,37 +141,46 @@
 /* ── Accent Themes (preserved, adapted for new palette) ─── */
 
 [data-accent="ocean"] {
-  --accent: #0ea5e9; --accent-soft: rgba(14,165,233,0.15);
-  --accent-glow: rgba(14,165,233,0.30); --accent2: #22d3ee;
+  --accent: #0ea5e9; --accent-soft: rgba(14,165,233,0.22);
+  --accent-glow: rgba(14,165,233,0.42); --accent2: #22d3ee;
 }
 [data-accent="forest"] {
-  --accent: #10b981; --accent-soft: rgba(16,185,129,0.15);
-  --accent-glow: rgba(16,185,129,0.30); --accent2: #34d399;
+  --accent: #10b981; --accent-soft: rgba(16,185,129,0.22);
+  --accent-glow: rgba(16,185,129,0.42); --accent2: #34d399;
 }
 [data-accent="twilight"] {
-  --accent: #8b5cf6; --accent-soft: rgba(139,92,246,0.15);
-  --accent-glow: rgba(139,92,246,0.30); --accent2: #a78bfa;
+  --accent: #8b5cf6; --accent-soft: rgba(139,92,246,0.22);
+  --accent-glow: rgba(139,92,246,0.42); --accent2: #a78bfa;
 }
 [data-accent="sunset"] {
-  --accent: #f97316; --accent-soft: rgba(249,115,22,0.15);
-  --accent-glow: rgba(249,115,22,0.30); --accent2: #fb923c;
+  --accent: #f97316; --accent-soft: rgba(249,115,22,0.22);
+  --accent-glow: rgba(249,115,22,0.42); --accent2: #fb923c;
 }
 [data-accent="midnight"] {
-  --accent: #6366f1; --accent-soft: rgba(99,102,241,0.15);
-  --accent-glow: rgba(99,102,241,0.30); --accent2: #818cf8;
+  --accent: #6366f1; --accent-soft: rgba(99,102,241,0.22);
+  --accent-glow: rgba(99,102,241,0.42); --accent2: #818cf8;
 }
 [data-accent="lavender"] {
-  --accent: #c084fc; --accent-soft: rgba(192,132,252,0.15);
-  --accent-glow: rgba(192,132,252,0.30); --accent2: #d8b4fe;
+  --accent: #c084fc; --accent-soft: rgba(192,132,252,0.22);
+  --accent-glow: rgba(192,132,252,0.42); --accent2: #d8b4fe;
 }
 [data-accent="crimson"] {
-  --accent: #ef4444; --accent-soft: rgba(239,68,68,0.15);
-  --accent-glow: rgba(239,68,68,0.30); --accent2: #f87171;
+  --accent: #ef4444; --accent-soft: rgba(239,68,68,0.22);
+  --accent-glow: rgba(239,68,68,0.42); --accent2: #f87171;
 }
 
+/* Every accent theme also tints surfaces/borders (composed from the
+   "-base" tokens above, never self-referencing) so switching themes
+   recolors the whole page, not just buttons/links/icons. */
 [data-accent] {
   --primary-color: var(--accent);
   --secondary-color: var(--accent);
+  --bg-deep:     color-mix(in srgb, var(--accent) 3%, var(--bg-deep-base));
+  --bg-surface:  color-mix(in srgb, var(--accent) 5%, var(--bg-surface-base));
+  --bg-elevated: color-mix(in srgb, var(--accent) 7%, var(--bg-elevated-base));
+  --bg-field:    color-mix(in srgb, var(--accent) 9%, var(--bg-field-base));
+  --border-card:   color-mix(in srgb, var(--accent) 18%, var(--border-card-base));
+  --border-active: color-mix(in srgb, var(--accent) 32%, var(--border-active-base));
 }
 
 /* ================================================================
@@ -200,14 +218,15 @@ body::before {
   background:
     radial-gradient(ellipse 120% 80% at 0% 0%,   var(--accent-soft) 0%, transparent 60%),
     radial-gradient(ellipse 100% 100% at 100% 100%, var(--accent2-soft) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 80% at 50% 50%,  rgba(108,92,231,0.05) 0%, transparent 70%);
+    radial-gradient(ellipse 60% 80% at 50% 50%,  var(--accent-glow) 0%, transparent 70%);
   animation: ambientDrift 20s ease-in-out infinite alternate;
   pointer-events: none;
 }
 [data-bs-theme="light"] body::before {
   background:
     radial-gradient(ellipse 120% 80% at 0% 0%,   var(--accent-soft) 0%, transparent 60%),
-    radial-gradient(ellipse 100% 100% at 100% 100%, rgba(0,210,211,0.08) 0%, transparent 60%);
+    radial-gradient(ellipse 100% 100% at 100% 100%, var(--accent2-soft) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 80% at 50% 50%,  var(--accent-glow) 0%, transparent 70%);
   animation: ambientDrift 25s ease-in-out infinite alternate;
 }
 @keyframes ambientDrift {
@@ -580,6 +599,29 @@ body.sidebar-collapsed .sidebar .dropdown-menu {
 .card-body { }
 .row .card.h-100 { height: 100%; }
 
+/* JMX/Keycloak/LDAP access-info row: 3 always-open cards on desktop,
+   a collapsible accordion on mobile (see max-width: 768px below) so the
+   static reference text doesn't push real page content off-screen. */
+.access-info-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+.access-info-toggle {
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: default;
+  text-align: left;
+}
+.access-info-chevron {
+  display: none;
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+.access-info-body.collapse:not(.show) { display: block; }
+
 /* Feature cards */
 .feature-card {
   transition: all var(--dur-fast);
@@ -753,12 +795,26 @@ table th.col-left,   table td.col-left   { text-align: left; }
    BADGES / LABELS
    ================================================================ */
 .badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3em;
   font-weight: 600;
   font-size: 0.7rem;
+  line-height: 1.4;
   letter-spacing: 0.02em;
   padding: 0.22em 0.55em;
   border-radius: var(--r-full);
   border: 1px solid transparent;
+}
+/* Icon-only badges (a single <i>, no label text) get a fixed circular
+   footprint instead of a shape that varies with each icon's own glyph
+   width — keeps a row of mixed status icons visually uniform. */
+.badge:has(> i:only-child) {
+  width: 1.6rem;
+  height: 1.6rem;
+  padding: 0;
+  font-size: 0.72rem;
 }
 /* Swap Bootstrap's flat solid fills for soft-tinted pills matching the app's accent-soft look */
 .badge.bg-info {
@@ -1125,12 +1181,14 @@ a[name] {
 .feature-title {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
 .feature-title h5 {
   margin: 0;
   font-weight: 700;
+  min-width: 0;
 }
 .feature-actions {
   display: flex;
@@ -1430,7 +1488,7 @@ a[name] {
 .instances-search__input::placeholder {
   color: var(--text-muted);
 }
-.instance-card.hidden {
+.instance-card.hidden, tr.hidden {
   display: none !important;
 }
 .instances-section.empty {
@@ -1540,8 +1598,13 @@ a[name] {
   gap: 0.25rem;
 }
 .instance-card__actions-top a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  font-size: 0.85rem;
   color: var(--text-muted);
-  padding: 0.15rem;
   transition: color var(--dur-fast);
   text-decoration: none;
   cursor: pointer;
@@ -1592,7 +1655,8 @@ a[name] {
 .instance-card__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.25rem;
+  align-items: center;
+  gap: 0.3rem;
 }
 .instance-card__actions {
   display: flex;
@@ -1636,6 +1700,17 @@ a[name] {
   :root { --sidebar-w: 0px; }
   body { padding-left: 0; }
   body.sidebar-collapsed { --sidebar-w: 0px; } /* no collapse on mobile */
+
+  /* Access-info cards become a collapsed-by-default accordion on mobile */
+  .access-info-grid { display: block; }
+  .access-info-item { margin-bottom: 0.6rem; }
+  .access-info-toggle {
+    cursor: pointer;
+    justify-content: flex-start;
+  }
+  .access-info-chevron { display: inline-block; transition: transform var(--dur-fast); }
+  .access-info-toggle[aria-expanded="true"] .access-info-chevron { transform: rotate(180deg); }
+  .access-info-body.collapse:not(.show) { display: none; }
   .sidebar {
     transform: translateX(-100%);
     width: 280px;
@@ -1749,6 +1824,15 @@ a[name] {
 
   .server-cards { grid-template-columns: 1fr; }
   .project-grid { grid-template-columns: 1fr; }
+
+  /* Feature branch header: drop Rebase button/CI badge to their own
+     row instead of centering next to a wrapped multi-line branch name */
+  .feature-title .feature-actions {
+    margin-left: 0 !important;
+    flex-basis: 100%;
+    justify-content: flex-end;
+    margin-top: 0.35rem;
+  }
 
   .label { font-size: 0.6em; padding: 0.15em 0.4em; }
   .badge { font-size: 0.62rem; padding: 0.15em 0.4em; }

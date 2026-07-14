@@ -8,18 +8,14 @@ checkCaches();
 <head>
     <?= pageHeader("features"); ?>
     <script type="text/javascript">
-        $(document).ready(function () {
-            // Handle hash-based navigation to highlight feature cards
-            if (window.location.hash.length > 0) {
-                $trSelector = "a[name=" + window.location.hash.substring(1, window.location.hash.length) + "]";
-                $($trSelector).closest('.feature-card').addClass('highlight');
+        // Handle hash-based navigation to highlight feature cards
+        // (tooltip init is already handled globally by pageFooter())
+        document.addEventListener('DOMContentLoaded', function () {
+            if (window.location.hash.length > 1) {
+                var name = decodeURIComponent(window.location.hash.substring(1));
+                var anchor = document.querySelector('a[name="' + CSS.escape(name) + '"]');
+                if (anchor) anchor.closest('.feature-card').classList.add('highlight');
             }
-            
-            // Initialize Bootstrap tooltips
-            var tooltipTriggerList = [].slice.call(document.querySelectorAll('[rel=tooltip]'));
-            tooltipTriggerList.map(function(tooltipTriggerEl) {
-                return new bootstrap.Tooltip(tooltipTriggerEl);
-            });
         });
     </script>
 </head>
@@ -63,37 +59,40 @@ checkCaches();
                     <?php if (!empty($acceptedFeatures)): ?>
                     <div class="card mb-4">
                         <div class="card-header">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-check-circle text-success me-2"></i>
-                                <h5 class="mb-0">Feature Branches deployed on acceptance</h5>
-                                <span class="badge bg-success ms-2"><?= count($acceptedFeatures) ?></span>
+                            <div class="w-100">
+                                <div class="d-flex align-items-center flex-wrap">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <h5 class="mb-0">Feature Branches deployed on acceptance</h5>
+                                    <span class="badge bg-success ms-2"><?= count($acceptedFeatures) ?></span>
+                                </div>
+                                <small class="text-muted d-block mt-1">Status compared to each project code base branch</small>
                             </div>
-                            <small class="text-muted d-block mt-1">Status compared to each project code base branch</small>
                         </div>
                         <div class="card-body">
                             <?php foreach ($acceptedFeatures as $feature => $FBProjects): ?>
-                            <div class="feature-card card mb-3" id="feature-<?= str_replace(array("/", "."), "-", $feature) ?>">
+                            <?php $featureSlug = str_replace(["/", "."], "-", $feature); ?>
+                            <div class="feature-card card mb-3" id="feature-<?= htmlspecialchars($featureSlug) ?>">
                                 <div class="card-body">
-                                    <a name="<?= str_replace(array("/", "."), "-", $feature) ?>"></a>
-                                    
+                                    <a name="<?= htmlspecialchars($featureSlug) ?>"></a>
+
                                     <!-- Feature Header -->
                                     <div class="feature-title">
-                                        <a href="<?= currentPageURL() . "#feature-" . str_replace(array("/", "."), "-", $feature) ?>" class="text-warning">
+                                        <a href="<?= htmlspecialchars(currentPageURL() . "#feature-" . $featureSlug) ?>" class="text-warning">
                                             <i class="fas fa-bookmark" aria-hidden="true"></i>
                                         </a>
                                         <h5 class="feature-branch-link">
-                                            <code><?= $feature ?></code>
+                                            <code><?= htmlspecialchars($feature) ?></code>
                                         </h5>
                                         <div class="feature-actions ms-auto">
-                                        <a href="https://ci.exoplatform.org/job/exo-<?= $feature ?>-fb-rebase-branch/" target="_blank" 
+                                        <a href="https://ci.exoplatform.org/job/exo-<?= rawurlencode($feature) ?>-fb-rebase-branch/" target="_blank"
                                            class="btn btn-sm btn-outline-primary" rel="tooltip" title="Rebase this feature branch">
                                                 <i class="fas fa-sync-alt" aria-hidden="true"></i> Rebase
                                             </a>
-                                            <img src="https://ci.exoplatform.org/buildStatus/icon?job=exo-<?= $feature ?>-fb-rebase-branch" 
-                                                 class="ci-badge" alt="Rebase build status for <?= $feature ?>">
+                                            <img src="https://ci.exoplatform.org/buildStatus/icon?job=exo-<?= rawurlencode($feature) ?>-fb-rebase-branch"
+                                                 class="ci-badge" alt="Rebase build status for <?= htmlspecialchars($feature) ?>">
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Projects Grid -->
                                     <div class="project-grid">
                                         <?php foreach ($projects as $project): ?>
@@ -101,16 +100,16 @@ checkCaches();
                                             <div class="project-chip">
                                                 <div class="project-chip-header">
                                                     <i class="fas fa-cube me-1" aria-hidden="true"></i>
-                                                    <?= $projectsNames[$project] ?>
+                                                    <?= htmlspecialchars($projectsNames[$project]) ?>
                                                 </div>
                                                 <div class="text-center">
                                                     <?= componentFeatureRepoBrancheStatus($FBProjects[$project]); ?>
                                                 </div>
                                                 <div class="text-center mt-2">
-                                                    <a href="https://ci.exoplatform.org/job/FB/job/<?= getModuleCiPrefix($project) ?><?= $project ?>-<?= $feature ?>-fb-ci/" 
-                                                       target="_blank" rel="tooltip" title="CI Job for <?= $projectsNames[$project] ?>">
-                                                         <img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/<?= getModuleCiPrefix($project) ?><?= $project ?>-<?= $feature ?>-fb-ci" 
-                                                              class="ci-badge" alt="CI build status for <?= $projectsNames[$project] ?>">
+                                                    <a href="https://ci.exoplatform.org/job/FB/job/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci/"
+                                                       target="_blank" rel="tooltip" title="CI Job for <?= htmlspecialchars($projectsNames[$project]) ?>">
+                                                         <img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci"
+                                                              class="ci-badge" alt="CI build status for <?= htmlspecialchars($projectsNames[$project]) ?>">
                                                     </a>
                                                 </div>
                                             </div>
@@ -128,15 +127,17 @@ checkCaches();
                     <?php if (!empty($otherFeatures)): ?>
                     <div class="card mb-4">
                         <div class="card-header">
-                            <div class="d-flex align-items-center">
-                                <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                <h5 class="mb-0">Other branches</h5>
-                                <span class="badge bg-warning ms-2"><?= count($otherFeatures) ?></span>
+                            <div class="w-100">
+                                <div class="d-flex align-items-center flex-wrap">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <h5 class="mb-0">Other branches</h5>
+                                    <span class="badge bg-warning ms-2"><?= count($otherFeatures) ?></span>
+                                </div>
+                                <small class="text-danger d-block mt-1">
+                                    <i class="fas fa-broom me-1"></i>
+                                    ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP?
+                                </small>
                             </div>
-                            <small class="text-danger d-block mt-1">
-                                <i class="fas fa-broom me-1"></i>
-                                ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP?
-                            </small>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -145,22 +146,22 @@ checkCaches();
                                     <div class="feature-card card h-100">
                                         <div class="card-body">
                                             <div class="feature-title">
-                                                <a href="<?= currentPageURL() . "#" . str_replace(array("/", "."), "-", $feature) ?>" class="text-warning">
+                                                <a href="<?= htmlspecialchars(currentPageURL() . "#" . str_replace(["/", "."], "-", $feature)) ?>" class="text-warning">
                                                     <i class="fas fa-bookmark" aria-hidden="true"></i>
                                                 </a>
-                                                <code class="small"><?= $feature ?></code>
+                                                <code class="small"><?= htmlspecialchars($feature) ?></code>
                                             </div>
                                             <div class="mt-2">
-                                                <?php 
+                                                <?php
                                                 $projectCount = count($FBProjects);
                                                 $firstProjects = array_slice($FBProjects, 0, 3, true);
                                                 ?>
                                                 <span class="badge bg-info me-2"><?= $projectCount ?> project(s)</span>
                                                 <?php if ($projectCount > 0): ?>
                                                     <small class="text-muted">
-                                                        <?= implode(', ', array_map(function($p) use ($projectsNames) { 
-                                                            return $projectsNames[$p]; 
-                                                        }, array_keys($firstProjects))) ?>
+                                                        <?= htmlspecialchars(implode(', ', array_map(function($p) use ($projectsNames) {
+                                                            return $projectsNames[$p];
+                                                        }, array_keys($firstProjects)))) ?>
                                                         <?= $projectCount > 3 ? '...' : '' ?>
                                                     </small>
                                                 <?php endif; ?>

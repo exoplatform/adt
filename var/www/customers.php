@@ -37,107 +37,24 @@ if (isDeploymentInCategoryArray($cp_instances)) {
   <?php
   foreach ($cp_instances as $plf_branch => $descriptor_arrays) {
     foreach ($descriptor_arrays as $inst) {
-        ?>
-        <div class="instance-card">
-            <div class="instance-card__top">
-                <div class="instance-card__status">
-                    <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
-                        <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
-                    <?php else: ?>
-                        <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
-                    <?php endif; ?>
-                </div>
-                <div class="instance-card__info">
-                    <div class="instance-card__name">
-                        <?= componentProductInfoIcon($inst); ?>
-                        <?= componentProductOpenLink($inst); ?>
-                    </div>
-                    <div class="instance-card__meta">
-                        <?= componentProductVersion($inst); ?>
-                        <?= componentDownloadIcon($inst); ?>
-                    </div>
-                </div>
-                <div class="instance-card__actions-top">
-                    <?php
-                    if(isset($inst->DEPLOYMENT_BUILD_URL)) {
-                        echo '<a href="'.$inst->DEPLOYMENT_BUILD_URL.'/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
-                    } else {
-                        echo '<a href="https://ci.exoplatform.org/job/platform-enterprise-'.$inst->PLF_BRANCH.'-'.$inst->INSTANCE_ID.'-deploy-acc/build?delay=0sec" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
-                    }
-                    ?>
-                    <?= componentEditNoteIcon($inst) ?>
-                </div>
-            </div>
-            <div class="instance-card__details">
-                <?= componentDatabaseIcon($inst) ?>
-                <div class="instance-card__ages">
-                    <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
-                </div>
-            </div>
-            <div class="instance-card__badges">
-                <?= componentUpgradeEligibility($inst); ?>
-                <?= componentPatchInstallation($inst); ?>
-                <?= componentCertbotEnabled($inst); ?>
-                <?= componentDevModeEnabled($inst); ?>
-                <?= componentStagingModeEnabled($inst); ?>
-                <?= componentDebugModeEnabled($inst); ?>
-                <?= componentAddonsTags($inst); ?>
-            </div>
-            <div class="instance-card__actions">
-                <?= componentDeploymentActions($inst) ?>
-            </div>
-        </div>
-        <?php
+      echo renderInstanceCard($inst, [
+        'actions_top' => componentBuildRestartLink($inst, 'https://ci.exoplatform.org/job/platform-enterprise-'.$inst->PLF_BRANCH.'-'.$inst->INSTANCE_ID.'-deploy-acc/build?delay=0sec')
+          . componentEditNoteIcon($inst),
+        'badges' => ['upgrade', 'patch', 'certbot', 'dev', 'staging', 'debug', 'addons'],
+      ]);
     }
   }
   ?>
     </div>
   </div>
   <?php
+} else {
+  echo '<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Nothing yet ;-)</div>';
 }
 ?>
 
   <!-- Info cards with synchronized design -->
-  <div class="row mt-4">
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-header">
-          <i class="fas fa-plug me-2"></i>JMX Access
-        </div>
-        <div class="card-body">
-          <p class="card-text">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-header">
-          <i class="fas fa-key me-2"></i>Keycloak Access
-        </div>
-        <div class="card-body">
-          <p class="card-text">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
-          <div class="mt-2 p-2 rounded code-bg">
-            <code class="d-block">root / password</code>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-4">
-      <div class="card h-100">
-        <div class="card-header">
-          <i class="fas fa-address-book me-2"></i>LDAP Access
-        </div>
-        <div class="card-body">
-          <p class="card-text">Each LDAP deployed can be accessed with:</p>
-          <div class="mt-2 p-2 rounded code-bg">
-            <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
-            <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
-            <code class="d-block mt-1">password: exo</code>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  <?= componentAccessInfoCards(); ?>
 </div>
 </div>
 </div>

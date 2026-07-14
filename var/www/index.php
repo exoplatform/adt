@@ -91,47 +91,16 @@ foreach ($dev_instances as $arr) {
         </div>
         <div class="instance-grid">
             <?php foreach ($translation_instances as $plf_branch => $descriptor_arrays):
-                foreach ($descriptor_arrays as $inst): ?>
-            <div class="instance-card">
-                <div class="instance-card__top">
-                    <div class="instance-card__status">
-                        <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
-                            <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
-                        <?php else: ?>
-                            <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="instance-card__info">
-                        <div class="instance-card__name">
-                            <?= componentProductInfoIcon($inst); ?>
-                            <?php
-                            $label = componentVisibilityIcon($inst, empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success');
-                            $label .= ' ' . componentAppServerIcon($inst);
-                            $label .= ' ' . componentProductHtmlLabel($inst);
-                            echo componentProductOpenLink($inst, $label);
-                            ?>
-                        </div>
-                        <div class="instance-card__meta">
-                            <?= componentDownloadIcon($inst); ?>
-                            <?= componentProductVersion($inst); ?>
-                        </div>
-                    </div>
-                    <div class="instance-card__actions-top">
-                        <?= componentEditNoteIcon($inst) ?>
-                    </div>
-                </div>
-                <div class="instance-card__details">
-                    <?= componentDatabaseIcon($inst) ?>
-                    <div class="instance-card__ages">
-                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>" title="Time since artifact was built"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
-                        <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
-                    </div>
-                </div>
-                <div class="instance-card__actions">
-                    <?= componentDeploymentActions($inst); ?>
-                </div>
-            </div>
-            <?php endforeach; endforeach; ?>
+                foreach ($descriptor_arrays as $inst):
+                    echo renderInstanceCard($inst, [
+                        'rich_name' => true,
+                        'meta_download_first' => true,
+                        'actions_top' => componentEditNoteIcon($inst),
+                        'show_built_age' => true,
+                        'badges' => [],
+                    ]);
+                endforeach;
+            endforeach; ?>
         </div>
     </div>
     <?php endif; ?>
@@ -143,116 +112,23 @@ foreach ($dev_instances as $arr) {
             <i class="fas fa-code-branch"></i> <?= buildTableTitleDev($plf_branch) ?>
         </div>
         <div class="instance-grid">
-            <?php foreach ($descriptor_arrays as $inst): ?>
-            <div class="instance-card">
-                <div class="instance-card__top">
-                    <div class="instance-card__status">
-                        <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
-                            <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
-                        <?php else: ?>
-                            <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
-                        <?php endif; ?>
-                    </div>
-                    <div class="instance-card__info">
-                        <div class="instance-card__name">
-                            <?= componentProductInfoIcon($inst); ?>
-                            <?php
-                            $label = componentVisibilityIcon($inst, empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success');
-                            $label .= ' ' . componentAppServerIcon($inst);
-                            $label .= ' ' . componentProductHtmlLabel($inst);
-                            echo componentProductOpenLink($inst, $label);
-                            ?>
-                        </div>
-                        <div class="instance-card__meta">
-                            <?= componentDownloadIcon($inst); ?>
-                            <?= componentProductVersion($inst); ?>
-                        </div>
-                    </div>
-                    <div class="instance-card__actions-top">
-                        <?= componentSpecificationIcon($inst) ?>
-                        <?php if (!isInstanceFeatureBranch($inst)) echo componentEditNoteIcon($inst); ?>
-                    </div>
-                </div>
-                <div class="instance-card__details">
-                    <?= componentDatabaseIcon($inst) ?>
-                    <?php if (isInstanceFeatureBranch($inst)): ?>
-                        <span class="instance-card__feature">
-                            <?= componentFBScmLabel($inst) ?>
-                        </span>
-                    <?php endif; ?>
-                    <div class="instance-card__ages">
-                        <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>" title="Time since artifact was built"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
-                        <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
-                    </div>
-                </div>
-                <?php if (isInstanceFeatureBranch($inst)): ?>
-                <div class="instance-card__badges">
-                    <?= componentFBStatusLabel($inst) ?>
-                    <?= componentFBIssueLabel($inst) ?>
-                    <?= componentFBEditIcon($inst) ?>
-                    <?= componentFBDeployIcon($inst) ?>
-                </div>
-                <?php endif; ?>
-                <div class="instance-card__badges">
-                    <?= componentUpgradeEligibility($inst); ?>
-                    <?= componentPatchInstallation($inst); ?>
-                    <?= componentCertbotEnabled($inst); ?>
-                    <?= componentDevModeEnabled($inst); ?>
-                    <?= componentStagingModeEnabled($inst); ?>
-                    <?= componentDebugModeEnabled($inst); ?>
-                    <?= componentAddonsTags($inst); ?>
-                    <?= componentLabels($inst); ?>
-                </div>
-                <div class="instance-card__actions">
-                    <?= componentDeploymentActions($inst); ?>
-                </div>
-            </div>
-            <?php endforeach; ?>
+            <?php foreach ($descriptor_arrays as $inst):
+                echo renderInstanceCard($inst, [
+                    'rich_name' => true,
+                    'meta_download_first' => true,
+                    'actions_top' => componentSpecificationIcon($inst) . (!isInstanceFeatureBranch($inst) ? componentEditNoteIcon($inst) : ''),
+                    'show_built_age' => true,
+                    'feature_label' => true,
+                    'fb_badges' => true,
+                    'labels' => true,
+                ]);
+            endforeach; ?>
         </div>
     </div>
     <?php endforeach; ?>
 
     <!-- Info cards -->
-    <div class="row g-3 mt-3">
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-plug me-2"></i>JMX Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text opacity-60">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials are available on CI Build.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-key me-2"></i>Keycloak Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text opacity-60">Each deployed Keycloak can be accessed using the Keycloak icon:</p>
-                    <div class="mt-2 p-3 rounded code-bg">
-                        <code class="d-block">root / password</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="card h-100">
-                <div class="card-header">
-                    <i class="fas fa-address-book me-2"></i>LDAP Access
-                </div>
-                <div class="card-body">
-                    <p class="card-text opacity-60">Each LDAP deployment can be accessed with:</p>
-                    <div class="mt-2 p-3 rounded code-bg">
-                        <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
-                        <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
-                        <code class="d-block mt-1">password: exo</code>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    <?= componentAccessInfoCards(); ?>
 
 <!-- /container -->
 </div>

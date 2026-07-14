@@ -244,24 +244,24 @@ function pageTracker($id = 'UA-1292368-28') {
  */
 function pageNavigation()
 {
-  $nav = array(
+  $nav = [
     "Home" => "/",
     "QA" => "/qa.php",
     "Sales" => "/sales.php",
-    "CP" => "/customers.php",
+    "Customer Projects" => "/customers.php",
     "Company" => "/company.php",
     "Features" => "/features.php",
-    "Servers" => "/servers.php"
-  );
-  $icons = array(
+    "Servers" => "/servers.php",
+  ];
+  $icons = [
     "Home" => "fa-th-large",
     "QA" => "fa-flask",
     "Sales" => "fa-chart-line",
-    "CP" => "fa-briefcase",
+    "Customer Projects" => "fa-briefcase",
     "Company" => "fa-building",
     "Features" => "fa-code-branch",
-    "Servers" => "fa-server"
-  );
+    "Servers" => "fa-server",
+  ];
 
 ?>
   <!-- Skip to main content -->
@@ -601,7 +601,7 @@ function componentLabels ($deployment_descriptor) {
       $labels[] = $deployment_descriptor->DEPLOYMENT_LABELS;
     }
     foreach ($labels as $label) {
-      $content.='<span class="label label-label">'.$label.'</span>&nbsp;';
+      $content.='<span class="label label-label">'.htmlspecialchars($label).'</span>&nbsp;';
     }
   }
   return $content;
@@ -628,7 +628,7 @@ function componentAddonsTags($deployment_descriptor)
     foreach ($labels as $label) {
       $label_array = explode(':', $label, 2);
       $version = isset($label_array[1]) ? $label_array[1] : 'latest';
-      $content .= '<span class="badge bg-info" rel="tooltip" title="version: ' . $version . '">' . $label_array[0] . '</span> ';
+      $content .= '<span class="badge bg-info" rel="tooltip" title="version: ' . htmlspecialchars($version) . '">' . htmlspecialchars($label_array[0]) . '</span> ';
     }
   }
   return $content;
@@ -643,7 +643,34 @@ function componentAddonsTags($deployment_descriptor)
  */
 function componentAddonsDistributionTags($deployment_descriptor)
 {
-  return '<span class="badge bg-secondary" rel="tooltip" title="distribution add-ons: ' . $deployment_descriptor->PRODUCT_ADDONS_DISTRIB . '"><i class="fas fa-gift"></i></span>';
+  return '<span class="badge bg-secondary" rel="tooltip" title="distribution add-ons: ' . htmlspecialchars($deployment_descriptor->PRODUCT_ADDONS_DISTRIB) . '"><i class="fas fa-gift"></i></span>';
+}
+
+/**
+ * Return the markup for a boolean deployment-descriptor flag, as either a bare
+ * tooltipped icon or a badge-wrapped tooltipped icon.
+ *
+ * Shared by componentUpgradeEligibility(), componentPatchInstallation(),
+ * componentStagingModeEnabled(), componentDevModeEnabled(),
+ * componentDebugModeEnabled() and componentCertbotEnabled(), which only differ
+ * in which descriptor property they check and which icon/badge/tooltip to use.
+ *
+ * @param $deployment_descriptor
+ * @param string $property       the boolean-ish descriptor property to check
+ * @param string $icon_class     Font Awesome icon class
+ * @param string $badge_class    Bootstrap badge color class (used when $is_label_addon is true)
+ * @param string $tooltip        tooltip text (may reference the property's own value)
+ * @param bool   $is_label_addon whether to wrap the icon in a badge
+ *
+ * @return string html markup
+ */
+function componentFlagBadge($deployment_descriptor, $property, $icon_class, $badge_class, $tooltip, $is_label_addon = true)
+{
+  if (property_exists($deployment_descriptor, $property) && $deployment_descriptor->$property) {
+    $class = $is_label_addon ? ' class="badge ' . $badge_class . '"' : '';
+    return '<span' . $class . ' rel="tooltip" title="' . htmlspecialchars($tooltip) . '"><i class="' . $icon_class . '"></i></span>';
+  }
+  return '';
 }
 
 /**
@@ -655,14 +682,8 @@ function componentAddonsDistributionTags($deployment_descriptor)
  */
 function componentUpgradeEligibility($deployment_descriptor, $is_label_addon = true)
 {
-  if (property_exists($deployment_descriptor, 'INSTANCE_TOKEN') && $deployment_descriptor->INSTANCE_TOKEN) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" data-original-title="This instance is eligible for upgrades."><i class="fas fa-flag"></i></span>';
-    } else {
-      return '<span class="badge bg-info" rel="tooltip" title="This instance is eligible for upgrades."><i class="fas fa-flag"></i></span>';
-    }
-  }
-  return '';
+  return componentFlagBadge($deployment_descriptor, 'INSTANCE_TOKEN', 'fas fa-flag', 'bg-info',
+    'This instance is eligible for upgrades.', $is_label_addon);
 }
 
 /**
@@ -674,14 +695,9 @@ function componentUpgradeEligibility($deployment_descriptor, $is_label_addon = t
  */
 function componentPatchInstallation($deployment_descriptor, $is_label_addon = true)
 {
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_PATCHES') && $deployment_descriptor->DEPLOYMENT_PATCHES) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="' . $deployment_descriptor->DEPLOYMENT_PATCHES . ' is installed on this instance."><i class="fas fa-plus-circle"></i></span>';
-    } else {
-      return '<span class="badge bg-success" rel="tooltip" title="' . $deployment_descriptor->DEPLOYMENT_PATCHES . ' is installed on this instance."><i class="fas fa-plus-circle"></i></span>';
-    }
-  }
-  return '';
+  return componentFlagBadge($deployment_descriptor, 'DEPLOYMENT_PATCHES', 'fas fa-plus-circle', 'bg-success',
+    (property_exists($deployment_descriptor, 'DEPLOYMENT_PATCHES') ? $deployment_descriptor->DEPLOYMENT_PATCHES : '') . ' is installed on this instance.',
+    $is_label_addon);
 }
 /**
  * Return the markup for staging instance
@@ -692,14 +708,8 @@ function componentPatchInstallation($deployment_descriptor, $is_label_addon = tr
  */
 function componentStagingModeEnabled($deployment_descriptor, $is_label_addon = true)
 {
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_STAGING_ENABLED') && $deployment_descriptor->DEPLOYMENT_STAGING_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance is enabled with Staging mode."><i class="fas fa-fire"></i></span>';
-    } else {
-      return '<span class="badge bg-warning" rel="tooltip" title="This instance is enabled with Staging mode."><i class="fas fa-fire"></i></span>';
-    }
-  }
-  return '';
+  return componentFlagBadge($deployment_descriptor, 'DEPLOYMENT_STAGING_ENABLED', 'fas fa-fire', 'bg-warning',
+    'This instance is enabled with Staging mode.', $is_label_addon);
 }
 
 /**
@@ -711,14 +721,8 @@ function componentStagingModeEnabled($deployment_descriptor, $is_label_addon = t
  */
 function componentDevModeEnabled($deployment_descriptor, $is_label_addon = true)
 {
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_DEV_ENABLED') && $deployment_descriptor->DEPLOYMENT_DEV_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance is enabled with Dev mode."><i class="fab fa-github"></i></span>';
-    } else {
-      return '<span class="badge bg-dark" rel="tooltip" title="This instance is enabled with Dev mode."><i class="fab fa-github"></i></span>';
-    }
-  }
-  return '';
+  return componentFlagBadge($deployment_descriptor, 'DEPLOYMENT_DEV_ENABLED', 'fab fa-github', 'bg-dark',
+    'This instance is enabled with Dev mode.', $is_label_addon);
 }
 
 /**
@@ -730,14 +734,8 @@ function componentDevModeEnabled($deployment_descriptor, $is_label_addon = true)
  */
 function componentDebugModeEnabled($deployment_descriptor, $is_label_addon = true)
 {
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_DEBUG_ENABLED') && $deployment_descriptor->DEPLOYMENT_DEBUG_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance is enabled with Debug mode."><i class="fas fa-stethoscope"></i></span>';
-    } else {
-      return '<span class="badge bg-danger" rel="tooltip" title="This instance is enabled with Debug mode."><i class="fas fa-stethoscope"></i></span>';
-    }
-  }
-  return '';
+  return componentFlagBadge($deployment_descriptor, 'DEPLOYMENT_DEBUG_ENABLED', 'fas fa-stethoscope', 'bg-danger',
+    'This instance is enabled with Debug mode.', $is_label_addon);
 }
 
 /**
@@ -749,14 +747,8 @@ function componentDebugModeEnabled($deployment_descriptor, $is_label_addon = tru
  */
 function componentCertbotEnabled($deployment_descriptor, $is_label_addon = true)
 {
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_CERTBOT_ENABLED') && $deployment_descriptor->DEPLOYMENT_CERTBOT_ENABLED) {
-    if (!$is_label_addon) {
-      return '<span rel="tooltip" title="This instance SSL certificate is generated by certbot."><i class="fas fa-certificate"></i></span>';
-    } else {
-      return '<span class="badge bg-primary" rel="tooltip" title="This instance SSL certificate is generated by certbot."><i class="fas fa-certificate"></i></span>';
-    }
-  }
-  return '';
+  return componentFlagBadge($deployment_descriptor, 'DEPLOYMENT_CERTBOT_ENABLED', 'fas fa-certificate', 'bg-primary',
+    'This instance SSL certificate is generated by certbot.', $is_label_addon);
 }
 
 /**
@@ -782,16 +774,16 @@ function componentStatusIcon($deployment_descriptor) {
  * @return string html markup
  */
 function componentAppServerIcon($deployment_descriptor) {
-  $icons = array(
+  $icons = [
     'tomcat' => 'fa-brands fa-java',
     'jboss' => 'fa-brands fa-redhat',
-    'wildfly' => 'fa-brands fa-redhat'
-  );
-  
+    'wildfly' => 'fa-brands fa-redhat',
+  ];
+
   $type = strtolower($deployment_descriptor->DEPLOYMENT_APPSRV_TYPE);
-  $icon = isset($icons[$type]) ? $icons[$type] : 'fa-server';
-  
-  return '<i class="fas ' . $icon . '" rel="tooltip" title="Application Server: ' . $deployment_descriptor->DEPLOYMENT_APPSRV_TYPE . '"></i>';
+  $icon = $icons[$type] ?? 'fa-server';
+
+  return '<i class="fas ' . $icon . '" rel="tooltip" title="Application Server: ' . htmlspecialchars($deployment_descriptor->DEPLOYMENT_APPSRV_TYPE) . '"></i>';
 }
 /**
  * Get the markup for the Edit Note icon
@@ -818,7 +810,7 @@ function componentEditNoteIcon($deployment_descriptor)
 function componentSpecificationIcon($deployment_descriptor)
 {
   if (!empty($deployment_descriptor->SPECIFICATIONS_LINK)) {
-    return '<a rel="tooltip" title="Specifications link" href="' . $deployment_descriptor->SPECIFICATIONS_LINK . '" target="_blank"><i class="fas fa-book"></i></a>';
+    return '<a rel="tooltip" title="Specifications link" href="' . htmlspecialchars($deployment_descriptor->SPECIFICATIONS_LINK) . '" target="_blank"><i class="fas fa-book"></i></a>';
   }
   return '';
 }
@@ -833,53 +825,39 @@ function componentSpecificationIcon($deployment_descriptor)
  */
 function componentDatabaseIcon($deployment_descriptor)
 {
-  $db_type = "none";
-  $icon_class = "fa-database";
-  $icon_color = "text-secondary";
-  
-  if (stripos($deployment_descriptor->DATABASE, 'mysql') !== false) {
-    $db_type = "MySQL";
-    $icon_class = "fa-database";
-    $icon_color = "text-primary";
-  } else if (stripos($deployment_descriptor->DATABASE, 'mariadb') !== false) {
-    $db_type = "MariaDB";
-    $icon_class = "fa-database";
-    $icon_color = "text-success";
-  } else if (stripos($deployment_descriptor->DATABASE, 'postgres') !== false) {
-    $db_type = "PostgreSQL";
-    $icon_class = "fa-database";
-    $icon_color = "text-info";
-  } else if (stripos($deployment_descriptor->DATABASE, 'oracle') !== false) {
-    $db_type = "Oracle";
-    $icon_class = "fa-database";
-    $icon_color = "text-danger";
-  } else if (stripos($deployment_descriptor->DATABASE, 'sqlserver') !== false) {
-    $db_type = "SQL Server";
-    $icon_class = "fa-database";
-    $icon_color = "text-warning";
-  } else if (stripos($deployment_descriptor->DATABASE, 'h2') !== false) {
-    $db_type = "H2";
-    $icon_class = "fa-database";
-    $icon_color = "text-secondary";
-  } else if (stripos($deployment_descriptor->DATABASE, 'hsql') !== false) {
-    $db_type = "HSQLDB";
-    $icon_class = "fa-database";
-    $icon_color = "text-secondary";
+  $db_types = [
+    'mysql'    => ['MySQL', 'text-primary'],
+    'mariadb'  => ['MariaDB', 'text-success'],
+    'postgres' => ['PostgreSQL', 'text-info'],
+    'oracle'   => ['Oracle', 'text-danger'],
+    'sqlserver'=> ['SQL Server', 'text-warning'],
+    'h2'       => ['H2', 'text-secondary'],
+    'hsql'     => ['HSQLDB', 'text-secondary'],
+  ];
+
+  $db_type = null;
+  $icon_color = 'text-secondary';
+  foreach ($db_types as $needle => [$label, $color]) {
+    if (stripos($deployment_descriptor->DATABASE, $needle) !== false) {
+      $db_type = $label;
+      $icon_color = $color;
+      break;
+    }
   }
-  
+
   $content = "";
-  if ($db_type != "none") {
-    $content .= '<i class="fas ' . $icon_class . ' ' . $icon_color . '" rel="tooltip" title="' . $db_type . '"></i>&nbsp;';
+  if ($db_type !== null) {
+    $content .= '<i class="fas fa-database ' . $icon_color . '" rel="tooltip" title="' . htmlspecialchars($db_type) . '"></i>&nbsp;';
   } else {
     $content .= '<i class="fas fa-database text-muted" rel="tooltip" title="No database"></i>&nbsp;';
   }
-  
+
   if (empty($deployment_descriptor->DEPLOYMENT_DATABASE_VERSION)) {
     $content .= '<span class="badge bg-secondary">-NC-</span>';
   } else {
-    $content .= '<span class="badge bg-info">' . $deployment_descriptor->DEPLOYMENT_DATABASE_VERSION . '</span>';
+    $content .= '<span class="badge bg-info">' . htmlspecialchars($deployment_descriptor->DEPLOYMENT_DATABASE_VERSION) . '</span>';
   }
-  
+
   return $content;
 }
 
@@ -943,19 +921,19 @@ function componentDownloadIcon($deployment_descriptor)
 */
 function componentProductHtmlLabel ($deployment_descriptor, $simple=false) {
   if (empty($deployment_descriptor->PRODUCT_DESCRIPTION)) {
-      $content = $deployment_descriptor->PRODUCT_NAME;
+      $content = htmlspecialchars($deployment_descriptor->PRODUCT_NAME);
   } else {
-      $content = $deployment_descriptor->PRODUCT_DESCRIPTION;
+      $content = htmlspecialchars($deployment_descriptor->PRODUCT_DESCRIPTION);
   }
   if (!empty($deployment_descriptor->INSTANCE_ID)) {
-      $content .= ' (' . $deployment_descriptor->INSTANCE_ID . ')';
+      $content .= ' (' . htmlspecialchars($deployment_descriptor->INSTANCE_ID) . ')';
   }
   if ($simple == false) {
     if (!empty($deployment_descriptor->BRANCH_DESC)) {
-        $content = '<span class="muted">'.$content.'</span>&nbsp;&nbsp;-&nbsp;&nbsp;'.$deployment_descriptor->BRANCH_DESC;
+        $content = '<span class="muted">'.$content.'</span>&nbsp;&nbsp;-&nbsp;&nbsp;'.htmlspecialchars($deployment_descriptor->BRANCH_DESC);
     }
     if (!empty($deployment_descriptor->INSTANCE_NOTE)) {
-        $content = "<span class=\"muted\">" . $content . "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" . $deployment_descriptor->INSTANCE_NOTE;
+        $content = "<span class=\"muted\">" . $content . "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" . htmlspecialchars($deployment_descriptor->INSTANCE_NOTE);
     }
   }
   return $content;
@@ -1232,21 +1210,15 @@ function componentDeploymentActions($deployment_descriptor)
  */
 function componentFBStatusLabel($deployment_descriptor)
 {
-  $statusClass = "";
-  if ($deployment_descriptor->ACCEPTANCE_STATE === "Implementing") {
-    $statusClass = "bg-info";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "Engineering Review") {
-    $statusClass = "bg-warning";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA Review") {
-    $statusClass = "bg-secondary";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA In Progress") {
-    $statusClass = "bg-warning";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "QA Rejected") {
-    $statusClass = "bg-danger";
-  } else if ($deployment_descriptor->ACCEPTANCE_STATE === "Validated") {
-    $statusClass = "bg-success";
-  }
-  return '<span class="badge ' . $statusClass . '">' . $deployment_descriptor->ACCEPTANCE_STATE . '</span>';
+  $statusClass = match ($deployment_descriptor->ACCEPTANCE_STATE) {
+    "Implementing" => "bg-info",
+    "Engineering Review", "QA In Progress" => "bg-warning",
+    "QA Review" => "bg-secondary",
+    "QA Rejected" => "bg-danger",
+    "Validated" => "bg-success",
+    default => "",
+  };
+  return '<span class="badge ' . $statusClass . '">' . htmlspecialchars($deployment_descriptor->ACCEPTANCE_STATE) . '</span>';
 }
 
 /**
@@ -1260,9 +1232,9 @@ function componentFBScmLabel($deployment_descriptor)
 {
   if (!empty($deployment_descriptor->SCM_BRANCH)) {
     $content = '<a href="/features.php#';
-    $content .= str_replace(array("/", "."), "-", $deployment_descriptor->SCM_BRANCH) . '"';
+    $content .= htmlspecialchars(str_replace(["/", "."], "-", $deployment_descriptor->SCM_BRANCH)) . '"';
     $content .= ' rel="tooltip" title="SCM Branch used to host this FB development">';
-    $content .= '<i class="fas fa-code-branch"></i>&nbsp;' . $deployment_descriptor->SCM_BRANCH . '</a>';
+    $content .= '<i class="fas fa-code-branch"></i>&nbsp;' . htmlspecialchars($deployment_descriptor->SCM_BRANCH) . '</a>';
     return $content;
   }
   return '-';
@@ -1278,7 +1250,7 @@ function componentFBScmLabel($deployment_descriptor)
 function componentFBIssueLabel($deployment_descriptor)
 {
   if (!empty($deployment_descriptor->ISSUE_NUM)) {
-    return '<a href="https://community.exoplatform.com/portal/dw/tasks/taskDetail/' . $deployment_descriptor->ISSUE_NUM . '" rel="tooltip" title="Opened issue where to put your feedbacks on this new feature"><i class="fas fa-tasks"></i>&nbsp;' . $deployment_descriptor->ISSUE_NUM . '</a>';
+    return '<a href="https://community.exoplatform.com/portal/dw/tasks/taskDetail/' . htmlspecialchars($deployment_descriptor->ISSUE_NUM) . '" rel="tooltip" title="Opened issue where to put your feedbacks on this new feature"><i class="fas fa-tasks"></i>&nbsp;' . htmlspecialchars($deployment_descriptor->ISSUE_NUM) . '</a>';
   }
   return '-';
 }
@@ -1347,7 +1319,265 @@ function componentFeatureRepoBrancheStatus($fb_project, $cherry_commits_display 
   $content .= '</a>';
   
   $content .= '</div>';
-  
+
   return $content;
+}
+
+/**
+ * Get markup for the "restart or reset data" build-trigger link shown on
+ * instance cards, using the descriptor's own DEPLOYMENT_BUILD_URL when
+ * available or a caller-supplied fallback Jenkins job URL otherwise.
+ *
+ * @param $deployment_descriptor
+ * @param string $fallback_url the CI job URL to use when DEPLOYMENT_BUILD_URL isn't set
+ *
+ * @return string html markup
+ */
+function componentBuildRestartLink($deployment_descriptor, $fallback_url)
+{
+  $url = isset($deployment_descriptor->DEPLOYMENT_BUILD_URL)
+    ? $deployment_descriptor->DEPLOYMENT_BUILD_URL . '/build?delay=0sec'
+    : $fallback_url;
+  return '<a href="' . htmlspecialchars($url) . '" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>';
+}
+
+/**
+ * Render a single instance card.
+ *
+ * This is the one shared implementation of the `.instance-card` markup used
+ * by index.php, sales.php, company.php, customers.php and qa.php, which each
+ * show a slightly different subset of badges/actions for their audience.
+ * Pass only the $opts a given listing needs; unset ones fall back to the
+ * most common shape (used by sales.php/customers.php/qa.php).
+ *
+ * @param $inst a deployment descriptor
+ * @param array $opts {
+ *   @var bool         $rich_name           name shows visibility+app-server icon inside the product link (index.php style)
+ *   @var bool         $info_icon           show the product info popover icon (ignored when $rich_name is true)
+ *   @var string|false $visibility_icon     color to pass to componentVisibilityIcon(), or false to hide it (ignored when $rich_name is true)
+ *   @var string       $link_text           link text override for componentProductOpenLink() (ignored when $rich_name is true)
+ *   @var bool         $enforce_ssl         enforce SSL on the product link (ignored when $rich_name is true)
+ *   @var bool         $meta_download_first show the download icon before the version instead of after
+ *   @var string       $actions_top         pre-rendered html for the top-right action icons
+ *   @var bool         $show_built_age      also show the "built X ago" age (in addition to "deployed X ago")
+ *   @var bool         $feature_label       show the FB SCM branch label (only when the instance is a feature branch)
+ *   @var bool         $fb_badges           show the FB status/issue/edit/deploy badge row (only when the instance is a feature branch)
+ *   @var string[]     $badges              ordered subset of: upgrade, patch, certbot, dev, staging, debug, addons
+ *   @var bool         $badges_addon_style  badge-pill style (true) vs. bare tooltipped icon style (false) for $badges
+ *   @var bool         $labels              show componentLabels()
+ *   @var bool         $actions             show the componentDeploymentActions() button group
+ * }
+ *
+ * @return string html markup
+ */
+function renderInstanceCard($inst, array $opts = [])
+{
+  $opts += [
+    'rich_name' => false,
+    'info_icon' => true,
+    'visibility_icon' => false,
+    'link_text' => '',
+    'enforce_ssl' => false,
+    'meta_download_first' => false,
+    'actions_top' => '',
+    'show_built_age' => false,
+    'feature_label' => false,
+    'fb_badges' => false,
+    'badges' => ['upgrade', 'patch', 'certbot', 'dev', 'staging', 'debug', 'addons'],
+    'badges_addon_style' => true,
+    'labels' => false,
+    'actions' => true,
+  ];
+
+  $badgeMarkup = '';
+  foreach ($opts['badges'] as $badge) {
+    $badgeMarkup .= match ($badge) {
+      'upgrade' => componentUpgradeEligibility($inst, $opts['badges_addon_style']),
+      'patch' => componentPatchInstallation($inst, $opts['badges_addon_style']),
+      'certbot' => componentCertbotEnabled($inst, $opts['badges_addon_style']),
+      'dev' => componentDevModeEnabled($inst, $opts['badges_addon_style']),
+      'staging' => componentStagingModeEnabled($inst, $opts['badges_addon_style']),
+      'debug' => componentDebugModeEnabled($inst, $opts['badges_addon_style']),
+      'addons' => componentAddonsTags($inst),
+      default => '',
+    };
+  }
+  if ($opts['labels']) {
+    $badgeMarkup .= componentLabels($inst);
+  }
+
+  $isFeatureBranch = isInstanceFeatureBranch($inst);
+
+  ob_start();
+?>
+<div class="instance-card">
+    <div class="instance-card__top">
+        <div class="instance-card__status">
+            <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
+                <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+            <?php else: ?>
+                <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+            <?php endif; ?>
+        </div>
+        <div class="instance-card__info">
+            <div class="instance-card__name">
+                <?php if ($opts['rich_name']): ?>
+                    <?= componentProductInfoIcon($inst) ?>
+                    <?php
+                    $label = componentVisibilityIcon($inst, empty($inst->DEPLOYMENT_APACHE_VHOST_ALIAS) ? '' : 'success');
+                    $label .= ' ' . componentAppServerIcon($inst);
+                    $label .= ' ' . componentProductHtmlLabel($inst);
+                    echo componentProductOpenLink($inst, $label);
+                    ?>
+                <?php else: ?>
+                    <?php if ($opts['info_icon']): ?><?= componentProductInfoIcon($inst) ?><?php endif; ?>
+                    <?php if ($opts['visibility_icon'] !== false): ?><?= componentVisibilityIcon($inst, $opts['visibility_icon']) ?><?php endif; ?>
+                    <?= componentProductOpenLink($inst, $opts['link_text'], $opts['enforce_ssl']) ?>
+                <?php endif; ?>
+            </div>
+            <div class="instance-card__meta">
+                <?php if ($opts['meta_download_first']): ?>
+                    <?= componentDownloadIcon($inst) ?>
+                    <?= componentProductVersion($inst) ?>
+                <?php else: ?>
+                    <?= componentProductVersion($inst) ?>
+                    <?= componentDownloadIcon($inst) ?>
+                <?php endif; ?>
+            </div>
+        </div>
+        <div class="instance-card__actions-top">
+            <?= $opts['actions_top'] ?>
+        </div>
+    </div>
+    <div class="instance-card__details">
+        <?= componentDatabaseIcon($inst) ?>
+        <?php if ($opts['feature_label'] && $isFeatureBranch): ?>
+            <span class="instance-card__feature"><?= componentFBScmLabel($inst) ?></span>
+        <?php endif; ?>
+        <div class="instance-card__ages">
+            <?php if ($opts['show_built_age']): ?>
+            <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>" title="Time since artifact was built"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
+            <?php endif; ?>
+            <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
+        </div>
+    </div>
+    <?php if ($opts['fb_badges'] && $isFeatureBranch): ?>
+    <div class="instance-card__badges">
+        <?= componentFBStatusLabel($inst) ?>
+        <?= componentFBIssueLabel($inst) ?>
+        <?= componentFBEditIcon($inst) ?>
+        <?= componentFBDeployIcon($inst) ?>
+    </div>
+    <?php endif; ?>
+    <?php if ($badgeMarkup !== ''): ?>
+    <div class="instance-card__badges">
+        <?= $badgeMarkup ?>
+    </div>
+    <?php endif; ?>
+    <?php if ($opts['actions']): ?>
+    <div class="instance-card__actions">
+        <?= componentDeploymentActions($inst) ?>
+    </div>
+    <?php endif; ?>
+</div>
+<?php
+  return ob_get_clean();
+}
+
+/**
+ * Render the JMX / Keycloak / LDAP access-info card row shared by the
+ * dashboard and every instance-listing page (index.php, sales.php,
+ * company.php, customers.php, qa.php).
+ *
+ * @return string html markup
+ */
+function componentAccessInfoCards()
+{
+  $items = [
+    [
+      'id' => 'accessInfoJmx',
+      'icon' => 'fas fa-plug',
+      'title' => 'JMX Access',
+      'body' => '<p class="card-text">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>',
+    ],
+    [
+      'id' => 'accessInfoKeycloak',
+      'icon' => 'fas fa-key',
+      'title' => 'Keycloak Access',
+      'body' => '<p class="card-text">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
+                <div class="mt-2 p-2 rounded code-bg">
+                    <code class="d-block">root / password</code>
+                </div>',
+    ],
+    [
+      'id' => 'accessInfoLdap',
+      'icon' => 'fas fa-address-book',
+      'title' => 'LDAP Access',
+      'body' => '<p class="card-text">Each LDAP deployed can be accessed with:</p>
+                <div class="mt-2 p-2 rounded code-bg">
+                    <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
+                    <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
+                    <code class="d-block mt-1">password: exo</code>
+                </div>',
+    ],
+  ];
+
+  ob_start();
+?>
+<!-- Desktop: 3 always-expanded cards. Mobile: collapsible accordion (same
+     markup, styled/behaved differently per breakpoint — see .access-info-*
+     rules in style.css) so the static reference text doesn't eat a full
+     screen of scroll before real page content on small viewports. -->
+<div class="access-info-grid mt-4">
+    <?php foreach ($items as $item): ?>
+    <div class="access-info-item card h-100">
+        <button type="button" class="access-info-toggle card-header" data-bs-toggle="collapse" data-bs-target="#<?= $item['id'] ?>" aria-expanded="false" aria-controls="<?= $item['id'] ?>">
+            <i class="<?= $item['icon'] ?> me-2"></i><?= htmlspecialchars($item['title']) ?>
+            <i class="fas fa-chevron-down access-info-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="collapse access-info-body" id="<?= $item['id'] ?>">
+            <div class="card-body">
+                <?= $item['body'] ?>
+            </div>
+        </div>
+    </div>
+    <?php endforeach; ?>
+</div>
+<?php
+  return ob_get_clean();
+}
+
+/**
+ * Render the "Debug Menu" navigation card shared by debug.php, debug-caches.php,
+ * debug-deploy.php and debug-git.php.
+ *
+ * @return string html markup
+ */
+function componentDebugMenu()
+{
+  ob_start();
+?>
+<div class="card mb-4">
+    <div class="card-header"><i class="fas fa-bug me-2"></i>Debug Menu</div>
+    <div class="card-body">
+        <ul class="list-group">
+            <li class="list-group-item">
+                <i class="fas fa-code-branch me-2 text-primary"></i>
+                <a href="/debug-git.php">Debug Git functions</a>
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-rocket me-2 text-success"></i>
+                <a href="/debug-deploy.php">Debug Deployment</a>
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-database me-2 text-warning"></i>
+                <a href="/debug-caches.php">Debug Caches</a>
+                (<a href="/debug-caches.php?clearCaches=true" class="text-danger">Clear all Caches</a>)
+            </li>
+        </ul>
+    </div>
+</div>
+<?php
+  return ob_get_clean();
 }
 ?>

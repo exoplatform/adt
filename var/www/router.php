@@ -10,7 +10,7 @@ checkCaches();
 define("DIRECTORY_INDEX", "index.php");
 
 // Optional array of authorized client IPs for a bit of security
-$config["hostsAllowed"] = array();
+$config["hostsAllowed"] = [];
 
 function logAccess($status = 200) {
     file_put_contents("php://stdout", sprintf("[%s] %s:%s [%s]: %s\n",
@@ -30,7 +30,7 @@ if (!empty($config['hostsAllowed'])) {
 
 // running under built-in server so
 // route static assets and return false
-$extensions = array("php", "jpg", "jpeg", "gif", "css", "svg", "png", "js", "json", "ico");
+$extensions = ["php", "jpg", "jpeg", "gif", "css", "svg", "png", "js", "json", "ico"];
 
 // if requesting a directory then serve the default index
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
@@ -47,6 +47,7 @@ if (in_array($ext, $extensions)) {
 if ($ext == "zip") {
     header("Content-Type: application/octet-stream");
     readfile(getenv('ADT_DATA').$path);
+    exit;
 }
 
 // If the file exists then return false and let the server handle it

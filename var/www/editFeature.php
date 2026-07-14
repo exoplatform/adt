@@ -2,7 +2,7 @@
 require_once(dirname(__FILE__) . '/lib/functions.php');
 
 if( !empty($_POST['key']) ){
-    $file_base = getenv('ADT_DATA') . "/conf/features/" . $_POST['key'];
+    $file_base = getenv('ADT_DATA') . "/conf/features/" . basename($_POST['key']);
     $file_spec = $file_base  . ".spec";
     $file_status = $file_base . ".status";
     $file_issue = $file_base . ".issue";
@@ -64,7 +64,7 @@ if( !empty($_POST['key']) ){
 clearCaches();
 
 // Get the referring page URL
-$redirect_url = $_POST['from'];
+$redirect_url = sanitizeLocalRedirect($_POST['from'] ?? null);
 
 // Add cache clearing parameter if not already present
 if (strpos($redirect_url, '?') === false) {
