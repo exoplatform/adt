@@ -388,7 +388,7 @@ do_restore_database_dataset() {
         do_start_database
       fi
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
-      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD}
+      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD} --no-tablespaces
       echo_info "Importation done"
       if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
         do_stop_database
@@ -397,7 +397,7 @@ do_restore_database_dataset() {
     DOCKER_POSTGRES)
       do_start_database
       echo_info "Importing database ${DEPLOYMENT_DATABASE_NAME} content ..."
-      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD} >/dev/null
+      pv -p -t -e -a -r -b ${_backupfile} | ${DATABASE_CMD} --no-tablespaces >/dev/null
       echo_info "Importation done"
     ;;
     *)
