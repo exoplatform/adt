@@ -58,6 +58,12 @@ do_start_cloudbeaver() {
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME}
+
+  if [ -f ${DEPLOYMENT_DIR}/data-sources.json ]; then
+    ${DOCKER_CMD} run --rm -v ${DEPLOYMENT_DIR}:/deploy alpine \
+    sh -c "chown 12000:12000 /deploy/data-sources.json"
+  fi
+
   case ${DEPLOYMENT_DB_TYPE} in
     DOCKER_MYSQL | DOCKER_MARIADB)
       evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.mysql.template ${DEPLOYMENT_DIR}/data-sources.json
