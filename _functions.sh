@@ -1570,6 +1570,10 @@ do_restore_dataset(){
 
   do_restore_es_dataset
 
+  if ${DEPLOYMENT_AI_ENABLED}; then
+    do_restore_ai_rag_data
+  fi
+
   if ${DEPLOYMENT_MATRIX_ENABLED}; then
     do_restore_matrix_dataset || 
     (do_reset_matrix_plf_database && do_reset_matrix_data) ||

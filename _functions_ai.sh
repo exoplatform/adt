@@ -124,6 +124,75 @@ check_ai_availability() {
 #  do_drop_ai_data
 #  do_create_ai
 #}
+
+# A raw dataset restore copies ES data as-is, so the RAG index still holds
+# vectors from the source dataset, and the DB's "already initialized" flag
+# stops the addon from ever reindexing on its own. Drop the index and clear
+# the flag so it rebuilds cleanly on next start. Glossary is skipped: it has
+# no rebuild path, so wiping it would be permanent data loss.
+do_restore_ai_rag_data() {
+  echo_info "Checking AI RAG dataset restore prerequisites ..."
+
+  case ${DEPLOYMENT_DB_TYPE} in
+    MYSQL|DOCKER_MYSQL|DOCKER_MARIADB)
+    ;;
+    *)
+      echo_warn "AI RAG dataset reset isn't supported for database type \"${DEPLOYMENT_DB_TYPE}\", skipping."
+      return 0
+    ;;
+  esac
+
+  if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
+    do_start_database
+  fi
+
+  local DATABASE_CMD_HEADLESS=$(echo "${DATABASE_CMD} -N")
+  local _uuidSQL='SELECT s.VALUE FROM STG_SETTINGS s JOIN STG_CONTEXTS c ON s.CONTEXT_ID = c.CONTEXT_ID JOIN STG_SCOPES sc ON s.SCOPE_ID = sc.SCOPE_ID WHERE c.TYPE="GLOBAL" AND c.NAME="AI_AGENT" AND sc.TYPE="APPLICATION" AND sc.NAME="AI_AGENT_SETTINGS" AND s.NAME="AI_AGENT_EMBEDDING_MODEL_NAME_ID";'
+  local _embeddingModelNameId=$(${DATABASE_CMD_HEADLESS} <<< "${_uuidSQL}")
+
+  if [ -z "${_embeddingModelNameId}" ]; then
+    echo_info "Restored dataset has no AI embedding model configured, skipping AI RAG dataset reset."
+    if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
+      do_stop_database
+    fi
+    return 0
+  fi
+  echo_info "Active AI embedding model nameId: ${_embeddingModelNameId}"
+
+  echo_info "Clearing AI user-content indexing bookkeeping for nameId ${_embeddingModelNameId} ..."
+  local _aiSql="${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/airag.sql"
+  mkdir -p "$(dirname ${_aiSql})"
+  cat >${_aiSql} <<EOF
+DELETE s FROM STG_SETTINGS s
+JOIN STG_CONTEXTS c ON s.CONTEXT_ID = c.CONTEXT_ID
+JOIN STG_SCOPES sc ON s.SCOPE_ID = sc.SCOPE_ID
+WHERE c.TYPE='GLOBAL' AND c.NAME='AIAgent'
+  AND sc.TYPE='APPLICATION' AND sc.NAME='AIAgentUserContentInit_v1_0'
+  AND s.NAME LIKE 'AIAgentUserContentInitialized-%${_embeddingModelNameId}%';
+EOF
+  ${DATABASE_CMD} < ${_aiSql}
+  rm -f ${_aiSql}
+  echo_info "Done."
+
+  if [[ ${DEPLOYMENT_DB_TYPE} =~ DOCKER.* ]]; then
+    do_stop_database
+  fi
+
+  echo_info "Dropping polluted AI user-content RAG index (leaving the glossary index untouched, it has no rebuild path) ..."
+  do_start_es
+  local _index="ai_user_content_v1_0_${_embeddingModelNameId}"
+  local _httpCode=$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:${DEPLOYMENT_ES_HTTP_PORT}/${_index}")
+  if [ "${_httpCode}" == "200" ]; then
+    curl -s -X DELETE "http://localhost:${DEPLOYMENT_ES_HTTP_PORT}/${_index}" >/dev/null
+    echo_info "Index ${_index} dropped. It will be fully rebuilt from this instance's own content on next startup."
+  else
+    echo_info "Index ${_index} not found (HTTP ${_httpCode}), nothing to drop."
+  fi
+  do_stop_es
+
+  echo_info "AI RAG dataset reset done."
+}
+
 # #############################################################################
 # Env var to not load it several times
 _FUNCTIONS_AI_LOADED=true
