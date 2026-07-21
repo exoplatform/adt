@@ -1424,9 +1424,21 @@ do_download_dataset() {
   echo_info "Updating local dataset for ${INSTANCE_DESCRIPTION} ${PRODUCT_BRANCH} from the storage server ..."
   if [ ! -z "${DATASET_DATA_VALUES_ARCHIVE}" ] && [ ! -z "${DATASET_DATA_INDEX_ARCHIVE}" ] && [ ! -z "${DATASET_DB_ARCHIVE}" ]; then
     mkdir -p ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}
-    display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DB_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
-    display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_INDEX_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
-    display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_VALUES_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
+    if rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP "${DATASET_DB_ARCHIVE%.tar.*}.tar.zst" ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.zst 2>/dev/null; then
+      :
+    else
+      display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DB_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
+    fi
+    if rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP "${DATASET_DATA_INDEX_ARCHIVE%.tar.*}.tar.zst" ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.zst 2>/dev/null; then
+      :
+    else
+      display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_INDEX_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
+    fi
+    if rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP "${DATASET_DATA_VALUES_ARCHIVE%.tar.*}.tar.zst" ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.zst 2>/dev/null; then
+      :
+    else
+      display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_VALUES_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
+    fi
   else
     echo_error "Datasets not configured"
     exit 1
@@ -1437,10 +1449,10 @@ do_download_dataset() {
 do_dump_dataset(){
   # System dependent settings
   if ${LINUX}; then
-    env_var "TAR_BZIP2_COMPRESS_PRG" "--use-compress-prog=pbzip2"
+    env_var "TAR_COMPRESS_PRG" "--use-compress-prog=zstd"
     env_var "NICE_CMD" "nice -n 20 ionice -c2 -n7"
   else
-    env_var "TAR_BZIP2_COMPRESS_PRG" ""
+    env_var "TAR_COMPRESS_PRG" ""
     env_var "NICE_CMD" "nice -n 20"
   fi
 
@@ -1448,11 +1460,16 @@ do_dump_dataset(){
     echo_warn "Dataset file name is set with default name behaviour, It is strictly recommended to define DS_FILENAME parameter containing only file name prefix (no extension)!"
   fi
 
-  if [ -f ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
-    echo_warn "A dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 already exists! You have 10 seconds to cancel this build to save this file. Otherwise, it is going to be removed!"
+  local _ds_old=""
+  if [ -f ${DS_DIR}/${DS_FILENAME}.tar.zst ]; then
+    echo_warn "A dataset ${DS_DIR}/${DS_FILENAME}.tar.zst already exists! You have 10 seconds to cancel this build to save this file. Otherwise, it is going to be removed!"
     sleep 10
+    rm ${DS_DIR}/${DS_FILENAME}.tar.zst
+    echo_info "File ${DS_DIR}/${DS_FILENAME}.tar.zst is removed!"
+  fi
+  if [ -f ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
+    echo_warn "Removing legacy ${DS_DIR}/${DS_FILENAME}.tar.bz2 (replaced by .tar.zst)..."
     rm ${DS_DIR}/${DS_FILENAME}.tar.bz2
-    echo_info "File ${DS_DIR}/${DS_FILENAME}.tar.bz2 is removed!"
   fi
 
   local _dumpdir="${TMP_DIR}/dump-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
@@ -1493,13 +1510,13 @@ do_dump_dataset(){
     _bakcupExt="${_bakcupExt} matrix_${INSTANCE_KEY}"
   fi
   _bakcupExt="$(echo ${_bakcupExt} | xargs -r)"
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.bz2 exo search backup.sql codec ${_bakcupExt}
+  display_time ${NICE_CMD} tar ${TAR_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.zst exo search backup.sql codec ${_bakcupExt}
   echo_info "Done."
-  echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 has been successfuly created!"
+  echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.zst has been successfuly created!"
   sudo rm -rf "${_dumpdir}"
   if [ ! -z "${DS_TARGET_SERVER:-}" ]; then
     echo_info "DS_TARGET_SERVER is specified to ${DS_TARGET_SERVER}. Starting transfer..."
-    rsync -Pav -e "ssh -o StrictHostKeyChecking=no" ${DS_DIR}/${DS_FILENAME}.tar.bz2 ${DS_TARGET_SERVER}:${DS_DIR}/${DS_FILENAME}.tar.bz2
+    rsync -Pav -e "ssh -o StrictHostKeyChecking=no" ${DS_DIR}/${DS_FILENAME}.tar.zst ${DS_TARGET_SERVER}:${DS_DIR}/${DS_FILENAME}.tar.zst
     echo_info "Transfer done."
   fi
 
@@ -1508,15 +1525,21 @@ do_dump_dataset(){
 do_restore_dataset(){
   # System dependent settings
   if ${LINUX}; then
-    env_var "TAR_BZIP2_COMPRESS_PRG" "--use-compress-prog=pbzip2"
+    env_var "TAR_COMPRESS_PRG" "--use-compress-prog=zstd"
     env_var "NICE_CMD" "nice -n 20 ionice -c2 -n7"
   else
-    env_var "TAR_BZIP2_COMPRESS_PRG" ""
+    env_var "TAR_COMPRESS_PRG" ""
     env_var "NICE_CMD" "nice -n 20"
   fi
 
-  if [ ! -e "${DS_DIR}/${DS_FILENAME}.tar.bz2" ]; then
-    echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 does not exist!"
+  local _ds_file=""
+  if [ -e "${DS_DIR}/${DS_FILENAME}.tar.zst" ]; then
+    _ds_file="${DS_DIR}/${DS_FILENAME}.tar.zst"
+  elif [ -e "${DS_DIR}/${DS_FILENAME}.tar.bz2" ]; then
+    _ds_file="${DS_DIR}/${DS_FILENAME}.tar.bz2"
+    env_var "TAR_COMPRESS_PRG" "--use-compress-prog=pbzip2"
+  else
+    echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.zst (or .tar.bz2) does not exist!"
     exit 1
   fi
 
@@ -1524,7 +1547,7 @@ do_restore_dataset(){
 
   mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
   echo_info "Loading dataset ..."
-  display_time ${NICE_CMD} tar ${TAR_BZIP2_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${DS_DIR}/${DS_FILENAME}.tar.bz2
+  display_time ${NICE_CMD} tar ${TAR_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${_ds_file}
   mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exo/* ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/
   if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ]; then
     echo_info "Restoring codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
@@ -2110,8 +2133,8 @@ do_deploy() {
 
   do_download_server
  
-  if [ "${DEPLOYMENT_MODE}" == "RESTORE_DATASET" ] && [ ! -e ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
-     echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.bz2 does not exist! Abort!"
+  if [ "${DEPLOYMENT_MODE}" == "RESTORE_DATASET" ] && [ ! -e ${DS_DIR}/${DS_FILENAME}.tar.zst ] && [ ! -e ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
+     echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.zst (or .tar.bz2) does not exist! Abort!"
      exit 1
   fi
     
