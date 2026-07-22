@@ -195,6 +195,12 @@ do_install_addons() {
     else 
       DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)//g")
     fi
+    if echo $DEPLOYMENT_ADDONS | grep -qP "\.Z"; then
+      local _addonPatchVersion=$(echo ${ARTIFACT_TIMESTAMP} | grep -oP '^[0-9]+\.[0-9]+\.\K[0-9]+')
+      if [ ! -z "${_addonPatchVersion}" ]; then
+        DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/\.Z([-,:]|$)/\.${_addonPatchVersion}\1/g")
+      fi
+    fi
   fi
 
   # Install optional add-ons
