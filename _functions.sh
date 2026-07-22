@@ -362,7 +362,7 @@ initialize_product_settings() {
       # AI-Ollama
       configurable_env_var "DEPLOYMENT_AI_ENABLED" false
       configurable_env_var "DEPLOYMENT_AI_IMAGE" "ollama/ollama"
-      configurable_env_var "DEPLOYMENT_AI_IMAGE_VERSION" "0.12.10"
+      configurable_env_var "DEPLOYMENT_AI_IMAGE_VERSION" "0.32.1"
 
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "hbenali/frontail"
