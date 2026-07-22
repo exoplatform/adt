@@ -57,7 +57,7 @@ Action
     community      eXo Community Website                   - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
 
-  -v PRODUCT_VERSION        : The version of the product. Can be either a release, a snapshot (the latest one) or a timestamped snapshot
+  -v PRODUCT_VERSION        : The version of the product. Can be either a release (X.Y.Z), a snapshot (X.Y.Z-SNAPSHOT), or a continuous deployment using -MLT (latest) / -MBL (before latest) with optional Z wildcard for the minor version (e.g. 7.2.0-MLT, 7.2.Z-MLT or 7.2.Z-meed-MLT)
 
   -p PORT_PREFIX            : The prefix for all the ports used. Must be unique for all deployments on a server (ex: 400)
 

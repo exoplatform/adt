@@ -992,7 +992,7 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
  */
 function componentProductVersion ($deployment_descriptor) {
   if (preg_match("/.*-M(LT|BL)$/", $deployment_descriptor->BASE_VERSION)) {
-    $tooltipmessage=(preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION) ? "Before latest" : "Latest")." milestone continuous deployment enabled";
+    $tooltipmessage=(preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION) ? "Before latest" : "Latest")." release (milestone, RC or GA) - continuous deployment";
     $content='<span class="text-mono" rel="tooltip" data-original-title="'.$tooltipmessage.'">'.$deployment_descriptor->ARTIFACT_TIMESTAMP.' Auto</span>';
   } else {
     $content=$deployment_descriptor->BASE_VERSION;
