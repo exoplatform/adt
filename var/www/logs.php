@@ -8,7 +8,7 @@ checkCaches();
 ?>
 <html lang="en">
 <head>
-<?= pageHeader("log visualization"); ?>
+<?= pageHeader("log visualization", false); ?>
 </head>
 <body>
 <?php pageTracker(); ?>
@@ -82,6 +82,22 @@ checkCaches();
                             var autoscroll = document.getElementById('autoscroll');
                             var filterInput = document.getElementById('logFilter');
                             var container = content.closest('.log-viewer');
+
+                            // Size the viewer to exactly fill the remaining space inside #wrap
+                            // (which already excludes the footer), instead of a fixed vh
+                            // fraction, so the page never scrolls more than it has to.
+                            function resizeViewer() {
+                                if (!container) return;
+                                var mainEl = document.getElementById('main');
+                                var wrapEl = document.getElementById('wrap');
+                                var bottomPad = mainEl ? parseFloat(getComputedStyle(mainEl).paddingBottom) || 0 : 0;
+                                var top = container.getBoundingClientRect().top;
+                                var bottomLimit = wrapEl ? wrapEl.getBoundingClientRect().bottom : window.innerHeight;
+                                var available = bottomLimit - top - bottomPad;
+                                container.style.maxHeight = Math.max(200, available) + 'px';
+                            }
+                            window.addEventListener('resize', resizeViewer);
+                            resizeViewer();
 
                             function setStatus(live) {
                                 statusEl.className = 'log-status ' + (live ? 'log-status--live' : 'log-status--paused');
