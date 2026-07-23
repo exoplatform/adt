@@ -197,6 +197,8 @@ html {
 
 body {
   min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   margin: 0;
   padding-left: var(--sidebar-w);
   font-family: var(--font-sans);
@@ -460,7 +462,7 @@ body.sidebar-collapsed .sidebar .dropdown-menu {
 }
 /* ── Main content area ──────────────────────────────────── */
 #wrap {
-  min-height: 100vh;
+  flex: 1;
   display: flex;
   flex-direction: column;
   overflow-x: hidden;
@@ -1372,6 +1374,124 @@ a[name] {
   color: var(--text-primary);
   border: 1px solid var(--border-subtle);
   border-radius: var(--r-sm);
+}
+
+/* ================================================================
+   LOG VIEWER (logs.php) — fixed dark terminal chrome so ANSI colors
+   read consistently regardless of the active site theme.
+   ================================================================ */
+.log-viewer {
+  background: #14141f;
+  color: #d6d6e6;
+  max-height: 70vh;
+  /* Clipping (not scrolling) happens here so the rounded corners stay
+     clean; the actual scrollbar lives on .log-viewer__scroll below,
+     inset within the padding so it never cuts across the curve.
+     display:flex is required so the child's flex:1 can shrink below
+     its content size within our max-height cap — a plain height:100%
+     child wouldn't resolve against this auto-height flex parent. */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0;
+}
+.log-viewer__scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 1.2rem;
+  scrollbar-width: thin;
+  scrollbar-color: #4a4a63 #14141f;
+}
+.log-viewer__scroll::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.log-viewer__scroll::-webkit-scrollbar-track {
+  background: #14141f;
+}
+.log-viewer__scroll::-webkit-scrollbar-thumb {
+  background-color: #4a4a63;
+  border-radius: 999px;
+  border: 2px solid #14141f;
+}
+.log-viewer__scroll::-webkit-scrollbar-thumb:hover {
+  background-color: #6c6c8c;
+}
+.log-viewer__scroll::-webkit-scrollbar-corner {
+  background: #14141f;
+}
+#logPanel {
+  display: flex;
+  flex-direction: column;
+}
+#logPanel.log-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--bg-deep);
+  padding: 1rem;
+  margin: 0;
+}
+#logPanel.log-fullscreen .log-viewer {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+body.log-fullscreen-active {
+  overflow: hidden;
+}
+.log-viewer__scroll > div {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+.log-gap {
+  color: #888;
+  font-style: italic;
+  margin: 0.4rem 0;
+}
+.log-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.log-line--hidden {
+  display: none;
+}
+.log-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--r-pill, 999px);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary, var(--text-primary));
+}
+.log-status__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #888;
+  display: inline-block;
+}
+.log-status--live .log-status__dot {
+  background: #2ecc71;
+  animation: log-pulse 1.4s ease-in-out infinite;
+}
+.log-status--live {
+  color: #2ecc71;
+  border-color: #2ecc7155;
+}
+@keyframes log-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 #2ecc7166; }
+  50% { box-shadow: 0 0 0 4px #2ecc7100; }
 }
 
 /* ================================================================

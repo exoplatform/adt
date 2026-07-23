@@ -1305,6 +1305,128 @@ function human_filesize($bytes, $decimals = 2)
   return sprintf("%.{$decimals}f", $bytes / pow(1024, $factor)) . @$sz[$factor];
 }
 
+/*
+* Convert ANSI SGR color/style escape sequences (e.g. produced by Logback/Log4j
+* "%clr" patterns in catalina.out) into <span style="..."> markup.
+*
+* Must be called on text that has ALREADY been passed through htmlspecialchars(),
+* since the ESC control character and its codes contain no HTML metacharacters
+* and therefore survive escaping untouched.
+*/
+function ansiToHtml($text)
+{
+  $fgColors = [
+    30 => '#5c5c5c', 31 => '#e74c3c', 32 => '#2ecc71', 33 => '#d4ac0d',
+    34 => '#5dade2', 35 => '#bb6bd9', 36 => '#48c9b0', 37 => '#d5d8dc',
+    90 => '#888888', 91 => '#ff6b6b', 92 => '#6bdc9c', 93 => '#f7dc6f',
+    94 => '#85c1e9', 95 => '#d2b4de', 96 => '#76d7c4', 97 => '#f4f6f7',
+  ];
+  $bgColors = [
+    40 => '#000000', 41 => '#e74c3c', 42 => '#2ecc71', 43 => '#d4ac0d',
+    44 => '#5dade2', 45 => '#bb6bd9', 46 => '#48c9b0', 47 => '#d5d8dc',
+    100 => '#888888', 101 => '#ff6b6b', 102 => '#6bdc9c', 103 => '#f7dc6f',
+    104 => '#85c1e9', 105 => '#d2b4de', 106 => '#76d7c4', 107 => '#f4f6f7',
+  ];
+
+  if (!preg_match_all('/\x1b\[([0-9;]*)m/', $text, $matches, PREG_OFFSET_CAPTURE)) {
+    return $text;
+  }
+
+  $state = ['fg' => null, 'bg' => null, 'bold' => false];
+  $spanOpen = false;
+  $out = '';
+  $lastIndex = 0;
+
+  foreach ($matches[0] as $i => $full) {
+    $matchStart = $full[1];
+    $out .= substr($text, $lastIndex, $matchStart - $lastIndex);
+    $lastIndex = $matchStart + strlen($full[0]);
+
+    $codesRaw = $matches[1][$i][0];
+    $codes = $codesRaw === '' ? [0] : array_map('intval', explode(';', $codesRaw));
+
+    foreach ($codes as $code) {
+      if ($code === 0) {
+        $state = ['fg' => null, 'bg' => null, 'bold' => false];
+      } elseif ($code === 1) {
+        $state['bold'] = true;
+      } elseif ($code === 22) {
+        $state['bold'] = false;
+      } elseif ($code === 39) {
+        $state['fg'] = null;
+      } elseif ($code === 49) {
+        $state['bg'] = null;
+      } elseif (isset($fgColors[$code])) {
+        $state['fg'] = $fgColors[$code];
+      } elseif (isset($bgColors[$code])) {
+        $state['bg'] = $bgColors[$code];
+      }
+    }
+
+    if ($spanOpen) {
+      $out .= '</span>';
+      $spanOpen = false;
+    }
+
+    $styleParts = [];
+    if ($state['fg']) $styleParts[] = 'color:' . $state['fg'];
+    if ($state['bg']) $styleParts[] = 'background-color:' . $state['bg'];
+    if ($state['bold']) $styleParts[] = 'font-weight:bold';
+
+    if (!empty($styleParts)) {
+      $out .= '<span style="' . implode(';', $styleParts) . '">';
+      $spanOpen = true;
+    }
+  }
+
+  $out .= substr($text, $lastIndex);
+  if ($spanOpen) $out .= '</span>';
+
+  return $out;
+}
+
+/*
+* Read the portion of a file appended after $offset (byte position), for
+* tailing/streaming a growing log file to the browser.
+*
+* Returns an array with:
+*   - size:      current file size (new offset to poll from next)
+*   - data:      raw new bytes (not yet HTML-escaped)
+*   - truncated: true if the file shrank/rotated since $offset was taken
+*   - skipped:   bytes silently dropped because the delta exceeded the cap
+*/
+function readFileTail($file_path, $offset)
+{
+  $maxChunk = 2097152; // 2Mo cap per poll, to bound memory/response size
+  $size = filesize($file_path);
+  $truncated = false;
+  $skipped = 0;
+
+  if ($offset > $size) {
+    // File was rotated/truncated since the last poll: restart from scratch.
+    $offset = 0;
+    $truncated = true;
+  }
+
+  $delta = $size - $offset;
+  if ($delta > $maxChunk) {
+    $skipped = $delta - $maxChunk;
+    $offset = $size - $maxChunk;
+  }
+
+  $data = '';
+  if ($size > $offset) {
+    $data = file_get_contents($file_path, false, null, $offset, $size - $offset);
+  }
+
+  return [
+    'size' => $size,
+    'data' => $data,
+    'truncated' => $truncated,
+    'skipped' => $skipped,
+  ];
+}
+
 /**
  * Return the git base branch to compare with integration translation branch.
  *

@@ -6,13 +6,18 @@ require_once(dirname(__FILE__) . '/functions-ui-form-edit-note.php');
  * Insert the page header lines
  *
  * @param string $title the title of the page (default: none)
+ * @param bool $autoRefresh whether to auto-reload the page every 2 minutes (default: true).
+ *                          Disable this on pages with their own live-updating JS state
+ *                          (e.g. log streaming) that a full page reload would reset.
  */
-function pageHeader($title = "")
+function pageHeader($title = "", $autoRefresh = true)
 {
 ?>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <?php if ($autoRefresh) { ?>
   <meta http-equiv="refresh" content="120">
+  <?php } ?>
   <meta name="theme-color" content="#6c5ce7">
   <title>eXo Acceptance<?= (empty($title) ? "" : " · " . $title) ?></title>
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
@@ -342,7 +347,7 @@ function pageNavigation()
       </button>
 
       <!-- PWA Install -->
-      <button class="sidebar__footer-btn" id="pwaInstallBtn" onclick="pwaInstall()" title="Install app" style="visibility:hidden">
+      <button class="sidebar__footer-btn" id="pwaInstallBtn" onclick="pwaInstall()" title="Install app" style="display:none">
         <i class="fas fa-download"></i> <span>Install app</span>
       </button>
     </div>
@@ -476,7 +481,7 @@ function pageFooter() {
       e.preventDefault();
       deferredPrompt = e;
       var btn = document.getElementById('pwaInstallBtn');
-      if (btn) btn.style.visibility = 'visible';
+      if (btn) btn.style.display = '';
     });
     function pwaInstall() {
       if (!deferredPrompt) return;
@@ -484,10 +489,15 @@ function pageFooter() {
       deferredPrompt.userChoice.then(function(result) {
         if (result.outcome === 'accepted') {
           var btn = document.getElementById('pwaInstallBtn');
-          if (btn) btn.style.visibility = 'hidden';
+          if (btn) btn.style.display = 'none';
         }
         deferredPrompt = null;
       });
+    }
+    // Already running installed (standalone): never show the install button.
+    if (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) {
+      var pwaBtn = document.getElementById('pwaInstallBtn');
+      if (pwaBtn) pwaBtn.style.display = 'none';
     }
   </script>
 <?php
