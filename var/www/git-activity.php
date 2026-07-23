@@ -75,18 +75,22 @@ function resolveGithubUser($email) {
   $response = @file_get_contents("https://api.github.com/search/users?q=" . urlencode($email) . "+in:email", false, stream_context_create($opts));
 
   $username = null;
+  $trust_result = false;
   if ($response !== false) {
     $data = json_decode($response, true);
     if (!empty($data['message']) && stripos($data['message'], 'rate limit') !== false) {
       $github_search_limited = true;
-    } elseif (!empty($data['items'][0]['login'])) {
-      $username = $data['items'][0]['login'];
+    } elseif (isset($data['items']) && is_array($data['items'])) {
+      $trust_result = true;
+      if (!empty($data['items'][0]['login'])) $username = $data['items'][0]['login'];
     }
-  } else {
-    $github_search_limited = true;
   }
 
-  cacheSet($cache_key, $username ?: '', 86400);
+  // Only cache an authoritative answer - a rate limit or transient failure
+  // should be retried on the next page load, not locked in as "no avatar" for a day.
+  if ($trust_result) {
+    cacheSet($cache_key, $username ?: '', 86400);
+  }
   return $username;
 }
 
