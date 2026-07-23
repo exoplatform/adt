@@ -29,20 +29,12 @@ checkCaches();
                             $tooLarge = isFileTooLargeToBeViewed($file_path);
                             $startOffset = filesize($file_path);
                     ?>
-                        <div class="card mb-4">
-                            <div class="card-header">
-                                <i class="fas fa-download me-2 text-success"></i>Download
-                            </div>
-                            <div class="card-body">
-                                <p class="mb-0">Download file (<?= human_filesize(filesize($file_path), 0) ?>) :
-                                    <a href="./logsDownload.php?type=<?= urlencode($log_type) ?>&file=<?= urlencode($file_path) ?>" target="_blank" class="btn btn-primary btn-sm">
-                                        <i class="fas fa-download me-2"></i><?= htmlspecialchars(basename($file_path)) ?>
-                                    </a>
-                                </p>
-                            </div>
-                        </div>
-                        <hr/>
                         <div class="log-toolbar mb-2 d-flex align-items-center flex-wrap gap-2">
+                            <a href="./logsDownload.php?type=<?= urlencode($log_type) ?>&file=<?= urlencode($file_path) ?>" target="_blank"
+                               class="btn btn-sm btn-outline-success" title="Download <?= htmlspecialchars(basename($file_path)) ?>">
+                                <i class="fas fa-download me-1"></i>Download <span class="text-muted">(<?= human_filesize(filesize($file_path), 0) ?>)</span>
+                            </a>
+                            <div class="vr mx-1 d-none d-md-block"></div>
                             <button id="tailStart" type="button" class="btn btn-sm btn-outline-primary" disabled>
                                 <i class="fas fa-play me-1"></i>Start
                             </button>
