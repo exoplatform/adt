@@ -63,12 +63,12 @@ checkCaches();
                     <?php
                             if ($tooLarge){
                                 echo "<div class='alert alert-warning'><i class='fas fa-exclamation-triangle me-2'></i><strong>This file is too large to be fully displayed.</strong> Download it to see its full history, or use <strong>Live Tail</strong> above to stream new lines as they are written.</div>";
-                                echo "<div class='code log-viewer'><div class='mb-0' id='logContent'></div></div>";
+                                echo "<div class='code log-viewer'><div class='log-viewer__scroll'><div class='mb-0' id='logContent'></div></div></div>";
                             } else {
-                                echo "<div class='code log-viewer'><div class='mb-0' id='logContent'>";
+                                echo "<div class='code log-viewer'><div class='log-viewer__scroll'><div class='mb-0' id='logContent'>";
                                 $data = file_get_contents($file_path);
                                 echo ansiToHtml(htmlspecialchars($data, ENT_NOQUOTES, 'UTF-8'));
-                                echo "</div></div>";
+                                echo "</div></div></div>";
                             }
                     ?>
                         </div>
@@ -86,7 +86,8 @@ checkCaches();
                             var statusEl = document.getElementById('tailStatus');
                             var autoscroll = document.getElementById('autoscroll');
                             var filterInput = document.getElementById('logFilter');
-                            var container = content.closest('.log-viewer');
+                            var scrollBox = content.closest('.log-viewer__scroll');
+                            var outerBox = content.closest('.log-viewer');
                             var panel = document.getElementById('logPanel');
                             var fullscreenBtn = document.getElementById('fullscreenToggle');
                             var isFullscreen = false;
@@ -99,18 +100,18 @@ checkCaches();
                             // the viewer grow a little more on every call.
                             var GAP_BEFORE_FOOTER = 16;
                             function resizeViewer() {
-                                if (!container) return;
+                                if (!outerBox) return;
                                 if (isFullscreen) {
-                                    container.style.maxHeight = '';
+                                    outerBox.style.maxHeight = '';
                                     return;
                                 }
                                 var mainEl = document.getElementById('main');
                                 var footerEl = document.getElementById('footer');
                                 var bottomPad = mainEl ? parseFloat(getComputedStyle(mainEl).paddingBottom) || 0 : 0;
                                 var footerH = footerEl ? footerEl.getBoundingClientRect().height : 0;
-                                var top = container.getBoundingClientRect().top;
+                                var top = outerBox.getBoundingClientRect().top;
                                 var available = window.innerHeight - top - footerH - bottomPad - GAP_BEFORE_FOOTER;
-                                container.style.maxHeight = Math.max(200, available) + 'px';
+                                outerBox.style.maxHeight = Math.max(200, available) + 'px';
                             }
                             window.addEventListener('resize', resizeViewer);
                             resizeViewer();
@@ -147,8 +148,8 @@ checkCaches();
                             }
 
                             function scrollToBottom() {
-                                if (autoscroll.checked && container) {
-                                    container.scrollTop = container.scrollHeight;
+                                if (autoscroll.checked && scrollBox) {
+                                    scrollBox.scrollTop = scrollBox.scrollHeight;
                                 }
                             }
 
@@ -249,7 +250,7 @@ checkCaches();
 
                             // Always open scrolled to the most recent entries, not the start
                             // of the file.
-                            container.scrollTop = container.scrollHeight;
+                            scrollBox.scrollTop = scrollBox.scrollHeight;
 
                             start();
                         })();
