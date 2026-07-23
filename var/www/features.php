@@ -40,10 +40,7 @@ checkCaches();
                     $projects = array_keys(getRepositories());
                     $features = getFeatureBranches($projects);
                     $translations = getTranslationBranches($projects);
-                    $meedsProjectsNames = getMeedsRepositories();
-                    $meedsProjects = array_keys($meedsProjectsNames);
-                    $baseBranches = getBaseBranches($meedsProjects);
-                    
+
                     // Filter accepted features
                     $acceptedFeatures = array_filter($features, function($feature, $name) {
                         return in_array($name, getAcceptanceBranches()) && !isTranslation($name);
@@ -187,7 +184,7 @@ checkCaches();
                     </div>
                     <?php endif; ?>
                     <!-- Empty state -->
-                    <?php if (empty($acceptedFeatures) && empty($otherFeatures) && empty($baseBranches)): ?>
+                    <?php if (empty($acceptedFeatures) && empty($otherFeatures)): ?>
                     <div class="empty-section">
                         <i class="fas fa-code-branch"></i>
                         <h4>No branches found</h4>

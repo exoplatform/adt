@@ -50,12 +50,6 @@ function isFeature($branch)
   return strpos($branch, "origin/feature/") !== false;
 }
 
-function isBaseBranch($branch)
-{
-  // All brase branches must be on the origin (see bug: SWF-2520)
-  return strpos($branch, "origin/develop-meed") !== false || strpos($branch, "origin/develop-exo") !== false ;
-}
-
 function isTranslation($branch)
 {
   return strpos($branch, "translation") !== false && strpos($branch, "origin/integration") !== false;
@@ -359,53 +353,6 @@ function getFeatureBranches($projects)
   return $features;
 }
 
-function getBaseBranches($projects)
-{
-  $basebranches = cacheGet('basebranches');
-
-  if (empty($basebranches)) {
-    $basebranches = array();
-    foreach ($projects as $project) {
-      $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
-      $branches = array_filter(explode("\n", $repoObject->git('branch -r')), 'isBaseBranch');
-      foreach ($branches as $branch) {
-        $fetch_url = $repoObject->git('config --get remote.origin.url');
-        if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
-          $github_org = $matches[1];
-          $github_repo = $matches[2];
-        }
-        if(!preg_match('/(?i)meeds-io/', $github_org)) {
-          continue;
-        }
-        $baseBranchToCompareWith = "develop";
-        $branch = str_replace('origin/', '', trim($branch));
-        $basebranches[$branch][$project]['http_url'] = "https://github.com/" . $github_org . "/" . $github_repo . "/tree/" . $branch;
-        // Add link to GitHub diff URL
-        $basebranches[$branch][$project]['http_url_behind'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/" . $branch . "..." . $baseBranchToCompareWith;
-        $basebranches[$branch][$project]['http_url_ahead'] = "https://github.com/" . $github_org . "/" . $github_repo . "/compare/" . $baseBranchToCompareWith . "...".$branch;
-        $behind_commits_logs = $repoObject->git("log origin/" . $branch . "..origin/" . $baseBranchToCompareWith . " --oneline");
-        if (empty($behind_commits_logs))
-          $basebranches[$branch][$project]['behind_commits'] = 0;
-        else
-          $basebranches[$branch][$project]['behind_commits'] = count(explode("\n", $behind_commits_logs));
-        $ahead_commits_logs = $repoObject->git("log origin/" . $baseBranchToCompareWith . "..origin/" . $branch . " --oneline");
-        if (empty($ahead_commits_logs))
-          $basebranches[$branch][$project]['ahead_commits'] = 0;
-        else
-          $basebranches[$branch][$project]['ahead_commits'] = count(explode("\n", $ahead_commits_logs));
-        $cherry_commits_logs = $repoObject->git("log --cherry origin/" . $branch . "..origin/" . $baseBranchToCompareWith . " --oneline");
-        if (empty($cherry_commits_logs))
-          $basebranches[$branch][$project]['cherry_commits'] = 0;
-        else
-          $basebranches[$branch][$project]['cherry_commits'] = count(explode("\n", $cherry_commits_logs));
-      }
-    }
-    uksort($basebranches, 'strcasecmp');
-    // Base branches will be cached for 5 min
-    cacheSet('basebranches', $basebranches, 300);
-  }
-  return $basebranches;
-}
 
 function getTranslationBranches($projects)
 {
@@ -1439,54 +1386,6 @@ function readFileTail($file_path, $offset)
 function getGitBaseBranchToCompareWith($org, $repo, $branch)
 {
   return 'develop';
-}
-
-/**
- * Check if the provided repository belongs to Meeds-io Organization.
- *
- * @param      $repo                  repository name
- *
- * @return boolean
- */
-
-function isMeedsRepository($repo) {
-  $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $repo . ".git");
-  $fetch_url = $repoObject->git('config --get remote.origin.url');
-  if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
-      $github_org = $matches[1];
-  } else {
-    return false;
-  }
-  return preg_match('/(?i)meeds-io/', $github_org);
-}
-
-/**
- * Return all registred Meeds-io repositories
- *
- */
-
-function getMeedsRepositories() {
-  return array_filter(getRepositories(), 'isMeedsRepository', ARRAY_FILTER_USE_KEY);
-}
-
-/**
- * Return base branch Jenkins CI View
- *
- * @param      $branch                  base branch name
- *
- * @return string
- */
-
-function getBaseBranchView($branch) {
-  
-  $baseBranchView = array(
-    "develop-exo" => "Meeds-eXo",
-    "develop-meed" => "Meeds-Meed"
-  );
-  if(isset($baseBranchView[$branch])) {
-    return $baseBranchView[$branch];
-  }
-  return 'PLF';  
 }
 
 ?>
