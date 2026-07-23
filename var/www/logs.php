@@ -29,6 +29,7 @@ checkCaches();
                             $tooLarge = isFileTooLargeToBeViewed($file_path);
                             $startOffset = filesize($file_path);
                     ?>
+                        <div id="logPanel">
                         <div class="log-toolbar mb-2 d-flex align-items-center flex-wrap gap-2">
                             <a href="./logsDownload.php?type=<?= urlencode($log_type) ?>&file=<?= urlencode($file_path) ?>" target="_blank"
                                class="btn btn-sm btn-outline-success" title="Download <?= htmlspecialchars(basename($file_path)) ?>">
@@ -55,6 +56,9 @@ checkCaches();
                             <button id="clearTail" type="button" class="btn btn-sm btn-outline-secondary ms-auto">
                                 <i class="fas fa-eraser me-1"></i>Clear
                             </button>
+                            <button id="fullscreenToggle" type="button" class="btn btn-sm btn-outline-secondary" title="Expand to full screen">
+                                <i class="fas fa-expand"></i>
+                            </button>
                         </div>
                     <?php
                             if ($tooLarge){
@@ -67,6 +71,7 @@ checkCaches();
                                 echo "</div></div>";
                             }
                     ?>
+                        </div>
                         <script>
                         (function() {
                             var logType = <?= json_encode($log_type) ?>;
@@ -82,22 +87,57 @@ checkCaches();
                             var autoscroll = document.getElementById('autoscroll');
                             var filterInput = document.getElementById('logFilter');
                             var container = content.closest('.log-viewer');
+                            var panel = document.getElementById('logPanel');
+                            var fullscreenBtn = document.getElementById('fullscreenToggle');
+                            var isFullscreen = false;
 
-                            // Size the viewer to exactly fill the remaining space inside #wrap
-                            // (which already excludes the footer), instead of a fixed vh
-                            // fraction, so the page never scrolls more than it has to.
+                            // Size the viewer to fill the remaining space above the footer,
+                            // leaving a visible gap so the footer is never hidden below the
+                            // fold. Measured from window/footer/top directly (not from #wrap's
+                            // own rect) to avoid a feedback loop: #wrap's height depends on the
+                            // viewer's current height, so using it as the reference would make
+                            // the viewer grow a little more on every call.
+                            var GAP_BEFORE_FOOTER = 16;
                             function resizeViewer() {
                                 if (!container) return;
+                                if (isFullscreen) {
+                                    container.style.maxHeight = '';
+                                    return;
+                                }
                                 var mainEl = document.getElementById('main');
-                                var wrapEl = document.getElementById('wrap');
+                                var footerEl = document.getElementById('footer');
                                 var bottomPad = mainEl ? parseFloat(getComputedStyle(mainEl).paddingBottom) || 0 : 0;
+                                var footerH = footerEl ? footerEl.getBoundingClientRect().height : 0;
                                 var top = container.getBoundingClientRect().top;
-                                var bottomLimit = wrapEl ? wrapEl.getBoundingClientRect().bottom : window.innerHeight;
-                                var available = bottomLimit - top - bottomPad;
+                                var available = window.innerHeight - top - footerH - bottomPad - GAP_BEFORE_FOOTER;
                                 container.style.maxHeight = Math.max(200, available) + 'px';
                             }
                             window.addEventListener('resize', resizeViewer);
                             resizeViewer();
+                            // Re-measure once things settle post-load (web fonts, scrollbar
+                            // gutter, etc. can shift layout slightly after the first paint).
+                            function resettleViewer() {
+                                resizeViewer();
+                                scrollToBottom();
+                            }
+                            window.addEventListener('load', resettleViewer);
+                            if (document.fonts && document.fonts.ready) {
+                                document.fonts.ready.then(resettleViewer);
+                            }
+
+                            function toggleFullscreen() {
+                                isFullscreen = !isFullscreen;
+                                panel.classList.toggle('log-fullscreen', isFullscreen);
+                                document.body.classList.toggle('log-fullscreen-active', isFullscreen);
+                                fullscreenBtn.innerHTML = isFullscreen ? '<i class="fas fa-compress"></i>' : '<i class="fas fa-expand"></i>';
+                                fullscreenBtn.title = isFullscreen ? 'Exit full screen' : 'Expand to full screen';
+                                resizeViewer();
+                                scrollToBottom();
+                            }
+                            fullscreenBtn.addEventListener('click', toggleFullscreen);
+                            document.addEventListener('keydown', function(e) {
+                                if (e.key === 'Escape' && isFullscreen) toggleFullscreen();
+                            });
 
                             function setStatus(live) {
                                 statusEl.className = 'log-status ' + (live ? 'log-status--live' : 'log-status--paused');
@@ -206,6 +246,10 @@ checkCaches();
                             var initialHtml = content.innerHTML;
                             content.innerHTML = '';
                             appendHtml(initialHtml);
+
+                            // Always open scrolled to the most recent entries, not the start
+                            // of the file.
+                            container.scrollTop = container.scrollHeight;
 
                             start();
                         })();

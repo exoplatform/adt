@@ -1385,6 +1385,46 @@ a[name] {
   color: #d6d6e6;
   max-height: 70vh;
   overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #4a4a63 #14141f;
+}
+.log-viewer::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+.log-viewer::-webkit-scrollbar-track {
+  background: #14141f;
+}
+.log-viewer::-webkit-scrollbar-thumb {
+  background-color: #4a4a63;
+  border-radius: 999px;
+  border: 2px solid #14141f;
+}
+.log-viewer::-webkit-scrollbar-thumb:hover {
+  background-color: #6c6c8c;
+}
+.log-viewer::-webkit-scrollbar-corner {
+  background: #14141f;
+}
+#logPanel {
+  display: flex;
+  flex-direction: column;
+}
+#logPanel.log-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: var(--bg-deep);
+  padding: 1rem;
+  margin: 0;
+}
+#logPanel.log-fullscreen .log-viewer {
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+body.log-fullscreen-active {
+  overflow: hidden;
 }
 .log-viewer > div {
   background: transparent;
