@@ -9,6 +9,8 @@ $since = date('Y-m-d', strtotime("-{$days_back} days"));
 $projects = getRepositories();
 $repo_names = array_keys($projects);
 $ignored_authors = array('exo-swf', 'Crowdin Bot', 'eXo CI server', 'eXo');
+$github_token = getenv('GITHUB_TOKEN') ?: '';
+$github_search_limited = false;
 
 function targetBranchArgs($repoObject) {
   try {
@@ -44,6 +46,48 @@ function getGithubUsername($email) {
 
 function getGithubAvatarUrl($username) {
   return $username ? "https://avatars.githubusercontent.com/{$username}?size=48" : null;
+}
+
+/**
+ * Resolve a commit email to a GitHub username: fast path for the
+ * noreply-email convention, falling back to GitHub's user search API
+ * (only matches if the author made their commit email public). Results
+ * (including "not found") are cached for a day since email->username
+ * doesn't change often, and lookups back off for the rest of the request
+ * once GitHub's search rate limit is hit.
+ */
+function resolveGithubUser($email) {
+  global $github_token, $github_search_limited;
+  $email = trim($email);
+  if (empty($email)) return null;
+
+  $username = getGithubUsername($email);
+  if ($username) return $username;
+
+  $cache_key = 'github_user_email_' . md5(strtolower($email));
+  $cached = cacheGet($cache_key);
+  if ($cached !== false) return $cached ?: null;
+
+  if ($github_search_limited) return null;
+
+  $header = "User-Agent: ADT-Git-Activity\r\n" . ($github_token ? "Authorization: token {$github_token}\r\n" : "");
+  $opts = array('http' => array('method' => 'GET', 'header' => $header, 'timeout' => 4, 'ignore_errors' => true));
+  $response = @file_get_contents("https://api.github.com/search/users?q=" . urlencode($email) . "+in:email", false, stream_context_create($opts));
+
+  $username = null;
+  if ($response !== false) {
+    $data = json_decode($response, true);
+    if (!empty($data['message']) && stripos($data['message'], 'rate limit') !== false) {
+      $github_search_limited = true;
+    } elseif (!empty($data['items'][0]['login'])) {
+      $username = $data['items'][0]['login'];
+    }
+  } else {
+    $github_search_limited = true;
+  }
+
+  cacheSet($cache_key, $username ?: '', 86400);
+  return $username;
 }
 
 function getGitCommitActivityByDay($repos, $days) {
@@ -161,13 +205,13 @@ function getGitCommitsByAuthor($repos, $days) {
         $committer = isset($parts[2]) ? trim($parts[2]) : '';
         if (empty($author) || isIgnored($author) || isIgnored($committer)) continue;
         $author_counts[$author] = ($author_counts[$author] ?? 0) + 1;
-        if (empty($author_emails[$author]) && getGithubUsername($email)) $author_emails[$author] = $email;
+        if (empty($author_emails[$author]) && !empty($email)) $author_emails[$author] = $email;
       }
     } catch (Exception $e) {}
   }
   arsort($author_counts);
   foreach (array_slice($author_counts, 0, 30) as $author => $count) {
-    $github_user = isset($author_emails[$author]) ? getGithubUsername($author_emails[$author]) : null;
+    $github_user = isset($author_emails[$author]) ? resolveGithubUser($author_emails[$author]) : null;
     $result[] = array(
       'author' => $author,
       'commits' => $count,
@@ -194,7 +238,7 @@ function getGitRecentCommits($projects, $limit = 50) {
         $parts = explode('|', $line, 6);
         if (count($parts) >= 6) {
           if (isIgnored($parts[1]) || isIgnored($parts[4])) continue;
-          $github_user = getGithubUsername($parts[2]);
+          $github_user = resolveGithubUser($parts[2]);
           $all_commits[] = array(
             'repo' => $repo,
             'label' => $label,
@@ -285,7 +329,6 @@ foreach ($activity as $date => $count) {
 $top_repo = !empty($repo_stats) && $repo_stats[0]['commits'] > 0 ? $repo_stats[0] : null;
 $top_author = !empty($author_stats) ? $author_stats[0] : null;
 
-$github_token = getenv('GITHUB_TOKEN') ?: '';
 $github_pr_data = array();
 $github_orgs = array('meeds-io', 'exoplatform');
 foreach ($github_orgs as $org) {
