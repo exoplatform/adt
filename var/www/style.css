@@ -1375,6 +1375,69 @@ a[name] {
 }
 
 /* ================================================================
+   LOG VIEWER (logs.php) — fixed dark terminal chrome so ANSI colors
+   read consistently regardless of the active site theme.
+   ================================================================ */
+.log-viewer {
+  background: #14141f;
+  color: #d6d6e6;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+.log-viewer > div {
+  background: transparent;
+  border: none;
+  color: inherit;
+  padding: 0;
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+.log-gap {
+  color: #888;
+  font-style: italic;
+  margin: 0.4rem 0;
+}
+.log-line {
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+.log-line--hidden {
+  display: none;
+}
+.log-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.25rem 0.6rem;
+  border-radius: var(--r-pill, 999px);
+  border: 1px solid var(--border-subtle);
+  color: var(--text-secondary, var(--text-primary));
+}
+.log-status__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: #888;
+  display: inline-block;
+}
+.log-status--live .log-status__dot {
+  background: #2ecc71;
+  animation: log-pulse 1.4s ease-in-out infinite;
+}
+.log-status--live {
+  color: #2ecc71;
+  border-color: #2ecc7155;
+}
+@keyframes log-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 #2ecc7166; }
+  50% { box-shadow: 0 0 0 4px #2ecc7100; }
+}
+
+/* ================================================================
    ACCESSIBILITY
    ================================================================ */
 .skip-to-content {
