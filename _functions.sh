@@ -2229,9 +2229,8 @@ do_deploy() {
       echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} ..."
       rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
       mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-      rm -rf ${_tmpdir}
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
       echo_info "Done."
     ;;
     RESTORE_DATASET)
@@ -2241,9 +2240,8 @@ do_deploy() {
       echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} to be prepared for dataset dumping..."
       rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
       mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      mv ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-      rm -rf ${_tmpdir}
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
+      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
       echo_info "Done."
       do_dump_dataset
     ;;
@@ -2273,6 +2271,11 @@ do_deploy() {
   do_configure_chat
   do_configure_apache
   do_create_deployment_descriptor
+  if [ -n "${_tmpdir:-}" ] && [ -d "${_tmpdir}" ]; then
+    echo_info "Cleaning up temporary archive directory ${_tmpdir} ..."
+    rm -rf ${_tmpdir}
+    echo_info "Done."
+  fi
   echo_info "Server deployed"
 }
 
