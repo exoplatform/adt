@@ -62,7 +62,11 @@ function privateBadgeUrl($label) {
  * entirely and show a static "private" badge instead. loading="lazy" on
  * the live badges keeps a page with many modules from firing 100+
  * simultaneous cross-origin image requests at once - badges below the
- * fold only request once scrolled into view.
+ * fold only request once scrolled into view. Live badges also get an
+ * onerror retry (see crowdinBadgeRetry): shields.io's first-ever lookup
+ * for a repo/workflow/branch combo can time out while it cold-fetches
+ * from GitHub, but it's cached and fast right after - a retry a few
+ * seconds later usually just works.
  */
 function renderCrowdinBadge($m, $workflow, $branch, $query_branch, $label, $alt) {
   $run_url = "{$m['github_url']}/actions/workflows/{$workflow}" . ($query_branch ? "?query=branch%3A" . rawurlencode($query_branch) : "");
@@ -70,7 +74,7 @@ function renderCrowdinBadge($m, $workflow, $branch, $query_branch, $label, $alt)
     ? privateBadgeUrl($label)
     : crowdinBadgeUrl($m['github_org'], $m['github_repo'], $workflow, $branch, $label);
   echo '<a href="' . htmlspecialchars($run_url) . '" target="_blank" rel="tooltip" title="' . htmlspecialchars($alt) . '">';
-  echo '<img src="' . htmlspecialchars($src) . '" class="ci-badge" loading="lazy" alt="' . htmlspecialchars($alt) . '">';
+  echo '<img src="' . htmlspecialchars($src) . '" class="ci-badge" loading="lazy" alt="' . htmlspecialchars($alt) . '"' . ($m['is_private'] ? '' : ' onerror="crowdinBadgeRetry(this)"') . '>';
   echo '</a>';
 }
 
@@ -256,5 +260,27 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
   </div>
 </div>
 <?php pageFooter(); ?>
+<script>
+// shields.io's first-ever lookup for a given repo/workflow/branch combo can
+// time out while it cold-fetches status from GitHub, but is fast right after
+// once cached on its end. Retry once after a few seconds; if it still fails,
+// fall back to a plain link instead of leaving a broken image icon.
+function crowdinBadgeRetry(img) {
+  var attempts = parseInt(img.dataset.retries || '0', 10);
+  if (attempts < 1) {
+    img.dataset.retries = attempts + 1;
+    setTimeout(function() {
+      var src = img.src;
+      img.src = '';
+      img.src = src;
+    }, 3000);
+  } else {
+    var span = document.createElement('span');
+    span.className = 'badge bg-secondary';
+    span.textContent = 'view on GitHub';
+    img.replaceWith(span);
+  }
+}
+</script>
 </body>
 </html>
