@@ -16,25 +16,6 @@
 
     # Everything else is secured
     <Proxy *>
-        <IfModule authnz_crowd_module>
-            AuthName "eXo Employees only"
-            AuthType Basic
-            AuthBasicProvider crowd
-
-            CrowdAppName ${CROWD_ACCEPTANCE_APP_NAME}
-            CrowdAppPassword ${CROWD_ACCEPTANCE_APP_PASSWORD}
-            CrowdURL https://identity.exoplatform.org/
-
-            # Activate SSO
-            CrowdAcceptSSO On
-            CrowdCreateSSO On
-
-            # Only exo-employees can access
-            Require group exo-employees
-        </IfModule>
-        <IfModule !authnz_crowd_module>
-            Require all denied
-
             AuthName "eXo Employees only"
             AuthType Basic
             AuthBasicProvider ldap
@@ -46,7 +27,6 @@
                 Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
                 AuthLDAPMaxSubGroupDepth 1
             </RequireAll>
-        </IfModule>
     </Proxy>
 </VirtualHost>
 
@@ -70,25 +50,6 @@
 
     # Everything else is secured
     <Proxy *>
-        <IfModule authnz_crowd_module>
-            AuthName "eXo Employees only"
-            AuthType Basic
-            AuthBasicProvider crowd
-
-            CrowdAppName ${CROWD_ACCEPTANCE_APP_NAME}
-            CrowdAppPassword ${CROWD_ACCEPTANCE_APP_PASSWORD}
-            CrowdURL https://identity.exoplatform.org/
-
-            # Activate SSO
-            CrowdAcceptSSO On
-            CrowdCreateSSO On
-
-            # Only exo-employees can access
-            Require group exo-employees
-        </IfModule>
-        <IfModule !authnz_crowd_module>
-            Require all denied
-
             AuthName "eXo Employees only"
             AuthType Basic
             AuthBasicProvider ldap
@@ -100,7 +61,6 @@
                 Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
                 AuthLDAPMaxSubGroupDepth 1
             </RequireAll>
-        </IfModule>
     </Proxy>
 
     #####################
@@ -112,10 +72,11 @@
     SSLCertificateChainFile  ${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}
     SSLVerifyClient None
 
-    SSLCipherSuite          ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256
+    SSLCipherSuite          ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
     SSLProtocol             +TLSv1.2 +TLSv1.3
     SSLHonorCipherOrder     on
+    SSLCompression          off
+    SSLSessionTickets       off
 
-    Header always set Strict-Transport-Security "max-age=63072000"
 
 </VirtualHost>
