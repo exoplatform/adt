@@ -145,7 +145,6 @@ case "${ACTION}" in
     configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
     configurable_env_var "APACHE_SSL_CERTIFICATE_FILE" ""
     configurable_env_var "APACHE_SSL_CERTIFICATE_KEY_FILE" ""
-    configurable_env_var "APACHE_SSL_CERTIFICATE_CHAIN_FILE" ""
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf

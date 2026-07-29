@@ -460,7 +460,6 @@ initialize_product_settings() {
 
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${APACHE_SSL_CERTIFICATE_FILE}"
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${APACHE_SSL_CERTIFICATE_KEY_FILE}"
-      configurable_env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${APACHE_SSL_CERTIFICATE_CHAIN_FILE}"
       configurable_env_var "INSTANCE_DOMAIN" "" # Default one
 
       configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/cmis-server"
@@ -1779,7 +1778,6 @@ do_configure_apache() {
       # MEEDSIO_XXXXX vars must be set on Jenkins SLAVE or loaded as global envs
       env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${MEEDSIO_SSL_CERTIFICATE_FILE}"
       env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${MEEDSIO_SSL_CERTIFICATE_KEY_FILE}"
-      env_var "INSTANCE_SSL_CERTIFICATE_CHAIN_FILE" "${MEEDSIO_SSL_CERTIFICATE_CHAIN_FILE}"
     ;;
     *)
       if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" = "true" ]; then 
