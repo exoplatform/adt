@@ -100,9 +100,8 @@ Environment Variables
   CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application's password used to authenticate the front-end (default: none)
   LDAP_ACCEPTANCE_BIND_DN           : The LDAP Bind DN used to authenticate the front-end (default: none)
   LDAP_ACCEPTANCE_BIND_PASSWORD     : The LDAP Bind DN's password used to authenticate the front-end (default: none)
-  APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup
+  APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup (PEM bundle including certificate chain)
   APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
-  APACHE_SSL_CERTIFICATE_CHAIN_FILE : Apache SSLCertificateChainFile for HTTPS setup
 
   REPOSITORY_SERVER_BASE_URL        : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
   REPOSITORY_USERNAME               : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
@@ -1833,7 +1832,7 @@ do_configure_apache() {
   case ${DEPLOYMENT_APACHE_SECURITY} in
     public)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]); then
+        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ]); then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
             echo_n_info "Deploying Apache instance configuration for HTTPS only..."
             evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
@@ -1843,7 +1842,7 @@ do_configure_apache() {
           fi  
           echo "OK."
         else
-          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE} (\"${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
+          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"
           print_usage
           exit 1
         fi
@@ -1855,7 +1854,7 @@ do_configure_apache() {
     ;;
     private)
       if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}" ]); then
+        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ]); then
           if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
             echo_n_info "Deploying Apache instance configuration for HTTPS only..."
             evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
@@ -1865,7 +1864,7 @@ do_configure_apache() {
           fi  
           echo "OK."
         else
-          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE} (\"${INSTANCE_SSL_CERTIFICATE_CHAIN_FILE}\") is invalid"
+          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"
           print_usage
           exit 1
         fi
