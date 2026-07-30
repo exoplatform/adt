@@ -323,7 +323,9 @@ function pageNavigation()
         <i class="fas fa-moon" id="mobileThemeIcon"></i>
       </button>
       <?php $userFullName = currentUserFullName(); if ($userFullName): ?>
-      <img class="mobile-bar__avatar" src="<?= htmlspecialchars(currentUserGravatarUrl(48)) ?>" alt="" width="28" height="28" title="<?= htmlspecialchars($userFullName) ?>">
+      <a href="https://my.exoplatform.org/hr/employees/myAccount" title="Edit my avatar">
+        <img class="mobile-bar__avatar" src="<?= htmlspecialchars(currentUserGravatarUrl(48)) ?>" alt="" width="28" height="28">
+      </a>
       <?php endif; ?>
     </div>
   </div>
@@ -361,7 +363,9 @@ function pageNavigation()
     <div class="sidebar__footer">
       <?php $userFullName = currentUserFullName(); if ($userFullName): ?>
       <div class="sidebar__user" title="<?= htmlspecialchars($userFullName) ?>">
-        <img class="sidebar__user-avatar" src="<?= htmlspecialchars(currentUserGravatarUrl(64)) ?>" alt="" width="32" height="32">
+        <a href="https://my.exoplatform.org/hr/employees/myAccount" title="Edit my avatar">
+          <img class="sidebar__user-avatar" src="<?= htmlspecialchars(currentUserGravatarUrl(64)) ?>" alt="" width="32" height="32">
+        </a>
         <span class="sidebar__user-name"><?= htmlspecialchars($userFullName) ?></span>
       </div>
       <?php endif; ?>
