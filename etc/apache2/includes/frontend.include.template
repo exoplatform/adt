@@ -143,7 +143,7 @@
 
             AuthLDAPBindDN          "${LDAP_ACCEPTANCE_BIND_DN}"
             AuthLDAPBindPassword    ${LDAP_ACCEPTANCE_BIND_PASSWORD}
-            AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn
+            AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn,mail,displayName
             <RequireAll>
                 Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
                 AuthLDAPMaxSubGroupDepth 1

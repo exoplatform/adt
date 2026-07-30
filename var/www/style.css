@@ -418,6 +418,30 @@ code, .code {
   text-align: center;
   flex-shrink: 0;
 }
+.sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.4rem 0.75rem 0.6rem;
+  margin-bottom: 4px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+.sidebar__user-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid var(--border-subtle);
+}
+.sidebar__user-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
 /* ── /* ── Collapsed sidebar ─────────────────────────────────── */
 body.sidebar-collapsed {
@@ -429,8 +453,13 @@ body.sidebar-collapsed .sidebar {
 body.sidebar-collapsed .sidebar__brand-info,
 body.sidebar-collapsed .sidebar__section,
 body.sidebar-collapsed .sidebar__link span:not(.sr-only),
-body.sidebar-collapsed .sidebar__footer-btn span:not(.sr-only) {
+body.sidebar-collapsed .sidebar__footer-btn span:not(.sr-only),
+body.sidebar-collapsed .sidebar__user-name {
   display: none;
+}
+body.sidebar-collapsed .sidebar__user {
+  justify-content: center;
+  padding: 0.4rem 0.25rem 0.6rem;
 }
 body.sidebar-collapsed .sidebar__brand {
   justify-content: center;
@@ -1886,6 +1915,13 @@ body.log-fullscreen-active {
     cursor: pointer;
     font-size: 1rem;
     line-height: 1;
+  }
+  .mobile-bar__avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border-card);
   }
 
   /* Sidebar overlay */

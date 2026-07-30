@@ -245,6 +245,40 @@ function pageTracker($id = 'UA-1292368-28') {
 }
 
 /**
+ * Get the full name of the LDAP-authenticated user, from the "displayName"
+ * attribute Apache exposes as AUTHENTICATE_DISPLAYNAME (requested via
+ * AuthLDAPURL; mod_authnz_ldap uppercases the attribute name for the env
+ * var). REMOTE_USER is not usable here: mod_authnz_ldap sets it to whatever
+ * login the user typed at the Basic Auth prompt, not an LDAP attribute
+ * value, so it falls back to that login if displayName is unset.
+ *
+ * @return string|null the user's full name (or login), or null if not authenticated
+ */
+function currentUserFullName()
+{
+    if (!empty($_SERVER['AUTHENTICATE_DISPLAYNAME'])) {
+        return $_SERVER['AUTHENTICATE_DISPLAYNAME'];
+    }
+    return !empty($_SERVER['REMOTE_USER']) ? $_SERVER['REMOTE_USER'] : null;
+}
+
+/**
+ * Get a Gravatar avatar URL for the LDAP-authenticated user, using the
+ * "mail" attribute Apache exposes as AUTHENTICATE_MAIL (requested via
+ * AuthLDAPURL; mod_authnz_ldap uppercases the attribute name for the env
+ * var) once mod_authnz_ldap has bound the user.
+ *
+ * @param int $size avatar size in pixels (default: 64)
+ * @return string the Gravatar URL (falls back to a generic silhouette when no email is available)
+ */
+function currentUserGravatarUrl($size = 64)
+{
+    $email = !empty($_SERVER['AUTHENTICATE_MAIL']) ? $_SERVER['AUTHENTICATE_MAIL'] : '';
+    $hash = md5(strtolower(trim($email)));
+    return "https://www.gravatar.com/avatar/{$hash}?s={$size}&d=mp";
+}
+
+/**
  * Insert the navigation sidebar
  */
 function pageNavigation()
@@ -288,6 +322,9 @@ function pageNavigation()
       <button class="mobile-bar__theme-btn" onclick="toggleScheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
         <i class="fas fa-moon" id="mobileThemeIcon"></i>
       </button>
+      <?php $userFullName = currentUserFullName(); if ($userFullName): ?>
+      <img class="mobile-bar__avatar" src="<?= htmlspecialchars(currentUserGravatarUrl(48)) ?>" alt="" width="28" height="28" title="<?= htmlspecialchars($userFullName) ?>">
+      <?php endif; ?>
     </div>
   </div>
 
@@ -322,6 +359,12 @@ function pageNavigation()
     </nav>
 
     <div class="sidebar__footer">
+      <?php $userFullName = currentUserFullName(); if ($userFullName): ?>
+      <div class="sidebar__user" title="<?= htmlspecialchars($userFullName) ?>">
+        <img class="sidebar__user-avatar" src="<?= htmlspecialchars(currentUserGravatarUrl(64)) ?>" alt="" width="32" height="32">
+        <span class="sidebar__user-name"><?= htmlspecialchars($userFullName) ?></span>
+      </div>
+      <?php endif; ?>
       <!-- Pin/unpin toggle -->
       <button class="sidebar__footer-btn" id="sidebarPinBtn" onclick="toggleSidebarPin()" title="Collapse sidebar">
         <i class="fas fa-chevron-left"></i> <span>Collapse</span>
