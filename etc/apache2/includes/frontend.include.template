@@ -2,6 +2,23 @@
 
     RewriteEngine           On
 
+    # Hide the .php extension
+    # 0) Canonicalize the DirectoryIndex file to the site root
+    RewriteCond %{REQUEST_URI} ^/index(\.php)?/?$
+    RewriteRule ^ / [R=301,L]
+
+    # 1) If a request explicitly targets a *.php file, redirect (301) to the extension-less URL
+    #    (excluding /rest/ which is a cross-instance API consumed by other ADT deployments)
+    RewriteCond %{THE_REQUEST} \s/+([^.]+)\.php[\s?] [NC]
+    RewriteCond %1 !^rest/ [NC]
+    RewriteRule ^ /%1 [R=301,L,NE]
+
+    # 2) Internally serve <name>.php for extension-less requests when the file exists
+    #    (using DOCUMENT_ROOT explicitly since REQUEST_FILENAME isn't yet mapped to a
+    #    filesystem path at this point in server/vhost context)
+    RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI}.php -f
+    RewriteRule ^ %{REQUEST_URI}.php [L]
+
     DirectoryIndex index.php
 
     # Error pages

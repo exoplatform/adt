@@ -35,7 +35,22 @@ $extensions = ["php", "jpg", "jpeg", "gif", "css", "svg", "png", "js", "json", "
 // if requesting a directory then serve the default index
 $path = parse_url($_SERVER["REQUEST_URI"], PHP_URL_PATH);
 $ext = pathinfo($path, PATHINFO_EXTENSION);
+
+// Hide the .php extension: redirect explicit .php requests (except the /rest/
+// cross-instance API) to the extension-less URL, mirroring the Apache rewrite rules
+if ($ext === "php" && strpos(ltrim($path, "/"), "rest/") !== 0) {
+    $query = parse_url($_SERVER["REQUEST_URI"], PHP_URL_QUERY);
+    header("Location: " . substr($path, 0, -4) . ($query !== null ? "?$query" : ""), true, 301);
+    exit;
+}
+
+// Hide the .php extension: internally serve <path>.php when it exists
 if (empty($ext)) {
+    $phpFile = rtrim($path, "/") . ".php";
+    if ($path !== "/" && file_exists($_SERVER["DOCUMENT_ROOT"] . $phpFile)) {
+        require $_SERVER["DOCUMENT_ROOT"] . $phpFile;
+        exit;
+    }
     $path = rtrim($path, "/") . "/" . DIRECTORY_INDEX;
 }
 

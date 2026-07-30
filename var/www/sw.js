@@ -1,4 +1,4 @@
-const CACHE = 'adt-v3';
+const CACHE = 'adt-v4';
 
 const PRECACHE = [
   '/style.css', '/manifest.json',
@@ -6,8 +6,8 @@ const PRECACHE = [
   '/404.html', '/500.html', '/502.html', '/503.html'
 ];
 
-const PAGES = ['/', '/index.php', '/qa.php', '/sales.php', '/customers.php',
-               '/company.php', '/features.php', '/servers.php'];
+const PAGES = ['/', '/qa', '/sales', '/customers', '/company',
+               '/features', '/git-activity', '/crowdin-health', '/servers'];
 
 self.addEventListener('install', function(e) {
   e.waitUntil(

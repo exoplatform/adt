@@ -31,7 +31,7 @@ checkCaches();
                     ?>
                         <div id="logPanel">
                         <div class="log-toolbar mb-2 d-flex align-items-center flex-wrap gap-2">
-                            <a href="./logsDownload.php?type=<?= urlencode($log_type) ?>&file=<?= urlencode($file_path) ?>" target="_blank"
+                            <a href="./logsDownload?type=<?= urlencode($log_type) ?>&file=<?= urlencode($file_path) ?>" target="_blank"
                                class="btn btn-sm btn-outline-success" title="Download <?= htmlspecialchars(basename($file_path)) ?>">
                                 <i class="fas fa-download me-1"></i>Download <span class="text-muted">(<?= human_filesize(filesize($file_path), 0) ?>)</span>
                             </a>
@@ -189,7 +189,7 @@ checkCaches();
                             });
 
                             function poll() {
-                                var url = './logsTail.php?type=' + encodeURIComponent(logType) +
+                                var url = './logsTail?type=' + encodeURIComponent(logType) +
                                     '&file=' + encodeURIComponent(logFile) + '&offset=' + offset;
                                 fetch(url).then(function(r) { return r.json(); }).then(function(json) {
                                     if (json.error) {

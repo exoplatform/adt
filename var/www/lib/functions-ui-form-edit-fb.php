@@ -18,7 +18,7 @@ function getFormEditFeatureBranch($descriptor_array)
           <h5 class="modal-title"><i class="fas fa-code-branch me-2"></i>Edit Feature Branch</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
-        <form method="POST" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editFeature.php">
+        <form method="POST" action="<?= $descriptor_array->ACCEPTANCE_SCHEME ?>://<?= $descriptor_array->ACCEPTANCE_HOST ?>:<?= $descriptor_array->ACCEPTANCE_PORT ?>/editFeature">
           <div class="modal-body">
             <input type="hidden" name="from" value="<?= currentPageURL() ?>">
             <input type="hidden" name="key" value="<?= $descriptor_array->INSTANCE_KEY ?>">

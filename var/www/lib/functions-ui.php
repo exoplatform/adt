@@ -285,14 +285,14 @@ function pageNavigation()
 {
   $nav = [
     "Home" => "/",
-    "QA" => "/qa.php",
-    "Sales" => "/sales.php",
-    "Customer Projects" => "/customers.php",
-    "Company" => "/company.php",
-    "Features" => "/features.php",
-    "Git Activity" => "/git-activity.php",
-    "Crowdin" => "/crowdin-health.php",
-    "Servers" => "/servers.php",
+    "QA" => "/qa",
+    "Sales" => "/sales",
+    "Customer Projects" => "/customers",
+    "Company" => "/company",
+    "Features" => "/features",
+    "Git Activity" => "/git-activity",
+    "Crowdin" => "/crowdin-health",
+    "Servers" => "/servers",
   ];
   $icons = [
     "Home" => "fa-th-large",
@@ -1288,7 +1288,7 @@ function componentFBStatusLabel($deployment_descriptor)
 function componentFBScmLabel($deployment_descriptor)
 {
   if (!empty($deployment_descriptor->SCM_BRANCH)) {
-    $content = '<a href="/features.php#';
+    $content = '<a href="/features#';
     $content .= htmlspecialchars(str_replace(["/", "."], "-", $deployment_descriptor->SCM_BRANCH)) . '"';
     $content .= ' rel="tooltip" title="SCM Branch used to host this FB development">';
     $content .= '<i class="fas fa-code-branch"></i>&nbsp;' . htmlspecialchars($deployment_descriptor->SCM_BRANCH) . '</a>';
@@ -1620,16 +1620,16 @@ function componentDebugMenu()
         <ul class="list-group">
             <li class="list-group-item">
                 <i class="fas fa-code-branch me-2 text-primary"></i>
-                <a href="/debug-git.php">Debug Git functions</a>
+                <a href="/debug-git">Debug Git functions</a>
             </li>
             <li class="list-group-item">
                 <i class="fas fa-rocket me-2 text-success"></i>
-                <a href="/debug-deploy.php">Debug Deployment</a>
+                <a href="/debug-deploy">Debug Deployment</a>
             </li>
             <li class="list-group-item">
                 <i class="fas fa-database me-2 text-warning"></i>
-                <a href="/debug-caches.php">Debug Caches</a>
-                (<a href="/debug-caches.php?clearCaches=true" class="text-danger">Clear all Caches</a>)
+                <a href="/debug-caches">Debug Caches</a>
+                (<a href="/debug-caches?clearCaches=true" class="text-danger">Clear all Caches</a>)
             </li>
         </ul>
     </div>
