@@ -38,8 +38,9 @@ function pageHeader($title = "", $autoRefresh = true)
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <!-- Theme handling -->
   <script>
-    var THEMES = ['default', 'ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson'];
-    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'twilight': 'Twilight', 'sunset': 'Sunset', 'midnight': 'Midnight', 'lavender': 'Lavender', 'crimson': 'Crimson' };
+    var THEMES = ['default', 'ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson', 'rose', 'gold', 'custom'];
+    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'twilight': 'Twilight', 'sunset': 'Sunset', 'midnight': 'Midnight', 'lavender': 'Lavender', 'crimson': 'Crimson', 'rose': 'Rose', 'gold': 'Gold', 'custom': 'Custom' };
+    var CUSTOM_ACCENT_DEFAULT = '#6c5ce7';
 
     // ── Storage helpers ──────────────────────────────────
     function getPref(key, fallback) { try { var v = localStorage.getItem(key); return v !== null ? v : fallback; } catch(e) { return fallback; } }
@@ -62,11 +63,35 @@ function pageHeader($title = "", $autoRefresh = true)
     // ── Apply accent (no persist) ────────────────────────
     function setAccent(accent) {
       document.documentElement.setAttribute('data-accent', accent);
+      if (accent === 'custom') {
+        document.documentElement.style.setProperty('--accent', getPref('customColor', CUSTOM_ACCENT_DEFAULT));
+      } else {
+        document.documentElement.style.removeProperty('--accent');
+      }
       var btn = document.getElementById('themeDropdown');
       if (btn) {
         var span = btn.querySelector('span');
         if (span) span.textContent = THEME_LABELS[accent] || accent;
       }
+      var picker = document.getElementById('customColorPicker');
+      if (picker) picker.value = getPref('customColor', CUSTOM_ACCENT_DEFAULT);
+    }
+
+    // ── Live-preview a custom color without persisting ───
+    function previewCustomColor(hex) {
+      document.documentElement.setAttribute('data-accent', 'custom');
+      document.documentElement.style.setProperty('--accent', hex);
+      var btn = document.getElementById('themeDropdown');
+      if (btn) {
+        var span = btn.querySelector('span');
+        if (span) span.textContent = 'Custom';
+      }
+    }
+
+    // ── Commit a custom color pick ───────────────────────
+    function pickCustomColor(hex) {
+      setPref('customColor', hex);
+      pickTheme('custom');
     }
 
     // ── Full apply: scheme + accent + UI + persist ───────
@@ -117,7 +142,11 @@ function pageHeader($title = "", $autoRefresh = true)
 
     // ── Initialise immediately (FOUC guard) ──────────────
     (function() {
-      document.documentElement.setAttribute('data-accent', resolveAccent());
+      var accent = resolveAccent();
+      document.documentElement.setAttribute('data-accent', accent);
+      if (accent === 'custom') {
+        document.documentElement.style.setProperty('--accent', getPref('customColor', CUSTOM_ACCENT_DEFAULT));
+      }
       document.documentElement.setAttribute('data-bs-theme', resolveScheme());
       // Init mobile theme icon
       var mIcon = document.getElementById('mobileThemeIcon');
@@ -389,6 +418,20 @@ function pageNavigation()
           <li><button class="dropdown-item" onclick="pickTheme('midnight')"><i class="fas fa-circle me-2" style="color:#6366f1;font-size:0.65rem"></i>Midnight</button></li>
           <li><button class="dropdown-item" onclick="pickTheme('lavender')"><i class="fas fa-circle me-2" style="color:#c084fc;font-size:0.65rem"></i>Lavender</button></li>
           <li><button class="dropdown-item" onclick="pickTheme('crimson')"><i class="fas fa-circle me-2" style="color:#ef4444;font-size:0.65rem"></i>Crimson</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('rose')"><i class="fas fa-circle me-2" style="color:#ec4899;font-size:0.65rem"></i>Rose</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('gold')"><i class="fas fa-circle me-2" style="color:#eab308;font-size:0.65rem"></i>Gold</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <label class="dropdown-item d-flex align-items-center" for="customColorPicker" style="cursor:pointer">
+              <span class="me-2" style="display:inline-flex;padding:1.5px;border-radius:50%;background:conic-gradient(from 180deg, #ff0000, #ff9a00, #d0de21, #4fdc4a, #3fdad8, #1c7fee, #ba0cf8, #ff0000)">
+                <input type="color" id="customColorPicker" value="#6c5ce7"
+                       oninput="previewCustomColor(this.value)" onchange="pickCustomColor(this.value)"
+                       title="Pick a custom accent color" aria-label="Pick a custom accent color"
+                       style="display:block;width:0.65rem;height:0.65rem;padding:0;border:none;border-radius:50%;overflow:hidden;background:none;cursor:pointer">
+              </span>
+              <span>Custom</span>
+            </label>
+          </li>
         </ul>
       </div>
 
@@ -426,9 +469,12 @@ function pageNavigation()
         var td = document.getElementById('themeDropdown');
         if (td) {
           var tdspan = td.querySelector('span');
-          var name = ({'default':'Default','ocean':'Ocean','forest':'Forest','twilight':'Twilight','sunset':'Sunset','midnight':'Midnight','lavender':'Lavender','crimson':'Crimson'}[a]) || a;
-          if (tdspan) tdspan.textContent = name;
+          if (tdspan) tdspan.textContent = THEME_LABELS[a] || a;
         }
+
+        // Sync custom color picker with the saved color
+        var picker = document.getElementById('customColorPicker');
+        if (picker) picker.value = getPref('customColor', CUSTOM_ACCENT_DEFAULT);
       })();
     </script>
   </aside>

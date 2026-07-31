@@ -168,6 +168,23 @@
   --accent: #ef4444; --accent-soft: rgba(239,68,68,0.22);
   --accent-glow: rgba(239,68,68,0.42); --accent2: #f87171;
 }
+[data-accent="rose"] {
+  --accent: #ec4899; --accent-soft: rgba(236,72,153,0.22);
+  --accent-glow: rgba(236,72,153,0.42); --accent2: #f472b6;
+}
+[data-accent="gold"] {
+  --accent: #eab308; --accent-soft: rgba(234,179,8,0.22);
+  --accent-glow: rgba(234,179,8,0.42); --accent2: #facc15;
+}
+
+/* Custom accent: JS sets --accent inline (element.style) from the user's
+   color picker; the soft/glow/secondary tints are derived from it here so
+   picking a color is the only thing that has to happen in JS. */
+[data-accent="custom"] {
+  --accent-soft: color-mix(in srgb, var(--accent) 22%, transparent);
+  --accent-glow: color-mix(in srgb, var(--accent) 42%, transparent);
+  --accent2: color-mix(in srgb, var(--accent) 70%, white);
+}
 
 /* Every accent theme also tints surfaces/borders (composed from the
    "-base" tokens above, never self-referencing) so switching themes

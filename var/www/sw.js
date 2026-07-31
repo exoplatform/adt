@@ -1,4 +1,4 @@
-const CACHE = 'adt-v4';
+const CACHE = 'adt-v6';
 
 const PRECACHE = [
   '/style.css', '/manifest.json',
