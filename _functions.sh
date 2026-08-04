@@ -925,7 +925,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
               env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
               env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3" # Default version of the jdbc postgresql driver addon to use
@@ -1148,7 +1148,7 @@ initialize_product_settings() {
               env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0" # Default version of the mysql driver addon to use
               env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3" # Default version of the jdbc postgresql driver addon to use
 
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9" # Default version of the mysql server to use
+              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11" # Default version of the mysql server to use
               env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
               configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10888"
 
