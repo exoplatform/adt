@@ -129,7 +129,7 @@ Environment Variables
     community      eXo Community Website                   - Apache Tomcat bundle
     docs           eXo Platform Documentations Website     - Apache Tomcat bundle
 
-  PRODUCT_VERSION                   : The version of the product. Can be either a release (X.Y.Z), a snapshot (X.Y.Z-SNAPSHOT), or a continuous deployment using -MLT (latest) / -MBL (before latest) with optional Z wildcard for the minor version (e.g. 7.2.0-MLT, 7.2.Z-MLT or 7.2.Z-meed-MLT)
+  PRODUCT_VERSION                   : The version of the product. Can be either a release (X.Y.Z), a snapshot (X.Y.Z-SNAPSHOT), or a continuous deployment using -MLT (latest) / -MBL (before latest) / -GA (latest GA release only, no milestone/RC/CP/build suffix) with optional Z wildcard for the minor version (e.g. 7.2.0-MLT, 7.2.Z-MLT, 7.2.Z-meed-MLT or 7.2.Z-GA)
   INSTANCE_ID                       : The id of the instance. Use this property to deploy several time the same PRODUCT_NAME and PRODUCT_VERSION couple (default: none)
 
   DEPLOYMENT_LABELS                 : Comma separated labels for a deployment \" (default: none)
@@ -1967,11 +1967,11 @@ do_deploy() {
   fi  
 
   if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-    if [[ ! "${PRODUCT_VERSION}" =~ .*-M(BL|LT)$ ]]; then
-      echo_error "Continuous deployment is enabled and product version must ends with -MLT or -MBL (e.g. 7.2.0-MLT, 7.2.Z-MLT or 7.2.Z-meed-MLT)!"
+    if [[ ! "${PRODUCT_VERSION}" =~ .*-(M(BL|LT)|GA)$ ]]; then
+      echo_error "Continuous deployment is enabled and product version must ends with -MLT, -MBL or -GA (e.g. 7.2.0-MLT, 7.2.Z-MLT, 7.2.Z-meed-MLT or 7.2.Z-GA)!"
       exit 1
     fi
-  fi  
+  fi
 
   # Generic Ports
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"

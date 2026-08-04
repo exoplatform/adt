@@ -46,6 +46,23 @@ do_correct_date_format() {
     local dt=$(echo $1 | cut -d '-' -f2)
     date -d ${dt:0:8} +"%s" &>/dev/null && echo ${dt:0:8} || echo ${dt:4:4}${dt:2:2}${dt:0:2}
 }
+# Internal: Extract candidate versions from a Maven metadata file, filtered by version
+# prefix, and either keeping only continuous build artifacts or only formal releases
+do_extract_metadata_versions() {
+    local _metadataFile="$1"
+    local _xpathQuery="$2"
+    local _plfversiongrep="$3"
+    local _continuousEnabled="$4"
+    local _buildFilter="-Pv"
+    ${_continuousEnabled} && _buildFilter="-P"
+
+    if ${DARWIN}; then
+      xpath ${_metadataFile} ${_xpathQuery} | grep ${_plfversiongrep} | sed -e 's/<[^>]*>//g' | grep ${_buildFilter} .*-[0-9]+$
+    fi
+    if ${LINUX}; then
+      xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${_plfversiongrep} | sed -e 's/<[^>]*>//g' | grep ${_buildFilter} .*-[0-9]+$
+    fi
+}
 
 
 do_curl() {
@@ -185,7 +202,7 @@ do_download_maven_artifact() {
   #
   # For the latest milestone (LT) or before the latest one (BL), we will need to manually compute its TIMESTAMP from maven metadata
   #
-  if [[ "$_artifactVersion" =~ .*-M(BL|LT)$ ]]; then
+  if [[ "$_artifactVersion" =~ .*-(M(BL|LT)|GA)$ ]]; then
     local _metadataFile="$_downloadDirectory/$_fileBaseName-$_artifactVersion-maven-metadata.xml"
     local _metadataUrl="$(dirname $_baseUrl)/maven-metadata.xml"
     if [ -e "$_metadataFile" ]; then
@@ -194,53 +211,38 @@ do_download_maven_artifact() {
     do_curl "$_curlOptions" "$_metadataUrl" "$_metadataFile" "Artifact Metadata"
     local _xpathQuery="";
     _xpathQuery="/metadata/versioning/versions"
-    if [[ "$_artifactVersion" =~ \.Z(-\w+)?-M(BL|LT)$ ]]; then
+    if [[ "$_artifactVersion" =~ \.Z(-\w+)?-(M(BL|LT)|GA)$ ]]; then
       local plfversionprefix=$(echo $_artifactVersion | grep -oP '^[0-9]+\.[0-9]+\.')
     else
       local plfversionprefix=$(echo $_artifactVersion | grep -oP '^[0-9]+\.[0-9]+\.[0-9]+')
     fi
-    local _plfversiongrep=$(echo ${plfversionprefix} | sed 's/\./\\./g')   
+    local _plfversiongrep=$(echo ${plfversionprefix} | sed 's/\./\\./g')
+    local _continuousEnabled="${DEPLOYMENT_CONTINUOUS_ENABLED:-false}"
+    if [[ "$_artifactVersion" =~ .*-GA$ ]] && ${_continuousEnabled}; then
+      echo_warn "DEPLOYMENT_CONTINUOUS_ENABLED is enabled but $_artifactVersion only accepts a GA release. Ignoring continuous build artifacts for this resolution."
+      _continuousEnabled=false
+    fi
     set +e
-    if ${DARWIN}; then
-      if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
-      else 
-        _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
-      fi
-    fi
-    if ${LINUX}; then
-      if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
-      else 
-        _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
-      fi
-    fi
+    _artifactTimestampArray=($(do_extract_metadata_versions "$_metadataFile" "$_xpathQuery" "$_plfversiongrep" "$_continuousEnabled"))
     set -e
     if [ -z "${_artifactTimestampArray}" ] && [ -e "$_metadataFile.bck" ]; then
       echo_warn "Current metadata invalid (no more package in the repository ?). Reinstalling previous downloaded version."
       mv ${_metadataFile}.bck ${_metadataFile}
-      if ${DARWIN}; then
-        if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
-        else 
-          _artifactTimestampArray=($(xpath ${_metadataFile} ${_xpathQuery} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
-        fi
-      fi
-      if ${LINUX}; then
-        if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -P .*-[0-9]+$ | xargs))
-        else
-          _artifactTimestampArray=($(xpath -q -e ${_xpathQuery} ${_metadataFile} | grep ${_plfversiongrep} |  sed -e 's/<[^>]*>//g' | grep -Pv .*-[0-9]+$ | xargs))
-        fi
-      fi
+      set +e
+      _artifactTimestampArray=($(do_extract_metadata_versions "$_metadataFile" "$_xpathQuery" "$_plfversiongrep" "$_continuousEnabled"))
+      set -e
+    fi
+    if [[ "$_artifactVersion" =~ .*-GA$ ]]; then
+      # GA means a formal release with no milestone/RC/CP/build suffix
+      _artifactTimestampArray=($(printf '%s\n' "${_artifactTimestampArray[@]}" | grep -Pv -- '-(M|RC|CP)[0-9]*$' | xargs))
     fi
     if [ -z "${_artifactTimestampArray}" ]; then
       echo_error "No package available in the remote repository and no previous version available locally."
       exit 1;
     fi
     rm -f ${_metadataFile}.bck
-    if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-       _artifactTimestampArray=($(do_sort_continuous_releases ${_artifactTimestampArray[@]})) 
+    if ${_continuousEnabled}; then
+       _artifactTimestampArray=($(do_sort_continuous_releases ${_artifactTimestampArray[@]}))
     fi
     _artifactTimestamp="${_artifactTimestampArray[-1]}"
     if [[ "$_artifactVersion" =~ .*-MBL$ ]] && [ ${#_artifactTimestampArray[@]} -gt 1 ]; then
@@ -379,7 +381,7 @@ EOF
   #
   # Create a symlink if it is a SNAPSHOT to the TIMESTAMPED version
   #
-  if [[ "$_artifactVersion" =~ .*-(SNAPSHOT|MBL|MLT) ]]; then
+  if [[ "$_artifactVersion" =~ .*-(SNAPSHOT|MBL|MLT|GA) ]]; then
     ln -fs "$_fileBaseName-$_artifactTimestamp.$_artifactPackaging" "$_downloadDirectory/$_fileBaseName-$_artifactVersion.$_artifactPackaging"
     ln -fs "$_fileBaseName-$_artifactTimestamp.info" "$_downloadDirectory/$_fileBaseName-$_artifactVersion.info"
   fi
