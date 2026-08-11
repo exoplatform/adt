@@ -1098,8 +1098,14 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
  * @return string html markup
  */
 function componentProductVersion ($deployment_descriptor) {
-  if (preg_match("/.*-M(LT|BL)$/", $deployment_descriptor->BASE_VERSION)) {
-    $tooltipmessage=(preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION) ? "Before latest" : "Latest")." release (milestone, RC or GA) - continuous deployment";
+  if (preg_match("/.*-(M(LT|BL)|GA)$/", $deployment_descriptor->BASE_VERSION)) {
+    if (preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION)) {
+      $tooltipmessage="Before latest release (milestone, RC or GA) - continuous deployment";
+    } else if (preg_match("/.*-GA$/", $deployment_descriptor->BASE_VERSION)) {
+      $tooltipmessage="Latest GA release - continuous deployment";
+    } else {
+      $tooltipmessage="Latest release (milestone, RC or GA) - continuous deployment";
+    }
     $content='<span class="text-mono" rel="tooltip" data-original-title="'.$tooltipmessage.'">'.$deployment_descriptor->ARTIFACT_TIMESTAMP.' Auto</span>';
   } else {
     $content=$deployment_descriptor->BASE_VERSION;

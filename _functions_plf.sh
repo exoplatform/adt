@@ -185,15 +185,20 @@ do_install_addons() {
     _addons_manager_option_unstable="--unstable"
   fi
    
-  if echo $DEPLOYMENT_ADDONS | grep -qP "\-M(BL|LT)"; then 
-    if [ ! -z "${MILESTONE_PREFIX}" ] && [ ! -z "${MILESTONE_SUFFIX}" ]; then
-      if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then 
-        DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/${MILESTONE_PREFIX}/g")
-      else 
-        DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/${MILESTONE_PREFIX}${MILESTONE_SUFFIX}/g")
+  if echo $DEPLOYMENT_ADDONS | grep -qP "\-(M(BL|LT)|GA)"; then
+    if echo $DEPLOYMENT_ADDONS | grep -qP "\-GA"; then
+      DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-GA//g")
+    fi
+    if echo $DEPLOYMENT_ADDONS | grep -qP "\-M(BL|LT)"; then
+      if [ ! -z "${MILESTONE_PREFIX}" ] && [ ! -z "${MILESTONE_SUFFIX}" ]; then
+        if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+          DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/${MILESTONE_PREFIX}/g")
+        else
+          DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)/${MILESTONE_PREFIX}${MILESTONE_SUFFIX}/g")
+        fi
+      else
+        DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)//g")
       fi
-    else 
-      DEPLOYMENT_ADDONS=$(echo $DEPLOYMENT_ADDONS | sed -E "s/-M(BL|LT)//g")
     fi
     if echo $DEPLOYMENT_ADDONS | grep -qP "\.Z"; then
       local _addonPatchVersion=$(echo ${ARTIFACT_TIMESTAMP} | grep -oP '^[0-9]+\.[0-9]+\.\K[0-9]+')
