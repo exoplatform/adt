@@ -23,9 +23,11 @@ function targetBranchArgs($repoObject) {
 
 function getRepoGithubUrl($repoObject) {
   try {
-    $url = $repoObject->git('config --get remote.origin.url');
-    if (preg_match("#git@github\.com:(.+)/(.+)\.git#", $url, $m) ||
-        preg_match("#https://github\.com/(.+)/(.+)\.git#", $url, $m)) {
+    $url = trim($repoObject->git('config --get remote.origin.url'));
+    // Remotes are inconsistently cloned with/without a trailing ".git" (both
+    // "git@github.com:org/repo.git" and "git@github.com:org/repo" exist in
+    // the wild here), so treat it as optional rather than requiring it.
+    if (preg_match('#github\.com[:/]+([^/]+)/([^/]+?)(?:\.git)?/?$#', $url, $m)) {
       return "https://github.com/{$m[1]}/{$m[2]}";
     }
   } catch (Exception $e) {}
@@ -35,6 +37,185 @@ function getRepoGithubUrl($repoObject) {
 function isIgnored($name) {
   global $ignored_authors;
   return in_array($name, $ignored_authors);
+}
+
+/**
+ * Maven groupIds tracked for dependency links - only modules published
+ * under these groups can be one of our own repos.
+ */
+$dependency_link_prefixes = array('io.meeds', 'addon.meeds', 'org.exoplatform', 'addon.exo');
+
+function groupIdMatchesDependencyPrefix($groupId) {
+  global $dependency_link_prefixes;
+  foreach ($dependency_link_prefixes as $prefix) {
+    if ($groupId === $prefix || strpos($groupId, $prefix . '.') === 0) return true;
+  }
+  return false;
+}
+
+/** The bare vendor namespaces themselves (e.g. "io.meeds") are shared by too many repos' parent to ever identify one. */
+function groupIdIsGenericPrefix($groupId) {
+  global $dependency_link_prefixes;
+  return in_array($groupId, $dependency_link_prefixes, true);
+}
+
+function getPomXmlAt($repoObject, $ref) {
+  try {
+    $content = $repoObject->git("show {$ref}:pom.xml");
+    return $content !== '' ? $content : null;
+  } catch (Exception $e) {
+    return null;
+  }
+}
+
+/**
+ * Lightweight regex-based pom.xml reader - deliberately avoids ext-simplexml/
+ * ext-dom (not otherwise used anywhere in this codebase, so not guaranteed to
+ * be installed) in favor of plain string matching over the well-known,
+ * predictable shape of a Maven POM.
+ */
+function pomExtractTag($xml, $tag) {
+  if (preg_match('#<' . preg_quote($tag, '#') . '[^>]*>(.*?)</' . preg_quote($tag, '#') . '>#s', $xml, $m)) {
+    return trim($m[1]);
+  }
+  return '';
+}
+
+function pomExtractBlock($xml, $tag) {
+  if (preg_match('#<' . preg_quote($tag, '#') . '[^>]*>(.*?)</' . preg_quote($tag, '#') . '>#s', $xml, $m)) {
+    return $m[1];
+  }
+  return null;
+}
+
+function parsePomXml($xmlContent) {
+  if (empty($xmlContent)) return null;
+  return preg_replace('/<!--.*?-->/s', '', $xmlContent);
+}
+
+/**
+ * The pom's own groupId/artifactId/version sit directly under <project>,
+ * right after </parent> and before the first nested block (<properties>,
+ * <dependencyManagement>, <build>, ...) - so once the parent block is
+ * stripped out, cut the string at the first such block before doing a plain
+ * "first match" lookup, otherwise an omitted own <groupId> (inherited from
+ * the parent, as is common) would wrongly match some dependency's groupId
+ * further down the file instead of falling back to the parent's.
+ */
+function pomOwnHeaderSegment($xml) {
+  $parentBlock = pomExtractBlock($xml, 'parent');
+  $ownXml = $parentBlock !== null ? str_replace("<parent>{$parentBlock}</parent>", '', $xml) : $xml;
+  $boundaryTags = array('properties', 'dependencyManagement', 'dependencies', 'build',
+    'modules', 'profiles', 'scm', 'licenses', 'developers', 'distributionManagement');
+  $cutAt = strlen($ownXml);
+  foreach ($boundaryTags as $tag) {
+    $pos = strpos($ownXml, "<{$tag}>");
+    if ($pos !== false && $pos < $cutAt) $cutAt = $pos;
+  }
+  return array(substr($ownXml, 0, $cutAt), $parentBlock);
+}
+
+/** The pom's own groupId:artifactId (groupId falls back to the parent's when omitted). */
+function pomOwnCoordinates($xml) {
+  list($header, $parentBlock) = pomOwnHeaderSegment($xml);
+  $artifactId = pomExtractTag($header, 'artifactId');
+  $groupId = pomExtractTag($header, 'groupId');
+  if ($groupId === '' && $parentBlock !== null) $groupId = pomExtractTag($parentBlock, 'groupId');
+  return $groupId !== '' && $artifactId !== '' ? "{$groupId}:{$artifactId}" : null;
+}
+
+/**
+ * groupId:artifactId of the modules this pom links "upward" to: its parent
+ * and every dependencyManagement entry under the groupIds we track. Not
+ * restricted to scope=import/type=pom BOM imports - distribution/packaging
+ * repos (e.g. platform-private-distributions) bundle addons as plain
+ * scope=provided/type=zip entries instead, and that's just as real a link.
+ */
+function pomUpperLinks($xml) {
+  $links = array();
+
+  $parentBlock = pomExtractBlock($xml, 'parent');
+  if ($parentBlock !== null) {
+    $groupId = pomExtractTag($parentBlock, 'groupId');
+    $artifactId = pomExtractTag($parentBlock, 'artifactId');
+    if ($groupId !== '' && $artifactId !== '' && groupIdMatchesDependencyPrefix($groupId)) {
+      $links["{$groupId}:{$artifactId}"] = true;
+    }
+  }
+
+  $depMgmtBlock = pomExtractBlock($xml, 'dependencyManagement');
+  $depsBlock = $depMgmtBlock !== null ? pomExtractBlock($depMgmtBlock, 'dependencies') : null;
+  if ($depsBlock !== null && preg_match_all('#<dependency>(.*?)</dependency>#s', $depsBlock, $matches)) {
+    foreach ($matches[1] as $depBlock) {
+      $groupId = pomExtractTag($depBlock, 'groupId');
+      $artifactId = pomExtractTag($depBlock, 'artifactId');
+      if ($groupId !== '' && $artifactId !== '' && groupIdMatchesDependencyPrefix($groupId)) {
+        $links["{$groupId}:{$artifactId}"] = true;
+      }
+    }
+  }
+
+  return array_keys($links);
+}
+
+/**
+ * Builds the dependency-link graph across all tracked repos: for each repo,
+ * which other tracked repos it links to via its pom.xml parent/BOM imports
+ * (read from the same base branch used for activity - see targetBranchArgs()).
+ * Returns array('links' => repo => [repo...], 'github_url' => repo => url|null).
+ */
+function getRepoDependencyGraph($projects) {
+  $cache_key = 'git_activity_dependency_graph_v2';
+  $cached = cacheGet($cache_key);
+  if ($cached !== false) return $cached;
+
+  $coordinates = array(); // "groupId:artifactId" => repo
+  $group_owners = array(); // groupId => repo, or false once claimed by >1 repo (ambiguous)
+  $upper_links = array(); // repo => [ "groupId:artifactId", ... ]
+  $github_urls = array(); // repo => url|null
+
+  foreach (array_keys($projects) as $repo) {
+    $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
+    if (!is_dir($path)) continue;
+    try {
+      $repoObject = new PHPGit_Repository($path);
+      $github_urls[$repo] = getRepoGithubUrl($repoObject);
+      $xml = parsePomXml(getPomXmlAt($repoObject, targetBranchArgs($repoObject)));
+      if (!$xml) continue;
+      $own = pomOwnCoordinates($xml);
+      if ($own) {
+        $coordinates[$own] = $repo;
+        $ownGroupId = strstr($own, ':', true);
+        if (!groupIdIsGenericPrefix($ownGroupId)) {
+          $group_owners[$ownGroupId] = array_key_exists($ownGroupId, $group_owners) ? false : $repo;
+        }
+      }
+      $upper_links[$repo] = pomUpperLinks($xml);
+    } catch (Exception $e) {}
+  }
+  $group_owners = array_filter($group_owners, function($v) { return $v !== false; });
+
+  $links = array();
+  foreach ($upper_links as $repo => $targets) {
+    $resolved = array();
+    foreach ($targets as $coord) {
+      // A submodule (e.g. "social-component-core") is often referenced instead
+      // of the tracked repo's own root artifactId (e.g. "social") - fall back
+      // to matching on groupId alone, which still identifies the repo.
+      if (isset($coordinates[$coord])) {
+        $target = $coordinates[$coord];
+      } else {
+        $groupId = strstr($coord, ':', true);
+        $target = isset($group_owners[$groupId]) ? $group_owners[$groupId] : null;
+      }
+      if ($target !== null && $target !== $repo) $resolved[$target] = true;
+    }
+    if (!empty($resolved)) $links[$repo] = array_keys($resolved);
+  }
+
+  $result = array('links' => $links, 'github_url' => $github_urls);
+  cacheSet($cache_key, $result, 3600);
+  return $result;
 }
 
 function getGithubUsername($email) {
@@ -338,6 +519,14 @@ $github_orgs = array('meeds-io', 'exoplatform');
 foreach ($github_orgs as $org) {
   $github_pr_data[$org] = getGitHubPRData($org, $github_token, $days_back);
 }
+
+$dependency_graph = getRepoDependencyGraph($projects);
+$dependency_links = $dependency_graph['links'];
+$dependency_repo_github_urls = $dependency_graph['github_url'];
+// Every tracked repo gets a row (even leaves with no outgoing links) so that
+// "Depends on" badges always have a same-page anchor to jump to.
+$dependency_table_repos = $projects;
+ksort($dependency_table_repos);
 ?>
 <html lang="en">
 <head>
@@ -350,6 +539,11 @@ foreach ($github_orgs as $org) {
     .metric__value--label { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .link-reset { color: inherit; text-decoration: none; }
     .link-reset:hover { text-decoration: underline; }
+    [id^="repo-"] { scroll-margin-top: 1rem; }
+    .dependency-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .dependency-link:hover .badge { background-color: var(--accent) !important; }
+    /* Override the generic (static amber) tr.highlight so the jumped-to row follows the active accent theme */
+    tr.dependency-row.highlight td { background: var(--accent-soft) !important; border-bottom: 1px solid var(--accent); }
     .avatar-sm { width: 20px; height: 20px; border-radius: 50%; vertical-align: middle; margin-right: 0.4rem; }
     .days-filter { flex-shrink: 0; }
     @media (max-width: 576px) {
@@ -549,6 +743,60 @@ foreach ($github_orgs as $org) {
       </div>
 
       <div class="section-title">
+        <i class="fas fa-diagram-project" aria-hidden="true"></i> Dependency Links
+      </div>
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-diagram-project me-1"></i> Repository dependency links
+          <small class="text-muted ms-2">(pom.xml parent &amp; imported BOMs on <code>develop</code>)</small>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 activity-list">
+              <thead class="table-dark">
+                <tr>
+                  <th>Repository</th>
+                  <th>Depends on</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php if (empty($dependency_table_repos)): ?>
+                <tr><td colspan="2" class="text-center text-muted py-3">No dependency links found</td></tr>
+                <?php else: ?>
+                <?php foreach ($dependency_table_repos as $repo => $label): ?>
+                <tr id="repo-<?= htmlspecialchars($repo) ?>">
+                  <td>
+                    <?php $repo_url = isset($dependency_repo_github_urls[$repo]) ? $dependency_repo_github_urls[$repo] : null; ?>
+                    <?php if ($repo_url): ?><a href="<?= htmlspecialchars($repo_url) ?>" target="_blank" class="link-reset" title="Open <?= htmlspecialchars($label) ?> on GitHub"><span class="badge bg-secondary"><?= htmlspecialchars($label) ?></span></a><?php else: ?><span class="badge bg-secondary"><?= htmlspecialchars($label) ?></span><?php endif; ?>
+                  </td>
+                  <td>
+                    <?php
+                    $targets = isset($dependency_links[$repo]) ? $dependency_links[$repo] : array();
+                    usort($targets, function($a, $b) use ($projects) {
+                      return strcasecmp(isset($projects[$a]) ? $projects[$a] : $a, isset($projects[$b]) ? $projects[$b] : $b);
+                    });
+                    ?>
+                    <?php if (empty($targets)): ?>
+                    <span class="text-muted">&mdash;</span>
+                    <?php else: ?>
+                    <div class="dependency-badges">
+                    <?php foreach ($targets as $target): ?>
+                      <?php $target_label = isset($projects[$target]) ? $projects[$target] : $target; ?>
+                      <a href="#repo-<?= htmlspecialchars($target) ?>" class="link-reset dependency-link" title="Jump to <?= htmlspecialchars($target_label) ?>"><span class="badge bg-secondary"><?= htmlspecialchars($target_label) ?></span></a>
+                    <?php endforeach; ?>
+                    </div>
+                    <?php endif; ?>
+                  </td>
+                </tr>
+                <?php endforeach; ?>
+                <?php endif; ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
         <i class="fas fa-history" aria-hidden="true"></i> Recent Commits
       </div>
       <div class="card mb-4">
@@ -600,6 +848,18 @@ $(document).ready(function() {
   tooltipTriggerList.map(function(tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);
   });
+
+  // Highlight the dependency-links row jumped to via a "Depends on" badge
+  // or a direct #repo-xxx link, so the target is easy to spot after the scroll.
+  function highlightDependencyRow() {
+    var current = document.querySelector('.dependency-row.highlight');
+    if (current) current.classList.remove('highlight');
+    if (location.hash.indexOf('#repo-') !== 0) return;
+    var row = document.querySelector(location.hash);
+    if (row) row.classList.add('highlight', 'dependency-row');
+  }
+  highlightDependencyRow();
+  window.addEventListener('hashchange', highlightDependencyRow);
 
   var chartColors = {
     primary: getComputedStyle(document.documentElement).getPropertyValue('--secondary-color').trim() || '#3498db',
