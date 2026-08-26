@@ -2093,6 +2093,40 @@ body.log-fullscreen-active {
   box-shadow: 0 4px 20px var(--accent-glow);
 }
 
+/* Scroll to top */
+#scrollTopBtn {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: #fff;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(10px);
+  transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out),
+              visibility 0.25s, background 0.2s ease, box-shadow 0.2s ease;
+}
+#scrollTopBtn.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+#scrollTopBtn:hover {
+  background: var(--accent2);
+  box-shadow: 0 4px 20px var(--accent-glow);
+}
+
 /* ================================================================
    UTILITY
    ================================================================ */

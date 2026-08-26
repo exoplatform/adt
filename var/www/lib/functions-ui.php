@@ -502,6 +502,11 @@ function pageFooter() {
       <i class="fas fa-chart-bar" aria-hidden="true"></i> Stats
     </a>
   </footer>
+
+  <button type="button" id="scrollTopBtn" aria-label="Scroll to top" title="Scroll to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
   <script type="text/javascript">
     $(document).ready(function() {
       // Initialize Bootstrap tooltips
@@ -526,6 +531,20 @@ function pageFooter() {
         });
       });
     });
+
+    // Scroll-to-top button
+    (function() {
+      var scrollTopBtn = document.getElementById('scrollTopBtn');
+      if (!scrollTopBtn) return;
+      function toggleScrollTopBtn() {
+        scrollTopBtn.classList.toggle('visible', window.scrollY > 300);
+      }
+      window.addEventListener('scroll', toggleScrollTopBtn, { passive: true });
+      toggleScrollTopBtn();
+      scrollTopBtn.addEventListener('click', function() {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+    })();
 
     // Service Worker registration with update handling
     if ('serviceWorker' in navigator) {
