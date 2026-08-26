@@ -550,6 +550,11 @@ ksort($dependency_table_repos);
       .days-filter { width: 100%; }
       .days-filter .btn { flex: 1 1 0; }
     }
+    /* Below 768px the sticky .mobile-bar covers the top of the viewport - give
+       jumped-to rows enough clearance to land below it instead of under it. */
+    @media (max-width: 768px) {
+      [id^="repo-"] { scroll-margin-top: 4rem; }
+    }
   </style>
 </head>
 <body>
