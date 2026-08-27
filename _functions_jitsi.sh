@@ -235,7 +235,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} exoplatform/exo-excalidraw-backend:"${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"  
+    --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} jitsi/excalidraw-backend:"${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} container started"
 }
 

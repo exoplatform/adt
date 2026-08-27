@@ -392,7 +392,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_JITSI_JICOFO_XMX" 1g
       configurable_env_var "DEPLOYMENT_JITSI_JVB_XMX" 1g
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
-      configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "1.2"
+      configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "2026.3.0"
 
       # Jitsi secrets and passwords
       configurable_env_var "DEPLOYMENT_JITSI_EXO_JWT_SECRET" "$(fqdn_rand_string 32 'exo-jwt' ${INSTANCE_KEY})"
