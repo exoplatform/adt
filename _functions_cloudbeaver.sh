@@ -88,6 +88,7 @@ do_start_cloudbeaver() {
   -p "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}:8978" \
   -v "${DEPLOYMENT_DIR}/data-sources.json:/opt/cloudbeaver/workspace/GlobalConfiguration/.dbeaver/data-sources.json" \
   -e "CLOUDBEAVER_ROOT_URI=/cloudbeaver" \
+  -e "CLOUDBEAVER_AI_CHAT_DISABLED=${DEPLOYMENT_CLOUDBEAVER_AI_CHAT_DISABLED}" \
   --add-host=host.docker.internal:${DB_ADDR} \
   --name ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION}
 
