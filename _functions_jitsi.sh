@@ -121,10 +121,8 @@ do_start_jitsi() {
   echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
-  cp -v ${ETC_DIR}/jitsi/algorithm.cfg.lua ${DEPLOYMENT_DIR}/algorithm.cfg.lua
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_DIR}/algorithm.cfg.lua:/config/config.d/algorithm.cfg.lua:ro \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -134,7 +132,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}
+    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} ghcr.io/jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -150,7 +148,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} ghcr.io/jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi JVB container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} based on image jitsi/jvb:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -169,7 +167,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} ghcr.io/jitsi/jvb:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} based on image jitsi/jibri:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -195,7 +193,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} ghcr.io/jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image exoplatform/jitsi-web:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -203,8 +201,8 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
-    -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
+    -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:8000" \
+    -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:8443" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
