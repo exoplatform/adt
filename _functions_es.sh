@@ -183,21 +183,21 @@ do_upgrade(){
     for elasticsearch_version in ${DEPLOYMENT_ES_INTERMEDIATE_UPGRADE_VERSIONS}; do
       echo_info "Starting elasticsearch migration to ${elasticsearch_version}"
       ${DOCKER_CMD} run \
-        -d \
-        -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
-        -v ${mount_point}:/usr/share/elasticsearch/data \
-        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
-        -e "node.name=${INSTANCE_KEY}" \
-        -e "cluster.name=${INSTANCE_KEY}" \
-        -e cluster.initial_master_nodes="${INSTANCE_KEY}" \
-        -e network.host=_site_ \
-        -e xpack.security.enabled=false \
-        -h 'search-intermediate' \
-        --health-cmd='curl --silent --fail search-intermediate:9200/_cluster/health || exit 1' \
-        --health-interval=30s \
-        --health-timeout=30s \
-        --health-retries=3 \
-        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${elasticsearch_version}
+      -d \
+      -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
+      -v ${mount_point}:/usr/share/elasticsearch/data \
+      -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
+      -e "node.name=${INSTANCE_KEY}" \
+      -e "cluster.name=${INSTANCE_KEY}" \
+      -e cluster.initial_master_nodes="${INSTANCE_KEY}" \
+      -e network.host=_site_ \
+      -e xpack.security.enabled=false \
+      -h 'search-intermediate' \
+      --health-cmd='curl --silent --fail search-intermediate:9200/_cluster/health || exit 1' \
+      --health-interval=30s \
+      --health-timeout=30s \
+      --health-retries=3 \
+      --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${elasticsearch_version}
       check_es_availability ${DEPLOYMENT_ES_HTTP_PORT}
       if [[ "${elasticsearch_version}" == 8* ]]; then
         echo_info "check for obsolete analytics indices"
