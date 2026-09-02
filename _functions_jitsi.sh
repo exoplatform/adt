@@ -134,7 +134,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}
+    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} ghcr.io/jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image jitsi/jicofo:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -150,7 +150,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} ghcr.io/jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi JVB container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} based on image jitsi/jvb:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -169,7 +169,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} jitsi/jvb:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} ghcr.io/jitsi/jvb:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} based on image jitsi/jibri:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
@@ -195,7 +195,7 @@ do_start_jitsi() {
     --health-interval=30s \
     --health-timeout=30s \
     --health-retries=3 \
-    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} ghcr.io/jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} container started"
 
   echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image exoplatform/jitsi-web:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
