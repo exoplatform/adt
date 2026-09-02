@@ -191,7 +191,8 @@ Environment Variables
 
   DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
   DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
-  DEPLOYMENT_ES7_MIGRATION_ENABLED  : Enable elastic serach migration to version 7
+  DEPLOYMENT_ES_MIGRATION_ENABLED  : Enable elasticserach migration
+  DEPLOYMENT_ES_INTERMEDIATE_UPGRADE_VERSIONS  : elasticseach intermediate versions used in migration
   DEPLOYMENT_GZIP_ENABLED           : Enable Gzip Compression on the Tomcat Server
   DEPLOYMENT_LOGBACK_LOGGERS        : Enable Debug logging for java packages (comma seperated eg: org.exoplatform:DEBUG,org.hibernate,org.springframework:ERROR), Default logging level is DEBUG
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
@@ -2461,35 +2462,6 @@ do_start() {
   if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
     echo_info "DEV Mode is enabled."
   fi
-
-  if ${DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED:-false}; then
-    echo_info "Elasticsearch Embedded to Standalone migration is successfully done. Please remove DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED property!"
-  fi
-  if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
-    # Anyway no way to handle the error case. hard luck! We remove container ES5 anyway
-    END_MIGRATION_ES_MSG_ERROR="Elasticsearch upgrade failed due to previous errors"
-    END_MIGRATION_ES_MSG_SUCCESS="Elasticsearch upgrade proceeded successfully"
-    # Check for the end of ES migration
-    set +e
-    while [ true ];
-    do
-      if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}" || grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
-        break
-      fi
-      sleep 1
-    done
-    set -e
-    echo_info "ES7 Upgrade is finished. Cleaning up ES5..."
-    do_drop_es_old
-    echo_info "Cleanup finished!"
-    if grep -q "${END_MIGRATION_ES_MSG_ERROR}" "${DEPLOYMENT_LOG_PATH}"; then
-      echo_warn "Elasticsearch 7 Migration is done with errors. This operation cannot be repeated! Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
-    elif grep -q "${END_MIGRATION_ES_MSG_SUCCESS}" "${DEPLOYMENT_LOG_PATH}"; then
-      echo_info "Elasticsearch 7 Migration is successfully done. Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED property!"
-    fi
-  fi
-
-
   )
 }
 
