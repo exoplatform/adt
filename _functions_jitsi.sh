@@ -123,6 +123,7 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
+    -v ${DEPLOYMENT_DIR}/prosody:/config:Z \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
