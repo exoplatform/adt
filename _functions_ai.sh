@@ -79,8 +79,11 @@ do_start_ai() {
     -h "${DEPLOYMENT_AI_CONTAINER_NAME}" \
     -p "${DEPLOYMENT_AI_PORT}:11434" \
     -v "${DEPLOYMENT_DIR}/ollama:/root/.ollama" \
-    -e OLLAMA_NUM_PARALLEL=8 \
+    -e OLLAMA_NUM_PARALLEL=${DEPLOYMENT_AI_OLLAMA_NUM_PARALLEL} \
     -e OLLAMA_HOST=0.0.0.0 \
+    -e OLLAMA_KEEP_ALIVE=${DEPLOYMENT_AI_OLLAMA_KEEP_ALIVE} \
+    --memory=${DEPLOYMENT_AI_OLLAMA_MEM_LIMIT} \
+    --cpus=${DEPLOYMENT_AI_OLLAMA_CPU_LIMIT} \
     --health-cmd='ollama --version && ollama ps || exit 1' \
     --health-interval=30s \
     --health-timeout=10s \

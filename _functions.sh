@@ -362,6 +362,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_AI_ENABLED" false
       configurable_env_var "DEPLOYMENT_AI_IMAGE" "ollama/ollama"
       configurable_env_var "DEPLOYMENT_AI_IMAGE_VERSION" "0.32.1"
+      configurable_env_var "DEPLOYMENT_AI_OLLAMA_MEM_LIMIT" "8g"
+      configurable_env_var "DEPLOYMENT_AI_OLLAMA_CPU_LIMIT" "4"
+      configurable_env_var "DEPLOYMENT_AI_OLLAMA_NUM_PARALLEL" "4"
+      configurable_env_var "DEPLOYMENT_AI_OLLAMA_KEEP_ALIVE" "5m"
 
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "hbenali/frontail"
