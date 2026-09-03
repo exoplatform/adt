@@ -201,7 +201,7 @@ do_start_jitsi() {
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    --user prdacc \
+    --user root \
     -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:8000" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:8443" \
     -v "${DEPLOYMENT_DIR}/config:/config" \
