@@ -17,7 +17,7 @@ fi
 
 do_get_jitsi_settings() {
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
-    return
+    return;
   fi
   env_var DEPLOYMENT_JITSI_CALL_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_call"
   env_var DEPLOYMENT_JITSI_WEB_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_web"
@@ -51,15 +51,16 @@ do_drop_jitsi_data() {
     delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
     echo_info "Drops Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} ..."
     delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
+    echo_info "Done."
     echo_info "Jitsi data dropped"
   else
-    echo_info "Jitsi not enabled, skipping data drop"
+    echo_info "Skip Drops Jitsi container ..."
   fi
 }
 
 do_create_jitsi() {
   if ${DEPLOYMENT_JITSI_ENABLED}; then
-    echo_info "Creating Jitsi Docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
+    echo_info "Creation of the Jitsi Docker network ${DEPLOYMENT_JITSI_NETWORK_NAME} ..."
     create_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
   fi
 }
@@ -67,7 +68,7 @@ do_create_jitsi() {
 do_stop_jitsi() {
   echo_info "Stopping Jitsi ..."
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
-    echo_info "Jitsi not enabled, skipping containers shutdown"
+    echo_info "Jitsi wasn't specified, skiping its containers shutdown"
     return
   fi
   ensure_docker_container_stopped ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
@@ -377,7 +378,7 @@ do_start_jitsi_rootless() {
   check_jitsi_web_availability
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
-  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3"
+  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3 || true"
 
   echo_info "Starting Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} based on image exoplatform/exo-excalidraw-backend:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
   delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
@@ -415,45 +416,45 @@ check_jitsi_call_availability() {
   local RET=-1
 
   while [ $count -lt $try -a $RET -ne 0 ]; do
-    count=$(( count + 1 ))
+    count=$(( $count + 1 ))
     set +e
-    curl -s -q --max-time ${wait_time} "http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}" > /dev/null
+    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}  > /dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
-      [ $(( count % 10 )) -eq 0 ] && echo_info "Jitsi Call not yet available (${count} / ${try})..."
+      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Call not yet available (${count} / ${try})..."
       echo -n "."
       sleep $wait_time
     fi
     set -e
   done
   if [ $count -eq $try ]; then
-    echo_error "Jitsi Call ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} not available after $(( count * wait_time ))s"
+    echo_error "Jitsi Call ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
     exit 1
   fi
   echo_info "Jitsi Call ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} up and available"
 }
 
 check_jitsi_web_availability() {
-  echo_info "Waiting for Jitsi Web availability on port ${DEPLOYMENT_JITSI_WEB_HTTP_PORT}"
+  echo_info "Waiting for Jitsi Web availability on port ${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}"
   local count=0
   local try=600
   local wait_time=1
   local RET=-1
 
   while [ $count -lt $try -a $RET -ne 0 ]; do
-    count=$(( count + 1 ))
+    count=$(( $count + 1 ))
     set +e
-    curl -s -q --max-time ${wait_time} "http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}" > /dev/null
+    curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}  > /dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
-      [ $(( count % 10 )) -eq 0 ] && echo_info "Jitsi Web not yet available (${count} / ${try})..."
+      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Web not yet available (${count} / ${try})..."
       echo -n "."
       sleep $wait_time
     fi
     set -e
   done
   if [ $count -eq $try ]; then
-    echo_error "Jitsi Web ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} not available after $(( count * wait_time ))s"
+    echo_error "Jitsi Web ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} not available after $(( ${count} * ${wait_time}))s"
     exit 1
   fi
   echo_info "Jitsi Web ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} up and available"
