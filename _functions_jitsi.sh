@@ -93,7 +93,7 @@ do_stop_jitsi() {
 # Image registry: jitsi/* (Docker Hub), exoplatform/jitsi-web
 # jitsi-web nginx listens on 80 (http) / 443 (https)
 # #############################################################################
-do_start_jitsi() {
+do_start_jitsi_legacy() {
   echo_info "Starting Jitsi..."
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     echo_info "Jitsi not specified, skiping its containers startup"
@@ -243,15 +243,13 @@ do_start_jitsi() {
 
 # #############################################################################
 # Rootless startup — PLF >= 7.3 (jitsi stable-11146 and later, uid 1000)
-# Differences vs do_start_jitsi:
+# Differences vs do_start_jitsi_legacy:
 #   - Image registry: ghcr.io/jitsi/* instead of Docker Hub jitsi/*
 #   - jitsi-web nginx listens on 8000 (http) / 8443 (https) instead of 80/443
 #   - jitsi-web /config mounted as tmpfs (rootfs is read-only in rootless mode)
 #   - jitsi-web healthcheck targets port 8000
 # #############################################################################
 do_start_jitsi_rootless() {
-  echo_info "PRODUCT_VERSION=${PRODUCT_VERSION}"
-  echo_info "DEPLOYMENT_JITSI_IMAGE_VERSION=${DEPLOYMENT_JITSI_IMAGE_VERSION:-NOT_SET}"
   echo_info "Starting Jitsi..."
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     echo_info "Jitsi not specified, skiping its containers startup"
@@ -400,13 +398,15 @@ do_start_jitsi_rootless() {
   echo_info "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} container started"
 }
 
+do_start_jitsi() {
   if [[ "${PRODUCT_VERSION}" =~ ^(7\.[3-9]|[89]\.|[1-9][0-9]\.) ]]; then
     echo_info "PLF version ${PRODUCT_VERSION} > 7.3: using rootless Jitsi startup"
     do_start_jitsi_rootless
   else
     echo_info "PLF version ${PRODUCT_VERSION} < 7.3: using legacy Jitsi startup"
-      do_start_jitsi
+      do_start_jitsi_legacy
   fi
+}
 
 check_jitsi_call_availability() {
   echo_info "Waiting for Jitsi Call availability on port ${DEPLOYMENT_JITSI_CALL_HTTP_PORT}"
