@@ -19,14 +19,14 @@ do_get_jitsi_settings() {
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     return
   fi
-  env_var DEPLOYMENT_JITSI_CALL_CONTAINER_NAME              "${INSTANCE_KEY}_jitsi_call"
-  env_var DEPLOYMENT_JITSI_WEB_CONTAINER_NAME               "${INSTANCE_KEY}_jitsi_web"
-  env_var DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME           "${INSTANCE_KEY}_jitsi_prosody"
-  env_var DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME            "${INSTANCE_KEY}_jitsi_jicofo"
-  env_var DEPLOYMENT_JITSI_JVB_CONTAINER_NAME               "${INSTANCE_KEY}_jitsi_jvb"
-  env_var DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME             "${INSTANCE_KEY}_jitsi_jibri"
+  env_var DEPLOYMENT_JITSI_CALL_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_call"
+  env_var DEPLOYMENT_JITSI_WEB_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_web"
+  env_var DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_prosody"
+  env_var DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jicofo"
+  env_var DEPLOYMENT_JITSI_JVB_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jvb"
+  env_var DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_jibri"
   env_var DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME "${INSTANCE_KEY}_jitsi_excalidraw_backend"
-  env_var DEPLOYMENT_JITSI_NETWORK_NAME                     "$(tolower "${INSTANCE_KEY}").jitsi"
+  env_var DEPLOYMENT_JITSI_NETWORK_NAME "$(tolower "${INSTANCE_KEY}").jitsi"
 }
 
 #
@@ -90,7 +90,6 @@ do_stop_jitsi() {
 
 # #############################################################################
 # Legacy startup — PLF < 7.3, root-based containers (jitsi stable-10888 and earlier)
-# Image registry: jitsi/* (Docker Hub), exoplatform/jitsi-web
 # jitsi-web nginx listens on 80 (http) / 443 (https)
 # #############################################################################
 do_start_jitsi_legacy() {
