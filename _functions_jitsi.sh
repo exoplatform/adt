@@ -87,14 +87,6 @@ do_stop_jitsi() {
   echo_info "Done."
 }
 
-  if [[ "${PRODUCT_VERSION}" =~ ^(7\.[3-9]|[89]\.|[1-9][0-9]\.) ]]; then
-    echo_info "PLF version ${PRODUCT_VERSION} > 7.3: using rootless Jitsi startup"
-    do_start_jitsi_rootless
-  else
-    echo_info "PLF version ${PRODUCT_VERSION} < 7.3: using legacy Jitsi startup"
-    do_start_jitsi
-  fi
-}
 
 # #############################################################################
 # Legacy startup — PLF < 7.3, root-based containers (jitsi stable-10888 and earlier)
@@ -134,10 +126,8 @@ do_start_jitsi() {
   echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
-  cp -v ${ETC_DIR}/jitsi/algorithm.cfg.lua ${DEPLOYMENT_DIR}/algorithm.cfg.lua
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_DIR}/algorithm.cfg.lua:/config/config.d/algorithm.cfg.lua:ro \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -258,8 +248,6 @@ do_start_jitsi() {
 #   - jitsi-web nginx listens on 8000 (http) / 8443 (https) instead of 80/443
 #   - jitsi-web /config mounted as tmpfs (rootfs is read-only in rootless mode)
 #   - jitsi-web healthcheck targets port 8000
-#   - No algorithm.cfg.lua volume on prosody (certs generated fresh each start,
-#     avoids stale anonymous-volume uid mismatch on image upgrades)
 # #############################################################################
 do_start_jitsi_rootless() {
   echo_info "Starting Jitsi..."
@@ -409,6 +397,14 @@ do_start_jitsi_rootless() {
     --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} jitsi/excalidraw-backend:"${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} container started"
 }
+
+  if [[ "${PRODUCT_VERSION}" =~ ^(7\.[3-9]|[89]\.|[1-9][0-9]\.) ]]; then
+    echo_info "PLF version ${PRODUCT_VERSION} > 7.3: using rootless Jitsi startup"
+    do_start_jitsi_rootless
+  else
+    echo_info "PLF version ${PRODUCT_VERSION} < 7.3: using legacy Jitsi startup"
+      do_start_jitsi
+  fi
 
 check_jitsi_call_availability() {
   echo_info "Waiting for Jitsi Call availability on port ${DEPLOYMENT_JITSI_CALL_HTTP_PORT}"
