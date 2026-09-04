@@ -15,12 +15,6 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
-# PLF major.minor version from which Jitsi containers run rootless (uid 1000):
-# stable-11146 introduced rootless mode: ports 8000/8443, read-only rootfs.
-# Applies to PLF 7.3 and above (7.3, 7.4, 8.x, ...).
-readonly JITSI_ROOTLESS_MIN_MAJOR=7
-readonly JITSI_ROOTLESS_MIN_MINOR=3
-
 do_get_jitsi_settings() {
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     return
@@ -93,34 +87,11 @@ do_stop_jitsi() {
   echo_info "Done."
 }
 
-# #############################################################################
-# Dispatcher: routes to legacy (root) or rootless based on PLF product version.
-# Rootless applies to PLF >= 7.3 (7.3.x, 7.4.x, 8.x, ...).
-# PRODUCT_VERSION formats supported:
-#   X.Y.Z  |  X.Y.Z-SNAPSHOT  |  X.Y.Z-MLT  |  X.Y.Z-MBL  |  X.Y.Z-GA
-#   X.Y.Z-meed-MLT  |  X.Y.Z-MBL  |  X.Y.Z-<qualifier>
-#   X.Y.Z-GA  |  X.Y.Z-<any suffix>
-# Replace any direct call to do_start_jitsi with this function.
-# #############################################################################
-do_start_jitsi_dispatcher() {
-  local plf_major plf_minor
-  # Extract X.Y from any supported PRODUCT_VERSION format (X.Y.Z[-suffix])
-  if [[ "${PRODUCT_VERSION}" =~ ^([0-9]+)\.([0-9]+)\. ]]; then
-    plf_major="${BASH_REMATCH[1]}"
-    plf_minor="${BASH_REMATCH[2]}"
-  else
-    echo_warn "Cannot parse PRODUCT_VERSION='${PRODUCT_VERSION}', falling back to legacy do_start_jitsi"
-    do_start_jitsi
-    return
-  fi
-
-  # Version comparison: rootless if PLF >= JITSI_ROOTLESS_MIN_MAJOR.JITSI_ROOTLESS_MIN_MINOR
-  if (( plf_major > JITSI_ROOTLESS_MIN_MAJOR )) || \
-     (( plf_major == JITSI_ROOTLESS_MIN_MAJOR && plf_minor >= JITSI_ROOTLESS_MIN_MINOR )); then
-    echo_info "PLF version ${plf_major}.${plf_minor} >= ${JITSI_ROOTLESS_MIN_MAJOR}.${JITSI_ROOTLESS_MIN_MINOR}: using rootless Jitsi startup"
+  if [[ "${PRODUCT_VERSION}" =~ ^(7\.[3-9]|[89]\.|[1-9][0-9]\.) ]]; then
+    echo_info "PLF version ${PRODUCT_VERSION} > 7.3: using rootless Jitsi startup"
     do_start_jitsi_rootless
   else
-    echo_info "PLF version ${plf_major}.${plf_minor} < ${JITSI_ROOTLESS_MIN_MAJOR}.${JITSI_ROOTLESS_MIN_MINOR}: using legacy Jitsi startup"
+    echo_info "PLF version ${PRODUCT_VERSION} < 7.3: using legacy Jitsi startup"
     do_start_jitsi
   fi
 }
