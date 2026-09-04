@@ -250,6 +250,8 @@ do_start_jitsi() {
 #   - jitsi-web healthcheck targets port 8000
 # #############################################################################
 do_start_jitsi_rootless() {
+  echo_info "PRODUCT_VERSION=${PRODUCT_VERSION}"
+  echo_info "DEPLOYMENT_JITSI_IMAGE_VERSION=${DEPLOYMENT_JITSI_IMAGE_VERSION:-NOT_SET}"
   echo_info "Starting Jitsi..."
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     echo_info "Jitsi not specified, skiping its containers startup"
