@@ -15,7 +15,7 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
-do_get_jitsi_settings() {  
+do_get_jitsi_settings() {
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     return;
   fi
@@ -88,7 +88,12 @@ do_stop_jitsi() {
   echo_info "Done."
 }
 
-do_start_jitsi() {
+
+# #############################################################################
+# Legacy startup — PLF < 7.3, root-based containers (jitsi stable-10888 and earlier)
+# jitsi-web nginx listens on 80 (http) / 443 (https)
+# #############################################################################
+do_start_jitsi_legacy() {
   echo_info "Starting Jitsi..."
   if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
     echo_info "Jitsi not specified, skiping its containers startup"
@@ -121,10 +126,8 @@ do_start_jitsi() {
   echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
-  cp -v ${ETC_DIR}/jitsi/algorithm.cfg.lua ${DEPLOYMENT_DIR}/algorithm.cfg.lua
   ${DOCKER_CMD} run \
     -d \
-    -v ${DEPLOYMENT_DIR}/algorithm.cfg.lua:/config/config.d/algorithm.cfg.lua:ro \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -219,9 +222,8 @@ do_start_jitsi() {
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3"
-  
-  echo_info "Starting Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} based on image exoplatform/exo-excalidraw-backend:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
 
+  echo_info "Starting Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} based on image exoplatform/exo-excalidraw-backend:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
   delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
@@ -239,6 +241,173 @@ do_start_jitsi() {
   echo_info "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} container started"
 }
 
+# #############################################################################
+# Rootless startup — PLF >= 7.3 (jitsi stable-11146 and later, uid 1000)
+# Differences vs do_start_jitsi_legacy:
+#   - Image registry: ghcr.io/jitsi/* instead of Docker Hub jitsi/*
+#   - jitsi-web nginx listens on 8000 (http) / 8443 (https) instead of 80/443
+#   - jitsi-web /config mounted as tmpfs (rootfs is read-only in rootless mode)
+#   - jitsi-web healthcheck targets port 8000
+# #############################################################################
+do_start_jitsi_rootless() {
+  echo_info "Starting Jitsi..."
+  if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
+    echo_info "Jitsi not specified, skiping its containers startup"
+    return
+  fi
+  # TL;DR: export All envrionment variables included on this template
+  if [[ "$DEPLOYMENT_JITSI_IMAGE_VERSION" =~ ^stable-([0-9]+) ]]; then
+    build_number="${BASH_REMATCH[1]}"
+    jitsi_major_version=$(( build_number / 1000 ))
+  else
+    jitsi_major_version="10" # default latest version
+  fi
+  export DEPLOYMENT_URL DEPLOYMENT_JITSI_NETWORK_NAME DEPLOYMENT_JITSI_JVB_PORT jitsi_major_version
+  evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
+  echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}"
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
+  create_docker_network ${DEPLOYMENT_JITSI_NETWORK_NAME}
+  ${DOCKER_CMD} pull ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}
+  ${DOCKER_CMD} run \
+    -d \
+    -p "${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --memory "${DEPLOYMENT_JITSI_MEM_LIMIT}" \
+    --name ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}
+  echo_info "${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} container started"
+  check_jitsi_call_availability
+
+  echo_info "Starting Jitsi prosody container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} based on image ghcr.io/jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
+  ${DOCKER_CMD} run \
+    -d \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    -h "jitsi-prosody" \
+    --health-cmd="timeout 2 /bin/bash -c '</dev/tcp/jitsi-prosody/5222' && timeout 2 /bin/bash -c '</dev/tcp/jitsi-prosody/5280' || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
+    --name ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} ghcr.io/jitsi/prosody:${DEPLOYMENT_JITSI_IMAGE_VERSION}
+  echo_info "${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME} container started"
+
+  echo_info "Starting Jitsi Jicofo container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} based on image ghcr.io/jitsi/jicofo:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME}
+  ${DOCKER_CMD} run \
+    -d \
+    -e JICOFO_MAX_MEMORY="${DEPLOYMENT_JITSI_JICOFO_XMX}" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    --health-cmd="wget -qO /dev/null http://127.0.0.1:8888/about/health?list_jvb=true || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
+    --name ${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} ghcr.io/jitsi/jicofo:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  echo_info "${DEPLOYMENT_JITSI_JICOFO_CONTAINER_NAME} container started"
+
+  echo_info "Starting Jitsi JVB container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} based on image ghcr.io/jitsi/jvb:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME}
+  ${DOCKER_CMD} run \
+    -d \
+    -p "${DEPLOYMENT_JITSI_JVB_PORT}:${DEPLOYMENT_JITSI_JVB_PORT}/udp" \
+    -p "${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
+    -e VIDEOBRIDGE_MAX_MEMORY="${DEPLOYMENT_JITSI_JVB_XMX}" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "jvb.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    --health-cmd="curl --silent --fail http://127.0.0.1:8080/about/health || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
+    --name ${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} ghcr.io/jitsi/jvb:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  echo_info "${DEPLOYMENT_JITSI_JVB_CONTAINER_NAME} container started"
+
+  echo_info "Starting Jitsi Jibri container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} based on image ghcr.io/jitsi/jibri:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
+  cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
+  chmod +x ${DEPLOYMENT_DIR}/finalize.sh
+  evaluate_file_content ${ETC_DIR}/jitsi/jibri/jibri.conf.j2 ${DEPLOYMENT_DIR}/jibri.conf
+  ${DOCKER_CMD} run \
+    -d \
+    -v /dev/shm:/dev/shm \
+    -v ${DEPLOYMENT_DIR}/jibri.conf:/etc/jitsi/jibri/jibri.conf:ro \
+    -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
+    --memory "${DEPLOYMENT_JITSI_MEM_LIMIT}" \
+    --cap-add SYS_ADMIN \
+    --cap-add NET_BIND_SERVICE \
+    --device /dev/snd \
+    --shm-size=2gb \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    --health-cmd="curl --silent --fail http://127.0.0.1:2222/jibri/api/v1.0/health | jq -e '.status.health.healthStatus == \"HEALTHY\"' || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
+    --name ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} ghcr.io/jitsi/jibri:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  echo_info "${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME} container started"
+
+  echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image exoplatform/jitsi-web:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  # Ensure there is no container with the same name
+  delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
+  ${DOCKER_CMD} run \
+    -d \
+    --mount type=tmpfs,destination=/config \
+    -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:8000" \
+    -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:8443" \
+    --env-file ${DEPLOYMENT_DIR}/jitsi.env \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    --health-cmd="wget -qO /dev/null 127.0.0.1:8000 || exit 1" \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
+    --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} exoplatform/jitsi-web:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
+  echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
+  check_jitsi_web_availability
+  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
+  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
+  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3 || true"
+
+  echo_info "Starting Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} based on image exoplatform/exo-excalidraw-backend:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
+  delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
+  ${DOCKER_CMD} run \
+    -d \
+    --init=true \
+    -p "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}:80" \
+    --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
+    --restart unless-stopped \
+    -h "jitsi-excalidraw-backend" \
+    --health-cmd='wget -qO- http://jitsi-excalidraw-backend &> /dev/null || exit 1' \
+    --health-interval=30s \
+    --health-timeout=30s \
+    --health-retries=3 \
+    --name ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} jitsi/excalidraw-backend:"${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
+  echo_info "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} container started"
+}
+
+do_start_jitsi() {
+  if [[ "${PRODUCT_VERSION}" =~ ^(7\.[3-9]|[89]\.|[1-9][0-9]\.) ]]; then
+    echo_info "PLF version ${PRODUCT_VERSION} > 7.3: using rootless Jitsi startup"
+    do_start_jitsi_rootless
+  else
+    echo_info "PLF version ${PRODUCT_VERSION} < 7.3: using legacy Jitsi startup"
+      do_start_jitsi_legacy
+  fi
+}
+
 check_jitsi_call_availability() {
   echo_info "Waiting for Jitsi Call availability on port ${DEPLOYMENT_JITSI_CALL_HTTP_PORT}"
   local count=0
@@ -249,11 +418,10 @@ check_jitsi_call_availability() {
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
-
     curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}  > /dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
-      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Call not yet available (${count} / ${try})..."    
+      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Call not yet available (${count} / ${try})..."
       echo -n "."
       sleep $wait_time
     fi
@@ -276,11 +444,10 @@ check_jitsi_web_availability() {
   while [ $count -lt $try -a $RET -ne 0 ]; do
     count=$(( $count + 1 ))
     set +e
-
     curl -s -q --max-time ${wait_time} http://localhost:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}  > /dev/null
     RET=$?
     if [ $RET -ne 0 ]; then
-      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Web not yet available (${count} / ${try})..."    
+      [ $(( ${count} % 10 )) -eq 0 ] && echo_info "Jitsi Web not yet available (${count} / ${try})..."
       echo -n "."
       sleep $wait_time
     fi
