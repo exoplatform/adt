@@ -74,7 +74,7 @@ do_start_es() {
     if ${DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED:-false}; then 
       do_migrate_embedded
     fi
-    if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then 
+    if ${DEPLOYMENT_ES_MIGRATION_ENABLED:-false}; then
       do_upgrade
     fi  
   fi
@@ -83,48 +83,7 @@ do_start_es() {
 
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}
-
-  if [[ ! "${DEPLOYMENT_ES_IMAGE_VERSION}" =~ ^1.[0-9.]+$ ]]; then
-    if ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false}; then
-      # Need to get the docker internal ip address of the container to ensure ES trust mechanism works fine.
-      env_var DEPLOYMENT_ES_OLD_INTERNAL_ADDR $(${DOCKER_CMD} inspect --format '{{ .NetworkSettings.IPAddress }}' ${DEPLOYMENT_ES_CONTAINER_NAME}_old)
-      ${DOCKER_CMD} run \
-        -d \
-        -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
-        -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
-        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
-        -e "node.name=${INSTANCE_KEY}" \
-        -e "cluster.name=${INSTANCE_KEY}" \
-        -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
-        -e "xpack.security.enabled=false" \
-        -e "network.host=_site_" \
-        -e "reindex.remote.whitelist=${DEPLOYMENT_ES_OLD_INTERNAL_ADDR}:9200" \
-        -h 'search' \
-        --health-cmd='curl --silent --fail search:9200/_cluster/health || exit 1' \
-        --health-interval=30s \
-        --health-timeout=30s \
-        --health-retries=3 \
-        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
-    else 
-      ${DOCKER_CMD} run \
-        -d \
-        -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
-        -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
-        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
-        -e "node.name=${INSTANCE_KEY}" \
-        -e "cluster.name=${INSTANCE_KEY}" \
-        -e "cluster.initial_master_nodes=${INSTANCE_KEY}" \
-        -e "xpack.security.enabled=false" \
-        -e "network.host=_site_" \
-        -h 'search' \
-        --health-cmd='curl --silent --fail search:9200/_cluster/health || exit 1' \
-        --health-interval=30s \
-        --health-timeout=30s \
-        --health-retries=3 \
-        --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
-    fi  
-  else 
-    ${DOCKER_CMD} run \
+  ${DOCKER_CMD} run \
       -d \
       -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
       -v ${DEPLOYMENT_ES_CONTAINER_NAME}:/usr/share/elasticsearch/data \
@@ -139,10 +98,8 @@ do_start_es() {
       --health-timeout=30s \
       --health-retries=3 \
       --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${DEPLOYMENT_ES_IMAGE_VERSION}
-  fi
 
   echo_info "${DEPLOYMENT_ES_CONTAINER_NAME} container started"
-
   check_es_availability
 }
 
@@ -207,37 +164,85 @@ do_migrate_embedded() {
 # Perform Elasticsearch Upgrade
 do_upgrade(){
   case true in 
-    ${DEPLOYMENT_ES7_MIGRATION_ENABLED:-false})
-      echo_info "Elasticsearch migration to version 7 is enabled! Starting..."
-      echo_warn "Please remove DEPLOYMENT_ES7_MIGRATION_ENABLED when the migration is done."
-      echo_info "Starting old ES..."
-      
-      ensure_docker_container_stopped ${DEPLOYMENT_ES_CONTAINER_NAME}_old
-      delete_docker_container ${DEPLOYMENT_ES_CONTAINER_NAME}_old
-  
-      local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
-      [ -z "${mount_point:-}" ] && return 0
-      sudo mv -v ${mount_point} ${mount_point}_old
-      sudo chown 1000.1000 -R ${mount_point}_old
+    ${DEPLOYMENT_ES_MIGRATION_ENABLED:-false})
+    echo_info "Ensure that deployed ES container is dropped"
+    set +e
+    ${DOCKER_CMD} rm -v ${DEPLOYMENT_ES_CONTAINER_NAME} 2>/dev/null
+    set -e
+    echo_info "Elasticsearch migration to version is enabled! Starting..."
+    echo_warn "Please remove DEPLOYMENT_ES_MIGRATION_ENABLED when the migration is done."
+    echo_info "Checking for intermediate elasticsearch upgrades"
+    if [ -z "${DEPLOYMENT_ES_INTERMEDIATE_UPGRADE_VERSIONS:-}" ]; then
+      echo_info "No intermediate upgrade is required. Skipped!"
+      return 0
+    fi
+    echo_info "Starting intermediate Upgrades"
+    local mount_point=$(${DOCKER_CMD} volume inspect --format '{{ .Mountpoint }}' ${DEPLOYMENT_ES_CONTAINER_NAME}) || return 0
+    [ -z "${mount_point:-}" ] && return 0
+    sudo cp -rf ${mount_point} ${mount_point}_old
+    for elasticsearch_version in ${DEPLOYMENT_ES_INTERMEDIATE_UPGRADE_VERSIONS}; do
+      echo_info "Starting elasticsearch migration to ${elasticsearch_version}"
       ${DOCKER_CMD} run \
-        -d \
-        -p "127.0.0.1:${DEPLOYMENT_ES_OLD_HTTP_PORT}:9200" \
-        -v ${mount_point}_old:/usr/share/elasticsearch/data \
-        -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
-        -e "node.name=${INSTANCE_KEY}" \
-        -e "cluster.name=${INSTANCE_KEY}" \
-        -h 'search-old' \
-        --health-cmd='curl --silent --fail search-old:9200/_cluster/health || exit 1' \
-        --health-interval=30s \
-        --health-timeout=30s \
-        --health-retries=3 \
-        --name ${DEPLOYMENT_ES_CONTAINER_NAME}_old ${DEPLOYMENT_ES_IMAGE}:1.2.2 # FIXME VARIABLIZE IT 
+      -d \
+      -p "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}:9200" \
+      -v ${mount_point}:/usr/share/elasticsearch/data \
+      -e ES_JAVA_OPTS="-Xms${DEPLOYMENT_ES_HEAP} -Xmx${DEPLOYMENT_ES_HEAP}" \
+      -e "node.name=${INSTANCE_KEY}" \
+      -e "cluster.name=${INSTANCE_KEY}" \
+      -e cluster.initial_master_nodes="${INSTANCE_KEY}" \
+      -e network.host=_site_ \
+      -e xpack.security.enabled=false \
+      -h 'search-intermediate' \
+      --health-cmd='curl --silent --fail search-intermediate:9200/_cluster/health || exit 1' \
+      --health-interval=30s \
+      --health-timeout=30s \
+      --health-retries=3 \
+      --name ${DEPLOYMENT_ES_CONTAINER_NAME} ${DEPLOYMENT_ES_IMAGE}:${elasticsearch_version}
+      check_es_availability ${DEPLOYMENT_ES_HTTP_PORT}
+      if [[ "${elasticsearch_version}" == 8* ]]; then
+        echo_info "check for obsolete analytics indices"
+        set +e
+        indices_to_delete=$(curl -s "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}/_settings?include_defaults=true" |
+        jq -r 'to_entries[]
+        | select(.value.settings.index.version.created | tonumber < 8000000)
+        | .key' | grep 'analytics')
+        set -e
+        if [[ -n "${indices_to_delete}" ]]; then
+          echo_info "the following analytics es indices will be deleted: ${indices_to_delete}"
+          while IFS= read -r index; do
+            [ -z "${index}" ] && continue
+            log "deleting index: ${index}"
+            curl -sS -X DELETE "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}/${index}"
+          done <<< "$indices_to_delete"
+          echo_info "obsolete analytics indices deleting done"
+        fi
+      fi
+      set +e
+      local retry=0
+      local maxretries=300
+      echo_info "upgrade system features"
+      until [ "${retry}" -gt "${maxretries}" ]; do
+        if curl -X POST "127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}/_migration/system_features" |
+            jq -e '.reason == "No system indices require migration" or ( .features[] | select(.feature_name == "geoip") | .migration_status == "NO_MIGRATION_NEEDED")' >/dev/null; then
+          break
+        fi
 
-      check_es_availability ${DEPLOYMENT_ES_OLD_HTTP_PORT}
-      do_drop_es_data
-      do_create_es
+        sleep 1
+        ((retry++))
+      done
+      if [ "$retry" -gt "$maxretries" ]; then
+        echo_warn "ERROR: geoip system feature migration did not complete after $maxretries retries"
+      fi
+      set -e
+      echo_info "upgrade system features done"
+      echo_info "Dropping container elasticsearch:${elasticsearch_version}..."
+      ${DOCKER_CMD} stop ${DEPLOYMENT_ES_CONTAINER_NAME}
+      ${DOCKER_CMD} rm ${DEPLOYMENT_ES_CONTAINER_NAME}
+      echo_info "Finished data upgrade with elasticsearch:${elasticsearch_version}."
+    done
+    sudo rm -rf ${mount_point}_old
     ;;
-  # Maybe other upgrades to be defined here.
+  # Maybe other upgrades to be defined here. 
   esac
 }
 
