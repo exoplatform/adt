@@ -378,7 +378,6 @@ do_start_jitsi_rootless() {
   check_jitsi_web_availability
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
   ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
-  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3 || true"
 
   echo_info "Starting Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} based on image exoplatform/exo-excalidraw-backend:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
   delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
