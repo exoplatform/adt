@@ -184,6 +184,7 @@ function getRepositories()
         "dlp" => "Data Leak Prevention",
         "agenda" => "Agenda",
         "agenda-connectors" => "Agenda Connectors",
+        "caldav-integration" => "Caldav Integration",
         "chat-application" => "Chat application",
         "digital-workplace" => "Digital Workplace",
         "onlyoffice" => "Only Office",
@@ -217,6 +218,7 @@ function getModuleCiPrefix($item)
     $modules = array(
         "agenda" => "addon-",
         "agenda-connectors" => "addon-",
+        "caldav-integration" => "addon-",
         "dlp" => "addon-",
         "mail-integration" => "addon-",
         "email-connector" => "addon-",
@@ -360,6 +362,7 @@ function getTranslationBranches($projects)
   $projectsToIgnore = array(
       "agenda" => true,
       "agenda-connectors" => true,
+      "caldav-integration" => true,
       "dlp" => true,
       "mail-integration" => true,
       "email-connector" => true,
