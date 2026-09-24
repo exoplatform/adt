@@ -31,6 +31,11 @@ do_logrotate(){
   if ! ${_dev_mode}; then
     if [ -e /usr/sbin/logrotate ]; then
       echo_info "Rotate logs using configuration ${_config_file} ..."
+      # logrotate refuses configuration files writable by group or others
+      chmod 600 ${_config_file}
+      if [ -e ${_config_file}.status ]; then
+        chmod 600 ${_config_file}.status
+      fi
       sudo /usr/sbin/logrotate -s ${_config_file}.status -f ${_config_file}
       echo_info "Done."
     else
