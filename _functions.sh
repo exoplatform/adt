@@ -1888,13 +1888,15 @@ do_configure_apache() {
   echo_info "Done."
   echo_info "Rotate Apache logs ..."
 
+  rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
   evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${INSTANCE_KEY}
   do_logrotate "${TMP_DIR}/logrotate-${INSTANCE_KEY}" ${ADT_DEV_MODE}
-  rm ${TMP_DIR}/logrotate-${INSTANCE_KEY}
+  rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
 
+  rm -f ${TMP_DIR}/logrotate-acceptance
   evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
   do_logrotate "${TMP_DIR}/logrotate-acceptance" ${ADT_DEV_MODE}
-  rm ${TMP_DIR}/logrotate-acceptance
+  rm -f ${TMP_DIR}/logrotate-acceptance
 
   do_reload_apache ${ADT_DEV_MODE}
 
