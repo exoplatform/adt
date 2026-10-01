@@ -86,6 +86,13 @@
       Header append Cache-Control "private, proxy-revalidate, must-revalidate"
     </FilesMatch>
 
+    # PWA service worker and manifest must always be revalidated
+    # so new versions are picked up without a hard refresh
+    <FilesMatch "^(sw\.js|manifest\.json)$">
+      ExpiresDefault A0
+      Header set Cache-Control "no-cache, must-revalidate"
+    </FilesMatch>
+
     # Force no caching for dynamic files
     <FilesMatch "\.(php|cgi|pl|htm)$">
       ExpiresDefault A0

@@ -31,7 +31,7 @@ function pageHeader($title = "", $autoRefresh = true)
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom CSS -->
-  <link href="./style.css" media="screen" rel="stylesheet" type="text/css" />
+  <link href="/style.css?v=<?= @filemtime(__DIR__ . '/../style.css') ?>" media="screen" rel="stylesheet" type="text/css" />
   <!-- jQuery -->
   <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
   <!-- Bootstrap 5 JS Bundle with Popper -->
@@ -567,6 +567,11 @@ function pageFooter() {
       };
 
       navigator.serviceWorker.register('/sw.js').then(function(reg) {
+        // Installed PWAs can stay open for days: look for a new SW whenever
+        // the app is brought back to the foreground
+        document.addEventListener('visibilitychange', function() {
+          if (document.visibilityState === 'visible') reg.update();
+        });
         if (reg.waiting) {
           window.waitingWorker = reg.waiting;
           showUpdateToast();
