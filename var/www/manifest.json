@@ -20,12 +20,6 @@
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
-    },
-    {
-      "src": "/images/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
     }
   ]
 }
