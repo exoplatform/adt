@@ -10,13 +10,132 @@ checkCaches();
     <script type="text/javascript">
         // Handle hash-based navigation to highlight feature cards
         // (tooltip init is already handled globally by pageFooter())
-        document.addEventListener('DOMContentLoaded', function () {
-            if (window.location.hash.length > 1) {
-                var name = decodeURIComponent(window.location.hash.substring(1));
-                var anchor = document.querySelector('a[name="' + CSS.escape(name) + '"]');
-                if (anchor) anchor.closest('.feature-card').classList.add('highlight');
+        // Resolve and highlight the feature targeted by the URL hash: bookmark
+        // links use "#feature-<slug>", older links use the "<slug>" anchor name
+        function highlightHashTarget() {
+            var name;
+            try {
+                name = decodeURIComponent(window.location.hash.substring(1));
+            } catch (e) {
+                return null;
             }
+            if (!name) return null;
+            var el = document.getElementById(name);
+            if (!el || !el.classList.contains('feature-item')) {
+                var anchor = document.querySelector('a[name="' + CSS.escape(name) + '"]');
+                el = anchor ? anchor.closest('.feature-item') : null;
+            }
+            document.querySelectorAll('.feature-card.highlight').forEach(function (c) { c.classList.remove('highlight'); });
+            if (!el) return null;
+            (el.classList.contains('feature-card') ? el : el.querySelector('.feature-card')).classList.add('highlight');
+            return el;
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            initFeatureFilters(highlightHashTarget());
         });
+        window.addEventListener('hashchange', highlightHashTarget);
+
+        // Feature filters (project search, feature, scope, needs rebase, needs backport),
+        // persisted per browser. Project-level filters apply per module: a branch
+        // shows if one of its modules matches them all, and deployed branches only
+        // keep their matching project chips.
+        function initFeatureFilters(target) {
+            var toolbar = document.getElementById('featureFilters');
+            if (!toolbar) return;
+            var search = document.getElementById('featureSearch');
+            var nameSelect = document.getElementById('featureName');
+            var toggles = { behind: document.getElementById('featureBehindOnly'), ahead: document.getElementById('featureAheadOnly') };
+            var scopeBtns = toolbar.querySelectorAll('[data-scope]');
+            var DEFAULTS = { query: '', name: '', scope: 'all', behind: false, ahead: false };
+            var state = {
+                query: getPref('features-filter-query', ''),
+                name: getPref('features-filter-name', ''),
+                scope: getPref('features-filter-scope', 'all'),
+                behind: getPref('features-filter-behind', '0') === '1',
+                ahead: getPref('features-filter-ahead', '0') === '1'
+            };
+
+            function projectMatches(query, key, behind, ahead) {
+                return (!query || key.indexOf(query) !== -1)
+                    && (!state.behind || behind > 0)
+                    && (!state.ahead || ahead > 1);
+            }
+
+            function apply(persist) {
+                if (persist) {
+                    setPref('features-filter-query', state.query);
+                    setPref('features-filter-name', state.name);
+                    setPref('features-filter-scope', state.scope);
+                    setPref('features-filter-behind', state.behind ? '1' : '0');
+                    setPref('features-filter-ahead', state.ahead ? '1' : '0');
+                }
+                search.value = state.query;
+                // A saved feature that no longer exists falls back to all features
+                if (!nameSelect.querySelector('option[value="' + CSS.escape(state.name) + '"]')) state.name = '';
+                nameSelect.value = state.name;
+                scopeBtns.forEach(function (b) {
+                    var on = b.getAttribute('data-scope') === state.scope;
+                    b.classList.toggle('active', on);
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+                Object.keys(toggles).forEach(function (k) {
+                    toggles[k].classList.toggle('active', state[k]);
+                    toggles[k].setAttribute('aria-pressed', state[k] ? 'true' : 'false');
+                });
+
+                var query = state.query.toLowerCase().trim();
+                var projectFilter = !!query || state.behind || state.ahead;
+                var totalVisible = 0;
+                document.querySelectorAll('.features-section').forEach(function (section) {
+                    var inScope = state.scope === 'all' || section.getAttribute('data-section') === state.scope;
+                    var visible = 0;
+                    section.querySelectorAll('.feature-item').forEach(function (item) {
+                        var projects = JSON.parse(item.getAttribute('data-projects'));
+                        var show = inScope
+                            && (!state.name || item.getAttribute('data-feature') === state.name)
+                            && (!projectFilter || projects.some(function (p) { return projectMatches(query, p[0], p[1], p[2]); }));
+                        item.classList.toggle('d-none', !show);
+                        if (show) visible++;
+                        item.querySelectorAll('.project-chip').forEach(function (chip) {
+                            chip.classList.toggle('d-none', !projectMatches(query, chip.getAttribute('data-search'),
+                                +chip.getAttribute('data-behind'), +chip.getAttribute('data-ahead')));
+                        });
+                    });
+                    section.classList.toggle('d-none', visible === 0);
+                    var badge = section.querySelector('.features-count');
+                    var total = badge.getAttribute('data-total');
+                    badge.textContent = visible == total ? total : visible + ' / ' + total;
+                    totalVisible += visible;
+                });
+                document.getElementById('featuresNoMatch').classList.toggle('d-none', totalVisible > 0);
+            }
+
+            search.addEventListener('input', function () { state.query = this.value; apply(true); });
+            nameSelect.addEventListener('change', function () {
+                // Picking a feature shows it whatever the other filters are
+                state = this.value ? Object.assign({}, DEFAULTS, { name: this.value }) : Object.assign(state, { name: '' });
+                apply(true);
+            });
+            scopeBtns.forEach(function (b) {
+                b.addEventListener('click', function () { state.scope = this.getAttribute('data-scope'); apply(true); });
+            });
+            Object.keys(toggles).forEach(function (k) {
+                toggles[k].addEventListener('click', function () { state[k] = !state[k]; apply(true); });
+            });
+            document.getElementById('featureFiltersReset').addEventListener('click', function () {
+                state = Object.assign({}, DEFAULTS);
+                apply(true);
+            });
+
+            apply(false);
+            // A shared #feature link must stay visible: show everything for this
+            // visit without overwriting the saved filters
+            if (target && target.classList.contains('d-none')) {
+                state = Object.assign({}, DEFAULTS);
+                apply(false);
+                target.scrollIntoView();
+            }
+        }
     </script>
 </head>
 <body>
@@ -50,17 +169,71 @@ checkCaches();
                     $otherFeatures = array_filter($features, function($feature, $name) {
                         return !in_array($name, getAcceptanceBranches()) && !isBackup($name);
                     }, ARRAY_FILTER_USE_BOTH);
+
+                    // Data attributes used by the client-side filters
+                    // (search matches project names only)
+                    $projectSearchKey = function($project) use ($projectsNames) {
+                        return strtolower($project . ' ' . ($projectsNames[$project] ?? ''));
+                    };
+                    // data-projects lists [search key, behind commits, ahead commits] per project
+                    $featureFilterAttrs = function($feature, $FBProjects) use ($projectSearchKey) {
+                        $projects = array();
+                        foreach ($FBProjects as $project => $data) {
+                            $projects[] = array($projectSearchKey($project), (int) $data['behind_commits'], (int) $data['ahead_commits']);
+                        }
+                        return 'data-feature="' . htmlspecialchars($feature) . '" data-projects="' . htmlspecialchars(json_encode($projects)) . '"';
+                    };
                     ?>
+
+                    <?php if (!empty($acceptedFeatures) || !empty($otherFeatures)): ?>
+                    <!-- Filters -->
+                    <div id="featureFilters" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <div class="instances-search mb-0 flex-grow-1">
+                            <i class="fas fa-search instances-search__icon"></i>
+                            <input type="text" id="featureSearch" class="instances-search__input" placeholder="Filter by project...">
+                        </div>
+                        <select id="featureName" class="form-select form-select-sm w-auto" aria-label="Feature">
+                            <option value="">All features</option>
+                            <?php foreach (array('Deployed' => $acceptedFeatures, 'Other' => $otherFeatures) as $group => $groupFeatures): ?>
+                            <?php if (!empty($groupFeatures)): ?>
+                            <optgroup label="<?= $group ?>">
+                                <?php foreach (array_keys($groupFeatures) as $feature): ?>
+                                <option value="<?= htmlspecialchars($feature) ?>"><?= htmlspecialchars($feature) ?></option>
+                                <?php endforeach; ?>
+                            </optgroup>
+                            <?php endif; ?>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Branch type">
+                            <button type="button" class="btn btn-outline-secondary" data-scope="all">All</button>
+                            <button type="button" class="btn btn-outline-secondary" data-scope="deployed"><i class="fas fa-check-circle me-1"></i>Deployed</button>
+                            <button type="button" class="btn btn-outline-secondary" data-scope="other"><i class="fas fa-exclamation-triangle me-1"></i>Other</button>
+                        </div>
+                        <button type="button" id="featureBehindOnly" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Only modules behind their base branch">
+                            <i class="fas fa-arrow-down me-1"></i>Needs rebase
+                        </button>
+                        <button type="button" id="featureAheadOnly" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Only modules with dev commits not yet backported (more than 1 commit ahead)">
+                            <i class="fas fa-code-branch me-1"></i>Needs backport
+                        </button>
+                        <button type="button" id="featureFiltersReset" class="btn btn-sm btn-link text-muted" rel="tooltip" title="Clear filters">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div id="featuresNoMatch" class="empty-section d-none">
+                        <i class="fas fa-filter"></i>
+                        <h4>No branches match the current filters</h4>
+                    </div>
+                    <?php endif; ?>
 
                     <!-- Feature Branches deployed on acceptance -->
                     <?php if (!empty($acceptedFeatures)): ?>
-                    <div class="card mb-4">
+                    <div class="card mb-4 features-section" data-section="deployed">
                         <div class="card-header">
                             <div class="w-100">
                                 <div class="d-flex align-items-center flex-wrap">
                                     <i class="fas fa-check-circle text-success me-2"></i>
                                     <h5 class="mb-0">Feature Branches deployed on acceptance</h5>
-                                    <span class="badge bg-success ms-2"><?= count($acceptedFeatures) ?></span>
+                                    <span class="badge bg-success ms-2 features-count" data-total="<?= count($acceptedFeatures) ?>"><?= count($acceptedFeatures) ?></span>
                                 </div>
                                 <small class="text-muted d-block mt-1">Status compared to each project code base branch</small>
                             </div>
@@ -68,7 +241,7 @@ checkCaches();
                         <div class="card-body">
                             <?php foreach ($acceptedFeatures as $feature => $FBProjects): ?>
                             <?php $featureSlug = str_replace(["/", "."], "-", $feature); ?>
-                            <div class="feature-card card mb-3" id="feature-<?= htmlspecialchars($featureSlug) ?>">
+                            <div class="feature-card feature-item card mb-3" id="feature-<?= htmlspecialchars($featureSlug) ?>" <?= $featureFilterAttrs($feature, $FBProjects) ?>>
                                 <div class="card-body">
                                     <a name="<?= htmlspecialchars($featureSlug) ?>"></a>
 
@@ -94,7 +267,7 @@ checkCaches();
                                     <div class="project-grid">
                                         <?php foreach ($projects as $project): ?>
                                             <?php if (array_key_exists($project, $FBProjects)): ?>
-                                            <div class="project-chip">
+                                            <div class="project-chip" data-search="<?= htmlspecialchars($projectSearchKey($project)) ?>" data-behind="<?= (int) $FBProjects[$project]['behind_commits'] ?>" data-ahead="<?= (int) $FBProjects[$project]['ahead_commits'] ?>">
                                                 <div class="project-chip-header">
                                                     <i class="fas fa-cube me-1" aria-hidden="true"></i>
                                                     <?= htmlspecialchars($projectsNames[$project]) ?>
@@ -122,13 +295,13 @@ checkCaches();
 
                     <!-- Others branches -->
                     <?php if (!empty($otherFeatures)): ?>
-                    <div class="card mb-4">
+                    <div class="card mb-4 features-section" data-section="other">
                         <div class="card-header">
                             <div class="w-100">
                                 <div class="d-flex align-items-center flex-wrap">
                                     <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                                     <h5 class="mb-0">Other branches</h5>
-                                    <span class="badge bg-warning ms-2"><?= count($otherFeatures) ?></span>
+                                    <span class="badge bg-warning ms-2 features-count" data-total="<?= count($otherFeatures) ?>"><?= count($otherFeatures) ?></span>
                                 </div>
                                 <small class="text-danger d-block mt-1">
                                     <i class="fas fa-broom me-1"></i>
@@ -139,11 +312,12 @@ checkCaches();
                         <div class="card-body">
                             <div class="row">
                                 <?php foreach ($otherFeatures as $feature => $FBProjects): ?>
-                                <div class="col-md-6 col-lg-4 mb-3">
+                                <?php $featureSlug = str_replace(["/", "."], "-", $feature); ?>
+                                <div class="col-md-6 col-lg-4 mb-3 feature-item" id="feature-<?= htmlspecialchars($featureSlug) ?>" <?= $featureFilterAttrs($feature, $FBProjects) ?>>
                                     <div class="feature-card card h-100">
                                         <div class="card-body">
                                             <div class="feature-title">
-                                                <a href="<?= htmlspecialchars(currentPageURL() . "#" . str_replace(["/", "."], "-", $feature)) ?>" class="text-warning">
+                                                <a href="<?= htmlspecialchars(currentPageURL() . "#feature-" . $featureSlug) ?>" class="text-warning">
                                                     <i class="fas fa-bookmark" aria-hidden="true"></i>
                                                 </a>
                                                 <code class="small"><?= htmlspecialchars($feature) ?></code>

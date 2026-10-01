@@ -1451,7 +1451,7 @@ function componentFeatureRepoBrancheStatus($fb_project, $cherry_commits_display 
   $content .= '</a>';
   
   // Ahead
-  $content .= '<a href="' . $fb_project['http_url_ahead'] . '" target="_blank" class="commit-stat ' . ($fb_project['ahead_commits'] > 0 ? 'ahead' : '') . '" rel="tooltip" title="' . $fb_project['ahead_commits'] . ' commits ahead of base branch">';
+  $content .= '<a href="' . $fb_project['http_url_ahead'] . '" target="_blank" class="commit-stat ' . ($fb_project['ahead_commits'] > 1 ? 'ahead-many' : ($fb_project['ahead_commits'] > 0 ? 'ahead' : 'ahead-none')) . '" rel="tooltip" title="' . ($fb_project['ahead_commits'] > 0 ? $fb_project['ahead_commits'] . ' commits ahead of base branch' : 'No commit ahead of base branch (SWF commit missing)') . '">';
   $content .= '<i class="fas fa-arrow-up"></i> ' . $fb_project['ahead_commits'];
   $content .= '</a>';
   

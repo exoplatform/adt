@@ -55,6 +55,7 @@
   --success: #00d68f;
   --warning: #ffb142;
   --danger:  #ff5252;
+  --attention: #ff8c42;
   --info:    #54a0ff;
   --info-soft: rgba(84,160,255,0.16);
 
@@ -981,7 +982,7 @@ body {
 
 /* Form controls */
 .form-control, .form-select {
-  background: var(--bg-field);
+  background-color: var(--bg-field);
   border: 1px solid var(--border-card);
   border-radius: var(--r-sm);
   color: var(--text-primary);
@@ -991,11 +992,13 @@ body {
   transition: border-color var(--dur-fast);
 }
 .form-control:focus, .form-select:focus {
-  background: var(--bg-field);
+  background-color: var(--bg-field);
   border-color: var(--accent);
   color: var(--text-primary);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
+/* Keep room for Bootstrap's dropdown arrow (overridden by the padding above) */
+.form-select { padding-right: 2.25rem; }
 .form-control::placeholder { color: var(--text-muted); }
 .form-label { margin-bottom: 0.35rem; }
 .form-text { color: var(--text-muted); font-size: 0.75rem; margin-top: 0.2rem; }
@@ -1219,8 +1222,12 @@ a[name] {
 }
 .commit-stat.behind { color: var(--danger); border-color: var(--danger); }
 .commit-stat.ahead  { color: var(--success); border-color: var(--success); }
+.commit-stat.ahead-many { color: var(--info); border-color: var(--info); }
+.commit-stat.ahead-none { color: var(--attention); border-color: var(--attention); }
 .commit-stat.behind:hover,
-.commit-stat.ahead:hover { color: #fff; }
+.commit-stat.ahead-none:hover,
+.commit-stat.ahead:hover,
+.commit-stat.ahead-many:hover { color: #fff; }
 .ci-badge {
   height: 20px;
   width: auto;
