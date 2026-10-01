@@ -25,6 +25,7 @@ function pageHeader($title = "", $autoRefresh = true)
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
   <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/images/logo.svg" />
   <link rel="manifest" href="/manifest.json">
   <!-- Bootstrap 5 CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -482,7 +483,7 @@ function pageNavigation()
   <aside class="sidebar" id="sidebar" aria-label="Main navigation">
     <a class="sidebar__brand" href="/" title="Home">
       <div class="sidebar__brand-icon" style="background:transparent">
-        <img src="/images/icon-192.png" alt="eXo" width="28" height="28" srcset="/images/icon-192.png 2x, /images/icon-512.png 3x">
+        <img src="/images/logo.svg" alt="Acceptance" width="28" height="28">
       </div>
       <div class="sidebar__brand-info">
         <div class="sidebar__brand-text" title="<?= htmlspecialchars($_SERVER['SERVER_NAME']) ?>">Acceptance</div>

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <title>Acceptance</title>
+  <defs>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#a29bfe"/>
+      <stop offset="1" stop-color="#6c5ce7"/>
+    </linearGradient>
+  </defs>
+  <circle cx="32" cy="32" r="24" fill="none" stroke="url(#ring)" stroke-width="8" stroke-linecap="round" stroke-dasharray="120 151" transform="rotate(-210 32 32)"/>
+  <path d="M21 33l8 8 15-17" fill="none" stroke="#00d68f" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
