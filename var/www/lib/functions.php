@@ -844,6 +844,139 @@ function getGlobalAcceptanceInstances()
 }
 
 /**
+ * Convert a JVM size setting (e.g. "4g", "512m") into GB.
+ *
+ * @param string $size
+ *
+ * @return float|null null when the unit is not managed
+ */
+function jvmSizeToGB($size)
+{
+  if (preg_match('/^\s*([0-9.]+)\s*([gGmM])\s*$/', (string) $size, $matches)) {
+    return strtolower($matches[2]) === 'g' ? (float) $matches[1] : (float) $matches[1] / 1024;
+  }
+  return null;
+}
+
+/**
+ * Live resource usage of this server, read from /proc: RAM, swap, load,
+ * CPU, data disk and the resident memory of the running instance JVMs.
+ * Values that cannot be read (e.g. /proc mounted with hidepid) are null.
+ *
+ * @return array
+ */
+function getLocalServerStats()
+{
+  $stats = array('host' => $_SERVER['SERVER_NAME'], 'time' => time());
+
+  // Memory (kB)
+  $meminfo = array();
+  foreach (@file('/proc/meminfo', FILE_IGNORE_NEW_LINES) ?: array() as $line) {
+    if (preg_match('/^(\w+):\s+(\d+)/', $line, $matches)) {
+      $meminfo[$matches[1]] = (int) $matches[2];
+    }
+  }
+  $stats['mem'] = isset($meminfo['MemTotal'], $meminfo['MemAvailable']) ? array(
+      'total_kb' => $meminfo['MemTotal'],
+      'used_kb' => $meminfo['MemTotal'] - $meminfo['MemAvailable'],
+      'swap_total_kb' => $meminfo['SwapTotal'] ?? 0,
+      'swap_used_kb' => ($meminfo['SwapTotal'] ?? 0) - ($meminfo['SwapFree'] ?? 0),
+  ) : null;
+
+  // CPU
+  $cpuinfo = (string) @file_get_contents('/proc/cpuinfo');
+  preg_match('/^model name\s*:\s*(.+)$/m', $cpuinfo, $model);
+  preg_match_all('/^physical id\s*:\s*(\d+)$/m', $cpuinfo, $sockets);
+  preg_match('/^cpu cores\s*:\s*(\d+)$/m', $cpuinfo, $cores);
+  $threads = preg_match_all('/^processor\s*:/m', $cpuinfo);
+  $stats['cpu'] = array(
+      'model' => isset($model[1]) ? trim(preg_replace('/\s+/', ' ', $model[1])) : null,
+      'threads' => $threads ?: null,
+      'cores' => isset($cores[1]) ? (int) $cores[1] * max(1, count(array_unique($sockets[1]))) : null,
+  );
+  $loadavg = explode(' ', (string) @file_get_contents('/proc/loadavg'));
+  $stats['load'] = count($loadavg) >= 3 ? array_map('floatval', array_slice($loadavg, 0, 3)) : null;
+  $uptime = (string) @file_get_contents('/proc/uptime');
+  $stats['uptime_s'] = $uptime !== '' ? (int) $uptime : null;
+
+  // Data disk
+  $data_dir = getenv('ADT_DATA') ?: '/';
+  $disk_total = @disk_total_space($data_dir);
+  $disk_free = @disk_free_space($data_dir);
+  $stats['disk'] = ($disk_total && $disk_free !== false)
+      ? array('total_b' => $disk_total, 'used_b' => $disk_total - $disk_free) : null;
+
+  // Instance JVMs: resident memory (VmRSS) of each running process
+  $jvms = array();
+  $readable = true;
+  foreach (getLocalAcceptanceInstances() as $descriptor_arrays) {
+    foreach ($descriptor_arrays as $descriptor_array) {
+      $pid_file = $descriptor_array['DEPLOYMENT_PID_FILE'] ?? '';
+      if (empty($pid_file) || !is_readable($pid_file)) continue;
+      $pid = (int) trim(file_get_contents($pid_file));
+      if ($pid <= 0 || !file_exists('/proc/' . $pid)) continue;
+      $status = @file_get_contents('/proc/' . $pid . '/status');
+      if ($status === false) {
+        $readable = false;
+        continue;
+      }
+      preg_match('/^VmRSS:\s+(\d+)\s+kB/m', $status, $rss);
+      $label = !empty($descriptor_array['PRODUCT_DESCRIPTION']) ? $descriptor_array['PRODUCT_DESCRIPTION'] : $descriptor_array['PRODUCT_NAME'];
+      if (!empty($descriptor_array['INSTANCE_ID'])) {
+        $label .= ' (' . $descriptor_array['INSTANCE_ID'] . ')';
+      }
+      $jvms[] = array(
+          'key' => $descriptor_array['INSTANCE_KEY'],
+          'label' => $label,
+          'rss_kb' => isset($rss[1]) ? (int) $rss[1] : 0,
+          'xmx_gb' => jvmSizeToGB($descriptor_array['DEPLOYMENT_JVM_SIZE_MAX'] ?? ''),
+      );
+    }
+  }
+  usort($jvms, function ($a, $b) { return $b['rss_kb'] - $a['rss_kb']; });
+  $stats['jvm'] = array(
+      'running' => count($jvms),
+      'rss_kb' => array_sum(array_column($jvms, 'rss_kb')),
+      'xmx_gb' => array_sum(array_column($jvms, 'xmx_gb')),
+      'readable' => $readable,
+      'list' => $jvms,
+  );
+  return $stats;
+}
+
+/**
+ * Live resource usage of all acceptance servers, keyed by host name.
+ * Unreachable servers are reported with an "error" entry.
+ *
+ * @return array
+ */
+function getGlobalServerStats()
+{
+  $stats = cacheGet('all_server_stats');
+  if (empty($stats) || getenv('ADT_DEV_MODE')) {
+    $stats = array();
+    if (getenv('ADT_DEV_MODE')) {
+      $local = getLocalServerStats();
+      $stats[$local['host']] = $local;
+    } else {
+      $context = stream_context_create(array('http' => array('timeout' => 5)));
+      foreach (explode(",", getenv('ACCEPTANCE_SERVERS')) as $server) {
+        $server_stats = json_decode((string) @file_get_contents($server . '/rest/local-stats.php', false, $context), true);
+        if (is_array($server_stats) && !empty($server_stats['host'])) {
+          $stats[$server_stats['host']] = $server_stats;
+        } else {
+          $host = parse_url($server, PHP_URL_HOST) ?: $server;
+          $stats[$host] = array('host' => $host, 'error' => 'unreachable');
+        }
+      }
+    }
+    // Live stats are cached briefly to spare the servers when many pages poll
+    cacheSet('all_server_stats', $stats, 15);
+  }
+  return $stats;
+}
+
+/**
  * Fetch, cache and label-filter a category of instances out of a source instance list.
  *
  * Every getGlobal*Instances() category function below shares this exact shape: fetch
