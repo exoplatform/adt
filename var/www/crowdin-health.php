@@ -31,51 +31,33 @@ function isPrivateRepo($repo) {
 }
 
 /**
- * A live shields.io badge proxying the real GitHub Actions status for a
- * public repo. shields.io supports a short custom &label=, unlike GitHub's
- * own badge.svg (which ignores label overrides and renders at its full
- * workflow-name width - and has shown rate-limit/hang issues under load).
- * Only used for public repos; private ones use privateBadgeUrl() since
- * shields.io's public endpoint can't authenticate and always reports
- * "not found" for a repo it can't see.
+ * shields.io JSON endpoint for the GitHub Actions status of a public repo
+ * workflow (CORS enabled), so the page can draw its own status dot instead
+ * of embedding a full badge image. Private repos can't be looked up without
+ * authentication and get no URL.
  */
-function crowdinBadgeUrl($org, $repo, $workflow, $branch, $label) {
-  $url = "https://img.shields.io/github/actions/workflow/status/{$org}/{$repo}/{$workflow}?label=" . rawurlencode($label);
-  if ($branch) $url .= "&branch=" . rawurlencode($branch);
+function crowdinStatusUrl($org, $repo, $workflow, $branch) {
+  $url = "https://img.shields.io/github/actions/workflow/status/{$org}/{$repo}/{$workflow}.json";
+  if ($branch) $url .= "?branch=" . rawurlencode($branch);
   return $url;
 }
 
 /**
- * A static shields.io badge - not tied to any repo/API call, just a fixed
- * label/message/color image - so it renders identically for private repos
- * with none of the auth/CORS problems a live status lookup would have.
+ * Render one status pill (dot + label) linking to the workflow run history.
+ * The dot color is filled in by the page script from the status JSON.
  */
-function privateBadgeUrl($label) {
-  // shields.io static badge syntax: segments are hyphen-separated, so a
-  // literal "-" in label text must be escaped as "--" first.
-  $escaped = str_replace('-', '--', $label);
-  return "https://img.shields.io/badge/" . rawurlencode($escaped) . "-private-lightgrey";
-}
-
-/**
- * Render one badge link. For a known-private repo, skip the live <img>
- * entirely and show a static "private" badge instead. loading="lazy" on
- * the live badges keeps a page with many modules from firing 100+
- * simultaneous cross-origin image requests at once - badges below the
- * fold only request once scrolled into view. Live badges also get an
- * onerror retry (see crowdinBadgeRetry): shields.io's first-ever lookup
- * for a repo/workflow/branch combo can time out while it cold-fetches
- * from GitHub, but it's cached and fast right after - a retry a few
- * seconds later usually just works.
- */
-function renderCrowdinBadge($m, $workflow, $branch, $query_branch, $label, $alt) {
+function renderCrowdinBadge($m, $workflow, $branch, $query_branch, $label, $alt, $dot_only = false) {
+  $text = $dot_only ? '<span class="visually-hidden">' . htmlspecialchars($label) . '</span>' : htmlspecialchars($label);
+  $class = 'crowdin-status' . ($dot_only ? ' crowdin-status--dot' : '');
   $run_url = "{$m['github_url']}/actions/workflows/{$workflow}" . ($query_branch ? "?query=branch%3A" . rawurlencode($query_branch) : "");
-  $src = $m['is_private']
-    ? privateBadgeUrl($label)
-    : crowdinBadgeUrl($m['github_org'], $m['github_repo'], $workflow, $branch, $label);
-  echo '<a href="' . htmlspecialchars($run_url) . '" target="_blank" rel="tooltip" title="' . htmlspecialchars($alt) . '">';
-  echo '<img src="' . htmlspecialchars($src) . '" class="ci-badge" loading="lazy" alt="' . htmlspecialchars($alt) . '"' . ($m['is_private'] ? '' : ' onerror="crowdinBadgeRetry(this)"') . '>';
-  echo '</a>';
+  if ($m['is_private']) {
+    echo '<a href="' . htmlspecialchars($run_url) . '" target="_blank" class="' . $class . '" title="' . htmlspecialchars($alt . ': private repository, status not available') . '">';
+    echo '<span class="status-dot is-private" aria-hidden="true"></span>' . $text . '</a>';
+    return;
+  }
+  $status_url = crowdinStatusUrl($m['github_org'], $m['github_repo'], $workflow, $branch);
+  echo '<a href="' . htmlspecialchars($run_url) . '" target="_blank" class="' . $class . '" data-status-url="' . htmlspecialchars($status_url) . '" data-title="' . htmlspecialchars($alt) . '" title="' . htmlspecialchars($alt . ': loading...') . '">';
+  echo '<span class="status-dot is-loading" aria-hidden="true"></span>' . $text . '</a>';
 }
 
 function gitPathExists($repoObject, $ref, $path) {
@@ -154,6 +136,10 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
 <html lang="en">
 <head>
   <?= pageHeader("Crowdin Healthcheck", false); ?>
+  <script>
+    // Cards/Table view, applied before first paint
+    if (getPref('crowdin-view', 'cards') === 'table') document.documentElement.classList.add('crowdin-table-view');
+  </script>
   <style>
     .project-grid { grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); }
     .crowdin-branch-group + .crowdin-branch-group { margin-top: 0.6rem; }
@@ -162,6 +148,44 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
     .project-chip--skipped { opacity: 0.6; }
     .link-reset { color: inherit; text-decoration: none; }
     .link-reset:hover { text-decoration: underline; }
+    .crowdin-status {
+      display: inline-flex; align-items: center; gap: 0.35rem;
+      padding: 0.1rem 0.5rem; border: 1px solid var(--border-card); border-radius: var(--r-full);
+      background: var(--bg-field); color: var(--text-secondary); font-size: 0.74rem; text-decoration: none;
+    }
+    .crowdin-status:hover { border-color: var(--accent); color: var(--text-primary); }
+    .crowdin-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 1rem; }
+    .crowdin-toolbar__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+    .crowdin-table { display: none; width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.82rem;
+      border: 1px solid var(--border-card); border-radius: var(--r-md); }
+    html.crowdin-table-view .crowdin-table { display: table; }
+    html.crowdin-table-view .crowdin-cards { display: none; }
+    .crowdin-table th, .crowdin-table td { padding: 0.45rem 0.85rem; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface); }
+    .crowdin-table tbody tr:last-child > * { border-bottom: 0; }
+    .crowdin-table tbody th { font-weight: 600; }
+    .crowdin-table thead th {
+      position: sticky; top: 0; z-index: 2; background: var(--bg-elevated); border-bottom: 1px solid var(--border-card);
+      color: var(--text-secondary); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; white-space: nowrap;
+    }
+    .crowdin-table thead th:first-child { border-top-left-radius: var(--r-md); }
+    .crowdin-table thead th:last-child { border-top-right-radius: var(--r-md); }
+    .crowdin-table tbody tr:hover > * { background: color-mix(in srgb, var(--accent) 8%, var(--bg-surface)); }
+    .crowdin-table code { font-size: 0.78rem; }
+    .crowdin-status--dot { padding: 0.3rem; border-color: transparent; background: none; }
+    .crowdin-status--dot .status-dot { width: 11px; height: 11px; }
+    .crowdin-table td.cell-nomatch > * { visibility: hidden; }
+    .crowdin-summary { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 1.1rem; font-size: 0.82rem; color: var(--text-secondary); }
+    .crowdin-summary > span { display: inline-flex; align-items: center; gap: 0.35rem; }
+    .crowdin-summary b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+    .status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto; background: var(--text-muted); }
+    .status-dot.ok { background: var(--success); }
+    .status-dot.fail { background: var(--danger); }
+    .status-dot.warn { background: var(--warning); }
+    .status-dot.unknown { background: var(--text-muted); opacity: 0.6; }
+    .status-dot.is-private { background: transparent; box-shadow: inset 0 0 0 1.5px var(--text-muted); }
+    .status-dot.is-loading { opacity: 0.4; animation: status-dot-pulse 1.2s ease-in-out infinite; }
+    @keyframes status-dot-pulse { 50% { opacity: 0.1; } }
+    @media (prefers-reduced-motion: reduce) { .status-dot.is-loading { animation: none; } }
   </style>
 </head>
 <body>
@@ -183,18 +207,40 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
             <div class="d-flex align-items-center flex-wrap">
               <i class="fas fa-language text-success me-2"></i>
               <h5 class="mb-0">Modules with Crowdin integration</h5>
-              <span class="badge bg-success ms-2"><?= count($active_modules) ?></span>
+              <span class="badge bg-success ms-2" id="crowdinModulesCount" data-total="<?= count($active_modules) ?>"><?= count($active_modules) ?></span>
             </div>
-            <small class="text-muted d-block mt-1">Badges link to the corresponding GitHub Actions run history - private repositories show a "private" badge instead, since their status can't be looked up without authentication</small>
+            <small class="text-muted d-block mt-1">Status dots (green passing, red failing, grey no status) link to the GitHub Actions run history - private repositories show a hollow dot, since their status can't be looked up without authentication</small>
           </div>
         </div>
         <div class="card-body">
-          <div class="project-grid">
+          <div class="crowdin-toolbar">
+            <div class="crowdin-summary" aria-live="polite">
+              <span><span class="status-dot ok"></span><b data-count="ok">0</b> passing</span>
+              <span><span class="status-dot fail"></span><b data-count="fail">0</b> failing</span>
+              <span data-if="warn"><span class="status-dot warn"></span><b data-count="warn">0</b> warning</span>
+              <span data-if="unknown"><span class="status-dot unknown"></span><b data-count="unknown">0</b> no status</span>
+              <span data-if="is-private"><span class="status-dot is-private"></span><b data-count="is-private">0</b> private</span>
+              <span data-if="is-loading" class="text-muted"><b data-count="is-loading">0</b> loading&hellip;</span>
+            </div>
+            <div class="crowdin-toolbar__actions">
+              <button type="button" id="crowdinFailingOnly" class="btn btn-sm btn-outline-secondary" aria-pressed="false" title="Only modules with a failing workflow">
+                <i class="fas fa-exclamation-circle me-1"></i>Failing only
+              </button>
+              <div class="btn-group btn-group-sm" role="group" aria-label="Modules view">
+                <button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>
+                <button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view"><i class="fas fa-table me-1"></i>Table</button>
+              </div>
+            </div>
+          </div>
+          <div id="crowdinNoFailure" class="empty-section d-none">
+            <i class="fas fa-check-circle"></i>
+            <h4>No failing workflow</h4>
+          </div>
+          <div class="project-grid crowdin-cards">
             <?php foreach ($active_modules as $m): ?>
             <div class="project-chip">
               <div class="project-chip-header">
-                <i class="fas fa-cube me-1" aria-hidden="true"></i>
-                <?= htmlspecialchars($m['label']) ?>
+                <span class="project-chip-name"><i class="fas fa-cube me-1" aria-hidden="true"></i><?= htmlspecialchars($m['label']) ?></span>
               </div>
 
               <div class="crowdin-branch-group">
@@ -218,6 +264,30 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
             </div>
             <?php endforeach; ?>
           </div>
+
+          <!-- Table view -->
+          <table class="crowdin-table" aria-label="Crowdin workflow status per module">
+            <thead>
+              <tr>
+                <th scope="col">Module</th>
+                <th scope="col">Stable branch</th>
+                <th scope="col" class="text-center">Develop upload</th>
+                <th scope="col" class="text-center">Develop download</th>
+                <th scope="col" class="text-center">Stable upload</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php foreach ($active_modules as $m): ?>
+              <tr>
+                <th scope="row"><a href="<?= htmlspecialchars($m['github_url']) ?>" target="_blank" class="link-reset"><i class="fas fa-cube me-1 text-muted" aria-hidden="true"></i><?= htmlspecialchars($m['label']) ?></a></th>
+                <td><?php if ($m['stable_branch']): ?><a href="<?= htmlspecialchars($m['github_url']) ?>/tree/<?= rawurlencode($m['stable_branch']) ?>" target="_blank" class="link-reset"><code><?= htmlspecialchars($m['stable_branch']) ?></code></a><?php else: ?><span class="text-muted">&mdash;</span><?php endif; ?></td>
+                <td class="text-center"><?php renderCrowdinBadge($m, 'upload-crowdin-main.yml', 'develop', 'develop', 'develop upload', 'Crowdin upload status for develop', true); ?></td>
+                <td class="text-center"><?php if ($m['has_download']): ?><?php renderCrowdinBadge($m, 'download-crowdin.yml', null, null, 'develop download', 'Crowdin download status (scheduled)', true); ?><?php else: ?><span class="text-muted">&mdash;</span><?php endif; ?></td>
+                <td class="text-center"><?php if ($m['stable_branch']): ?><?php renderCrowdinBadge($m, 'upload-crowdin-branches.yml', $m['stable_branch'], $m['stable_branch'], 'stable upload', "Crowdin upload status for {$m['stable_branch']}", true); ?><?php else: ?><span class="text-muted">&mdash;</span><?php endif; ?></td>
+              </tr>
+              <?php endforeach; ?>
+            </tbody>
+          </table>
         </div>
       </div>
       <?php elseif (empty($skipped_modules)): ?>
@@ -245,8 +315,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
             <?php foreach ($skipped_modules as $m): ?>
             <div class="project-chip project-chip--skipped">
               <div class="project-chip-header">
-                <i class="fas fa-cube me-1" aria-hidden="true"></i>
-                <?= htmlspecialchars($m['label']) ?>
+                <span class="project-chip-name"><i class="fas fa-cube me-1" aria-hidden="true"></i><?= htmlspecialchars($m['label']) ?></span>
               </div>
               <span class="badge bg-secondary">skipped</span>
             </div>
@@ -261,26 +330,129 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
 </div>
 <?php pageFooter(); ?>
 <script>
-// shields.io's first-ever lookup for a given repo/workflow/branch combo can
-// time out while it cold-fetches status from GitHub, but is fast right after
-// once cached on its end. Retry once after a few seconds; if it still fails,
-// fall back to a plain link instead of leaving a broken image icon.
-function crowdinBadgeRetry(img) {
-  var attempts = parseInt(img.dataset.retries || '0', 10);
-  if (attempts < 1) {
-    img.dataset.retries = attempts + 1;
-    setTimeout(function() {
-      var src = img.src;
-      img.src = '';
-      img.src = src;
-    }, 3000);
-  } else {
-    var span = document.createElement('span');
-    span.className = 'badge bg-secondary';
-    span.textContent = 'view on GitHub';
-    img.replaceWith(span);
+// Fill the status dots from the shields.io JSON endpoint, a few requests at
+// a time. Its first lookup for a repo/workflow/branch can time out while it
+// cold-fetches from GitHub but is cached and fast right after: retry once.
+(function () {
+  // Each status is shown in both views: fetch every URL once, update all its links
+  var byUrl = {};
+  document.querySelectorAll('.crowdin-status[data-status-url]').forEach(function (link) {
+    var url = link.getAttribute('data-status-url');
+    (byUrl[url] = byUrl[url] || []).push(link);
+  });
+  var links = Object.keys(byUrl).map(function (url) { return byUrl[url]; });
+  var CONCURRENCY = 6;
+  function level(status) {
+    var color = (status.color || '').toLowerCase(), message = (status.message || '').toLowerCase();
+    if (message === 'passing') return 'ok';
+    if (message === 'failing') return 'fail';
+    // e.g. "repo or workflow not found" (red) or "no status": not a build failure
+    if (/not found|no status|invalid|inaccessible/.test(message)) return 'unknown';
+    if (color === 'brightgreen' || color === 'green') return 'ok';
+    if (color === 'red' || color === 'critical') return 'fail';
+    if (color === 'yellow' || color === 'orange' || color === 'important') return 'warn';
+    return 'unknown';
   }
-}
+  function show(group, cls, message) {
+    group.forEach(function (link) {
+      link.querySelector('.status-dot').className = 'status-dot ' + cls;
+      link.title = link.getAttribute('data-title') + ': ' + message;
+    });
+    update();
+  }
+
+  // Summary counts and "Failing only" filter (saved per browser)
+  var grid = document.querySelector('.crowdin-cards');
+  var table = document.querySelector('.crowdin-table');
+  var failingBtn = document.getElementById('crowdinFailingOnly');
+  var failingOnly = getPref('crowdin-failing-only', '0') === '1';
+  function update() {
+    if (!grid) return;
+    var counts = {};
+    grid.querySelectorAll('.crowdin-status .status-dot').forEach(function (dot) {
+      var cls = dot.className.replace('status-dot', '').trim();
+      counts[cls] = (counts[cls] || 0) + 1;
+    });
+    document.querySelectorAll('.crowdin-summary [data-count]').forEach(function (b) {
+      b.textContent = counts[b.getAttribute('data-count')] || 0;
+    });
+    document.querySelectorAll('.crowdin-summary [data-if]').forEach(function (el) {
+      el.classList.toggle('d-none', !counts[el.getAttribute('data-if')]);
+    });
+    failingBtn.classList.toggle('active', failingOnly);
+    failingBtn.setAttribute('aria-pressed', failingOnly ? 'true' : 'false');
+    var visible = 0, chips = grid.querySelectorAll('.project-chip');
+    chips.forEach(function (chip) {
+      var failing = 0;
+      chip.querySelectorAll('.crowdin-status').forEach(function (pill) {
+        var isFail = !!pill.querySelector('.status-dot.fail');
+        if (isFail) failing++;
+        pill.classList.toggle('d-none', failingOnly && !isFail);
+      });
+      chip.querySelectorAll('.crowdin-branch-group').forEach(function (group) {
+        group.classList.toggle('d-none', failingOnly && !group.querySelector('.crowdin-status:not(.d-none)'));
+      });
+      var show = !failingOnly || failing > 0;
+      chip.classList.toggle('d-none', !show);
+      if (show) visible++;
+    });
+    // Table rows: same rule, non-failing cells blanked
+    table.querySelectorAll('tbody tr').forEach(function (row) {
+      var failing = 0;
+      row.querySelectorAll('td').forEach(function (cell) {
+        var isFail = !!cell.querySelector('.status-dot.fail');
+        if (isFail) failing++;
+        cell.classList.toggle('cell-nomatch', failingOnly && !isFail && cell.querySelector('.crowdin-status'));
+      });
+      row.classList.toggle('d-none', failingOnly && !failing);
+    });
+    var badge = document.getElementById('crowdinModulesCount');
+    badge.textContent = visible == chips.length ? chips.length : visible + ' / ' + chips.length;
+    var loading = counts['is-loading'] || 0;
+    document.getElementById('crowdinNoFailure').classList.toggle('d-none', !(failingOnly && visible === 0 && !loading));
+  }
+  // Cards/Table view switch, saved per browser
+  var viewBtns = document.querySelectorAll('.crowdin-toolbar [data-view]');
+  function applyView(view) {
+    document.documentElement.classList.toggle('crowdin-table-view', view === 'table');
+    viewBtns.forEach(function (b) {
+      var on = b.getAttribute('data-view') === view;
+      b.classList.toggle('active', on);
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+    });
+  }
+  viewBtns.forEach(function (b) {
+    b.addEventListener('click', function () {
+      setPref('crowdin-view', this.getAttribute('data-view'));
+      applyView(this.getAttribute('data-view'));
+    });
+  });
+  applyView(getPref('crowdin-view', 'cards'));
+  if (failingBtn) {
+    failingBtn.addEventListener('click', function () {
+      failingOnly = !failingOnly;
+      setPref('crowdin-failing-only', failingOnly ? '1' : '0');
+      update();
+    });
+  }
+  update();
+  function load(link, retried) {
+    return fetch(link[0].getAttribute('data-status-url')).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(function (status) {
+      show(link, level(status), status.message || 'unknown');
+    }).catch(function () {
+      if (!retried) return new Promise(function (res) { setTimeout(res, 3000); }).then(function () { return load(link, true); });
+      show(link, 'unknown', 'status unavailable');
+    });
+  }
+  function next() {
+    var link = links.shift();
+    if (link) return load(link, false).then(next);
+  }
+  for (var i = 0; i < CONCURRENCY; i++) next();
+})();
 </script>
 </body>
 </html>
