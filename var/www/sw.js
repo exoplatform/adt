@@ -1,4 +1,4 @@
-const CACHE = 'adt-v9';
+const CACHE = 'adt-v10';
 
 const PRECACHE = [
   '/manifest.json',

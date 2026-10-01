@@ -1189,6 +1189,10 @@ a[name] {
   box-shadow: var(--shadow-card);
 }
 .project-chip-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
   font-size: 0.72rem;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -1983,6 +1987,86 @@ body.log-fullscreen-active {
 @media (max-width: 1099px) {
   .instances-view-switch { display: none; }
 }
+
+/* ── Features page: Cards/Table view ───────────────────────────── */
+.features-matrix-wrap { display: none; }
+html.features-table .features-cards { display: none; }
+html.features-table .features-matrix-wrap {
+  display: block;
+  /* scrolls on its own so the header row and project column can both stick */
+  max-height: 75vh;
+  overflow: auto;
+  border: 1px solid var(--border-card);
+  border-radius: var(--r-md);
+}
+.features-matrix {
+  --bs-table-bg: transparent;
+  --bs-table-color: var(--text-primary);
+  --bs-table-hover-bg: var(--accent-soft);
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  overflow: visible;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 0.8rem;
+}
+.features-matrix th,
+.features-matrix td {
+  padding: 0.4rem 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  white-space: nowrap;
+  text-align: center;
+  background: var(--bg-surface);
+}
+.features-matrix thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: var(--bg-elevated);
+  border-bottom: 1px solid var(--border-card);
+  text-transform: none;
+  letter-spacing: 0;
+  vertical-align: top;
+}
+.features-matrix thead th[data-feature] { white-space: normal; min-width: 6.5rem; max-width: 9rem; }
+.features-matrix thead th code { font-size: 0.78rem; word-break: break-word; }
+/* Compact CI status: a dot cropped from the color block of the Jenkins badge
+   requested with an empty subject and status (&subject=&status=+) */
+.ci-dot {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  overflow: hidden;
+  vertical-align: middle;
+  box-shadow: 0 0 0 1px var(--border-card);
+}
+.project-chip-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ci-dot img { position: absolute; left: -21px; top: -5px; height: 20px; width: auto; max-width: none; }
+.features-matrix__rebase { display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-top: 0.3rem; }
+.features-matrix__rebase a { color: var(--text-muted); }
+.features-matrix__rebase a:hover { color: var(--accent); }
+.features-matrix .features-matrix__project {
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-right: 1px solid var(--border-card);
+}
+.features-matrix tbody th.features-matrix__project { background: var(--bg-surface); }
+.features-matrix thead th.features-matrix__project { z-index: 3; vertical-align: middle; }
+.features-matrix tbody tr:hover > * { background: color-mix(in srgb, var(--accent) 8%, var(--bg-surface)); }
+.features-matrix__cell { display: flex; align-items: center; justify-content: center; gap: 0.4rem; }
+.features-matrix__cell .commit-stats { gap: 0.25rem; }
+.features-matrix__empty { color: var(--text-muted); opacity: 0.5; }
+/* Cells not matching the project filters stay in place but blank */
+.features-matrix td.cell-nomatch > * { visibility: hidden; }
+.features-matrix .col-highlight { box-shadow: inset 0 0 0 9999px color-mix(in srgb, var(--warning) 10%, transparent); }
 
 /* Pulse-dot in instance card */
 .instance-card .pulse-dot {

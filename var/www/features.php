@@ -8,6 +8,9 @@ checkCaches();
 <head>
     <?= pageHeader("features"); ?>
     <script type="text/javascript">
+        // Cards/Table view of deployed branches, applied before first paint
+        if (getPref('features-view', 'cards') === 'table') document.documentElement.classList.add('features-table');
+
         // Handle hash-based navigation to highlight feature cards
         // (tooltip init is already handled globally by pageFooter())
         // Resolve and highlight the feature targeted by the URL hash: bookmark
@@ -26,6 +29,10 @@ checkCaches();
                 el = anchor ? anchor.closest('.feature-item') : null;
             }
             document.querySelectorAll('.feature-card.highlight').forEach(function (c) { c.classList.remove('highlight'); });
+            var targetFeature = el ? el.getAttribute('data-feature') : null;
+            document.querySelectorAll('.features-matrix [data-feature]').forEach(function (c) {
+                c.classList.toggle('col-highlight', c.getAttribute('data-feature') === targetFeature);
+            });
             if (!el) return null;
             (el.classList.contains('feature-card') ? el : el.querySelector('.feature-card')).classList.add('highlight');
             return el;
@@ -60,6 +67,50 @@ checkCaches();
                     && (!state.behind || behind > 0)
                     && (!state.ahead || ahead > 1);
             }
+
+            // Matrix (table view): a feature column shows when its card would, a
+            // project row when one of its visible cells matches the project filters
+            function filterMatrix(section, query, projectFilter) {
+                var matrix = section.querySelector('.features-matrix');
+                if (!matrix) return;
+                var visibleFeatures = {};
+                section.querySelectorAll('.feature-item').forEach(function (item) {
+                    if (!item.classList.contains('d-none')) visibleFeatures[item.getAttribute('data-feature')] = true;
+                });
+                matrix.querySelectorAll('th[data-feature]').forEach(function (th) {
+                    th.classList.toggle('d-none', !visibleFeatures[th.getAttribute('data-feature')]);
+                });
+                matrix.querySelectorAll('tbody tr').forEach(function (row) {
+                    var rowMatch = false;
+                    row.querySelectorAll('td[data-feature]').forEach(function (cell) {
+                        var shown = !!visibleFeatures[cell.getAttribute('data-feature')];
+                        var match = shown && cell.hasAttribute('data-search') && (!projectFilter
+                            || projectMatches(query, cell.getAttribute('data-search'), +cell.getAttribute('data-behind'), +cell.getAttribute('data-ahead')));
+                        cell.classList.toggle('d-none', !shown);
+                        cell.classList.toggle('cell-nomatch', shown && !match);
+                        rowMatch = rowMatch || match;
+                    });
+                    row.classList.toggle('d-none', !rowMatch);
+                });
+            }
+
+            // Cards/Table view switch, saved per browser
+            var viewBtns = toolbar.querySelectorAll('[data-view]');
+            function applyView(view) {
+                document.documentElement.classList.toggle('features-table', view === 'table');
+                viewBtns.forEach(function (b) {
+                    var on = b.getAttribute('data-view') === view;
+                    b.classList.toggle('active', on);
+                    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+                });
+            }
+            viewBtns.forEach(function (b) {
+                b.addEventListener('click', function () {
+                    setPref('features-view', this.getAttribute('data-view'));
+                    applyView(this.getAttribute('data-view'));
+                });
+            });
+            applyView(getPref('features-view', 'cards'));
 
             function apply(persist) {
                 if (persist) {
@@ -102,6 +153,7 @@ checkCaches();
                         });
                     });
                     section.classList.toggle('d-none', visible === 0);
+                    filterMatrix(section, query, projectFilter);
                     var badge = section.querySelector('.features-count');
                     var total = badge.getAttribute('data-total');
                     badge.textContent = visible == total ? total : visible + ' / ' + total;
@@ -218,6 +270,10 @@ checkCaches();
                         <button type="button" id="featureFiltersReset" class="btn btn-sm btn-link text-muted" rel="tooltip" title="Clear filters">
                             <i class="fas fa-times"></i>
                         </button>
+                        <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Deployed branches view">
+                            <button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>
+                            <button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view: projects &times; features"><i class="fas fa-table me-1"></i>Table</button>
+                        </div>
                     </div>
                     <div id="featuresNoMatch" class="empty-section d-none">
                         <i class="fas fa-filter"></i>
@@ -239,6 +295,7 @@ checkCaches();
                             </div>
                         </div>
                         <div class="card-body">
+                            <div class="features-cards">
                             <?php foreach ($acceptedFeatures as $feature => $FBProjects): ?>
                             <?php $featureSlug = str_replace(["/", "."], "-", $feature); ?>
                             <div class="feature-card feature-item card mb-3" id="feature-<?= htmlspecialchars($featureSlug) ?>" <?= $featureFilterAttrs($feature, $FBProjects) ?>>
@@ -258,8 +315,7 @@ checkCaches();
                                            class="btn btn-sm btn-outline-primary" rel="tooltip" title="Rebase this feature branch">
                                                 <i class="fas fa-sync-alt" aria-hidden="true"></i> Rebase
                                             </a>
-                                            <img src="https://ci.exoplatform.org/buildStatus/icon?job=exo-<?= rawurlencode($feature) ?>-fb-rebase-branch"
-                                                 class="ci-badge" alt="Rebase build status for <?= htmlspecialchars($feature) ?>">
+                                            <span class="ci-dot" title="Rebase build status (green: passing, red: failing, yellow: unstable, grey: not run)"><img src="https://ci.exoplatform.org/buildStatus/icon?job=exo-<?= rawurlencode($feature) ?>-fb-rebase-branch&amp;subject=&amp;status=+" loading="lazy" alt="Rebase build status for <?= htmlspecialchars($feature) ?>"></span>
                                         </div>
                                     </div>
 
@@ -269,18 +325,14 @@ checkCaches();
                                             <?php if (array_key_exists($project, $FBProjects)): ?>
                                             <div class="project-chip" data-search="<?= htmlspecialchars($projectSearchKey($project)) ?>" data-behind="<?= (int) $FBProjects[$project]['behind_commits'] ?>" data-ahead="<?= (int) $FBProjects[$project]['ahead_commits'] ?>">
                                                 <div class="project-chip-header">
-                                                    <i class="fas fa-cube me-1" aria-hidden="true"></i>
-                                                    <?= htmlspecialchars($projectsNames[$project]) ?>
+                                                    <span class="project-chip-name"><i class="fas fa-cube me-1" aria-hidden="true"></i><?= htmlspecialchars($projectsNames[$project]) ?></span>
+                                                    <a href="https://ci.exoplatform.org/job/FB/job/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci/"
+                                                       target="_blank" rel="tooltip" title="CI job for <?= htmlspecialchars($projectsNames[$project]) ?> (green: passing, red: failing, yellow: unstable, grey: not run)">
+                                                        <span class="ci-dot"><img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci&amp;subject=&amp;status=+" loading="lazy" alt="CI build status for <?= htmlspecialchars($projectsNames[$project]) ?>"></span>
+                                                    </a>
                                                 </div>
                                                 <div class="text-center">
                                                     <?= componentFeatureRepoBrancheStatus($FBProjects[$project]); ?>
-                                                </div>
-                                                <div class="text-center mt-2">
-                                                    <a href="https://ci.exoplatform.org/job/FB/job/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci/"
-                                                       target="_blank" rel="tooltip" title="CI Job for <?= htmlspecialchars($projectsNames[$project]) ?>">
-                                                         <img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci"
-                                                              class="ci-badge" alt="CI build status for <?= htmlspecialchars($projectsNames[$project]) ?>">
-                                                    </a>
                                                 </div>
                                             </div>
                                             <?php endif; ?>
@@ -289,6 +341,50 @@ checkCaches();
                                 </div>
                             </div>
                             <?php endforeach; ?>
+                            </div>
+
+                            <!-- Table view: projects x deployed features matrix -->
+                            <div class="features-matrix-wrap">
+                                <table class="table table-sm align-middle features-matrix" aria-label="Deployed feature branches status per project">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="features-matrix__project">Project</th>
+                                            <?php foreach ($acceptedFeatures as $feature => $FBProjects): ?>
+                                            <th scope="col" data-feature="<?= htmlspecialchars($feature) ?>">
+                                                <code><?= htmlspecialchars($feature) ?></code>
+                                                <div class="features-matrix__rebase">
+                                                    <a href="https://ci.exoplatform.org/job/exo-<?= rawurlencode($feature) ?>-fb-rebase-branch/" target="_blank" rel="tooltip" title="Rebase this feature branch"><i class="fas fa-sync-alt"></i></a>
+                                                    <span class="ci-dot" title="Rebase build status (green: passing, red: failing, yellow: unstable, grey: not run)"><img src="https://ci.exoplatform.org/buildStatus/icon?job=exo-<?= rawurlencode($feature) ?>-fb-rebase-branch&amp;subject=&amp;status=+" loading="lazy" alt="Rebase build status for <?= htmlspecialchars($feature) ?>"></span>
+                                                </div>
+                                            </th>
+                                            <?php endforeach; ?>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php foreach ($projects as $project):
+                                            $inFeatures = array_filter($acceptedFeatures, function ($FBProjects) use ($project) { return array_key_exists($project, $FBProjects); });
+                                            if (empty($inFeatures)) continue; ?>
+                                        <tr>
+                                            <th scope="row" class="features-matrix__project"><i class="fas fa-cube me-1" aria-hidden="true"></i><?= htmlspecialchars($projectsNames[$project]) ?></th>
+                                            <?php foreach ($acceptedFeatures as $feature => $FBProjects): ?>
+                                            <?php if (array_key_exists($project, $FBProjects)): ?>
+                                            <td data-feature="<?= htmlspecialchars($feature) ?>" data-search="<?= htmlspecialchars($projectSearchKey($project)) ?>" data-behind="<?= (int) $FBProjects[$project]['behind_commits'] ?>" data-ahead="<?= (int) $FBProjects[$project]['ahead_commits'] ?>">
+                                                <div class="features-matrix__cell">
+                                                    <?= componentFeatureRepoBrancheStatus($FBProjects[$project]); ?>
+                                                    <a href="https://ci.exoplatform.org/job/FB/job/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci/" target="_blank" rel="tooltip" title="CI job for <?= htmlspecialchars($projectsNames[$project]) ?> on <?= htmlspecialchars($feature) ?> (green: passing, red: failing, yellow: unstable, grey: not run)">
+                                                        <span class="ci-dot"><img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/<?= getModuleCiPrefix($project) . rawurlencode($project) ?>-<?= rawurlencode($feature) ?>-fb-ci&amp;subject=&amp;status=+" loading="lazy" alt="CI build status for <?= htmlspecialchars($projectsNames[$project]) ?>"></span>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                            <?php else: ?>
+                                            <td data-feature="<?= htmlspecialchars($feature) ?>" class="features-matrix__empty" aria-label="Not part of this feature">&mdash;</td>
+                                            <?php endif; ?>
+                                            <?php endforeach; ?>
+                                        </tr>
+                                        <?php endforeach; ?>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                     <?php endif; ?>
