@@ -14,6 +14,7 @@ checkCaches();
             grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 1rem;
             margin-bottom: 2rem;
+            align-items: start; /* expanding one card must not stretch its row */
         }
         .server-card {
             background: var(--bg-surface);
@@ -85,10 +86,14 @@ checkCaches();
         .jvm-range .jvm-max { color: var(--danger-color); }
 
         /* ── Live usage meters ──────────────────────────────── */
-        .server-live { margin-top: .85rem; display: grid; gap: .55rem; font-size: .78rem; }
-        .server-live__row { display: grid; grid-template-columns: 4.2rem 1fr; gap: .15rem .6rem; align-items: center; }
+        /* overflow-anchor: refreshed content must not shift the page scroll */
+        /* minmax(0, 1fr) tracks: long instance names must ellipsize, not widen the card */
+        .server-live { margin-top: .85rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .55rem; font-size: .78rem; overflow-anchor: none; }
+        .server-live__top:not(.expanded) li.extra { display: none; }
+        .server-live__row { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: .15rem .6rem; align-items: center; }
         .server-live__label { color: var(--text-muted); font-weight: 500; white-space: nowrap; grid-row: span 2; }
         .server-live__value { display: flex; justify-content: space-between; gap: .5rem; color: var(--bs-body-color); }
+        .server-live__value > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
         .server-live__value .pct { font-weight: 700; font-variant-numeric: tabular-nums; }
         .usage-meter { height: 6px; background: var(--bg-field); border-radius: var(--r-full); overflow: hidden; }
         .usage-meter__fill { height: 100%; width: 0; background: var(--success); border-radius: inherit; transition: width var(--dur-fast); }
@@ -96,9 +101,9 @@ checkCaches();
         .usage-meter__fill.crit { background: var(--danger); }
         .pct.warn { color: var(--warning); }
         .pct.crit { color: var(--danger); }
-        .server-live__top { margin: 0; padding: 0; list-style: none; display: grid; gap: .1rem; }
+        .server-live__top { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: .1rem; }
         .server-live__top li { display: flex; justify-content: space-between; gap: .5rem; color: var(--text-secondary); }
-        .server-live__top li a { color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+        .server-live__top li a { min-width: 0; color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
         .server-live__top li a:hover { color: var(--accent); text-decoration: underline; }
         .server-live__top li span { white-space: nowrap; font-variant-numeric: tabular-nums; }
         .server-live__top li span small { color: var(--text-muted); }
@@ -324,7 +329,6 @@ checkCaches();
                     var GB = 1024 * 1024; // kB per GB
                     var TOP = 3;
                     var expandedHosts = {}; // JVM list toggles, kept across refreshes
-                    var lastStats = null;
                     function esc(v) { var d = document.createElement('div'); d.textContent = v == null ? '' : String(v); return d.innerHTML; }
                     function level(pct) { return pct >= 85 ? 'crit' : (pct >= 70 ? 'warn' : ''); }
                     function fmt(v, digits) { return v.toFixed(digits === undefined ? 1 : digits); }
@@ -334,6 +338,9 @@ checkCaches();
                             + '<span class="server-live__label"><i class="fas ' + icon + ' me-1"></i>' + label + '</span>'
                             + '<span class="server-live__value"><span>' + value + '</span><span class="pct ' + l + '">' + Math.round(pct) + '%</span></span>'
                             + '<div class="usage-meter"><div class="usage-meter__fill ' + l + '" style="width:' + p + '%"></div></div></div>';
+                    }
+                    function toggleLabel(expanded, count) {
+                        return expanded ? '<i class="fas fa-chevron-up me-1"></i>Show less' : '<i class="fas fa-chevron-down me-1"></i>Show all ' + count;
                     }
                     function uptime(s) {
                         var d = Math.floor(s / 86400), h = Math.floor(s % 86400 / 3600);
@@ -375,16 +382,16 @@ checkCaches();
                         // ("top"/"name" is the format of servers not yet updated)
                         var jvms = st.jvm && st.jvm.readable ? (st.jvm.list || st.jvm.top || []) : [];
                         if (jvms.length) {
-                            var expanded = expandedHosts[card.getAttribute('data-host')];
-                            html += '<ul class="server-live__top">' + jvms.slice(0, expanded ? jvms.length : TOP).map(function (t) {
+                            var expanded = !!expandedHosts[card.getAttribute('data-host')];
+                            html += '<ul class="server-live__top' + (expanded ? ' expanded' : '') + '">' + jvms.map(function (t, i) {
                                 var key = t.key || t.name;
-                                return '<li><a href="#instance-' + esc(key) + '" data-instance="' + esc(key) + '" title="' + esc(key) + '">' + esc(t.label || t.name) + '</a>'
+                                return '<li' + (i >= TOP ? ' class="extra"' : '') + '><a href="#instance-' + esc(key) + '" data-instance="' + esc(key) + '" title="' + esc((t.label ? t.label + ' \u2014 ' : '') + key) + '">' + esc(t.label || t.name) + '</a>'
                                     + '<span title="Process memory (heap, metaspace, threads, native) &middot; configured max heap">' + fmt(t.rss_kb / GB) + ' GB'
                                     + (t.xmx_gb ? ' <small>&middot; heap ' + fmt(t.xmx_gb) + '</small>' : '') + '</span></li>';
                             }).join('') + '</ul>';
                             if (jvms.length > TOP) {
-                                html += '<button type="button" class="server-live__toggle" aria-expanded="' + !!expanded + '">'
-                                    + (expanded ? '<i class="fas fa-chevron-up me-1"></i>Show less' : '<i class="fas fa-chevron-down me-1"></i>Show all ' + jvms.length) + '</button>';
+                                html += '<button type="button" class="server-live__toggle" data-count="' + jvms.length + '" aria-expanded="' + expanded + '">'
+                                    + toggleLabel(expanded, jvms.length) + '</button>';
                             }
                         }
                         html += '<div class="server-live__footer">'
@@ -398,7 +405,6 @@ checkCaches();
                             if (!r.ok) throw new Error(r.status);
                             return r.json();
                         }).then(function (stats) {
-                            lastStats = stats;
                             document.querySelectorAll('.server-card[data-host]').forEach(function (card) {
                                 render(card, stats[card.getAttribute('data-host')]);
                             });
@@ -409,10 +415,13 @@ checkCaches();
                     document.querySelector('.server-cards').addEventListener('click', function (e) {
                         var toggle = e.target.closest('.server-live__toggle');
                         if (toggle) {
+                            // Toggle in place: rebuilding the block would make the page jump
                             var card = toggle.closest('.server-card');
                             var host = card.getAttribute('data-host');
-                            expandedHosts[host] = !expandedHosts[host];
-                            render(card, lastStats && lastStats[host]);
+                            var expanded = expandedHosts[host] = !expandedHosts[host];
+                            card.querySelector('.server-live__top').classList.toggle('expanded', expanded);
+                            toggle.setAttribute('aria-expanded', expanded);
+                            toggle.innerHTML = toggleLabel(expanded, toggle.getAttribute('data-count'));
                             return;
                         }
                         // Jump to the instance row in the port registry and highlight it
