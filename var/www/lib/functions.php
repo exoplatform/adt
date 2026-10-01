@@ -520,8 +520,9 @@ function getLocalAcceptanceInstances()
         else
           $descriptor_array['ARTIFACT_AGE_CLASS'] = "green";
       } else {
-        $descriptor_array['ARTIFACT_AGE_STRING'] = "Unknown";
-        $descriptor_array['ARTIFACT_AGE_CLASS'] = "black";
+        // Release artifact: no tracked build date, derive it from the version when possible
+        $descriptor_array = array_merge($descriptor_array,
+            artifactAgeFromVersion(($descriptor_array['ARTIFACT_TIMESTAMP'] ?? '') . ' ' . $descriptor_array['PRODUCT_VERSION']));
       }
       if (!empty($descriptor_array['DEPLOYMENT_DATE'])) {
           $deployment_age = DateTime::createFromFormat('Ymd.His', $descriptor_array['DEPLOYMENT_DATE'])->diff($now, true);
@@ -841,6 +842,30 @@ function getGlobalAcceptanceInstances()
     cacheSet('all_instances', $instances, 120);
   }
   return $instances;
+}
+
+/**
+ * Build age of a release artifact, which has no tracked build date: continuous
+ * deployment versions embed their build day (e.g. 7.3.0-20260930), used at day
+ * precision. Other releases get an empty age (shown as a "release" label).
+ *
+ * @param string $versions version strings to look into (artifact timestamp, product version)
+ *
+ * @return array ARTIFACT_AGE_STRING, ARTIFACT_AGE_CLASS and ARTIFACT_AGE_TITLE
+ */
+function artifactAgeFromVersion($versions)
+{
+  if (preg_match('/-(20\d{2})(\d{2})(\d{2})(?!\d)/', (string) $versions, $matches)
+      && checkdate((int) $matches[2], (int) $matches[3], (int) $matches[1])) {
+    $built_day = new DateTime($matches[1] . '-' . $matches[2] . '-' . $matches[3]);
+    $days = (int) $built_day->diff(new DateTime('today'))->format('%a');
+    return array(
+        'ARTIFACT_AGE_STRING' => $days === 0 ? 'today' : $days . ' day(s) ago',
+        'ARTIFACT_AGE_CLASS' => $days > 5 ? "red" : ($days > 2 ? "orange" : "green"),
+        'ARTIFACT_AGE_TITLE' => 'Built on ' . $built_day->format('Y-m-d') . ' (from the version)',
+    );
+  }
+  return array('ARTIFACT_AGE_STRING' => '', 'ARTIFACT_AGE_CLASS' => '', 'ARTIFACT_AGE_TITLE' => '');
 }
 
 /**

@@ -45,6 +45,8 @@ function pageHeader($title = "", $autoRefresh = true)
     // ── Storage helpers ──────────────────────────────────
     function getPref(key, fallback) { try { var v = localStorage.getItem(key); return v !== null ? v : fallback; } catch(e) { return fallback; } }
     function setPref(key, val) { try { localStorage.setItem(key, val); } catch(e) {} }
+    // Instance pages Card/Table view, applied before first paint to avoid a flash
+    if (getPref('instances-view', 'cards') === 'table') document.documentElement.classList.add('view-table');
 
     // ── Resolve stored/effective values ──────────────────
     function resolveAccent() {
@@ -237,10 +239,124 @@ function pageHeader($title = "", $autoRefresh = true)
         section.classList.toggle('empty', query && visible === 0);
       });
     }
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initSearch);
-    } else {
+    // ── Instance Card/Table view switch ──────────────────
+    function initViewSwitch() {
+      var search = document.querySelector('.instances-search');
+      if (!search || !document.getElementById('instanceSearch') || !document.querySelector('.instance-grid')) return;
+      // Toolbar: search + view switch
+      var toolbar = document.createElement('div');
+      toolbar.className = 'instances-toolbar';
+      search.parentNode.insertBefore(toolbar, search);
+      toolbar.appendChild(search);
+      var group = document.createElement('div');
+      group.className = 'btn-group btn-group-sm instances-view-switch';
+      group.setAttribute('role', 'group');
+      group.setAttribute('aria-label', 'Instances view');
+      group.innerHTML =
+        '<button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>' +
+        '<button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view"><i class="fas fa-list me-1"></i>Table</button>';
+      toolbar.appendChild(group);
+      // Column headers, only displayed in table view
+      document.querySelectorAll('.instance-grid').forEach(function(grid) {
+        var head = document.createElement('div');
+        head.className = 'instance-table-head';
+        head.setAttribute('aria-hidden', 'true');
+        head.innerHTML =
+          '<button type="button" data-sort="status" title="Sort by status"><span class="visually-hidden">Status</span></button>' +
+          '<button type="button" data-sort="name">Instance</button>' +
+          '<button type="button" data-sort="version">Version</button>' +
+          '<button type="button" data-sort="deployed" title="Sort by deployment date">Database / Deployed</button>' +
+          '<span>Badges</span><span></span><span>Actions</span>';
+        grid.insertBefore(head, grid.firstChild);
+      });
+      // Each section is its own grid: share the widest tools/actions columns
+      // across all of them so the table columns line up from one section to the next
+      function syncColumns() {
+        var root = document.documentElement.style;
+        root.removeProperty('--instance-tools-w');
+        root.removeProperty('--instance-actions-w');
+        if (!document.documentElement.classList.contains('view-table')) return;
+        var tools = 0, actions = 0;
+        document.querySelectorAll('.instance-grid').forEach(function(grid) {
+          if (!grid.offsetParent) return;
+          var cols = getComputedStyle(grid).gridTemplateColumns.match(/[\d.]+px/g);
+          if (!cols || cols.length < 2) return;
+          tools = Math.max(tools, parseFloat(cols[cols.length - 2]));
+          actions = Math.max(actions, parseFloat(cols[cols.length - 1]));
+        });
+        if (tools) root.setProperty('--instance-tools-w', Math.ceil(tools) + 'px');
+        if (actions) root.setProperty('--instance-actions-w', Math.ceil(actions) + 'px');
+      }
+      // ── Table sorting: per section, via CSS order (table view only, the
+      // card view keeps the server order); "key:asc|desc", saved per browser
+      var collator = new Intl.Collator(undefined, { numeric: true, sensitivity: 'base' });
+      function sortValue(card, key) {
+        if (key === 'name') return (card.querySelector('.instance-card__name') || {}).textContent.trim();
+        return card.getAttribute('data-sort-' + key) || '';
+      }
+      function applySort(sort) {
+        var parts = (sort || '').split(':'), key = parts[0], dir = parts[1] === 'desc' ? -1 : 1;
+        document.querySelectorAll('.instance-grid').forEach(function(grid) {
+          var cards = [].slice.call(grid.querySelectorAll('.instance-card'));
+          if (key) {
+            cards.sort(function(a, b) {
+              var va = sortValue(a, key), vb = sortValue(b, key);
+              // Empty values always last
+              if (!va !== !vb) return va ? -1 : 1;
+              return collator.compare(va, vb) * dir;
+            });
+          }
+          cards.forEach(function(card, i) {
+            if (key) card.style.setProperty('--sort-order', i + 1); else card.style.removeProperty('--sort-order');
+          });
+          grid.querySelectorAll('.instance-table-head [data-sort]').forEach(function(btn) {
+            var on = btn.getAttribute('data-sort') === key;
+            btn.classList.toggle('sorted', on);
+            btn.setAttribute('data-dir', on ? (dir === 1 ? 'asc' : 'desc') : '');
+            btn.setAttribute('aria-sort', on ? (dir === 1 ? 'ascending' : 'descending') : 'none');
+          });
+        });
+      }
+      document.addEventListener('click', function(e) {
+        var btn = e.target.closest('.instance-table-head [data-sort]');
+        if (!btn) return;
+        // Cycle: ascending -> descending -> server order
+        var key = btn.getAttribute('data-sort'), current = getPref('instances-sort', '');
+        var next = current === key + ':asc' ? key + ':desc' : (current === key + ':desc' ? '' : key + ':asc');
+        setPref('instances-sort', next);
+        applySort(next);
+      });
+      applySort(getPref('instances-sort', ''));
+      function apply(view) {
+        document.documentElement.classList.toggle('view-table', view === 'table');
+        group.querySelectorAll('[data-view]').forEach(function(b) {
+          var on = b.getAttribute('data-view') === view;
+          b.classList.toggle('active', on);
+          b.setAttribute('aria-pressed', on ? 'true' : 'false');
+        });
+        syncColumns();
+      }
+      var resizeTimer;
+      window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(syncColumns, 150);
+      });
+      group.addEventListener('click', function(e) {
+        var btn = e.target.closest('[data-view]');
+        if (!btn) return;
+        setPref('instances-view', btn.getAttribute('data-view'));
+        apply(btn.getAttribute('data-view'));
+      });
+      apply(getPref('instances-view', 'cards'));
+    }
+    function initInstances() {
+      initViewSwitch();
       initSearch();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initInstances);
+    } else {
+      initInstances();
     }
   </script>
 <?php
@@ -926,7 +1042,7 @@ function componentAppServerIcon($deployment_descriptor) {
 function componentEditNoteIcon($deployment_descriptor)
 {
   $modalId = 'edit-note-' . str_replace(".", "_", $deployment_descriptor->INSTANCE_KEY);
-  $content = '<a href="javascript:void(0)" data-bs-toggle="modal" data-bs-target="#' . $modalId . '" title="Edit note"><i class="fas fa-pencil-alt"></i></a>';
+  $content = '<a href="javascript:void(0)" role="button" data-bs-toggle="modal" data-bs-target="#' . $modalId . '" rel="tooltip" title="Edit note"><i class="fas fa-pencil-alt"></i></a>';
   $content .= getFormEditNote($deployment_descriptor);
   return $content;
 }
@@ -1401,7 +1517,8 @@ function componentFBIssueLabel($deployment_descriptor)
 function componentFBEditIcon($deployment_descriptor)
 {
   $modalId = 'edit-' . str_replace(".", "_", $deployment_descriptor->INSTANCE_KEY);
-  $content = '<a role="button" data-bs-toggle="modal" data-bs-target="#' . $modalId . '" title="Edit feature branch"><i class="fas fa-pencil-alt"></i></a>';
+  // Same markup as componentEditNoteIcon(): an href keeps the shared icon link style
+  $content = '<a href="javascript:void(0)" role="button" data-bs-toggle="modal" data-bs-target="#' . $modalId . '" rel="tooltip" title="Edit feature branch"><i class="fas fa-pencil-alt"></i></a>';
   $content .= getFormEditFeatureBranch($deployment_descriptor);
   return $content;
 }
@@ -1416,7 +1533,7 @@ function componentFBEditIcon($deployment_descriptor)
 function componentFBDeployIcon($deployment_descriptor)
 {
   if (isset($deployment_descriptor->DEPLOYMENT_BUILD_URL)) {
-    return '<a href="' . $deployment_descriptor->DEPLOYMENT_BUILD_URL . '/build?delay=0sec" rel="tooltip" title="Restart your instance or reset your instance data" target="_blank"><i class="fas fa-sync-alt"></i></a>';
+    return '<a href="' . $deployment_descriptor->DEPLOYMENT_BUILD_URL . '/build?delay=0sec" rel="tooltip" title="Restart or reset data" target="_blank"><i class="fas fa-sync-alt"></i></a>';
   }
   return '';
 }
@@ -1545,9 +1662,16 @@ function renderInstanceCard($inst, array $opts = [])
 
   $isFeatureBranch = isInstanceFeatureBranch($inst);
 
+  // Edit/restart controls always live in the top-right tools slot (a column in
+  // table view), in the same order everywhere: [spec] restart, edit
+  $tools = $opts['actions_top'];
+  if ($opts['fb_badges'] && $isFeatureBranch) {
+    $tools .= componentFBDeployIcon($inst) . componentFBEditIcon($inst);
+  }
+
   ob_start();
 ?>
-<div class="instance-card">
+<div class="instance-card" data-sort-status="<?= $inst->DEPLOYMENT_STATUS == "Up" ? '1' : '0' ?>" data-sort-version="<?= htmlspecialchars($inst->ARTIFACT_TIMESTAMP ?? $inst->PRODUCT_VERSION) ?>" data-sort-deployed="<?= htmlspecialchars($inst->DEPLOYMENT_DATE ?? '') ?>">
     <div class="instance-card__top">
         <div class="instance-card__status">
             <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
@@ -1583,7 +1707,7 @@ function renderInstanceCard($inst, array $opts = [])
             </div>
         </div>
         <div class="instance-card__actions-top">
-            <?= $opts['actions_top'] ?>
+            <?= $tools ?>
         </div>
     </div>
     <div class="instance-card__details">
@@ -1593,17 +1717,28 @@ function renderInstanceCard($inst, array $opts = [])
         <?php endif; ?>
         <div class="instance-card__ages">
             <?php if ($opts['show_built_age']): ?>
-            <span class="<?= $inst->ARTIFACT_AGE_CLASS ?>" title="Time since artifact was built"><i class="fas fa-calendar-alt me-1"></i>built <?= $inst->ARTIFACT_AGE_STRING ?></span>
+            <?php
+            // Servers not yet updated still send "Unknown" for releases: derive it here too
+            $built = (empty($inst->ARTIFACT_AGE_STRING) || $inst->ARTIFACT_AGE_STRING === 'Unknown')
+                ? artifactAgeFromVersion(($inst->ARTIFACT_TIMESTAMP ?? '') . ' ' . $inst->PRODUCT_VERSION)
+                : array('ARTIFACT_AGE_STRING' => $inst->ARTIFACT_AGE_STRING, 'ARTIFACT_AGE_CLASS' => $inst->ARTIFACT_AGE_CLASS,
+                        'ARTIFACT_AGE_TITLE' => $inst->ARTIFACT_AGE_TITLE ?? 'Time since artifact was built');
+            ?>
+            <?php if ($built['ARTIFACT_AGE_STRING'] !== ''): ?>
+            <span class="<?= $built['ARTIFACT_AGE_CLASS'] ?>" title="<?= htmlspecialchars($built['ARTIFACT_AGE_TITLE']) ?>"><i class="fas fa-calendar-alt me-1"></i>built <?= $built['ARTIFACT_AGE_STRING'] ?></span>
+            <?php else: ?>
+            <span class="text-muted" title="Release artifact: its build date is not tracked"><i class="fas fa-tag me-1"></i>release</span>
+            <?php endif; ?>
             <?php endif; ?>
             <span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed <?= $inst->DEPLOYMENT_AGE_STRING ?></span>
         </div>
     </div>
+    <?php /* Badge group: layout-neutral in card view, a single cell in table view */ ?>
+    <div class="instance-card__badge-group">
     <?php if ($opts['fb_badges'] && $isFeatureBranch): ?>
     <div class="instance-card__badges">
         <?= componentFBStatusLabel($inst) ?>
-        <?= componentFBIssueLabel($inst) ?>
-        <?= componentFBEditIcon($inst) ?>
-        <?= componentFBDeployIcon($inst) ?>
+        <?php if (!empty($inst->ISSUE_NUM)): ?><?= componentFBIssueLabel($inst) ?><?php endif; ?>
     </div>
     <?php endif; ?>
     <?php if ($badgeMarkup !== ''): ?>
@@ -1611,6 +1746,7 @@ function renderInstanceCard($inst, array $opts = [])
         <?= $badgeMarkup ?>
     </div>
     <?php endif; ?>
+    </div>
     <?php if ($opts['actions']): ?>
     <div class="instance-card__actions">
         <?= componentDeploymentActions($inst) ?>
