@@ -440,7 +440,7 @@ function pageNavigation()
     "Servers" => "/servers",
   ];
   $icons = [
-    "Home" => "fa-th-large",
+    "Home" => "fa-house",
     "QA" => "fa-flask",
     "Sales" => "fa-chart-line",
     "Customer Projects" => "fa-briefcase",

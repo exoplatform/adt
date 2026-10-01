@@ -265,7 +265,7 @@ checkCaches();
                             <i class="fas fa-arrow-down me-1"></i>Needs rebase
                         </button>
                         <button type="button" id="featureAheadOnly" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Only modules with dev commits not yet backported (more than 1 commit ahead)">
-                            <i class="fas fa-code-branch me-1"></i>Needs backport
+                            <i class="fas fa-code-merge me-1"></i>Needs backport
                         </button>
                         <button type="button" id="featureFiltersReset" class="btn btn-sm btn-link text-muted" rel="tooltip" title="Clear filters">
                             <i class="fas fa-times"></i>
