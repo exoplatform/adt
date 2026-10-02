@@ -22,6 +22,7 @@
     DirectoryIndex index.php
 
     # Error pages
+    ErrorDocument 403 /403.html
     ErrorDocument 404 /404.html
     ErrorDocument 500 /500.html
     ErrorDocument 502 /502.html
@@ -160,7 +161,61 @@
     </Directory>
 
     # Security
+    # The dashboard UI uses a login page (mod_auth_form + LDAP backend) backed by an
+    # encrypted session cookie. Every path not explicitly opened below stays protected.
+    # Requires: a2enmod auth_form session session_cookie session_crypto request authnz_ldap
+    Session                 On
+    SessionCookieName       adt_session path=/;httponly;secure;samesite=lax
+    SessionCryptoPassphrase ${ADT_SESSION_PASSPHRASE}
+    SessionMaxAge           28800
+
     <Location />
+            AuthName "eXo Employees only"
+            AuthType form
+            AuthFormProvider ldap
+            AuthFormLoginRequiredLocation "/login"
+            # Authenticated but not in the group: 403 page instead of a bare 401
+            AuthzSendForbiddenOnFailure On
+
+            AuthLDAPBindDN          "${LDAP_ACCEPTANCE_BIND_DN}"
+            AuthLDAPBindPassword    ${LDAP_ACCEPTANCE_BIND_PASSWORD}
+            AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn,mail,displayName
+            <RequireAll>
+                Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
+                AuthLDAPMaxSubGroupDepth 1
+            </RequireAll>
+    </Location>
+
+    # Login page (public) and the handlers processing the form
+    <LocationMatch "^/(login(\.php)?|403\.html)$">
+        Require all granted
+    </LocationMatch>
+    # Lets login.php see whether the visitor already has a session (redirected to /)
+    <LocationMatch "^/login(\.php)?$">
+        SessionEnv On
+    </LocationMatch>
+    <Location /dologin>
+        SetHandler form-login-handler
+        AuthFormLoginRequiredLocation "/login"
+        AuthFormLoginSuccessLocation  "/"
+        Require all granted
+    </Location>
+    # "Remember me": same handler, but the session (and its cookie) lives 7 days
+    <Location /dologin-remember>
+        SetHandler form-login-handler
+        AuthFormLoginRequiredLocation "/login"
+        AuthFormLoginSuccessLocation  "/"
+        SessionMaxAge 604800
+        Require all granted
+    </Location>
+    <Location /logout>
+        SetHandler form-logout-handler
+        AuthFormLogoutLocation "/login"
+        Require all granted
+    </Location>
+
+    # Non-interactive endpoints (curl, wget, awstats ...) keep HTTP Basic auth against LDAP
+    <LocationMatch "^/(downloads|datasets|stats)(/|$)">
             AuthName "eXo Employees only"
             AuthType Basic
             AuthBasicProvider ldap
@@ -172,7 +227,7 @@
                 Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
                 AuthLDAPMaxSubGroupDepth 1
             </RequireAll>
-    </Location>
+    </LocationMatch>
     <Location /rest/>
         Require host exoplatform.org
     </Location>
