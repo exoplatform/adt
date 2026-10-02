@@ -31,15 +31,25 @@ function isPrivateRepo($repo) {
 }
 
 /**
- * shields.io JSON endpoint for the GitHub Actions status of a public repo
- * workflow (CORS enabled), so the page can draw its own status dot instead
- * of embedding a full badge image. Private repos can't be looked up without
- * authentication and get no URL.
+ * Same-origin endpoint reading the workflow's latest run from the GitHub
+ * Actions API (cached server-side, rate-limit aware - see rest/crowdin-status.php).
  */
 function crowdinStatusUrl($org, $repo, $workflow, $branch) {
-  $url = "https://img.shields.io/github/actions/workflow/status/{$org}/{$repo}/{$workflow}.json";
-  if ($branch) $url .= "?branch=" . rawurlencode($branch);
-  return $url;
+  $params = array('org' => $org, 'repo' => $repo, 'workflow' => $workflow);
+  if ($branch) $params['branch'] = $branch;
+  return '/rest/crowdin-status.php?' . http_build_query($params);
+}
+
+/**
+ * Fallback when the API gives no result (e.g. rate limited): shields.io JSON
+ * endpoint for the workflow badge (CORS enabled). Badges only count push
+ * runs by default, so scheduled workflows need the event set explicitly.
+ */
+function crowdinBadgeUrl($org, $repo, $workflow, $branch, $event) {
+  $params = array();
+  if ($branch) $params['branch'] = $branch;
+  if ($event) $params['event'] = $event;
+  return "https://img.shields.io/github/actions/workflow/status/{$org}/{$repo}/{$workflow}.json" . ($params ? '?' . http_build_query($params) : '');
 }
 
 /**
@@ -56,7 +66,9 @@ function renderCrowdinBadge($m, $workflow, $branch, $query_branch, $label, $alt,
     return;
   }
   $status_url = crowdinStatusUrl($m['github_org'], $m['github_repo'], $workflow, $branch);
-  echo '<a href="' . htmlspecialchars($run_url) . '" target="_blank" class="' . $class . '" data-status-url="' . htmlspecialchars($status_url) . '" data-title="' . htmlspecialchars($alt) . '" title="' . htmlspecialchars($alt . ': loading...') . '">';
+  $event = $workflow === 'download-crowdin.yml' ? 'schedule' : 'push';
+  $fallback_url = crowdinBadgeUrl($m['github_org'], $m['github_repo'], $workflow, $branch, $event);
+  echo '<a href="' . htmlspecialchars($run_url) . '" target="_blank" class="' . $class . '" data-status-url="' . htmlspecialchars($status_url) . '" data-fallback-url="' . htmlspecialchars($fallback_url) . '" data-title="' . htmlspecialchars($alt) . '" title="' . htmlspecialchars($alt . ': loading...') . '">';
   echo '<span class="status-dot is-loading" aria-hidden="true"></span>' . $text . '</a>';
 }
 
@@ -336,9 +348,10 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
 </div>
 <?php pageFooter(); ?>
 <script>
-// Fill the status dots from the shields.io JSON endpoint, a few requests at
-// a time. Its first lookup for a repo/workflow/branch can time out while it
-// cold-fetches from GitHub but is cached and fast right after: retry once.
+// Fill the status dots from the server endpoint (GitHub Actions API, cached
+// and rate-limit aware), a few requests at a time. When it has no result,
+// fall back to the shields.io badge JSON: its first lookup can time out while
+// it cold-fetches from GitHub but is fast right after, so retry that once.
 (function () {
   // Each status is shown in both views: fetch every URL once, update all its links
   var byUrl = {};
@@ -442,20 +455,31 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
     });
   }
   update();
-  function load(link, retried) {
+  function loadBadge(link, retried) {
+    return fetch(link[0].getAttribute('data-fallback-url')).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(function (status) {
+      show(link, level(status), (status.message || 'unknown') + ' (badge)');
+    }).catch(function () {
+      if (!retried) return new Promise(function (res) { setTimeout(res, 3000); }).then(function () { return loadBadge(link, true); });
+      show(link, 'unknown', 'status unavailable');
+    });
+  }
+  function load(link) {
     return fetch(link[0].getAttribute('data-status-url')).then(function (r) {
       if (!r.ok) throw new Error(r.status);
       return r.json();
     }).then(function (status) {
-      show(link, level(status), status.message || 'unknown');
+      if (!status.level) return loadBadge(link, false);
+      show(link, status.level, status.message || 'unknown');
     }).catch(function () {
-      if (!retried) return new Promise(function (res) { setTimeout(res, 3000); }).then(function () { return load(link, true); });
-      show(link, 'unknown', 'status unavailable');
+      return loadBadge(link, false);
     });
   }
   function next() {
     var link = links.shift();
-    if (link) return load(link, false).then(next);
+    if (link) return load(link).then(next);
   }
   for (var i = 0; i < CONCURRENCY; i++) next();
 })();
