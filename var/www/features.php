@@ -53,6 +53,7 @@ checkCaches();
             var nameSelect = document.getElementById('featureName');
             var toggles = { behind: document.getElementById('featureBehindOnly'), ahead: document.getElementById('featureAheadOnly') };
             var scopeBtns = toolbar.querySelectorAll('[data-scope]');
+            var resetBtn = document.getElementById('featureFiltersReset');
             var DEFAULTS = { query: '', name: '', scope: 'all', behind: false, ahead: false };
             var state = {
                 query: getPref('features-filter-query', ''),
@@ -133,6 +134,14 @@ checkCaches();
                     toggles[k].classList.toggle('active', state[k]);
                     toggles[k].setAttribute('aria-pressed', state[k] ? 'true' : 'false');
                 });
+                // "Clear" only shows once a filter differs from its default, with
+                // the number of active filters
+                var active = Object.keys(DEFAULTS).filter(function (k) {
+                    return k === 'query' ? state.query.trim() !== '' : state[k] !== DEFAULTS[k];
+                }).length;
+                resetBtn.classList.toggle('d-none', active === 0);
+                resetBtn.querySelector('.filter-reset__count').textContent = active;
+                resetBtn.title = active === 1 ? 'Clear the active filter' : 'Clear the ' + active + ' active filters';
 
                 var query = state.query.toLowerCase().trim();
                 var projectFilter = !!query || state.behind || state.ahead;
@@ -174,9 +183,11 @@ checkCaches();
             Object.keys(toggles).forEach(function (k) {
                 toggles[k].addEventListener('click', function () { state[k] = !state[k]; apply(true); });
             });
-            document.getElementById('featureFiltersReset').addEventListener('click', function () {
+            resetBtn.addEventListener('click', function () {
                 state = Object.assign({}, DEFAULTS);
                 apply(true);
+                // The button hides itself: keep the focus in the toolbar
+                search.focus();
             });
 
             apply(false);
@@ -243,6 +254,11 @@ checkCaches();
                         <div class="instances-search mb-0 flex-grow-1">
                             <i class="fas fa-search instances-search__icon"></i>
                             <input type="text" id="featureSearch" class="instances-search__input" placeholder="Filter by project...">
+                            <button type="button" id="featureFiltersReset" class="btn btn-sm filter-reset d-none" title="Clear filters">
+                                <i class="fas fa-times" aria-hidden="true"></i>Clear
+                                <span class="filter-reset__count" aria-hidden="true"></span>
+                                <span class="visually-hidden">filters</span>
+                            </button>
                         </div>
                         <select id="featureName" class="form-select form-select-sm w-auto" aria-label="Feature">
                             <option value="">All features</option>
@@ -266,9 +282,6 @@ checkCaches();
                         </button>
                         <button type="button" id="featureAheadOnly" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Only modules with dev commits not yet backported (more than 1 commit ahead)">
                             <i class="fas fa-code-merge me-1"></i>Needs backport
-                        </button>
-                        <button type="button" id="featureFiltersReset" class="btn btn-sm btn-link text-muted" rel="tooltip" title="Clear filters">
-                            <i class="fas fa-times"></i>
                         </button>
                         <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Deployed branches view">
                             <button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>

@@ -1852,6 +1852,55 @@ body.log-fullscreen-active {
   margin: -3px 0;
   vertical-align: middle;
 }
+/* "Clear filters": shown only while filters are active (see features.php),
+   overlaid on the right of the search field so showing it never reflows
+   the toolbar */
+.filter-reset {
+  position: absolute;
+  top: 0.3rem;
+  bottom: 0.3rem;
+  right: 0.3rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0 0.6rem;
+  font-size: 0.75rem;
+  border-radius: var(--r-full);
+  border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+  animation: filter-reset-in var(--dur-fast) ease-out;
+}
+.filter-reset:hover,
+.filter-reset:focus-visible {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+.instances-search:has(.filter-reset:not(.d-none)) .instances-search__input { padding-right: 6.5rem; }
+/* Content-independent basis (like .instances-toolbar): the padding above must
+   not change the search width, which would rewrap the filter bar */
+.filter-bar > .instances-search { flex: 1 1 260px; }
+.filter-reset__count {
+  min-width: 1.25rem;
+  padding: 0 0.3rem;
+  border-radius: var(--r-full);
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.7rem;
+  line-height: 1.25rem;
+  text-align: center;
+}
+.filter-reset:hover .filter-reset__count,
+.filter-reset:focus-visible .filter-reset__count {
+  background: #fff;
+  color: var(--accent);
+}
+@keyframes filter-reset-in {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
 .version-auto {
   cursor: help;
   text-decoration: underline dotted;
@@ -2299,6 +2348,7 @@ html.features-table .features-matrix-wrap {
   .filter-bar > .btn-group { display: flex; flex: 1 1 100%; margin-left: 0 !important; }
   .filter-bar > .btn-group > .btn { flex: 1 1 0; }
   .filter-bar > .btn:not(.btn-link) { flex: 1 1 0; white-space: nowrap; }
+  .filter-bar .btn.filter-reset { min-height: 0; }
   .filter-bar .btn,
   .filter-bar > .form-select { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
   .filter-bar > .form-select { font-size: 16px; }
