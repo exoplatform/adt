@@ -145,7 +145,9 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
     .crowdin-branch-group + .crowdin-branch-group { margin-top: 0.6rem; }
     .crowdin-branch-group .feature-branch-link { display: block; font-size: 0.78rem; margin-bottom: 0.3rem; }
     .crowdin-branch-row { display: flex; align-items: center; gap: 0.4rem; flex-wrap: wrap; }
-    .project-chip--skipped { opacity: 0.6; }
+    /* Muted without opacity, which would drop the text below WCAG contrast */
+    .project-chip--skipped { background: transparent; border-style: dashed; }
+    .project-chip--skipped .project-chip-name { color: var(--text-secondary); }
     .link-reset { color: inherit; text-decoration: none; }
     .link-reset:hover { text-decoration: underline; }
     .crowdin-status {
@@ -156,6 +158,10 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
     .crowdin-status:hover { border-color: var(--accent); color: var(--text-primary); }
     .crowdin-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem 1rem; margin-bottom: 1rem; }
     .crowdin-toolbar__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+    @media (max-width: 768px) {
+      .crowdin-toolbar__actions { width: 100%; }
+      .crowdin-toolbar__actions > .btn-group { flex: 1 1 auto; }
+    }
     .crowdin-table { display: none; width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.82rem;
       border: 1px solid var(--border-card); border-radius: var(--r-md); }
     html.crowdin-table-view .crowdin-table { display: table; }
@@ -206,7 +212,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
           <div class="w-100">
             <div class="d-flex align-items-center flex-wrap">
               <i class="fas fa-language text-success me-2"></i>
-              <h5 class="mb-0">Modules with Crowdin integration</h5>
+              <h2 class="h5 mb-0">Modules with Crowdin integration</h2>
               <span class="badge bg-success ms-2" id="crowdinModulesCount" data-total="<?= count($active_modules) ?>"><?= count($active_modules) ?></span>
             </div>
             <small class="text-muted d-block mt-1">Status dots (green passing, red failing, grey no status) link to the GitHub Actions run history - private repositories show a hollow dot, since their status can't be looked up without authentication</small>
@@ -222,7 +228,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
               <span data-if="is-private"><span class="status-dot is-private"></span><b data-count="is-private">0</b> private</span>
               <span data-if="is-loading" class="text-muted"><b data-count="is-loading">0</b> loading&hellip;</span>
             </div>
-            <div class="crowdin-toolbar__actions">
+            <div class="crowdin-toolbar__actions filter-bar">
               <button type="button" id="crowdinFailingOnly" class="btn btn-sm btn-outline-secondary" aria-pressed="false" title="Only modules with a failing workflow">
                 <i class="fas fa-exclamation-circle me-1"></i>Failing only
               </button>
@@ -234,7 +240,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
           </div>
           <div id="crowdinNoFailure" class="empty-section d-none">
             <i class="fas fa-check-circle"></i>
-            <h4>No failing workflow</h4>
+            <h3 class="h4">No failing workflow</h3>
           </div>
           <div class="project-grid crowdin-cards">
             <?php foreach ($active_modules as $m): ?>
@@ -293,7 +299,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
       <?php elseif (empty($skipped_modules)): ?>
       <div class="empty-section">
         <i class="fas fa-language"></i>
-        <h4>No modules found</h4>
+        <h2 class="h4">No modules found</h2>
         <p class="text-muted">No mirrored repositories were found under <code>ADT_DATA</code>.</p>
       </div>
       <?php endif; ?>
@@ -304,7 +310,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
           <div class="w-100">
             <div class="d-flex align-items-center flex-wrap">
               <i class="fas fa-minus-circle text-muted me-2"></i>
-              <h5 class="mb-0">Modules without a Crowdin action</h5>
+              <h2 class="h5 mb-0">Modules without a Crowdin action</h2>
               <span class="badge bg-secondary ms-2"><?= count($skipped_modules) ?></span>
             </div>
             <small class="text-muted d-block mt-1">No Crowdin workflow on <code>develop</code> - skipped</small>

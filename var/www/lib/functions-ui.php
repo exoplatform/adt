@@ -14,12 +14,12 @@ function pageHeader($title = "", $autoRefresh = true)
 {
 ?>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <?php if ($autoRefresh) { ?>
-  <meta http-equiv="refresh" content="120">
-  <?php } ?>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="eXo Platform acceptance dashboard: test deployment instances, feature branches and servers<?= (empty($title) ? "" : " - " . htmlspecialchars($title)) ?>">
   <meta name="theme-color" content="#6c5ce7">
   <title>eXo Acceptance<?= (empty($title) ? "" : " · " . $title) ?></title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
   <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48x48.png" />
   <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
@@ -33,10 +33,14 @@ function pageHeader($title = "", $autoRefresh = true)
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
   <!-- Custom CSS -->
   <link href="/style.css?v=<?= @filemtime(__DIR__ . '/../style.css') ?>" media="screen" rel="stylesheet" type="text/css" />
-  <!-- jQuery -->
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-  <!-- Bootstrap 5 JS Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Bootstrap 5 JS Bundle with Popper: deferred, so code using `bootstrap`
+       must run on DOMContentLoaded (deferred scripts execute before it) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+  <?php if ($autoRefresh) { ?>
+  <!-- Reload every 2 minutes (a script rather than <meta http-equiv="refresh">,
+       which is an accessibility failure) -->
+  <script>setTimeout(function() { window.location.reload(); }, 120000);</script>
+  <?php } ?>
   <!-- Theme handling -->
   <script>
     var THEMES = ['default', 'ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson', 'rose', 'gold', 'custom'];
@@ -114,9 +118,11 @@ function pageHeader($title = "", $autoRefresh = true)
         toggleBtn.setAttribute('aria-label', label);
         toggleBtn.setAttribute('aria-pressed', isDark ? 'true' : 'false');
         if (span) span.textContent = isDark ? 'Light mode' : 'Dark mode';
-        var tip = bootstrap.Tooltip.getInstance(toggleBtn);
-        if (tip) tip.dispose();
-        new bootstrap.Tooltip(toggleBtn);
+        if (window.bootstrap) {
+          var tip = bootstrap.Tooltip.getInstance(toggleBtn);
+          if (tip) tip.dispose();
+          new bootstrap.Tooltip(toggleBtn);
+        }
       }
       // Update mobile theme icon
       var mobileIcon = document.getElementById('mobileThemeIcon');
@@ -240,6 +246,24 @@ function pageHeader($title = "", $autoRefresh = true)
         section.classList.toggle('empty', query && visible === 0);
       });
     }
+    // ── Truncated versions: show the full version in their tooltip ──
+    // The version text is ellipsed when its column is too narrow; prepend the
+    // full text to its tooltip (the build timestamp/CD details) only then.
+    function syncVersionTitles() {
+      document.querySelectorAll('.instance-card__meta .text-mono').forEach(function(el) {
+        var tip = window.bootstrap && bootstrap.Tooltip.getInstance(el);
+        var attr = tip ? 'data-bs-original-title' : 'title';
+        if (!el.hasAttribute('data-version-detail')) {
+          el.setAttribute('data-version-detail', el.getAttribute(attr) || el.getAttribute('title') || '');
+        }
+        var detail = el.getAttribute('data-version-detail');
+        var full = el.textContent.trim();
+        var text = el.scrollWidth > el.clientWidth && full !== detail
+          ? full + (detail ? ' \u2014 ' + detail : '')
+          : detail;
+        if (text) el.setAttribute(attr, text); else el.removeAttribute(attr);
+      });
+    }
     // ── Instance Card/Table view switch ──────────────────
     function initViewSwitch() {
       var search = document.querySelector('.instances-search');
@@ -336,11 +360,15 @@ function pageHeader($title = "", $autoRefresh = true)
           b.setAttribute('aria-pressed', on ? 'true' : 'false');
         });
         syncColumns();
+        syncVersionTitles();
       }
       var resizeTimer;
       window.addEventListener('resize', function() {
         clearTimeout(resizeTimer);
-        resizeTimer = setTimeout(syncColumns, 150);
+        resizeTimer = setTimeout(function() {
+          syncColumns();
+          syncVersionTitles();
+        }, 150);
       });
       group.addEventListener('click', function(e) {
         var btn = e.target.closest('[data-view]');
@@ -625,7 +653,12 @@ function pageFooter() {
   </button>
 
   <script type="text/javascript">
-    $(document).ready(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+      // Icon-only tooltip triggers get their tooltip text as aria-label (set by
+      // Bootstrap), which is only allowed on an element with a role
+      document.querySelectorAll('span[rel=tooltip]:not([role]), i[rel=tooltip]:not([role])').forEach(function(el) {
+        if (!el.textContent.trim()) el.setAttribute('role', 'img');
+      });
       // Initialize Bootstrap tooltips
       var tooltipTriggerList = [].slice.call(document.querySelectorAll('[rel=tooltip]'));
       var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
@@ -1140,7 +1173,7 @@ function componentVisibilityIcon($deployment_descriptor, $color = "")
  */
 function componentProductInfoIcon($deployment_descriptor)
 {
-  return '<a href="#" rel="popover" data-bs-content="' . htmlspecialchars(componentProductHtmlPopover($deployment_descriptor)) . '" data-bs-html="true" data-bs-trigger="hover"><i class="fas fa-info-circle text-info"></i></a>';
+  return '<a href="#" rel="popover" data-bs-content="' . htmlspecialchars(componentProductHtmlPopover($deployment_descriptor)) . '" data-bs-html="true" data-bs-trigger="hover" class="icon-link-target" aria-label="Product details"><i class="fas fa-info-circle text-info" aria-hidden="true"></i></a>';
 }
 
 /**
@@ -1156,7 +1189,7 @@ function componentDownloadIcon($deployment_descriptor)
   $data_content .= "<strong>ArtifactId:</strong> " . $deployment_descriptor->ARTIFACT_ARTIFACTID . "<br/>";
   $data_content .= "<strong>Version/Timestamp:</strong> " . $deployment_descriptor->ARTIFACT_TIMESTAMP;
 
-  return '<a href="' . $deployment_descriptor->ARTIFACT_DL_URL . '" rel="popover" data-bs-content="' . htmlspecialchars($data_content) . '" data-bs-html="true" data-bs-trigger="hover"><i class="fas fa-download"></i></a>';
+  return '<a href="' . $deployment_descriptor->ARTIFACT_DL_URL . '" rel="popover" data-bs-content="' . htmlspecialchars($data_content) . '" data-bs-html="true" data-bs-trigger="hover" class="icon-link-target" aria-label="Download artifact"><i class="fas fa-download" aria-hidden="true"></i></a>';
 }
 
 /**
@@ -1222,10 +1255,10 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
   $content.='</a>';
 
   if (! $enforce_ssl && $ssl) {
-    $content.=' <a rel="tooltip" title="HTTPS link available" href="';
+    $content.=' <a rel="tooltip" title="HTTPS link available" class="icon-link-target" href="';
     $content.=preg_replace("/http:(.*)/", "https:$1", $url);
     $content.='" target="_blank">';
-    $content.='<i class="fas fa-lock text-success"></i>';
+    $content.='<i class="fas fa-lock text-success" aria-hidden="true"></i>';
     $content.='</a>';
   }
   return $content;
@@ -1239,15 +1272,22 @@ function componentProductOpenLink ($deployment_descriptor, $link_text="", $enfor
  * @return string html markup
  */
 function componentProductVersion ($deployment_descriptor) {
-  if (preg_match("/.*-(M(LT|BL)|GA)$/", $deployment_descriptor->BASE_VERSION)) {
-    if (preg_match("/.*-MBL$/", $deployment_descriptor->BASE_VERSION)) {
+  if (preg_match("/.*-(M(LT|BL)|GA)$/", $deployment_descriptor->BASE_VERSION, $cd_mode)) {
+    if ($cd_mode[1] === "MBL") {
       $tooltipmessage="Before latest release (milestone, RC or GA) - continuous deployment";
-    } else if (preg_match("/.*-GA$/", $deployment_descriptor->BASE_VERSION)) {
+    } else if ($cd_mode[1] === "GA") {
       $tooltipmessage="Latest GA release - continuous deployment";
     } else {
       $tooltipmessage="Latest release (milestone, RC or GA) - continuous deployment";
     }
-    $content='<span class="text-mono" rel="tooltip" data-original-title="'.$tooltipmessage.'">'.$deployment_descriptor->ARTIFACT_TIMESTAMP.' Auto</span>';
+    // Name the mode (MBL/MLT/GA) and the base version it was resolved from
+    $tooltipmessage = "Auto " . $cd_mode[1] . ": " . $tooltipmessage . " (base version " . htmlspecialchars($deployment_descriptor->BASE_VERSION) . ")";
+    // X.Y.Z-...: the Z wildcard picks the patch version among all X.Y.* releases
+    if (preg_match("/^(\d+\.\d+)\.Z(-|$)/", $deployment_descriptor->BASE_VERSION, $z_wildcard)) {
+      $tooltipmessage .= " - .Z wildcard: any " . $z_wildcard[1] . ".x patch version";
+    }
+    // The tooltip explaining the continuous deployment mode sits on "Auto" itself
+    $content='<span class="text-mono">'.$deployment_descriptor->ARTIFACT_TIMESTAMP.' <span class="version-auto" rel="tooltip" title="'.$tooltipmessage.'">Auto</span></span>';
   } else {
     $content=$deployment_descriptor->BASE_VERSION;
     $timestamp=substr_replace($deployment_descriptor->ARTIFACT_TIMESTAMP, "", 0, strlen($deployment_descriptor->BASE_VERSION));
@@ -1257,7 +1297,7 @@ function componentProductVersion ($deployment_descriptor) {
       }
       $content.='-SNAPSHOT';
     }
-    $content='<span class="text-mono" rel="tooltip" data-original-title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">'.$content.'</span>';
+    $content='<span class="text-mono" rel="tooltip" title="'.$deployment_descriptor->ARTIFACT_TIMESTAMP.'">'.$content.'</span>';
   }
   return $content;
 }
@@ -1568,9 +1608,18 @@ function componentFeatureRepoBrancheStatus($fb_project, $cherry_commits_display 
   $content .= '<i class="fas fa-arrow-down"></i> ' . $fb_project['behind_commits'];
   $content .= '</a>';
   
-  // Ahead
-  $content .= '<a href="' . $fb_project['http_url_ahead'] . '" target="_blank" class="commit-stat ' . ($fb_project['ahead_commits'] > 1 ? 'ahead-many' : ($fb_project['ahead_commits'] > 0 ? 'ahead' : 'ahead-none')) . '" rel="tooltip" title="' . ($fb_project['ahead_commits'] > 0 ? $fb_project['ahead_commits'] . ' commits ahead of base branch' : 'No commit ahead of base branch (SWF commit missing)') . '">';
-  $content .= '<i class="fas fa-arrow-up"></i> ' . $fb_project['ahead_commits'];
+  // Ahead: more than 1 commit (the SWF one) means dev commits to backport,
+  // told apart from the plain case by its fill and merge icon, not just its hue
+  $ahead_many = $fb_project['ahead_commits'] > 1;
+  if ($ahead_many) {
+    $ahead_title = $fb_project['ahead_commits'] . ' commits ahead of base branch - needs backport';
+  } else if ($fb_project['ahead_commits'] > 0) {
+    $ahead_title = $fb_project['ahead_commits'] . ' commit ahead of base branch';
+  } else {
+    $ahead_title = 'No commit ahead of base branch (SWF commit missing)';
+  }
+  $content .= '<a href="' . $fb_project['http_url_ahead'] . '" target="_blank" class="commit-stat ' . ($ahead_many ? 'ahead-many' : ($fb_project['ahead_commits'] > 0 ? 'ahead' : 'ahead-none')) . '" rel="tooltip" title="' . $ahead_title . '">';
+  $content .= '<i class="fas ' . ($ahead_many ? 'fa-code-merge' : 'fa-arrow-up') . '" aria-hidden="true"></i> ' . $fb_project['ahead_commits'];
   $content .= '</a>';
   
   $content .= '</div>';
@@ -1676,9 +1725,9 @@ function renderInstanceCard($inst, array $opts = [])
     <div class="instance-card__top">
         <div class="instance-card__status">
             <?php if ($inst->DEPLOYMENT_STATUS == "Up"): ?>
-                <span class="pulse-dot on" title="Running" aria-label="Status: Up"></span>
+                <span class="pulse-dot on" title="Running" role="img" aria-label="Status: Up"></span>
             <?php else: ?>
-                <span class="pulse-dot off" title="Stopped" aria-label="Status: Down"></span>
+                <span class="pulse-dot off" title="Stopped" role="img" aria-label="Status: Down"></span>
             <?php endif; ?>
         </div>
         <div class="instance-card__info">
@@ -1712,7 +1761,7 @@ function renderInstanceCard($inst, array $opts = [])
         </div>
     </div>
     <div class="instance-card__details">
-        <?= componentDatabaseIcon($inst) ?>
+        <span class="instance-card__db"><?= componentDatabaseIcon($inst) ?></span>
         <?php if ($opts['feature_label'] && $isFeatureBranch): ?>
             <span class="instance-card__feature"><?= componentFBScmLabel($inst) ?></span>
         <?php endif; ?>

@@ -42,7 +42,7 @@
 
   --text-primary:   #f0f0f8;
   --text-secondary: #9898b8;
-  --text-muted:     #606078;
+  --text-muted:     #8a8aa6;
   --text-inverse:   #0a0a14;
 
   /* Accent */
@@ -51,6 +51,8 @@
   --accent-glow:    rgba(108,92,231,0.35);
   --accent2:        #00d2d3;
   --accent2-soft:   rgba(0,210,211,0.14);
+  /* Accent used as text: lightened to stay readable on the dark surfaces */
+  --accent-text:    color-mix(in srgb, var(--accent) 75%, #fff);
 
   --success: #00d68f;
   --warning: #ffb142;
@@ -117,13 +119,20 @@
 
   --text-primary:   #0f0f1a;
   --text-secondary: #585878;
-  --text-muted:     #8888a0;
+  --text-muted:     #5e5e76;
   --text-inverse:   #f0f0f8;
 
   --accent:         #5b4ae0;
   --accent-soft:    rgba(91,74,224,0.10);
   --accent-glow:    rgba(91,74,224,0.20);
-  --accent2:        #00a8a9;
+  --accent2:        #006a6b;
+  --accent-text:    var(--accent);
+  --info:           #2e588c;
+
+  /* Status tones dark enough for text on light surfaces (WCAG AA) */
+  --success: #00704a;
+  --warning: #9a4d00;
+  --danger:  #b71c1c;
 
   --glass-bg:      rgba(255,255,255,0.7);
   --glass-border:  rgba(0,0,0,0.06);
@@ -265,11 +274,11 @@ h1, h2, h3, h4, h5, h6 {
 h1 { font-size: 2.5rem; font-weight: 800; }
 h2 { font-size: 1.8rem; }
 h3 { font-size: 1.35rem; }
-h4 { font-size: 1.15rem; }
-h5 { font-size: 1rem; }
+h4, .h4 { font-size: 1.15rem; }
+h5, .h5 { font-size: 1rem; }
 
 a {
-  color: var(--accent);
+  color: var(--accent-text);
   text-decoration: none;
   transition: color var(--dur-fast);
 }
@@ -644,9 +653,14 @@ body.sidebar-collapsed .sidebar .dropdown-menu {
   letter-spacing: -0.01em;
   color: var(--text-primary);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
+/* Scroll containers must be the containing block of their visually-hidden
+   (position: absolute) descendants, otherwise those escape the scroll box
+   and widen the mobile layout viewport */
+.table-responsive { position: relative; }
 .card-body { }
 .row .card.h-100 { height: 100%; }
 
@@ -875,7 +889,8 @@ table th.col-left,   table td.col-left   { text-align: left; }
 }
 .badge.bg-secondary {
   background-color: color-mix(in srgb, var(--text-muted) 20%, transparent) !important;
-  color: var(--text-secondary);
+  /* between secondary and primary text: readable on its tinted background */
+  color: color-mix(in srgb, var(--text-secondary) 60%, var(--text-primary));
   border-color: color-mix(in srgb, var(--text-muted) 40%, transparent);
 }
 .badge.bg-success {
@@ -1226,9 +1241,22 @@ a[name] {
   border-color: var(--accent);
   text-decoration: none;
 }
-.commit-stat.behind { color: var(--danger); border-color: var(--danger); }
+.commit-stat.behind {
+  /* filled red tint like "ahead-many": a module to rebase stands out from the
+     neutral "0 behind" pill by fill, not only by hue */
+  color: var(--danger);
+  border-color: var(--danger);
+  background: color-mix(in srgb, var(--danger) 12%, var(--bg-field));
+  font-weight: 700;
+}
 .commit-stat.ahead  { color: var(--success); border-color: var(--success); }
-.commit-stat.ahead-many { color: var(--info); border-color: var(--info); }
+.commit-stat.ahead-many {
+  /* filled, unlike the outlined "ahead": distinguishable without the hue */
+  color: var(--info);
+  border-color: var(--info);
+  background: color-mix(in srgb, var(--info) 18%, var(--bg-field));
+  font-weight: 700;
+}
 .commit-stat.ahead-none { color: var(--attention); border-color: var(--attention); }
 .commit-stat.behind:hover,
 .commit-stat.ahead-none:hover,
@@ -1685,7 +1713,7 @@ body.log-fullscreen-active {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--accent);
+  color: var(--accent-text);
   padding: 0.5rem 0.25rem 0.75rem;
   border-bottom: 1px solid var(--border-card);
   margin-bottom: 1rem;
@@ -1813,6 +1841,27 @@ body.log-fullscreen-active {
   gap: 0.2rem;
   font-size: 0.74rem;
 }
+/* Inline icon-only links: a 24px hit area (WCAG target size) without
+   changing the line height */
+.icon-link-target {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  min-height: 24px;
+  margin: -3px 0;
+  vertical-align: middle;
+}
+.version-auto {
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 2px;
+}
+.instance-card__db {
+  display: inline-flex;
+  align-items: center;
+  white-space: nowrap;
+}
 .instance-card__feature {
   font-family: var(--font-mono);
   font-size: 0.72rem;
@@ -1876,7 +1925,7 @@ body.log-fullscreen-active {
     /* tools/actions widths are shared by all sections (set by JS) so columns line up */
     grid-template-columns:
       [status] 1rem [name] minmax(190px, 1.5fr) [version] minmax(130px, 1fr)
-      [details] minmax(190px, 1.4fr) [badges] minmax(180px, 2fr)
+      [details] minmax(min-content, 1.4fr) [badges] minmax(180px, 2fr)
       [tools] var(--instance-tools-w, auto) [actions] var(--instance-actions-w, auto);
     gap: 0;
     column-gap: 0.9rem;
@@ -1945,9 +1994,10 @@ body.log-fullscreen-active {
   html.view-table .instance-card__status { grid-column: status; margin: 0; }
   html.view-table .instance-card__name { grid-column: name; font-size: 0.85rem; }
   html.view-table .instance-card__meta { grid-column: version; margin: 0; }
-  html.view-table .instance-card__details { grid-column: details; }
-  html.view-table .instance-card__ages { margin-left: 0; flex-direction: column; gap: 0.1rem; }
-  html.view-table .instance-card__ages > span { white-space: nowrap; }
+  /* Same two lines on every row: database (+ SCM branch), then built/deployed
+     ages side by side; the column grows to fit the ages line */
+  html.view-table .instance-card__details { grid-column: details; column-gap: 0.5rem; row-gap: 0.2rem; }
+  html.view-table .instance-card__ages { margin-left: 0; flex-basis: 100%; gap: 0.6rem; white-space: nowrap; }
   html.view-table .instance-card__actions .btn { padding: 0.2rem 0.45rem; font-size: 0.72rem; }
   html.view-table .instance-card__badge-group {
     grid-column: badges;
@@ -1972,7 +2022,7 @@ body.log-fullscreen-active {
   html.view-table .instance-grid {
     grid-template-columns:
       [status] 1rem [name badges] minmax(190px, 2fr) [version] minmax(120px, 1fr)
-      [details] minmax(170px, 1.3fr) [tools] var(--instance-tools-w, auto) [actions] var(--instance-actions-w, auto);
+      [details] minmax(min-content, 1.3fr) [tools] var(--instance-tools-w, auto) [actions] var(--instance-actions-w, auto);
   }
   html.view-table .instance-table-head > :nth-child(5) { display: none; }
   html.view-table .instance-card > .instance-card__badge-group {
@@ -2046,6 +2096,11 @@ html.features-table .features-matrix-wrap {
 }
 .project-chip-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .ci-dot img { position: absolute; left: -21px; top: -5px; height: 20px; width: auto; max-width: none; }
+/* Jenkins badge colours (#44cc11 passing, #dfb317 unstable, #9f9f9f not run)
+   are too light for light surfaces: darken them to reach the 3:1 non-text
+   contrast (WCAG 1.4.11) on cards and fields; they already pass in dark mode */
+[data-bs-theme="light"] .ci-dot img { filter: brightness(0.68); }
+[data-bs-theme="light"] .ci-dot { box-shadow: 0 0 0 1px rgba(0,0,0,0.35); }
 .features-matrix__rebase { display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-top: 0.3rem; }
 .features-matrix__rebase a { color: var(--text-muted); }
 .features-matrix__rebase a:hover { color: var(--accent); }
@@ -2195,7 +2250,7 @@ html.features-table .features-matrix-wrap {
 
   /* Metric cards */
   .metric__value { font-size: 1.9rem; }
-  .metric__label { font-size: 0.62rem; }
+  .metric__label { font-size: 0.7rem; }
 
   /* Instance cards */
   .instance-card { padding: 0.7rem 0.85rem; gap: 0.4rem; }
@@ -2209,7 +2264,8 @@ html.features-table .features-matrix-wrap {
 
   /* Search */
   .instances-search { max-width: 100%; margin-bottom: 0.75rem; }
-  .instances-search__input { font-size: 0.85rem; padding: 0.45rem 0.75rem 0.45rem 2rem; }
+  /* 16px inputs keep iOS Safari from zooming the page on focus */
+  .instances-search__input { font-size: 16px; padding: 0.45rem 0.75rem 0.45rem 2rem; }
 
   /* Section headers */
   .instances-section__header { font-size: 0.7rem; padding: 0.35rem 0 0.5rem; margin-bottom: 0.6rem; }
@@ -2217,8 +2273,8 @@ html.features-table .features-matrix-wrap {
   /* Tables (servers page) */
   .table-responsive { overflow-x: auto; }
   .table td, .table th { padding: 0.45rem 0.35rem; font-size: 0.75rem; }
-  .table thead th { font-size: 0.65rem; }
-  td.category-row { font-size: 0.65rem; letter-spacing: 0.5px; }
+  .table thead th { font-size: 0.7rem; }
+  td.category-row { font-size: 0.7rem; letter-spacing: 0.5px; }
 
   .server-cards { grid-template-columns: 1fr; }
   .project-grid { grid-template-columns: 1fr; }
@@ -2232,8 +2288,23 @@ html.features-table .features-matrix-wrap {
     margin-top: 0.35rem;
   }
 
-  .label { font-size: 0.6em; padding: 0.15em 0.4em; }
-  .badge { font-size: 0.62rem; padding: 0.15em 0.4em; }
+  .label { font-size: 0.7rem; padding: 0.15em 0.4em; }
+  .badge { font-size: 0.7rem; padding: 0.15em 0.4em; }
+
+  /* Filter bars: full-width search/select, segmented groups and toggles
+     stretched to equal widths so the controls line up instead of wrapping
+     raggedly, with touch-friendly heights */
+  .filter-bar > .instances-search,
+  .filter-bar > .form-select { flex: 1 1 100%; width: 100% !important; }
+  .filter-bar > .btn-group { display: flex; flex: 1 1 100%; margin-left: 0 !important; }
+  .filter-bar > .btn-group > .btn { flex: 1 1 0; }
+  .filter-bar > .btn:not(.btn-link) { flex: 1 1 0; white-space: nowrap; }
+  .filter-bar .btn,
+  .filter-bar > .form-select { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
+  .filter-bar > .form-select { font-size: 16px; }
+
+  /* Card header subtitles go to their own line instead of squeezing the title */
+  .card-header > small { flex-basis: 100%; margin-left: 0 !important; }
 }
 
 @media (max-width: 480px) {

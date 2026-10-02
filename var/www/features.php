@@ -239,7 +239,7 @@ checkCaches();
 
                     <?php if (!empty($acceptedFeatures) || !empty($otherFeatures)): ?>
                     <!-- Filters -->
-                    <div id="featureFilters" class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                    <div id="featureFilters" class="filter-bar d-flex flex-wrap align-items-center gap-2 mb-3">
                         <div class="instances-search mb-0 flex-grow-1">
                             <i class="fas fa-search instances-search__icon"></i>
                             <input type="text" id="featureSearch" class="instances-search__input" placeholder="Filter by project...">

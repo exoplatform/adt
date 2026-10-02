@@ -531,12 +531,13 @@ ksort($dependency_table_repos);
 <html lang="en">
 <head>
   <?= pageHeader("Git Activity"); ?>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js" defer></script>
   <style>
     .chart-container { position: relative; height: 250px; width: 100%; }
     .activity-list { font-size: 0.875rem; }
     .commit-msg { max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .metric__value--label { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 480px) { .metric__value--label { font-size: 1.1rem; } }
     .link-reset { color: inherit; text-decoration: none; }
     .link-reset:hover { text-decoration: underline; }
     [id^="repo-"] { scroll-margin-top: 1rem; }
@@ -848,7 +849,7 @@ ksort($dependency_table_repos);
 </div>
 <?php pageFooter(); ?>
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
   var tooltipTriggerList = [].slice.call(document.querySelectorAll('[rel=tooltip]'));
   tooltipTriggerList.map(function(tooltipTriggerEl) {
     return new bootstrap.Tooltip(tooltipTriggerEl);

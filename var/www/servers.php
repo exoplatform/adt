@@ -119,6 +119,14 @@ checkCaches();
         .accent-acc14 { --card-accent: #3498db; }
         .accent-acc15 { --card-accent: #9b59b6; }
         .accent-accX  { --card-accent: #6c757d; }
+        /* Light surfaces: darken the accent so name/badge text stays readable */
+        [data-bs-theme="light"] .server-card__name,
+        [data-bs-theme="light"] .server-card__badge {
+            color: color-mix(in srgb, var(--card-accent, #6c757d) 55%, #000);
+        }
+        /* Dark surfaces: the purple is too dark to read, lighten it */
+        [data-bs-theme="dark"] .accent-acc7,
+        [data-bs-theme="dark"] .accent-acc15 { --card-accent: #b482c8; }
 
         /* ── Section headers ────────────────────────────────── */
         .section-title {
@@ -164,6 +172,14 @@ checkCaches();
         .host-pill.acc14 { color: #3498db; border: 1px solid #3498db; }
         .host-pill.acc15 { color: #9b59b6; border: 1px solid #9b59b6; }
         .host-pill.accX  { color: var(--text-muted); border: 1px solid var(--border-color); }
+        /* Readable pill text: darker on light surfaces, lighter purple on dark ones */
+        [data-bs-theme="light"] .host-pill.acc7,
+        [data-bs-theme="light"] .host-pill.acc15 { color: #553164; }
+        [data-bs-theme="light"] .host-pill.acc12 { color: #86560a; }
+        [data-bs-theme="light"] .host-pill.acc13 { color: #0e6756; }
+        [data-bs-theme="light"] .host-pill.acc14 { color: #1d5478; }
+        [data-bs-theme="dark"] .host-pill.acc7,
+        [data-bs-theme="dark"] .host-pill.acc15 { color: #b482c8; border-color: #b482c8; }
 
         /* ── Port registry table ────────────────────────────── */
         /* Bootstrap paints every cell with --bs-table-bg (plain grey in dark
