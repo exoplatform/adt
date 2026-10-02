@@ -496,6 +496,9 @@ function pageNavigation()
       <button class="mobile-bar__theme-btn" onclick="toggleScheme()" aria-label="Toggle dark mode" title="Toggle dark mode">
         <i class="fas fa-moon" id="mobileThemeIcon"></i>
       </button>
+      <a class="mobile-bar__theme-btn" href="/logout" aria-label="Sign out" title="Sign out">
+        <i class="fas fa-right-from-bracket"></i>
+      </a>
       <?php $userFullName = currentUserFullName(); if ($userFullName): ?>
       <a href="https://my.exoplatform.org/hr/employees/myAccount" title="Edit my avatar" target="_blank" rel="noopener">
         <img class="mobile-bar__avatar" src="<?= htmlspecialchars(currentUserGravatarUrl(48)) ?>" alt="" width="28" height="28">
@@ -542,6 +545,7 @@ function pageNavigation()
         </a>
         <span class="sidebar__user-name"><?= htmlspecialchars($userFullName) ?></span>
       </div>
+      <a class="sidebar__footer-btn" href="/logout" title="Sign out"><i class="fas fa-right-from-bracket"></i> <span>Sign out</span></a>
       <?php endif; ?>
       <!-- Pin/unpin toggle -->
       <button class="sidebar__footer-btn" id="sidebarPinBtn" onclick="toggleSidebarPin()" title="Collapse sidebar">
