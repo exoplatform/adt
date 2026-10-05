@@ -1,8 +1,9 @@
-const CACHE = 'adt-v12';
+const CACHE = 'adt-v13';
 
 const PRECACHE = [
   '/manifest.json',
-  '/images/icon-192.png', '/images/icon-512.png', '/images/logo.svg',
+  '/images/icon-192.png', '/images/icon-512.png',
+  '/images/icon-maskable-192.png', '/images/icon-maskable-512.png', '/images/logo.svg',
   '/404.html', '/500.html', '/502.html', '/503.html'
 ];
 
