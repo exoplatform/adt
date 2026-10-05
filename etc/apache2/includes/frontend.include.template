@@ -173,7 +173,8 @@
             AuthName "eXo Employees only"
             AuthType form
             AuthFormProvider ldap
-            AuthFormLoginRequiredLocation "/login"
+            # Remember the requested URL so login.php can send the user back to it
+            AuthFormLoginRequiredLocation "/login?next=%{escape:%{REQUEST_URI}?%{QUERY_STRING}}"
             # Authenticated but not in the group: 403 page instead of a bare 401
             AuthzSendForbiddenOnFailure On
 

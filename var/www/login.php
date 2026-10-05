@@ -2,8 +2,39 @@
 // Login page. Credentials are posted to /dologin, handled by Apache (mod_auth_form)
 // which validates them against the LDAP backend and sets the session cookie.
 // A failed attempt is redirected back here with the login form as the Referer.
-$referer = parse_url($_SERVER['HTTP_REFERER'] ?? '', PHP_URL_PATH);
-$failed = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && preg_match('#^/login(\.php)?$#', (string)$referer);
+
+/**
+ * Extract the URL to return to after login from a raw query string ("next=<escaped path?query>").
+ * Apache escapes the "?" but not the "&", so the whole raw string after "next=" is the target.
+ * Only local paths are accepted (no open redirect, no login/logout loops).
+ */
+function followupTarget($rawQuery)
+{
+    if (!is_string($rawQuery) || strncmp($rawQuery, 'next=', 5) !== 0) {
+        return null;
+    }
+    $t = rtrim(rawurldecode(substr($rawQuery, 5)), '?');
+    if ($t === '' || $t[0] !== '/' || strlen($t) > 2048) {
+        return null;
+    }
+    if (isset($t[1]) && ($t[1] === '/' || $t[1] === '\\')) {
+        return null;
+    }
+    if (preg_match('/[\x00-\x1f\x7f\\\\]/', $t) || preg_match('#^/(login|dologin|logout)(\.php)?([/?\#]|$)#i', $t)) {
+        return null;
+    }
+    return $t;
+}
+
+$referer = parse_url($_SERVER['HTTP_REFERER'] ?? '');
+$refererOurs = !empty($referer['host']) && strcasecmp($referer['host'], preg_replace('/:\d+$/', '', $_SERVER['HTTP_HOST'] ?? '')) === 0;
+$failed = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'GET' && $refererOurs
+    && preg_match('#^/login(\.php)?$#', (string)($referer['path'] ?? ''));
+// The target comes from the URL, or from the login form we were redirected back from after a failed attempt
+$next = followupTarget($_SERVER['QUERY_STRING'] ?? '');
+if ($next === null && $failed) {
+    $next = followupTarget($referer['query'] ?? '');
+}
 header('X-Frame-Options: DENY');
 
 // Already signed in: no need to show the form (Apache exposes the decrypted session as HTTP_SESSION)
@@ -11,7 +42,7 @@ header('X-Frame-Options: DENY');
 parse_str($_SERVER['HTTP_SESSION'] ?? '', $session);
 foreach ($session as $key => $value) {
     if (substr($key, -5) === '-user' && $value !== '') {
-        header('Location: /');
+        header('Location: ' . ($next ?? '/'));
         exit;
     }
 }
@@ -147,6 +178,7 @@ unset($session);
         <p class="error" role="alert">Invalid credentials, or your account is not allowed to access this site.</p>
     <?php } ?>
     <form method="post" action="/dologin" id="f">
+        <?php if ($next !== null) { ?><input type="hidden" name="httpd_location" value="<?= htmlspecialchars($next, ENT_QUOTES) ?>"><?php } ?>
         <label for="u">Username</label>
         <input id="u" name="httpd_username" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required autofocus>
         <label for="p">Password</label>
