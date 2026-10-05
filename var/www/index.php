@@ -65,15 +65,26 @@ foreach ($dev_instances as $arr) {
         </div>
         <div class="bento__item bento__item--3" style="--card-accent: var(--danger)">
             <div class="metric">
+                <?php if ($stopped > 0): ?>
+                <a href="servers.php?status=down" class="metric__link" style="color: inherit; text-decoration: none; display: block" title="Show the stopped instances">
+                    <span class="metric__label"><span class="pulse-dot off"></span> Stopped</span>
+                    <span class="metric__value"><?= $stopped ?></span>
+                </a>
+                <?php else: ?>
                 <span class="metric__label"><span class="pulse-dot off"></span> Stopped</span>
                 <span class="metric__value"><?= $stopped ?></span>
+                <?php endif; ?>
             </div>
         </div>
         <div class="bento__item bento__item--3" style="--card-accent: var(--accent2)">
             <div class="metric">
-                <span class="metric__label"><i class="fas fa-code-branch"></i> Dev Branches</span>
+                <span class="metric__label"><i class="fas fa-cubes"></i> Dev Instances</span>
                 <span class="metric__value"><?= $dev_count ?></span>
-                <span class="metric__change"><?= count($dev_instances) ?> active</span>
+                <?php
+                $dev_branch_lines = array_map('strval', array_keys($dev_instances));
+                natsort($dev_branch_lines);
+                ?>
+                <span class="metric__change" title="<?= htmlspecialchars(implode("\n", $dev_branch_lines)) ?>"><?= count($dev_instances) ?> active deployment <?= count($dev_instances) === 1 ? "branch" : "branches" ?></span>
             </div>
         </div>
     </div>

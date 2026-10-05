@@ -448,6 +448,7 @@ checkCaches();
                         if (row.classList.contains('hidden')) {
                             var input = document.getElementById('portRegistrySearch');
                             input.value = '';
+                            ['filterStatus', 'filterHost', 'filterDb'].forEach(function (id) { document.getElementById(id).value = ''; });
                             input.dispatchEvent(new Event('input'));
                         }
                         document.querySelectorAll('#portRegistryTable tr.highlight').forEach(function (r) { r.classList.remove('highlight'); });
@@ -467,6 +468,38 @@ checkCaches();
             <div class="instances-search">
                 <i class="fas fa-search instances-search__icon"></i>
                 <input type="text" id="portRegistrySearch" class="instances-search__input" placeholder="Filter by instance, version, server...">
+            </div>
+            <?php
+            $filter_dbs = [];
+            foreach ($descriptor_arrays as $d) {
+                $filter_dbs[str_replace(':', ' ', $d->DATABASE)] = true;
+            }
+            ksort($filter_dbs);
+            $filter_hosts = [];
+            foreach ($descriptor_arrays as $d) {
+                $filter_hosts[$d->ACCEPTANCE_HOST] = $host_meta[$d->ACCEPTANCE_HOST]['short'] ?? str_replace('.exoplatform.org', '', $d->ACCEPTANCE_HOST);
+            }
+            asort($filter_hosts, SORT_NATURAL | SORT_FLAG_CASE);
+            ?>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="portRegistryFilters">
+                <select id="filterStatus" class="form-select form-select-sm w-auto" aria-label="Filter by status">
+                    <option value="">All statuses</option>
+                    <option value="up"<?= ($_GET['status'] ?? '') === 'up' ? ' selected' : '' ?>>Running</option>
+                    <option value="down"<?= ($_GET['status'] ?? '') === 'down' ? ' selected' : '' ?>>Stopped</option>
+                </select>
+                <select id="filterHost" class="form-select form-select-sm w-auto" aria-label="Filter by server">
+                    <option value="">All servers</option>
+                    <?php foreach ($filter_hosts as $h => $label): ?>
+                    <option value="<?= htmlspecialchars($h) ?>"><?= htmlspecialchars($label) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <select id="filterDb" class="form-select form-select-sm w-auto" aria-label="Filter by database">
+                    <option value="">All databases</option>
+                    <?php foreach (array_keys($filter_dbs) as $db): ?>
+                    <option value="<?= htmlspecialchars($db) ?>"><?= htmlspecialchars($db) ?></option>
+                    <?php endforeach; ?>
+                </select>
+                <button type="button" id="filterReset" class="btn btn-sm btn-outline-secondary d-none"><i class="fas fa-times me-1"></i>Clear filters</button>
             </div>
             <div class="table-responsive mb-5 port-registry-scroll">
                 <table class="table table-hover align-middle table-sm" id="portRegistryTable" aria-label="Deployment port registry">
@@ -533,7 +566,7 @@ checkCaches();
                                 $feature_branch = "";
                             }
                         ?>
-                        <tr class="accent-<?= htmlspecialchars($meta['css']) ?>" id="instance-<?= htmlspecialchars($descriptor_array->INSTANCE_KEY) ?>" data-host-group="<?= htmlspecialchars($meta['css']) ?>">
+                        <tr class="accent-<?= htmlspecialchars($meta['css']) ?>" id="instance-<?= htmlspecialchars($descriptor_array->INSTANCE_KEY) ?>" data-host-group="<?= htmlspecialchars($meta['css']) ?>" data-status="<?= $descriptor_array->DEPLOYMENT_STATUS == 'Up' ? 'up' : 'down' ?>" data-host="<?= htmlspecialchars($host) ?>" data-db="<?= htmlspecialchars(str_replace(':', ' ', $descriptor_array->DATABASE)) ?>">
                             <?php
                             // Add-ons collapsed into a single chip; names stay searchable
                             preg_match_all('/<span[^>]*>([^<]+)<\/span>/', componentAddonsTags($descriptor_array), $addon_matches);
@@ -595,11 +628,23 @@ checkCaches();
                     var input = document.getElementById('portRegistrySearch');
                     var table = document.getElementById('portRegistryTable');
                     if (!input || !table) return;
-                    input.addEventListener('input', function () {
-                        var query = this.value.toLowerCase().trim();
+                    var selects = {
+                        status: document.getElementById('filterStatus'),
+                        host: document.getElementById('filterHost'),
+                        db: document.getElementById('filterDb')
+                    };
+                    var resetBtn = document.getElementById('filterReset');
+                    function applyFilters() {
+                        var query = input.value.toLowerCase().trim();
                         var visibleCountByGroup = {};
+                        var filtered = false;
+                        Object.keys(selects).forEach(function (k) { if (selects[k].value) filtered = true; });
+                        resetBtn.classList.toggle('d-none', !filtered);
                         table.querySelectorAll('tbody > tr:not(.category-row)').forEach(function (row) {
-                            var match = !query || row.textContent.toLowerCase().indexOf(query) !== -1;
+                            var match = (!query || row.textContent.toLowerCase().indexOf(query) !== -1)
+                                && (!selects.status.value || row.getAttribute('data-status') === selects.status.value)
+                                && (!selects.host.value || row.getAttribute('data-host') === selects.host.value)
+                                && (!selects.db.value || row.getAttribute('data-db') === selects.db.value);
                             row.classList.toggle('hidden', !match);
                             if (match) {
                                 var group = row.getAttribute('data-host-group');
@@ -612,11 +657,18 @@ checkCaches();
                             row.classList.toggle('hidden', visible === 0);
                             var total = row.getAttribute('data-total');
                             var countEl = row.querySelector('.category-row__count');
-                            countEl.textContent = query && visible !== Number(total)
+                            countEl.textContent = visible !== Number(total)
                                 ? visible + ' of ' + total + ' instance' + (total == 1 ? '' : 's')
                                 : total + ' instance' + (total == 1 ? '' : 's');
                         });
+                    }
+                    input.addEventListener('input', applyFilters);
+                    Object.keys(selects).forEach(function (k) { selects[k].addEventListener('change', applyFilters); });
+                    resetBtn.addEventListener('click', function () {
+                        Object.keys(selects).forEach(function (k) { selects[k].value = ''; });
+                        applyFilters();
                     });
+                    applyFilters();
                 })();
             </script>
 
