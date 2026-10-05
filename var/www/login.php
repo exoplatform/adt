@@ -56,15 +56,35 @@ unset($session);
     <meta name="robots" content="noindex">
     <meta name="color-scheme" content="dark light">
     <script>
-        // Same storage as the dashboard ("accent:scheme"); fall back to the system preference
+        // Same storage and values as the dashboard: theme = "accent:scheme", customColor = "#rrggbb".
+        // Applied before first paint; without a stored choice the system preference decides.
         (function () {
-            var raw = '';
-            try { raw = localStorage.getItem('theme') || ''; } catch (e) {}
-            var scheme = raw.indexOf(':') > 0 ? raw.split(':')[1] : raw;
+            var root = document.documentElement, raw = '', custom = '';
+            try { raw = localStorage.getItem('theme') || ''; custom = localStorage.getItem('customColor') || ''; } catch (e) {}
+            var parts = raw.indexOf(':') > 0 ? raw.split(':') : ['', raw];
+            var accent = parts[0], scheme = parts[1];
+            if (['ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson', 'rose', 'gold', 'custom'].indexOf(accent) < 0) accent = 'default';
+            if (accent === 'custom') {
+                if (/^#[0-9a-f]{6}$/i.test(custom)) {
+                    // Pick white or dark button text, whichever contrasts better with the chosen colour
+                    var c = [1, 3, 5].map(function (i) {
+                        var v = parseInt(custom.substr(i, 2), 16) / 255;
+                        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+                    });
+                    var l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+                    root.style.setProperty('--accent', custom);
+                    var white = 1.05 / (l + 0.05) >= (l + 0.05) / 0.0533;
+                    root.style.setProperty('--on-accent', white ? '#fff' : '#0a0a14');
+                    root.style.setProperty('--hover-tone', white ? '#000' : '#fff');
+                } else {
+                    accent = 'default';
+                }
+            }
+            root.setAttribute('data-accent', accent);
             if (scheme !== 'light' && scheme !== 'dark') {
                 scheme = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
             }
-            document.documentElement.setAttribute('data-bs-theme', scheme);
+            root.setAttribute('data-bs-theme', scheme);
         })();
     </script>
     <title>Sign in - eXo Acceptance</title>
@@ -73,26 +93,48 @@ unset($session);
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
     <style>
         :root {
-            --bg: #06060e; --card: #0c0c1a; --field: #1a1a32; --border: rgba(255,255,255,0.12);
-            --text: #f0f0f8; --muted: #9898b8; --accent: #6c5ce7; --accent-hover: #7d6ff0;
-            --error: #ff8a8a; --error-bg: rgba(255,90,90,0.12); --glow: rgba(108,92,231,0.28);
+            --bg-base: #06060e; --card-base: #0c0c1a; --field-base: #1a1a32; --border: rgba(255,255,255,0.12);
+            --text: #f0f0f8; --muted: #9898b8; --error: #ff8a8a; --error-bg: rgba(255,90,90,0.12);
+            --shadow: rgba(0,0,0,0.35);
+            /* Accent (default = dashboard violet); the data-accent rules below override it */
+            --accent: #6c5ce7; --on-accent: #fff; --hover-tone: #000;
+            --tone: #fff; --text-pct: 75%; --glow-pct: 28%;
         }
-        :root { --shadow: rgba(0,0,0,0.35); }
         :root[data-bs-theme=dark] { color-scheme: dark; }
         :root[data-bs-theme=light] { color-scheme: light; }
         :root[data-bs-theme=light] {
-            --bg: #f2f2f8; --card: #ffffff; --field: #f6f6fb; --border: rgba(10,10,20,0.14);
-            --text: #14142a; --muted: #5c5c78; --accent: #5b4bd6; --accent-hover: #4c3dc4;
-            --error: #b42318; --error-bg: rgba(180,35,24,0.08); --glow: rgba(91,75,214,0.18);
+            --bg-base: #f2f2f8; --card-base: #ffffff; --field-base: #f6f6fb; --border: rgba(10,10,20,0.14);
+            --text: #14142a; --muted: #5c5c78; --error: #b42318; --error-bg: rgba(180,35,24,0.08);
             --shadow: rgba(40,40,80,0.12);
+            --tone: #000; --text-pct: 55%; --glow-pct: 18%;
+        }
+        :root[data-bs-theme=light][data-accent=default] { --accent: #5b4ae0; }
+        /* Accent themes, same colours as the dashboard (style.css). Button text is chosen for WCAG contrast. */
+        :root[data-accent=ocean]    { --accent: #0ea5e9; --on-accent: #0a0a14; --hover-tone: #fff; }
+        :root[data-accent=forest]   { --accent: #10b981; --on-accent: #0a0a14; --hover-tone: #fff; }
+        :root[data-accent=twilight] { --accent: #8b5cf6; --on-accent: #0a0a14; --hover-tone: #fff; }
+        :root[data-accent=sunset]   { --accent: #f97316; --on-accent: #0a0a14; --hover-tone: #fff; }
+        :root[data-accent=midnight] { --accent: #6366f1; --on-accent: #fff; --hover-tone: #000; }
+        :root[data-accent=lavender] { --accent: #c084fc; --on-accent: #0a0a14; --hover-tone: #fff; }
+        :root[data-accent=crimson]  { --accent: #ef4444; --on-accent: #0a0a14; --hover-tone: #fff; }
+        :root[data-accent=rose]     { --accent: #ec4899; --on-accent: #0a0a14; --hover-tone: #fff; }
+        :root[data-accent=gold]     { --accent: #eab308; --on-accent: #0a0a14; --hover-tone: #fff; }
+        /* Everything derived from the accent, as on the dashboard (surfaces get a light tint) */
+        :root {
+            --bg: color-mix(in srgb, var(--accent) 3%, var(--bg-base));
+            --card: color-mix(in srgb, var(--accent) 5%, var(--card-base));
+            --field: color-mix(in srgb, var(--accent) 9%, var(--field-base));
+            --glow: color-mix(in srgb, var(--accent) var(--glow-pct), transparent);
+            --accent-hover: color-mix(in srgb, var(--accent) 88%, var(--hover-tone));
+            --accent-text: color-mix(in srgb, var(--accent) var(--text-pct), var(--tone));
         }
         /* Without JavaScript the system preference decides */
         @media (prefers-color-scheme: light) {
             :root:not([data-bs-theme]) {
-                --bg: #f2f2f8; --card: #ffffff; --field: #f6f6fb; --border: rgba(10,10,20,0.14);
-                --text: #14142a; --muted: #5c5c78; --accent: #5b4bd6; --accent-hover: #4c3dc4;
-                --error: #b42318; --error-bg: rgba(180,35,24,0.08); --glow: rgba(91,75,214,0.18);
-                --shadow: rgba(40,40,80,0.12);
+                --bg-base: #f2f2f8; --card-base: #ffffff; --field-base: #f6f6fb; --border: rgba(10,10,20,0.14);
+                --text: #14142a; --muted: #5c5c78; --error: #b42318; --error-bg: rgba(180,35,24,0.08);
+                --shadow: rgba(40,40,80,0.12); --accent: #5b4ae0;
+                --tone: #000; --text-pct: 55%; --glow-pct: 18%;
             }
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -118,7 +160,7 @@ unset($session);
             background: var(--field); border: 1px solid var(--border);
         }
         input::placeholder { color: var(--muted); opacity: .7; }
-        input:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+        input:focus-visible, button:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
         .pw { position: relative; }
         .pw input { padding-right: 44px; }
         .pw button {
@@ -134,17 +176,17 @@ unset($session);
         label.check input { width: 16px; height: 16px; accent-color: var(--accent); }
         .submit {
             width: 100%; margin-top: 22px; padding: 12px; border: 0; border-radius: 10px; cursor: pointer;
-            font-size: 1rem; font-weight: 600; color: #fff; background: var(--accent); transition: background .15s;
+            font-size: 1rem; font-weight: 600; color: var(--on-accent); background: var(--accent); transition: background .15s;
         }
         .submit:hover { background: var(--accent-hover); }
         .submit[disabled] { opacity: .7; cursor: progress; }
         .restricted {
             display: inline-flex; align-items: center; gap: 6px; margin-top: 14px; padding: 5px 12px; border-radius: 999px;
-            font-size: .78rem; font-weight: 500; color: var(--accent); background: var(--glow); border: 1px solid var(--border);
+            font-size: .78rem; font-weight: 500; color: var(--accent-text); background: color-mix(in srgb, var(--accent) 16%, transparent); border: 1px solid var(--border);
         }
         .restricted svg { width: 14px; height: 14px; flex: none; }
         .help { margin-top: 22px; text-align: center; font-size: .85rem; color: var(--muted); }
-        .help a { color: var(--accent); text-decoration: none; font-weight: 500; }
+        .help a { color: var(--accent-text); text-decoration: none; font-weight: 500; }
         .help a:hover, .help a:focus-visible { text-decoration: underline; }
         .error {
             margin-bottom: 4px; padding: 10px 12px; border-radius: 10px; font-size: .88rem;
