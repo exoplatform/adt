@@ -2253,6 +2253,10 @@ html.features-table .features-matrix-wrap {
     gap: 0.35rem;
   }
   .mobile-bar__theme-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
     background: none;
     border: 1px solid var(--border-card);
     border-radius: var(--r-sm);
