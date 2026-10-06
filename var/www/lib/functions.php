@@ -77,22 +77,112 @@ function cmpInstances($a, $b)
 }
 
 
-function append_data($url, $data)
+/**
+ * Merge a decoded instances list (branch => instances) into the instances collected so far
+ *
+ * @param array $values decoded JSON of a server's local instances
+ * @param array $data   instances collected so far
+ *
+ * @return array the merged instances, ordered by branch
+ */
+function mergeInstances($values, $data)
 {
   $result = $data;
-  $values = (array)json_decode(file_get_contents($url));
-  while ($entry = current($values)) {
-    $key = key($values);
+  foreach ($values as $key => $entry) {
+    if (!$entry) {
+      continue;
+    }
     if (!array_key_exists($key, $data)) {
       $result[$key] = $entry;
     } else {
       $result[$key] = array_merge($entry, $data[$key]);
       usort($result[$key], 'cmpInstances');
-    };
-    next($values);
+    }
   }
   uksort($result, 'cmpPLFBranches');
   return $result;
+}
+
+function append_data($url, $data)
+{
+  return mergeInstances((array)json_decode(file_get_contents($url)), $data);
+}
+
+/**
+ * Fetch several URLs concurrently, so that the wait is the slowest server and not the sum of all.
+ *
+ * @param string[] $urls
+ * @param int      $timeout seconds allowed to each request
+ *
+ * @return array url => response body, or false when the request failed or timed out
+ */
+function fetchUrlsParallel($urls, $timeout = 5)
+{
+  $results = array();
+  if (!function_exists('curl_multi_init')) {
+    $context = stream_context_create(array('http' => array('timeout' => $timeout)));
+    foreach ($urls as $url) {
+      $results[$url] = @file_get_contents($url, false, $context);
+    }
+    return $results;
+  }
+  $multi = curl_multi_init();
+  $handles = array();
+  foreach ($urls as $url) {
+    $handle = curl_init($url);
+    curl_setopt_array($handle, array(
+      CURLOPT_RETURNTRANSFER => true,
+      CURLOPT_FOLLOWLOCATION => true,
+      CURLOPT_FAILONERROR    => true,
+      CURLOPT_CONNECTTIMEOUT => $timeout,
+      CURLOPT_TIMEOUT        => $timeout,
+    ));
+    curl_multi_add_handle($multi, $handle);
+    $handles[$url] = $handle;
+  }
+  do {
+    $status = curl_multi_exec($multi, $running);
+    if ($running) {
+      curl_multi_select($multi, 1.0);
+    }
+  } while ($running && $status === CURLM_OK);
+  foreach ($handles as $url => $handle) {
+    $body = curl_multi_getcontent($handle);
+    $results[$url] = (curl_errno($handle) === 0 && is_string($body) && $body !== '') ? $body : false;
+    curl_multi_remove_handle($multi, $handle);
+    curl_close($handle);
+  }
+  curl_multi_close($multi);
+  return $results;
+}
+
+/**
+ * Run a callback once the response has been sent to the browser, at most once per $ttl
+ * seconds across requests.
+ *
+ * @param string   $lockKey cache key marking that the callback is already scheduled
+ * @param callable $callback
+ * @param int      $ttl
+ */
+function runAfterResponse($lockKey, $callback, $ttl = 30)
+{
+  if (cacheGet($lockKey)) {
+    return;
+  }
+  cacheSet($lockKey, 1, $ttl);
+  register_shutdown_function(function () use ($callback, $ttl) {
+    ignore_user_abort(true);
+    set_time_limit($ttl);
+    if (function_exists('fastcgi_finish_request')) {
+      fastcgi_finish_request();
+    } else {
+      while (ob_get_level() > 0) {
+        ob_end_flush();
+      }
+      flush();
+    }
+    $callback();
+  });
 }
 
 function getDirectoryList($directory)
@@ -822,26 +912,74 @@ function getLocalAcceptanceInstances()
  *
  * @return array
  */
-function getGlobalAcceptanceInstances()
+/**
+ * Collect the instances of all the acceptance servers
+ *
+ * @param bool $complete set to false when a server did not answer
+ *
+ * @return array
+ */
+function fetchGlobalAcceptanceInstances(&$complete)
 {
-  $instances = cacheGet('all_instances');
-
-  if (empty($instances) || getenv('ADT_DEV_MODE')) {
-    $instances = array();
-    if (getenv('ADT_DEV_MODE')) {
-      // Emulate decode/encode with json because they are converting array into objects
-      // TBD : Cleanup JSON decode/encode and array/objects
-      $instances = json_decode(json_encode(getLocalAcceptanceInstances()));
-    } else {
-      $servers = explode(",", getenv('ACCEPTANCE_SERVERS'));
-      foreach ($servers as $server) {
-        $instances = append_data($server . '/rest/local-instances.php', $instances);
-      }
+  $urls = array();
+  foreach (explode(",", getenv('ACCEPTANCE_SERVERS')) as $server) {
+    if (trim($server) !== '') {
+      $urls[] = trim($server) . '/rest/local-instances.php';
     }
-    // Instances will be cached for 2 min
-    cacheSet('all_instances', $instances, 120);
+  }
+  $instances = array();
+  $complete = true;
+  foreach (fetchUrlsParallel($urls) as $body) {
+    $values = is_string($body) ? json_decode($body) : null;
+    if ($values === null) {
+      $complete = false;
+      continue;
+    }
+    $instances = mergeInstances((array) $values, $instances);
   }
   return $instances;
+}
+
+/**
+ * Reload the instances of all the acceptance servers into the caches: fresh for 2 min, and a
+ * stale copy kept longer to answer immediately while this runs. An incomplete result (a server
+ * is down) never replaces a complete stale copy and is retried shortly.
+ */
+function refreshGlobalAcceptanceInstances()
+{
+  $instances = fetchGlobalAcceptanceInstances($complete);
+  if ($complete) {
+    cacheSet('all_instances', $instances, 120);
+    cacheSet('all_instances_stale', $instances, 1800);
+    return $instances;
+  }
+  $stale = cacheGet('all_instances_stale');
+  if (!empty($stale)) {
+    $instances = $stale;
+  } else {
+    cacheSet('all_instances_stale', $instances, 1800);
+  }
+  cacheSet('all_instances', $instances, 15);
+  return $instances;
+}
+
+function getGlobalAcceptanceInstances()
+{
+  if (getenv('ADT_DEV_MODE')) {
+    // Emulate decode/encode with json because they are converting array into objects
+    // TBD : Cleanup JSON decode/encode and array/objects
+    return json_decode(json_encode(getLocalAcceptanceInstances()));
+  }
+  $instances = cacheGet('all_instances');
+  if (!empty($instances)) {
+    return $instances;
+  }
+  $stale = cacheGet('all_instances_stale');
+  if (!empty($stale)) {
+    runAfterResponse('all_instances_refreshing', 'refreshGlobalAcceptanceInstances');
+    return $stale;
+  }
+  return refreshGlobalAcceptanceInstances();
 }
 
 /**
@@ -984,13 +1122,16 @@ function getGlobalServerStats()
       $local = getLocalServerStats();
       $stats[$local['host']] = $local;
     } else {
-      $context = stream_context_create(array('http' => array('timeout' => 5)));
+      $servers = array();
       foreach (explode(",", getenv('ACCEPTANCE_SERVERS')) as $server) {
-        $server_stats = json_decode((string) @file_get_contents($server . '/rest/local-stats.php', false, $context), true);
+        $servers[trim($server) . '/rest/local-stats.php'] = trim($server);
+      }
+      foreach (fetchUrlsParallel(array_keys($servers)) as $url => $body) {
+        $server_stats = is_string($body) ? json_decode($body, true) : null;
         if (is_array($server_stats) && !empty($server_stats['host'])) {
           $stats[$server_stats['host']] = $server_stats;
         } else {
-          $host = parse_url($server, PHP_URL_HOST) ?: $server;
+          $host = parse_url($servers[$url], PHP_URL_HOST) ?: $servers[$url];
           $stats[$host] = array('host' => $host, 'error' => 'unreachable');
         }
       }
