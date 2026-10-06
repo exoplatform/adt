@@ -44,14 +44,14 @@ if (extension_loaded('apcu') && function_exists('apcu_cache_info')) {
   foreach ((apcu_cache_info(false)['cache_list'] ?? array()) as $entry) {
     $entries[$entry['info']] = $entry;
   }
-  echo '<table class="table table-sm"><thead><tr><th>Key</th><th>Role</th><th>Age</th><th>Expires in</th></tr></thead><tbody>';
+  echo '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Key</th><th>Role</th><th>Age</th><th>Expires in</th></tr></thead><tbody>';
   foreach ($watched as $key => $role) {
     $e = $entries[$key] ?? null;
     $age = $e ? (time() - $e['creation_time']) . 's' : '-';
     $left = $e ? (($e['ttl'] > 0) ? max(0, $e['creation_time'] + $e['ttl'] - time()) . 's' : 'never') : 'not cached';
     echo '<tr><td><code>' . htmlspecialchars($key) . '</code></td><td>' . htmlspecialchars($role) . '</td><td>' . $age . '</td><td>' . $left . '</td></tr>';
   }
-  echo '</tbody></table>';
+  echo '</tbody></table></div>';
   echo '<p><a class="btn btn-sm btn-outline-primary" href="/debug-caches?refreshInstances=true">Refresh instances now</a> ';
   echo '<a class="btn btn-sm btn-outline-danger" href="/debug-caches?clearCaches=true">Clear all caches</a></p>';
 }

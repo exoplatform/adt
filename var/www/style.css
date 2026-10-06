@@ -2160,6 +2160,9 @@ html.features-table .features-matrix-wrap {
   box-shadow: 0 0 0 1px var(--border-card);
 }
 .project-chip-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The dot is 10px: extend the tap area of its link to the 24px minimum (WCAG 2.5.8) */
+a:has(> .ci-dot) { position: relative; }
+a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
 .ci-dot img { position: absolute; left: -21px; top: -5px; height: 20px; width: auto; max-width: none; }
 /* Jenkins badge colours (#44cc11 passing, #dfb317 unstable, #9f9f9f not run)
    are too light for light surfaces: darken them to reach the 3:1 non-text
@@ -2346,7 +2349,7 @@ html.features-table .features-matrix-wrap {
   td.category-row { font-size: 0.7rem; letter-spacing: 0.5px; }
 
   .server-cards { grid-template-columns: 1fr; }
-  .project-grid { grid-template-columns: 1fr; }
+  .project-grid { grid-template-columns: minmax(0, 1fr); }
 
   /* Feature branch header: drop Rebase button/CI badge to their own
      row instead of centering next to a wrapped multi-line branch name */
