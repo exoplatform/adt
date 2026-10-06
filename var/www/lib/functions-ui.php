@@ -41,6 +41,47 @@ function pageHeader($title = "", $autoRefresh = true)
        which is an accessibility failure) -->
   <script>setTimeout(function() { window.location.reload(); }, 120000);</script>
   <?php } ?>
+  <!-- Progress bar shown when a page takes a while to load: the server fetches the data of all
+       the acceptance servers before answering, so the current page stays up (and usable) meanwhile -->
+  <script>
+    (function() {
+      var timer = null;
+      function hide() {
+        clearTimeout(timer);
+        document.documentElement.classList.remove('is-loading');
+        var el = document.getElementById('pageProgress');
+        if (el) el.remove();
+      }
+      function show() {
+        if (document.getElementById('pageProgress')) return;
+        var el = document.createElement('div');
+        el.id = 'pageProgress';
+        el.className = 'page-progress';
+        el.setAttribute('role', 'progressbar');
+        el.setAttribute('aria-label', 'Loading');
+        document.body.appendChild(el);
+        document.documentElement.classList.add('is-loading');
+        el.offsetWidth; // force a reflow so the width transition starts from 0
+        el.classList.add('page-progress--run');
+      }
+      function schedule() {
+        clearTimeout(timer);
+        timer = setTimeout(show, 300);
+      }
+      document.addEventListener('click', function(e) {
+        var a = e.target.closest && e.target.closest('a[href]');
+        if (!a || e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        if ((a.target && a.target !== '_self') || a.hasAttribute('download') || a.origin !== location.origin) return;
+        if (a.pathname === location.pathname && a.search === location.search) return;
+        schedule();
+      });
+      document.addEventListener('submit', function(e) {
+        if (!e.defaultPrevented) schedule();
+      });
+      // Back/forward cache restores the page as it was left, bar included
+      window.addEventListener('pageshow', hide);
+    })();
+  </script>
   <!-- Theme handling -->
   <script>
     var THEMES = ['default', 'ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson', 'rose', 'gold', 'custom'];

@@ -1647,6 +1647,22 @@ body.log-fullscreen-active {
   .card, .server-card { border: 2px solid ButtonText; }
 }
 
+/* Page loading progress bar: creeps towards 90% until the next page replaces this one */
+.page-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 2000;
+  width: 0;
+  height: 3px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  pointer-events: none;
+  transition: width 12s cubic-bezier(0.1, 0.6, 0.2, 1);
+}
+.page-progress--run { width: 90%; }
+html.is-loading, html.is-loading a { cursor: progress; }
+
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
