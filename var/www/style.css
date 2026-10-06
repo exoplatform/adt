@@ -46,13 +46,11 @@
   --text-inverse:   #0a0a14;
 
   /* Accent */
-  --accent:         #6c5ce7;
-  --accent-soft:    rgba(108,92,231,0.18);
-  --accent-glow:    rgba(108,92,231,0.35);
+  /* Accent source colour: the theme's raw hue. Everything else (--accent, text and
+     fill variants, tints) is derived from it in the "Accent derivation" block below. */
+  --accent-src:     #6c5ce7;
   --accent2:        #00d2d3;
   --accent2-soft:   rgba(0,210,211,0.14);
-  /* Accent used as text: lightened to stay readable on the dark surfaces */
-  --accent-text:    color-mix(in srgb, var(--accent) 75%, #fff);
 
   --success: #00d68f;
   --warning: #ffb142;
@@ -122,11 +120,8 @@
   --text-muted:     #5e5e76;
   --text-inverse:   #f0f0f8;
 
-  --accent:         #5b4ae0;
-  --accent-soft:    rgba(91,74,224,0.10);
-  --accent-glow:    rgba(91,74,224,0.20);
+  --accent-src:     #5b4ae0;
   --accent2:        #006a6b;
-  --accent-text:    var(--accent);
   --info:           #2e588c;
 
   /* Status tones dark enough for text on light surfaces (WCAG AA) */
@@ -150,50 +145,56 @@
 
 /* ── Accent Themes (preserved, adapted for new palette) ─── */
 
-[data-accent="ocean"] {
-  --accent: #0ea5e9; --accent-soft: rgba(14,165,233,0.22);
-  --accent-glow: rgba(14,165,233,0.42); --accent2: #22d3ee;
-}
-[data-accent="forest"] {
-  --accent: #10b981; --accent-soft: rgba(16,185,129,0.22);
-  --accent-glow: rgba(16,185,129,0.42); --accent2: #34d399;
-}
-[data-accent="twilight"] {
-  --accent: #8b5cf6; --accent-soft: rgba(139,92,246,0.22);
-  --accent-glow: rgba(139,92,246,0.42); --accent2: #a78bfa;
-}
-[data-accent="sunset"] {
-  --accent: #f97316; --accent-soft: rgba(249,115,22,0.22);
-  --accent-glow: rgba(249,115,22,0.42); --accent2: #fb923c;
-}
-[data-accent="midnight"] {
-  --accent: #6366f1; --accent-soft: rgba(99,102,241,0.22);
-  --accent-glow: rgba(99,102,241,0.42); --accent2: #818cf8;
-}
-[data-accent="lavender"] {
-  --accent: #c084fc; --accent-soft: rgba(192,132,252,0.22);
-  --accent-glow: rgba(192,132,252,0.42); --accent2: #d8b4fe;
-}
-[data-accent="crimson"] {
-  --accent: #ef4444; --accent-soft: rgba(239,68,68,0.22);
-  --accent-glow: rgba(239,68,68,0.42); --accent2: #f87171;
-}
-[data-accent="rose"] {
-  --accent: #ec4899; --accent-soft: rgba(236,72,153,0.22);
-  --accent-glow: rgba(236,72,153,0.42); --accent2: #f472b6;
-}
-[data-accent="gold"] {
-  --accent: #eab308; --accent-soft: rgba(234,179,8,0.22);
-  --accent-glow: rgba(234,179,8,0.42); --accent2: #facc15;
+/* Five accents with distinct hues, none of them red or amber so a theme is never
+   mistaken for the danger / warning status colours. A theme only declares its raw
+   colour (--accent-src) and a secondary tone; contrast is handled below. */
+[data-accent="ocean"]  { --accent-src: #0ea5e9; --accent2: #22d3ee; }
+[data-accent="forest"] { --accent-src: #10b981; --accent2: #34d399; }
+[data-accent="rose"]   { --accent-src: #ec4899; --accent2: #f472b6; }
+[data-accent="slate"]  { --accent-src: #64748b; --accent2: #94a3b8; }
+
+/* Custom accent: JS sets --accent-src inline (element.style) from the user's
+   colour picker and nothing else; the derivation below makes any colour safe. */
+[data-accent="custom"] {
+  --accent2: color-mix(in srgb, var(--accent) 70%, white);
 }
 
-/* Custom accent: JS sets --accent inline (element.style) from the user's
-   color picker; the soft/glow/secondary tints are derived from it here so
-   picking a color is the only thing that has to happen in JS. */
-[data-accent="custom"] {
-  --accent-soft: color-mix(in srgb, var(--accent) 22%, transparent);
-  --accent-glow: color-mix(in srgb, var(--accent) 42%, transparent);
-  --accent2: color-mix(in srgb, var(--accent) 70%, white);
+/* ── Accent derivation ─────────────────────────────────────
+   Any colour (including a picked black or white) is normalised in OKLCH so the
+   rest of the UI never depends on how light or dark it is:
+   - --accent: lightness clamped to a mid band, so filled surfaces stay colourful
+   - --on-accent: white or near-black text, whichever passes WCAG AA on --accent
+   - --accent-text: lightness forced above/below a floor/ceiling per scheme, so
+     links and labels stay AA on the surfaces
+   - --accent-tint: same hue/chroma at a fixed lightness, so the surface tinting
+     below shifts surfaces by the same amount whatever the colour's own lightness */
+[data-accent] {
+  --accent:       oklch(from var(--accent-src) clamp(0.52, l, 0.80) c h);
+  --accent-tint:  oklch(from var(--accent) 0.6 c h);
+  --accent-soft:  color-mix(in srgb, var(--accent) 22%, transparent);
+  --accent-glow:  color-mix(in srgb, var(--accent) 42%, transparent);
+  --on-accent:    oklch(from var(--accent) clamp(0, (0.58 - l) * 1000, 1) 0 h);
+  --hover-tone:   oklch(from var(--on-accent) calc(1 - l) 0 h);
+  --accent-text:  oklch(from var(--accent) max(l, 0.78) c h);
+  --accent2-text: oklch(from var(--accent2) max(l, 0.82) c h);
+}
+[data-bs-theme="light"] {
+  --accent-soft:  color-mix(in srgb, var(--accent) 14%, transparent);
+  --accent-glow:  color-mix(in srgb, var(--accent) 28%, transparent);
+  --accent-text:  oklch(from var(--accent) min(l, 0.5) c h);
+  --accent2-text: oklch(from var(--accent-text) calc(l - 0.06) c h);
+}
+/* Browsers without relative colour syntax keep the plain accent */
+@supports not (color: oklch(from red l c h)) {
+  [data-accent] {
+    --accent: var(--accent-src); --accent-tint: var(--accent-src);
+    --on-accent: #fff; --hover-tone: #000;
+    --accent-text: color-mix(in srgb, var(--accent) 75%, #fff); --accent2-text: var(--accent2);
+  }
+  [data-bs-theme="light"] {
+    --accent-text: color-mix(in srgb, var(--accent) 60%, #000);
+    --accent2-text: var(--accent-text);
+  }
 }
 
 /* Every accent theme also tints surfaces/borders (composed from the
@@ -202,12 +203,12 @@
 [data-accent] {
   --primary-color: var(--accent);
   --secondary-color: var(--accent);
-  --bg-deep:     color-mix(in srgb, var(--accent) 3%, var(--bg-deep-base));
-  --bg-surface:  color-mix(in srgb, var(--accent) 5%, var(--bg-surface-base));
-  --bg-elevated: color-mix(in srgb, var(--accent) 7%, var(--bg-elevated-base));
-  --bg-field:    color-mix(in srgb, var(--accent) 9%, var(--bg-field-base));
-  --border-card:   color-mix(in srgb, var(--accent) 18%, var(--border-card-base));
-  --border-active: color-mix(in srgb, var(--accent) 32%, var(--border-active-base));
+  --bg-deep:     color-mix(in srgb, var(--accent-tint) 3%, var(--bg-deep-base));
+  --bg-surface:  color-mix(in srgb, var(--accent-tint) 5%, var(--bg-surface-base));
+  --bg-elevated: color-mix(in srgb, var(--accent-tint) 7%, var(--bg-elevated-base));
+  --bg-field:    color-mix(in srgb, var(--accent-tint) 9%, var(--bg-field-base));
+  --border-card:   color-mix(in srgb, var(--accent-tint) 18%, var(--border-card-base));
+  --border-active: color-mix(in srgb, var(--accent-tint) 32%, var(--border-active-base));
 }
 
 /* ================================================================
@@ -282,7 +283,7 @@ a {
   text-decoration: none;
   transition: color var(--dur-fast);
 }
-a:hover { color: var(--accent2); }
+a:hover { color: var(--accent2-text); }
 
 code, .code {
   font-family: var(--font-mono);
@@ -290,7 +291,7 @@ code, .code {
   background: var(--bg-field);
   padding: 0.15em 0.4em;
   border-radius: 5px;
-  color: var(--accent2);
+  color: var(--accent2-text);
 }
 
 /* ================================================================
@@ -388,7 +389,7 @@ code, .code {
 }
 .sidebar__link.active {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 .sidebar__link.active::before {
@@ -742,7 +743,7 @@ tr.highlight td {
 
 td.category-row {
   background: var(--bg-field);
-  color: var(--accent);
+  color: var(--accent-text);
   letter-spacing: 1.5px;
   font-weight: 700;
   text-transform: uppercase;
@@ -817,13 +818,13 @@ table th.col-left,   table td.col-left   { text-align: left; }
 
 .btn-primary {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent);
 }
 .btn-primary:hover {
-  background: var(--accent2);
-  border-color: var(--accent2);
-  color: #fff;
+  background: color-mix(in srgb, var(--accent) 85%, var(--hover-tone));
+  border-color: color-mix(in srgb, var(--accent) 85%, var(--hover-tone));
+  color: var(--on-accent);
   box-shadow: 0 0 20px var(--accent-glow);
 }
 
@@ -910,7 +911,7 @@ table th.col-left,   table td.col-left   { text-align: left; }
 }
 .badge.bg-primary {
   background-color: var(--accent-soft) !important;
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: color-mix(in srgb, var(--accent) 35%, transparent);
 }
 .badge.bg-dark {
@@ -937,10 +938,10 @@ table th.col-left,   table td.col-left   { text-align: left; }
   margin: 0 2px;
   letter-spacing: 0.02em;
 }
-.label-addon      { background: var(--accent); }
+.label-addon      { background: var(--accent); color: var(--on-accent); }
 .label-label      { background: color-mix(in srgb, var(--text-muted) 18%, transparent); color: var(--text-secondary); }
 .label-commit     { background: var(--bg-field); color: var(--text-secondary); font-size: 0.65rem; }
-.label-info       { background: var(--accent); }
+.label-info       { background: var(--accent); color: var(--on-accent); }
 .label-warning    { background: var(--warning); color: #000; }
 .label-inverse    { background: var(--bg-field); color: var(--text-primary); }
 .label-important  { background: var(--danger); }
@@ -1069,7 +1070,7 @@ img.icon:hover { transform: scale(1.2); }
 /* ================================================================
    TEXT COLORS
    ================================================================ */
-.text-primary   { color: var(--accent) !important; }
+.text-primary   { color: var(--accent-text) !important; }
 .text-success   { color: var(--success) !important; }
 .text-info      { color: var(--info) !important; }
 .text-danger    { color: var(--danger) !important; }
@@ -1079,7 +1080,7 @@ img.icon:hover { transform: scale(1.2); }
 .red    { font-weight: 700; color: var(--danger); }
 .orange { font-weight: 700; color: var(--warning); }
 .green  { font-weight: 600; color: var(--success); }
-.blue   { font-weight: 600; color: var(--accent); }
+.blue   { font-weight: 600; color: var(--accent-text); }
 .gray, .color-acceptanceX { color: var(--text-muted); }
 .color-acceptance12 { color: #f97316; }
 .color-acceptance13 { color: #0ea87a; }
@@ -1154,7 +1155,7 @@ pre {
 /* Debug dump */
 .debug-dump {
   background: var(--bg-field);
-  color: var(--accent2);
+  color: var(--accent2-text);
   padding: 1rem;
   border-radius: var(--r-sm);
   border: 1px solid var(--border-card);
@@ -1237,7 +1238,7 @@ a[name] {
 }
 .commit-stat:hover {
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   border-color: var(--accent);
   text-decoration: none;
 }
@@ -1287,7 +1288,7 @@ a[name] {
 .feature-branch-link {
   font-family: var(--font-mono);
   font-size: 0.84rem;
-  color: var(--accent);
+  color: var(--accent-text);
   font-weight: 600;
 }
 .stats-summary {
@@ -1591,7 +1592,7 @@ body.log-fullscreen-active {
   z-index: 9999;
   padding: 0.65rem 1.1rem;
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-weight: 700;
   border-radius: 0 0 var(--r-sm) var(--r-sm);
   text-decoration: none;
@@ -1635,7 +1636,7 @@ body.log-fullscreen-active {
 .nav-item a[aria-current="page"] {
   font-weight: 700;
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* High-contrast */
@@ -1796,7 +1797,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
   text-decoration: none;
 }
 .instance-card__name a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .instance-card__meta {
   display: flex;
@@ -1833,7 +1834,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
   cursor: pointer;
 }
 .instance-card__actions-top a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* Middle row: version + database + feature */
@@ -1849,7 +1850,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
   font-family: var(--font-mono);
   font-size: 0.76rem;
   font-weight: 600;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .instance-card__detail {
   display: inline-flex;
@@ -1892,7 +1893,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
 .filter-reset:focus-visible {
   background: var(--accent);
   border-color: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
 }
 .instances-search:has(.filter-reset:not(.d-none)) .instances-search__input { padding-right: 6.5rem; }
 /* Content-independent basis (like .instances-toolbar): the padding above must
@@ -1903,7 +1904,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
   padding: 0 0.3rem;
   border-radius: var(--r-full);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 0.7rem;
   line-height: 1.25rem;
   text-align: center;
@@ -1911,7 +1912,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
 .filter-reset:hover .filter-reset__count,
 .filter-reset:focus-visible .filter-reset__count {
   background: #fff;
-  color: var(--accent);
+  color: var(--accent-text);
 }
 @keyframes filter-reset-in {
   from { opacity: 0; transform: scale(0.9); }
@@ -1930,7 +1931,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
 .instance-card__feature {
   font-family: var(--font-mono);
   font-size: 0.72rem;
-  color: var(--accent2);
+  color: var(--accent2-text);
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2042,7 +2043,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
     min-height: 1rem;
   }
   html.view-table .instance-table-head button:hover,
-  html.view-table .instance-table-head button.sorted { color: var(--accent); }
+  html.view-table .instance-table-head button.sorted { color: var(--accent-text); }
   html.view-table .instance-table-head button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
   html.view-table .instance-table-head button::after {
     content: '\f0dc'; /* fa-sort */
@@ -2171,7 +2172,7 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
 [data-bs-theme="light"] .ci-dot { box-shadow: 0 0 0 1px rgba(0,0,0,0.35); }
 .features-matrix__rebase { display: flex; align-items: center; justify-content: center; gap: 0.35rem; margin-top: 0.3rem; }
 .features-matrix__rebase a { color: var(--text-muted); }
-.features-matrix__rebase a:hover { color: var(--accent); }
+.features-matrix__rebase a:hover { color: var(--accent-text); }
 .features-matrix .features-matrix__project {
   position: sticky;
   left: 0;
@@ -2429,7 +2430,7 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
   text-decoration: none;
 }
 #footer a:hover {
-  color: var(--accent);
+  color: var(--accent-text);
 }
 
 /* ================================================================
@@ -2441,7 +2442,7 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
   left: 50%;
   transform: translateX(-50%);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   padding: 12px 24px;
   border-radius: var(--r-sm);
   z-index: 9999;
@@ -2472,7 +2473,7 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
   border: none;
   border-radius: var(--r-full);
   background: var(--accent);
-  color: #fff;
+  color: var(--on-accent);
   font-size: 16px;
   display: flex;
   align-items: center;

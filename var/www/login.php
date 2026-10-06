@@ -63,19 +63,13 @@ unset($session);
             try { raw = localStorage.getItem('theme') || ''; custom = localStorage.getItem('customColor') || ''; } catch (e) {}
             var parts = raw.indexOf(':') > 0 ? raw.split(':') : ['', raw];
             var accent = parts[0], scheme = parts[1];
-            if (['ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson', 'rose', 'gold', 'custom'].indexOf(accent) < 0) accent = 'default';
+            // Accents removed from the dashboard map to the closest remaining one
+            accent = { twilight: 'default', midnight: 'default', lavender: 'default', gold: 'default', sunset: 'rose', crimson: 'rose' }[accent] || accent;
+            if (['ocean', 'forest', 'rose', 'slate', 'custom'].indexOf(accent) < 0) accent = 'default';
             if (accent === 'custom') {
                 if (/^#[0-9a-f]{6}$/i.test(custom)) {
-                    // Pick white or dark button text, whichever contrasts better with the chosen colour
-                    var c = [1, 3, 5].map(function (i) {
-                        var v = parseInt(custom.substr(i, 2), 16) / 255;
-                        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-                    });
-                    var l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
-                    root.style.setProperty('--accent', custom);
-                    var white = 1.05 / (l + 0.05) >= (l + 0.05) / 0.0533;
-                    root.style.setProperty('--on-accent', white ? '#fff' : '#0a0a14');
-                    root.style.setProperty('--hover-tone', white ? '#000' : '#fff');
+                    // Only the raw colour: the stylesheet below derives the readable variants from it
+                    root.style.setProperty('--accent-src', custom);
                 } else {
                     accent = 'default';
                 }
@@ -97,8 +91,8 @@ unset($session);
             --text: #f0f0f8; --muted: #9898b8; --error: #ff8a8a; --error-bg: rgba(255,90,90,0.12);
             --shadow: rgba(0,0,0,0.35);
             /* Accent (default = dashboard violet); the data-accent rules below override it */
-            --accent: #6c5ce7; --on-accent: #fff; --hover-tone: #000;
-            --tone: #fff; --text-pct: 75%; --glow-pct: 28%;
+            --accent-src: #6c5ce7;
+            --glow-pct: 28%;
         }
         :root[data-bs-theme=dark] { color-scheme: dark; }
         :root[data-bs-theme=light] { color-scheme: light; }
@@ -106,35 +100,38 @@ unset($session);
             --bg-base: #f2f2f8; --card-base: #ffffff; --field-base: #f6f6fb; --border: rgba(10,10,20,0.14);
             --text: #14142a; --muted: #5c5c78; --error: #b42318; --error-bg: rgba(180,35,24,0.08);
             --shadow: rgba(40,40,80,0.12);
-            --tone: #000; --text-pct: 55%; --glow-pct: 18%;
+            --glow-pct: 18%;
         }
-        :root[data-bs-theme=light][data-accent=default] { --accent: #5b4ae0; }
-        /* Accent themes, same colours as the dashboard (style.css). Button text is chosen for WCAG contrast. */
-        :root[data-accent=ocean]    { --accent: #0ea5e9; --on-accent: #0a0a14; --hover-tone: #fff; }
-        :root[data-accent=forest]   { --accent: #10b981; --on-accent: #0a0a14; --hover-tone: #fff; }
-        :root[data-accent=twilight] { --accent: #8b5cf6; --on-accent: #0a0a14; --hover-tone: #fff; }
-        :root[data-accent=sunset]   { --accent: #f97316; --on-accent: #0a0a14; --hover-tone: #fff; }
-        :root[data-accent=midnight] { --accent: #6366f1; --on-accent: #fff; --hover-tone: #000; }
-        :root[data-accent=lavender] { --accent: #c084fc; --on-accent: #0a0a14; --hover-tone: #fff; }
-        :root[data-accent=crimson]  { --accent: #ef4444; --on-accent: #0a0a14; --hover-tone: #fff; }
-        :root[data-accent=rose]     { --accent: #ec4899; --on-accent: #0a0a14; --hover-tone: #fff; }
-        :root[data-accent=gold]     { --accent: #eab308; --on-accent: #0a0a14; --hover-tone: #fff; }
-        /* Everything derived from the accent, as on the dashboard (surfaces get a light tint) */
+        :root[data-bs-theme=light][data-accent=default] { --accent-src: #5b4ae0; }
+        /* Accent themes, same colours as the dashboard (style.css), without the red/amber ones that look like status colours. Button text is chosen for WCAG contrast. */
+        :root[data-accent=ocean]    { --accent-src: #0ea5e9; }
+        :root[data-accent=forest]   { --accent-src: #10b981; }
+        :root[data-accent=rose]     { --accent-src: #ec4899; }
+        :root[data-accent=slate]    { --accent-src: #64748b; }
+        /* Everything derived from the accent, as on the dashboard: the raw colour (a theme or the
+           picked custom colour) is normalised in OKLCH so any colour, black or white included,
+           keeps readable text and buttons, and tints the surfaces by the same amount */
         :root {
-            --bg: color-mix(in srgb, var(--accent) 3%, var(--bg-base));
-            --card: color-mix(in srgb, var(--accent) 5%, var(--card-base));
-            --field: color-mix(in srgb, var(--accent) 9%, var(--field-base));
+            --accent: oklch(from var(--accent-src) clamp(0.52, l, 0.80) c h);
+            --accent-tint: oklch(from var(--accent) 0.6 c h);
+            --on-accent: oklch(from var(--accent) clamp(0, (0.58 - l) * 1000, 1) 0 h);
+            --hover-tone: oklch(from var(--on-accent) calc(1 - l) 0 h);
+            --accent-text: oklch(from var(--accent) max(l, 0.78) c h);
+            --bg: color-mix(in srgb, var(--accent-tint) 3%, var(--bg-base));
+            --card: color-mix(in srgb, var(--accent-tint) 5%, var(--card-base));
+            --field: color-mix(in srgb, var(--accent-tint) 9%, var(--field-base));
             --glow: color-mix(in srgb, var(--accent) var(--glow-pct), transparent);
             --accent-hover: color-mix(in srgb, var(--accent) 88%, var(--hover-tone));
-            --accent-text: color-mix(in srgb, var(--accent) var(--text-pct), var(--tone));
         }
+        :root[data-bs-theme=light] { --accent-text: oklch(from var(--accent) min(l, 0.5) c h); }
         /* Without JavaScript the system preference decides */
         @media (prefers-color-scheme: light) {
             :root:not([data-bs-theme]) {
+                --accent-text: oklch(from var(--accent) min(l, 0.5) c h);
                 --bg-base: #f2f2f8; --card-base: #ffffff; --field-base: #f6f6fb; --border: rgba(10,10,20,0.14);
                 --text: #14142a; --muted: #5c5c78; --error: #b42318; --error-bg: rgba(180,35,24,0.08);
-                --shadow: rgba(40,40,80,0.12); --accent: #5b4ae0;
-                --tone: #000; --text-pct: 55%; --glow-pct: 18%;
+                --shadow: rgba(40,40,80,0.12); --accent-src: #5b4ae0;
+                --glow-pct: 18%;
             }
         }
         * { margin: 0; padding: 0; box-sizing: border-box; }

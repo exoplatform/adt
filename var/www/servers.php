@@ -104,10 +104,10 @@ checkCaches();
         .server-live__top { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: .1rem; }
         .server-live__top li { display: flex; justify-content: space-between; gap: .5rem; color: var(--text-secondary); }
         .server-live__top li a { min-width: 0; color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
-        .server-live__top li a:hover { color: var(--accent); text-decoration: underline; }
+        .server-live__top li a:hover { color: var(--accent-text); text-decoration: underline; }
         .server-live__top li span { white-space: nowrap; font-variant-numeric: tabular-nums; }
         .server-live__top li span small { color: var(--text-muted); }
-        .server-live__toggle { background: none; border: 0; padding: 0; color: var(--accent); font-size: .72rem; cursor: pointer; justify-self: start; }
+        .server-live__toggle { background: none; border: 0; padding: 0; color: var(--accent-text); font-size: .72rem; cursor: pointer; justify-self: start; }
         .server-live__toggle:hover { text-decoration: underline; }
         .server-live__footer { color: var(--text-muted); font-size: .72rem; display: flex; justify-content: space-between; }
         .server-live__error { color: var(--danger); }
@@ -135,7 +135,7 @@ checkCaches();
             gap: .5rem;
             font-size: 1rem;
             font-weight: 700;
-            color: var(--primary-color);
+            color: var(--accent-text);
             padding-bottom: .4rem;
             border-bottom: 2px solid var(--border-color);
             margin-bottom: 1rem;

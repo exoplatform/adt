@@ -666,7 +666,7 @@ ksort($dependency_table_repos);
               <div class="metric__label mt-1">PRs Created</div>
             </div>
             <div class="col-6">
-              <span class="metric__value" style="color: var(--accent)"><?= number_format($data['merged']) ?></span>
+              <span class="metric__value" style="color: var(--accent-text)"><?= number_format($data['merged']) ?></span>
               <div class="metric__label mt-1">PRs Merged</div>
             </div>
           </div>

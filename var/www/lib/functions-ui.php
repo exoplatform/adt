@@ -84,8 +84,10 @@ function pageHeader($title = "", $autoRefresh = true)
   </script>
   <!-- Theme handling -->
   <script>
-    var THEMES = ['default', 'ocean', 'forest', 'twilight', 'sunset', 'midnight', 'lavender', 'crimson', 'rose', 'gold', 'custom'];
-    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'twilight': 'Twilight', 'sunset': 'Sunset', 'midnight': 'Midnight', 'lavender': 'Lavender', 'crimson': 'Crimson', 'rose': 'Rose', 'gold': 'Gold', 'custom': 'Custom' };
+    var THEMES = ['default', 'ocean', 'forest', 'rose', 'slate', 'custom'];
+    // Accents removed over time, mapped to the closest remaining one for returning visitors
+    var LEGACY_ACCENTS = { twilight: 'default', midnight: 'default', lavender: 'default', gold: 'default', sunset: 'rose', crimson: 'rose' };
+    var THEME_LABELS = { 'default': 'Default', 'ocean': 'Ocean', 'forest': 'Forest', 'rose': 'Rose', 'slate': 'Slate', 'custom': 'Custom' };
     var CUSTOM_ACCENT_DEFAULT = '#6c5ce7';
 
     // ── Storage helpers ──────────────────────────────────
@@ -97,7 +99,11 @@ function pageHeader($title = "", $autoRefresh = true)
     // ── Resolve stored/effective values ──────────────────
     function resolveAccent() {
       var raw = getPref('theme', '');
-      if (raw.indexOf(':') > 0) return raw.split(':')[0];
+      if (raw.indexOf(':') > 0) {
+        var accent = raw.split(':')[0];
+        if (LEGACY_ACCENTS[accent]) return LEGACY_ACCENTS[accent];
+        return THEMES.indexOf(accent) >= 0 ? accent : 'default';
+      }
       return 'default';
     }
     function resolveScheme() {
@@ -112,9 +118,9 @@ function pageHeader($title = "", $autoRefresh = true)
     function setAccent(accent) {
       document.documentElement.setAttribute('data-accent', accent);
       if (accent === 'custom') {
-        document.documentElement.style.setProperty('--accent', getPref('customColor', CUSTOM_ACCENT_DEFAULT));
+        applyCustomColor(getPref('customColor', CUSTOM_ACCENT_DEFAULT));
       } else {
-        document.documentElement.style.removeProperty('--accent');
+        clearCustomColor();
       }
       var btn = document.getElementById('themeDropdown');
       if (btn) {
@@ -125,10 +131,19 @@ function pageHeader($title = "", $autoRefresh = true)
       if (picker) picker.value = getPref('customColor', CUSTOM_ACCENT_DEFAULT);
     }
 
+    // ── Custom colour: only the raw colour is set; style.css derives readable text/fill variants from it ──
+    function applyCustomColor(hex) {
+      if (!/^#[0-9a-f]{6}$/i.test(hex)) hex = CUSTOM_ACCENT_DEFAULT;
+      document.documentElement.style.setProperty('--accent-src', hex);
+    }
+    function clearCustomColor() {
+      document.documentElement.style.removeProperty('--accent-src');
+    }
+
     // ── Live-preview a custom color without persisting ───
     function previewCustomColor(hex) {
       document.documentElement.setAttribute('data-accent', 'custom');
-      document.documentElement.style.setProperty('--accent', hex);
+      applyCustomColor(hex);
       var btn = document.getElementById('themeDropdown');
       if (btn) {
         var span = btn.querySelector('span');
@@ -195,7 +210,7 @@ function pageHeader($title = "", $autoRefresh = true)
       var accent = resolveAccent();
       document.documentElement.setAttribute('data-accent', accent);
       if (accent === 'custom') {
-        document.documentElement.style.setProperty('--accent', getPref('customColor', CUSTOM_ACCENT_DEFAULT));
+        applyCustomColor(getPref('customColor', CUSTOM_ACCENT_DEFAULT));
       }
       document.documentElement.setAttribute('data-bs-theme', resolveScheme());
       // Init mobile theme icon
@@ -604,14 +619,8 @@ function pageNavigation()
           <li><button class="dropdown-item" onclick="pickTheme('default')"><i class="fas fa-circle me-2" style="color:#6c5ce7;font-size:0.65rem"></i>Default</button></li>
           <li><button class="dropdown-item" onclick="pickTheme('ocean')"><i class="fas fa-circle me-2" style="color:#0ea5e9;font-size:0.65rem"></i>Ocean</button></li>
           <li><button class="dropdown-item" onclick="pickTheme('forest')"><i class="fas fa-circle me-2" style="color:#10b981;font-size:0.65rem"></i>Forest</button></li>
-          <li><button class="dropdown-item" onclick="pickTheme('twilight')"><i class="fas fa-circle me-2" style="color:#8b5cf6;font-size:0.65rem"></i>Twilight</button></li>
-          <li><hr class="dropdown-divider"></li>
-          <li><button class="dropdown-item" onclick="pickTheme('sunset')"><i class="fas fa-circle me-2" style="color:#f97316;font-size:0.65rem"></i>Sunset</button></li>
-          <li><button class="dropdown-item" onclick="pickTheme('midnight')"><i class="fas fa-circle me-2" style="color:#6366f1;font-size:0.65rem"></i>Midnight</button></li>
-          <li><button class="dropdown-item" onclick="pickTheme('lavender')"><i class="fas fa-circle me-2" style="color:#c084fc;font-size:0.65rem"></i>Lavender</button></li>
-          <li><button class="dropdown-item" onclick="pickTheme('crimson')"><i class="fas fa-circle me-2" style="color:#ef4444;font-size:0.65rem"></i>Crimson</button></li>
           <li><button class="dropdown-item" onclick="pickTheme('rose')"><i class="fas fa-circle me-2" style="color:#ec4899;font-size:0.65rem"></i>Rose</button></li>
-          <li><button class="dropdown-item" onclick="pickTheme('gold')"><i class="fas fa-circle me-2" style="color:#eab308;font-size:0.65rem"></i>Gold</button></li>
+          <li><button class="dropdown-item" onclick="pickTheme('slate')"><i class="fas fa-circle me-2" style="color:#64748b;font-size:0.65rem"></i>Slate</button></li>
           <li><hr class="dropdown-divider"></li>
           <li>
             <label class="dropdown-item d-flex align-items-center" for="customColorPicker" style="cursor:pointer">
