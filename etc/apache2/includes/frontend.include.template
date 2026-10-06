@@ -168,8 +168,13 @@
     SessionCookieName       adt_session path=/;httponly;secure;samesite=lax
     SessionCryptoPassphrase ${ADT_SESSION_PASSPHRASE}
     SessionMaxAge           28800
+    # Fixed lifetime: do not let later requests re-stamp the expiry with this default
+    # (it would cut a 7-day "remember me" session down to 8h)
+    SessionExpiryUpdateInterval 604800
 
     <Location />
+            # Expose the decrypted session (incl. its expiry) as HTTP_SESSION for the dashboard
+            SessionEnv On
             AuthName "eXo Employees only"
             AuthType form
             AuthFormProvider ldap

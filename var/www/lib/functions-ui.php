@@ -545,7 +545,9 @@ function pageNavigation()
         </a>
         <span class="sidebar__user-name"><?= htmlspecialchars($userFullName) ?></span>
       </div>
-      <a class="sidebar__footer-btn" href="/logout" title="Sign out"><i class="fas fa-right-from-bracket"></i> <span>Sign out</span></a>
+      <?php $sessionExpiry = currentSessionExpiry();
+      $signOutTitle = 'Sign out' . ($sessionExpiry ? ' (session expires ' . date('Y-m-d H:i', $sessionExpiry) . ', ' . sessionRemainingLabel($sessionExpiry) . ' left)' : ''); ?>
+      <a class="sidebar__footer-btn" href="/logout" title="<?= htmlspecialchars($signOutTitle) ?>"><i class="fas fa-right-from-bracket"></i> <span>Sign out</span></a>
       <?php endif; ?>
       <!-- Pin/unpin toggle -->
       <button class="sidebar__footer-btn" id="sidebarPinBtn" onclick="toggleSidebarPin()" title="Collapse sidebar">
@@ -638,6 +640,27 @@ function pageNavigation()
 <?php
 }
 
+
+/**
+ * Expiry of the current login session (unix time), read from the decrypted
+ * session Apache exposes as HTTP_SESSION (mod_session "expiry" is in microseconds).
+ */
+function currentSessionExpiry() {
+  parse_str($_SERVER['HTTP_SESSION'] ?? '', $session);
+  $expiry = (int)($session['expiry'] ?? 0);
+  return $expiry > 0 ? intdiv($expiry, 1000000) : null;
+}
+
+/**
+ * Human readable "6d 23h" / "7h 59m" remaining before the session expires
+ */
+function sessionRemainingLabel($expiry) {
+  $left = max(0, $expiry - time());
+  $d = intdiv($left, 86400);
+  $h = intdiv($left % 86400, 3600);
+  $m = intdiv($left % 3600, 60);
+  return $d > 0 ? "{$d}d {$h}h" : "{$h}h {$m}m";
+}
 
 /**
  * Insert the Footer
