@@ -114,6 +114,54 @@ function pageHeader($title = "", $autoRefresh = true)
     }
     function storeTheme(accent, scheme) { setPref('theme', accent + ':' + scheme); }
 
+    // ── Shared themes: ?theme=<accent>:<scheme> or ?theme=custom:<rrggbb>:<scheme> ──
+    // Strictly validated (known accent, 6-digit hex, light|dark), saved as the visitor's theme,
+    // then removed from the address bar so it does not linger in bookmarks or copied URLs.
+    function importSharedTheme() {
+      var params, raw;
+      try { params = new URLSearchParams(location.search); raw = params.get('theme'); } catch(e) { return; }
+      if (raw === null) return;
+      var m = /^([a-z]+)(?::([0-9a-f]{6}))?:(light|dark)$/i.exec(raw);
+      if (m) {
+        var accent = m[1].toLowerCase();
+        if (LEGACY_ACCENTS[accent]) accent = LEGACY_ACCENTS[accent];
+        if (THEMES.indexOf(accent) >= 0 && (accent === 'custom') === (m[2] !== undefined)) {
+          if (accent === 'custom') setPref('customColor', '#' + m[2].toLowerCase());
+          storeTheme(accent, m[3].toLowerCase());
+        }
+      }
+      params.delete('theme');
+      var qs = params.toString();
+      try { history.replaceState(null, '', location.pathname + (qs ? '?' + qs : '') + location.hash); } catch(e) {}
+    }
+    importSharedTheme();
+
+    // ── Copy a link that applies the current theme for whoever opens it ──
+    function shareTheme(ev) {
+      var accent = resolveAccent();
+      var scheme = document.documentElement.getAttribute('data-bs-theme') || resolveScheme();
+      var color = accent === 'custom' ? getPref('customColor', CUSTOM_ACCENT_DEFAULT).replace('#', '').toLowerCase() + ':' : '';
+      var url = location.origin + '/?theme=' + accent + ':' + color + scheme;
+      var label = ev && ev.currentTarget ? ev.currentTarget.querySelector('span') : null;
+      var done = function(ok) {
+        if (!label) return;
+        label.textContent = ok ? 'Link copied' : 'Copy failed';
+        setTimeout(function() { label.textContent = 'Copy theme link'; }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(function() { done(true); }, function() { done(false); });
+        return;
+      }
+      var ta = document.createElement('textarea');
+      ta.value = url; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch(e) {}
+      document.body.removeChild(ta);
+      done(ok);
+    }
+
+
     // ── Apply accent (no persist) ────────────────────────
     function setAccent(accent) {
       document.documentElement.setAttribute('data-accent', accent);
@@ -633,6 +681,8 @@ function pageNavigation()
               <span>Custom</span>
             </label>
           </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item" onclick="shareTheme(event)"><i class="fas fa-link me-2" style="font-size:0.65rem" aria-hidden="true"></i><span>Copy theme link</span></button></li>
         </ul>
       </div>
 
