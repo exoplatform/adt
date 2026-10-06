@@ -26,21 +26,21 @@ checkCaches();
 <ul class="list-unstyled company-links-list p-3 rounded">
   <li class="mb-2">
     <i class="fas fa-globe me-2" style="color:var(--accent-text)"></i>eXo Website :
-    <a href="https://www-dev.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--success);color:#000">dev</a>
+    <a href="https://www-dev.exoplatform.com" target="_blank" class="env-pill env-pill--dev">dev</a>
     <span class="mx-1">·</span>
-    <a href="https://www-preprod.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--warning);color:#000">preprod</a>
+    <a href="https://www-preprod.exoplatform.com" target="_blank" class="env-pill env-pill--preprod">preprod</a>
   </li>
   <li class="mb-2">
     <i class="fas fa-users me-2" style="color:var(--accent-text)"></i>eXo Tribe :
-    <a href="https://community-dev.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--success);color:#000">dev</a>
+    <a href="https://community-dev.exoplatform.com" target="_blank" class="env-pill env-pill--dev">dev</a>
     <span class="mx-1">·</span>
-    <a href="https://community-preprod.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--warning);color:#000">preprod</a>
+    <a href="https://community-ppr.exoplatform.com" target="_blank" class="env-pill env-pill--preprod">preprod</a>
   </li>
   <li class="mb-2">
     <i class="fas fa-blog me-2" style="color:var(--accent-text)"></i>eXo Blog :
-    <a href="https://blog-dev.exoplatform.com/" target="_blank" class="badge text-decoration-none" style="background:var(--success);color:#000">dev</a>
+    <a href="https://blog-dev.exoplatform.com" target="_blank" class="env-pill env-pill--dev">dev</a>
     <span class="mx-1">·</span>
-    <a href="https://blog-preprod.exoplatform.com/blog/" target="_blank" class="badge text-decoration-none" style="background:var(--warning);color:#000">preprod</a>
+    <a href="https://blog-preprod.exoplatform.com/blog" target="_blank" class="env-pill env-pill--preprod">preprod</a>
   </li>
 </ul>
 

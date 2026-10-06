@@ -1457,6 +1457,27 @@ a[name] {
   border-radius: var(--r-md);
   color: var(--text-primary);
 }
+/* Environment pills: tinted like the status colours (dev = success, preprod = warning),
+   with the status colour as text so contrast holds in both schemes; filled on hover */
+.env-pill {
+  --env: var(--success);
+  display: inline-block;
+  padding: 0.1rem 0.65rem;
+  border-radius: var(--r-full);
+  border: 1px solid color-mix(in srgb, var(--env) 45%, transparent);
+  background: color-mix(in srgb, var(--env) 14%, transparent);
+  color: var(--env);
+  font-size: 0.78rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background var(--dur-fast), color var(--dur-fast);
+}
+.env-pill--preprod { --env: var(--warning); }
+.env-pill:hover, .env-pill:focus-visible {
+  background: var(--env);
+  color: var(--text-inverse);
+  text-decoration: none;
+}
 .code-bg {
   background: var(--bg-field);
   color: var(--text-primary);
