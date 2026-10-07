@@ -462,6 +462,18 @@ code, .code {
   object-fit: cover;
   border: 1px solid var(--border-subtle);
 }
+.sidebar__session {
+  display: none;
+  margin-left: auto;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+/* Remaining session time is revealed on hover / keyboard focus of Sign out */
+body:not(.sidebar-collapsed) .sidebar__footer-btn:hover .sidebar__session,
+body:not(.sidebar-collapsed) .sidebar__footer-btn:focus-visible .sidebar__session { display: inline; }
+.sidebar__session--soon { color: var(--danger); }
 .sidebar__user-name {
   font-size: 0.8rem;
   font-weight: 600;
@@ -1992,6 +2004,29 @@ html.is-loading, html.is-loading a { cursor: progress; }
   flex: 0 0 auto;
 }
 
+/* Harmonised card rows (cards view, any width): everything left-aligned on a
+   common edge, ages on their own line, evenly sized action buttons */
+html:not(.view-table) .instance-card__details { column-gap: 0.6rem; row-gap: 0.3rem; }
+html:not(.view-table) .instance-card__ages {
+  margin-left: 0;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  gap: 0.15rem 0.9rem;
+  min-width: 0;
+}
+.instance-card__ages > * { white-space: nowrap; }
+.instance-card__meta { column-gap: 0.6rem; }
+html:not(.view-table) .instance-card__actions { gap: 0.35rem; }
+html:not(.view-table) .instance-card__actions .btn-group { display: contents; }
+html:not(.view-table) .instance-card__actions .btn {
+  flex: 0 0 2.6rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.1rem;
+  padding: 0.25rem 0.3rem;
+}
+
 /* ── Instance Card/Table view ─────────────────────────────────── */
 .instances-toolbar {
   display: flex;
@@ -2140,7 +2175,7 @@ html.is-loading, html.is-loading a { cursor: progress; }
   }
 }
 @media (max-width: 768px) {
-  .features-view-switch { display: none; }
+  .features-view-switch { display: none !important; }
 }
 .features-matrix {
   --bs-table-bg: transparent;
@@ -2313,6 +2348,40 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
     font-size: 1rem;
     line-height: 1;
   }
+  /* Session expiry popover on the sign-out button */
+  .session-menu { position: relative; }
+  .session-menu--soon .session-menu__toggle::after {
+    content: '';
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--warning);
+    border: 1.5px solid var(--bg-surface);
+  }
+  .session-menu__toggle { position: relative; }
+  .session-menu__panel {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    right: 0;
+    min-width: 12rem;
+    padding: 0.8rem 0.9rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-card);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-lg);
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+  .session-menu__panel[hidden] { display: none; }
+  .session-menu__label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; color: var(--text-muted); }
+  .session-menu__remaining { font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text-primary); line-height: 1.2; }
+  .session-menu__at { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.6rem; }
+  .session-menu__signout { align-self: stretch; min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
   .mobile-bar__avatar {
     width: 28px;
     height: 28px;
@@ -2350,17 +2419,26 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
 
   /* Metric cards */
   .metric__value { font-size: 1.9rem; }
-  .metric__label { font-size: 0.7rem; }
+  .bento__item { padding: 1rem 0.9rem; }
+  /* A lone last tile fills the row instead of leaving a gap */
+  .bento > .bento__item--2:last-child:nth-child(odd),
+  .bento > .bento__item--3:last-child:nth-child(odd),
+  .bento > .bento__item--4:last-child:nth-child(odd) { grid-column: span 4; }
+  .metric__label { font-size: 0.62rem; letter-spacing: 0.02em; gap: 0.3rem; align-items: flex-start; min-width: 0; overflow-wrap: break-word; }
+  .metric__label > i, .metric__label > .pulse-dot { flex-shrink: 0; margin-top: 0.15em; }
+  /* Text-valued tiles (busiest day, repository name) wrap instead of truncating */
+  .metric .metric__value--label { font-size: 1rem; line-height: 1.2; white-space: normal; overflow-wrap: anywhere; }
 
   /* Instance cards */
   .instance-card { padding: 0.7rem 0.85rem; gap: 0.4rem; }
   .instance-card__name { font-size: 0.82rem; }
   .instance-card__meta { font-size: 0.7rem; }
   .instance-card__details { font-size: 0.72rem; gap: 0.35rem; }
-  .instance-card__ages { gap: 0.4rem; font-size: 0.7rem; }
+  .instance-card__ages { font-size: 0.7rem; }
+  /* Avoid a lone trailing icon (lock) dropping to its own line */
+  .instance-card__name { text-wrap: pretty; }
   .instance-card__badges { gap: 0.15rem; }
-  .instance-card__actions { gap: 0.2rem; }
-  .instance-card .btn { padding: 0.25rem 0.45rem; font-size: 0.7rem; }
+  .instance-card .btn { font-size: 0.7rem; }
 
   /* Search */
   .instances-search { max-width: 100%; margin-bottom: 0.75rem; }
@@ -2377,7 +2455,15 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
   td.category-row { font-size: 0.7rem; letter-spacing: 0.5px; }
 
   .server-cards { grid-template-columns: 1fr; }
-  .project-grid { grid-template-columns: minmax(0, 1fr); }
+  /* Features: two project tiles per row, less nested padding */
+  .project-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem; }
+  .project-chip { padding: 0.55rem 0.6rem; }
+  .project-chip { display: flex; flex-direction: column; justify-content: space-between; gap: 0.3rem; }
+  .project-chip .project-chip-name { white-space: normal; overflow-wrap: break-word; line-height: 1.25; letter-spacing: 0.2px; }
+  .project-chip-header { align-items: flex-start; font-size: 0.66rem; letter-spacing: 0.2px; }
+  .project-chip-name > .fa-cube { display: none; }
+  .features-section > .card-body { padding: 0.6rem; }
+  .features-cards .feature-card > .card-body { padding: 0.75rem; }
 
   /* Feature branch header: drop Rebase button/CI badge to their own
      row instead of centering next to a wrapped multi-line branch name */
@@ -2403,6 +2489,10 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
   .filter-bar .btn,
   .filter-bar > .form-select { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
   .filter-bar > .form-select { font-size: 16px; }
+
+  /* Port registry filters: selects share rows evenly */
+  #portRegistryFilters > .form-select { flex: 1 1 calc(50% - 0.25rem); width: auto !important; min-width: 0; font-size: 16px; min-height: 38px; }
+  #portRegistryFilters > .btn { flex: 1 1 100%; min-height: 38px; }
 
   /* Card header subtitles go to their own line instead of squeezing the title */
   .card-header > small { flex-basis: 100%; margin-left: 0 !important; }
@@ -2554,3 +2644,15 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
 }
 .pulse-dot.on { background: var(--success); }
 .pulse-dot.off { background: var(--danger); }
+
+/* Card header titles: keep icon and count badge on the title line on phones
+   (the title wraps its own text instead of pushing them onto separate lines) */
+@media (max-width: 768px) {
+  .card-header__title { flex-wrap: nowrap !important; }
+  .card-header__title > i, .card-header__title > .badge { flex-shrink: 0; }
+  .card-header__title > h2, .card-header__title > h5 { min-width: 0; overflow-wrap: anywhere; }
+}
+
+/* Company links: labels share one column so the environment pills line up */
+.company-link__label { display: inline-block; min-width: 9.5rem; white-space: nowrap; }
+@media (max-width: 480px) { .company-link__label { min-width: 7.7rem; } }

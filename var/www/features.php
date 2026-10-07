@@ -299,7 +299,7 @@ checkCaches();
                     <div class="card mb-4 features-section" data-section="deployed">
                         <div class="card-header">
                             <div class="w-100">
-                                <div class="d-flex align-items-center flex-wrap">
+                                <div class="d-flex align-items-center flex-wrap card-header__title">
                                     <i class="fas fa-check-circle text-success me-2"></i>
                                     <h5 class="mb-0">Feature Branches deployed on acceptance</h5>
                                     <span class="badge bg-success ms-2 features-count" data-total="<?= count($acceptedFeatures) ?>"><?= count($acceptedFeatures) ?></span>
@@ -407,7 +407,7 @@ checkCaches();
                     <div class="card mb-4 features-section" data-section="other">
                         <div class="card-header">
                             <div class="w-100">
-                                <div class="d-flex align-items-center flex-wrap">
+                                <div class="d-flex align-items-center flex-wrap card-header__title">
                                     <i class="fas fa-exclamation-triangle text-warning me-2"></i>
                                     <h5 class="mb-0">Other branches</h5>
                                     <span class="badge bg-warning ms-2 features-count" data-total="<?= count($otherFeatures) ?>"><?= count($otherFeatures) ?></span>

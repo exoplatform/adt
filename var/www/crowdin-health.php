@@ -181,7 +181,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
       html.crowdin-table-view .crowdin-table { display: table; }
       html.crowdin-table-view .crowdin-cards { display: none; }
     }
-    @media (max-width: 768px) { .crowdin-view-switch { display: none; } }
+    @media (max-width: 768px) { .crowdin-view-switch { display: none !important; } }
     .crowdin-table th, .crowdin-table td { padding: 0.45rem 0.85rem; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface); }
     .crowdin-table tbody tr:last-child > * { border-bottom: 0; }
     .crowdin-table tbody th { font-weight: 600; }
@@ -226,7 +226,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
       <div class="card mb-4">
         <div class="card-header">
           <div class="w-100">
-            <div class="d-flex align-items-center flex-wrap">
+            <div class="d-flex align-items-center flex-wrap card-header__title">
               <i class="fas fa-language text-success me-2"></i>
               <h2 class="h5 mb-0">Modules with Crowdin integration</h2>
               <span class="badge bg-success ms-2" id="crowdinModulesCount" data-total="<?= count($active_modules) ?>"><?= count($active_modules) ?></span>
@@ -324,7 +324,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
       <div class="card mb-4">
         <div class="card-header">
           <div class="w-100">
-            <div class="d-flex align-items-center flex-wrap">
+            <div class="d-flex align-items-center flex-wrap card-header__title">
               <i class="fas fa-minus-circle text-muted me-2"></i>
               <h2 class="h5 mb-0">Modules without a Crowdin action</h2>
               <span class="badge bg-secondary ms-2"><?= count($skipped_modules) ?></span>
