@@ -2127,14 +2127,20 @@ html.is-loading, html.is-loading a { cursor: progress; }
 
 /* ── Features page: Cards/Table view ───────────────────────────── */
 .features-matrix-wrap { display: none; }
-html.features-table .features-cards { display: none; }
-html.features-table .features-matrix-wrap {
-  display: block;
-  /* scrolls on its own so the header row and project column can both stick */
-  max-height: 75vh;
-  overflow: auto;
-  border: 1px solid var(--border-card);
-  border-radius: var(--r-md);
+/* Phones always get the cards layout, whatever view was saved */
+@media (min-width: 769px) {
+  html.features-table .features-cards { display: none; }
+  html.features-table .features-matrix-wrap {
+    display: block;
+    /* scrolls on its own so the header row and project column can both stick */
+    max-height: 75vh;
+    overflow: auto;
+    border: 1px solid var(--border-card);
+    border-radius: var(--r-md);
+  }
+}
+@media (max-width: 768px) {
+  .features-view-switch { display: none; }
 }
 .features-matrix {
   --bs-table-bg: transparent;

@@ -176,8 +176,12 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
     }
     .crowdin-table { display: none; width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.82rem;
       border: 1px solid var(--border-card); border-radius: var(--r-md); }
-    html.crowdin-table-view .crowdin-table { display: table; }
-    html.crowdin-table-view .crowdin-cards { display: none; }
+    /* Phones always get the cards layout, whatever view was saved */
+    @media (min-width: 769px) {
+      html.crowdin-table-view .crowdin-table { display: table; }
+      html.crowdin-table-view .crowdin-cards { display: none; }
+    }
+    @media (max-width: 768px) { .crowdin-view-switch { display: none; } }
     .crowdin-table th, .crowdin-table td { padding: 0.45rem 0.85rem; border-bottom: 1px solid var(--border-subtle); background: var(--bg-surface); }
     .crowdin-table tbody tr:last-child > * { border-bottom: 0; }
     .crowdin-table tbody th { font-weight: 600; }
@@ -244,7 +248,7 @@ $skipped_modules = array_values(array_filter($modules, function($m) { return !$m
               <button type="button" id="crowdinFailingOnly" class="btn btn-sm btn-outline-secondary" aria-pressed="false" title="Only modules with a failing workflow">
                 <i class="fas fa-exclamation-circle me-1"></i>Failing only
               </button>
-              <div class="btn-group btn-group-sm" role="group" aria-label="Modules view">
+              <div class="btn-group btn-group-sm crowdin-view-switch" role="group" aria-label="Modules view">
                 <button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>
                 <button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view"><i class="fas fa-table me-1"></i>Table</button>
               </div>

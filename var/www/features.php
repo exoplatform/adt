@@ -283,7 +283,7 @@ checkCaches();
                         <button type="button" id="featureAheadOnly" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Only modules with dev commits not yet backported (more than 1 commit ahead)">
                             <i class="fas fa-code-merge me-1"></i>Needs backport
                         </button>
-                        <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Deployed branches view">
+                        <div class="btn-group btn-group-sm ms-auto features-view-switch" role="group" aria-label="Deployed branches view">
                             <button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>
                             <button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view: projects &times; features"><i class="fas fa-table me-1"></i>Table</button>
                         </div>
