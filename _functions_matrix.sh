@@ -62,11 +62,11 @@ do_start_matrix() {
     return
   fi
   mkdir -p ${DEPLOYMENT_DIR}/matrix
-  evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.template ${DEPLOYMENT_DIR}/matrix/homeserver.yaml
-  evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.template ${DEPLOYMENT_DIR}/matrix/initialize.sh
+  evaluate_file_content ${ETC_DIR}/matrix/homeserver.yaml.j2 ${DEPLOYMENT_DIR}/matrix/homeserver.yaml
+  evaluate_file_content ${ETC_DIR}/matrix/initialize.sh.j2 ${DEPLOYMENT_DIR}/matrix/initialize.sh
   chmod +x ${DEPLOYMENT_DIR}/matrix/initialize.sh
-  evaluate_file_content ${ETC_DIR}/matrix/client.template ${DEPLOYMENT_DIR}/matrix/client
-  evaluate_file_content ${ETC_DIR}/matrix/server.template ${DEPLOYMENT_DIR}/matrix/server
+  evaluate_file_content ${ETC_DIR}/matrix/client.j2 ${DEPLOYMENT_DIR}/matrix/client
+  evaluate_file_content ${ETC_DIR}/matrix/server.j2 ${DEPLOYMENT_DIR}/matrix/server
   echo_info "Starting Matrix container ${DEPLOYMENT_MATRIX_CONTAINER_NAME} based on image ${DEPLOYMENT_MATRIX_IMAGE}"
 
   # Ensure there is no container with the same name
@@ -95,7 +95,7 @@ do_start_matrix() {
     -v ${DEPLOYMENT_DIR}/matrix/matrix.log.config:/data/matrix.log.config:ro \
     -v ${DEPLOYMENT_MATRIX_CONTAINER_NAME}_data:/data:rw \
     -v ${DEPLOYMENT_DIR}/matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro \
-    -p "${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
+    -p "127.0.0.1:${DEPLOYMENT_MATRIX_HTTP_PORT}:8008" \
     --add-host=smtpserver:${SMTP_SERVER} \
     --health-cmd="curl -fSs http://localhost:8008/health || exit 1" \
     --health-interval=15s \

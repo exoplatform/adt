@@ -51,31 +51,68 @@ find_file() {
 }
 
 #
-# Apply Jinja2 template from $1 file
+# Render a Jinja2 template with the environment variables as context
+# Usage: j2 [options] <template>  (the result is written on stdout)
+# Uses, by order of preference :
+#  - jinjanate (jinjanator, the maintained fork of j2cli) : pipx install jinjanator
+#  - j2 (legacy j2cli, doesn't work with recent python versions)
+#  - the j2cli docker image
 #
 j2() {
-  # type -P only looks for an executable in the PATH, "which"/"command -v" are not reliable here
-  # as this function has the same name than the binary
-  if ! type -P j2 &>/dev/null; then 
-    local tmpfile=$(mktemp)
-    env > $tmpfile
-    ${DOCKER_CMD} run --env-file $tmpfile --rm -v "$2":"$2" ${DEPLOYMENT_J2CLI_IMAGE}:${DEPLOYMENT_J2CLI_VERSION} $1 $2
-    rm $tmpfile
-  else 
-    # "command" bypasses this function, otherwise it calls itself until the shell crashes (segfault)
-    command j2 "$@"
+  # "command" bypasses this function and runs the binary (avoids an infinite recursion)
+  if type -P jinjanate &>/dev/null; then
+    command jinjanate --quiet "$@"
+    return
   fi
+  if type -P j2 &>/dev/null; then
+    command j2 "$@"
+    return
+  fi
+  local _template="${!#}"
+  local _options=("${@:1:$#-1}")
+  local _dir
+  _dir="$(cd "$(dirname "${_template}")" && pwd)"
+  local _envfile
+  _envfile=$(mktemp)
+  # --env-file doesn't support multi-lines values, keep only NAME=value lines
+  # and don't override the container environment with the host specific ones (PATH, HOME, ...)
+  env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' | grep -vE '^(PATH|HOME|HOSTNAME|PWD|OLDPWD|SHLVL|_|TERM)=' > "${_envfile}" || true
+  local _rc=0
+  ${DOCKER_CMD} run --rm --env-file "${_envfile}" -v "${_dir}":"${_dir}":ro \
+    ${DEPLOYMENT_J2CLI_IMAGE}:${DEPLOYMENT_J2CLI_VERSION} \
+    ${_options[@]+"${_options[@]}"} "${_dir}/$(basename "${_template}")" || _rc=$?
+  rm -f "${_envfile}"
+  return ${_rc}
 }
 
 #
-# Replace in file $1 all environment variables (${XXX}) and push the result in $2
+# Export every shell variable referenced in the {{ }} / {% %} tags of the Jinja2 template $1
+# (j2 only sees the exported variables, this avoids to maintain a list of export before each call)
+#
+export_template_vars() {
+  local _name
+  for _name in $(grep -oE '\{\{[^}]*\}\}|\{%[^%]*%\}' "$1" | grep -oE '[A-Za-z_][A-Za-z0-9_]*' | sort -u); do
+    # -v is true for any set variable (global or local of the callers), even when it is not exported yet
+    if [[ -v "${_name}" ]]; then
+      export "${_name}"
+    fi
+  done
+}
+
+#
+# Render the template $1 and push the result in $2
+#  - *.j2 files are rendered with Jinja2 (conditions, loops, filters ...) : use them for any new template
+#  - DEPRECATED: any other file only gets its environment variables (${XXX}) replaced
+#    using perl (or awk as a fallback), without any condition support. Migrate them to *.j2
 #
 evaluate_file_content() {
   local _file_in=$1
   local _file_out=$2
   if [ ${_file_in##*.} = "j2" ]; then 
-    j2 --undefined ${_file_in} > ${_file_out}
+    export_template_vars "${_file_in}"
+    j2 --undefined "${_file_in}" > "${_file_out}"
   else 
+    echo_warn "DEPRECATED: ${_file_in} is evaluated with the legacy \${XXX} substitution (perl/awk), please migrate it to a Jinja2 (.j2) template"
     if which perl &>/dev/null; then 
       perl -pe 's/\$\{([^}]+)\}/$ENV{$1} || ""/ge' < ${_file_in} > ${_file_out}
     else 

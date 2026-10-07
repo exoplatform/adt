@@ -431,7 +431,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
 
       configurable_env_var "DEPLOYMENT_J2CLI_IMAGE" "exoplatform/j2cli"
-      configurable_env_var "DEPLOYMENT_J2CLI_VERSION" "1.0.0"
+      configurable_env_var "DEPLOYMENT_J2CLI_VERSION" "2.0.0"
 
       configurable_env_var "DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS" ""
       
@@ -1759,12 +1759,12 @@ do_configure_apache() {
   mkdir -p ${AWSTATS_CONF_DIR}
   # Regenerates stats for this Vhosts
   export DOMAIN=${DEPLOYMENT_EXT_HOST}
-  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.j2 ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
   [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
   unset DOMAIN
   # Regenerates stats for root vhosts
   export DOMAIN=${ACCEPTANCE_HOST}
-  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.template ${AWSTATS_CONF_DIR}/awstats.${ACCEPTANCE_HOST}.conf
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.j2 ${AWSTATS_CONF_DIR}/awstats.${ACCEPTANCE_HOST}.conf
   [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
   unset DOMAIN
   echo_info "Done."
@@ -1805,98 +1805,49 @@ do_configure_apache() {
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
 
-  # Apache configuration matrix
-  if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
-    if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-      echo_info "used template is : instance-chat-standalone-oo.include.template"
-    else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-chat-standalone.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-      echo_info "used template is : instance-chat-standalone.include.template"
-    fi
-  elif ${DEPLOYMENT_APACHE_WEBSOCKET_ENABLED}; then
-    if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-oo.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-      echo_info "used template is : instance-ws-oo.include.template"
-    elif [ "${PRODUCT_NAME:-}" = "meeds" ];then 
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws-meeds.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-      echo_info "used template is : instance-ws-meeds.include.template"
-    else
-      evaluate_file_content ${ETC_DIR}/apache2/includes/instance-ws.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-      echo_info "used template is : instance-ws.include.template"
-    fi
-  elif ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED};then 
-    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include-oo.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-  else  
-    evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.template ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-  fi
+  # Features (chat, websocket, onlyoffice, keycloak, ...) are enabled/disabled with conditions inside the template
+  evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.j2 ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
 
   if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then 
     env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" true
   fi
 
   case ${DEPLOYMENT_APACHE_SECURITY} in
-    public)
-      if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ]); then
-          if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
-            echo_n_info "Deploying Apache instance configuration for HTTPS only..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-          else 
-            echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-          fi  
-          echo "OK."
-        else
-          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"
-          print_usage
-          exit 1
-        fi
-      else
-          echo_n_info "Deploying Apache instance configuration for HTTP only..."
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-public.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-          echo "OK."
-      fi
-    ;;
-    private)
-      if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-        if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" == "true" ] || ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ]); then
-          if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
-            echo_n_info "Deploying Apache instance configuration for HTTPS only..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-httpsonly.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-          else 
-            echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
-            evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private-with-https.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-          fi  
-          echo "OK."
-        else
-          echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"
-          print_usage
-          exit 1
-        fi
-      else
-          echo_n_info "Deploying Apache instance configuration for HTTP only..."
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-private.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-          echo "OK."
-      fi
-    ;;
+    public | private) ;;
     *)
       echo_error "Invalid apache security type \"${DEPLOYMENT_APACHE_SECURITY}\""
       print_usage
       exit 1
     ;;
   esac
+  if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
+    if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" != "true" ] && ! ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ]); then
+      echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"
+      print_usage
+      exit 1
+    fi
+    if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
+      echo_n_info "Deploying Apache instance configuration for HTTPS only..."
+    else
+      echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
+    fi
+  else
+    echo_n_info "Deploying Apache instance configuration for HTTP only..."
+  fi
+  # Security, HTTPS and the rules of each feature are handled with conditions inside the template
+  evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  echo "OK."
   DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOG_FILE}
   echo_info "Done."
   echo_info "Rotate Apache logs ..."
 
   rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
-  evaluate_file_content ${ETC_DIR}/logrotate.d/instance.template ${TMP_DIR}/logrotate-${INSTANCE_KEY}
+  evaluate_file_content ${ETC_DIR}/logrotate.d/instance.j2 ${TMP_DIR}/logrotate-${INSTANCE_KEY}
   do_logrotate "${TMP_DIR}/logrotate-${INSTANCE_KEY}" ${ADT_DEV_MODE}
   rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
 
   rm -f ${TMP_DIR}/logrotate-acceptance
-  evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.template ${TMP_DIR}/logrotate-acceptance
+  evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.j2 ${TMP_DIR}/logrotate-acceptance
   do_logrotate "${TMP_DIR}/logrotate-acceptance" ${ADT_DEV_MODE}
   rm -f ${TMP_DIR}/logrotate-acceptance
 
@@ -1908,7 +1859,7 @@ do_configure_apache() {
 do_create_deployment_descriptor() {
   echo_info "Creating deployment descriptor ..."
   mkdir -p ${ADT_CONF_DIR}
-  evaluate_file_content ${ETC_DIR}/adt/config.template ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
+  evaluate_file_content ${ETC_DIR}/adt/config.j2 ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
   echo_info "Done."
 }
 

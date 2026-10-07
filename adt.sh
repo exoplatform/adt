@@ -147,20 +147,20 @@ case "${ACTION}" in
     configurable_env_var "APACHE_SSL_CERTIFICATE_KEY_FILE" ""
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
-    evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.template ${APACHE_CONF_DIR}/conf.d/adt.conf
-    evaluate_file_content ${ETC_DIR}/apache2/includes/frontend.include.template ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
+    evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.j2 ${APACHE_CONF_DIR}/conf.d/adt.conf
+    evaluate_file_content ${ETC_DIR}/apache2/includes/frontend.include.j2 ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
     # Fix : Remove any include in the wrong directory
     rm -f ${APACHE_CONF_DIR}/sites-available/*.include
     case "${ACCEPTANCE_SCHEME}" in
       http)
         echo_info "Deploying Apache FrontEnd configuration for HTTP"
-        evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+        evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend.j2 ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
         echo_info "Done."
       ;;
       https)
         if [ -f "${APACHE_SSL_CERTIFICATE_FILE}" ] && [ -f "${APACHE_SSL_CERTIFICATE_KEY_FILE}" ]; then
           echo_info "Deploying Apache FrontEnd configuration for HTTP/HTTPS"
-          evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-full-https.template ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
+          evaluate_file_content ${ETC_DIR}/apache2/sites-available/frontend-full-https.j2 ${APACHE_CONF_DIR}/sites-available/acceptance.exoplatform.org
           echo_info "Done."
         else
           echo_error "Deploying Front End with HTTPS scheme but one of \${APACHE_SSL_CERTIFICATE_FILE} (\"${APACHE_SSL_CERTIFICATE_FILE}\"),\${APACHE_SSL_CERTIFICATE_KEY_FILE} (\"${APACHE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"

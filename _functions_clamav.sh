@@ -71,7 +71,7 @@ do_start_clamav() {
   
   mkdir -p ${DEPLOYMENT_DIR}/clamav
   mkdir -p ${DEPLOYMENT_DIR}/clamav/report
-  #evaluate_file_content ${ETC_DIR}/clamav/clamav-entrypoint.sh.template ${DEPLOYMENT_DIR}/clamav/clamav-entrypoint.sh
+  #evaluate_file_content ${ETC_DIR}/clamav/clamav-entrypoint.sh.j2 ${DEPLOYMENT_DIR}/clamav/clamav-entrypoint.sh
   cp -v ${ETC_DIR}/clamav/clamd.conf ${DEPLOYMENT_DIR}/clamav/clamd.conf
   cp -v ${ETC_DIR}/clamav/clamav-entrypoint.sh ${DEPLOYMENT_DIR}/clamav/clamav-entrypoint.sh
   chmod +x ${DEPLOYMENT_DIR}/clamav/clamav-entrypoint.sh
