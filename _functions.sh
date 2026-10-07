@@ -100,6 +100,7 @@ Environment Variables
   CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application's password used to authenticate the front-end (default: none)
   LDAP_ACCEPTANCE_BIND_DN           : The LDAP Bind DN used to authenticate the front-end (default: none)
   LDAP_ACCEPTANCE_BIND_PASSWORD     : The LDAP Bind DN's password used to authenticate the front-end (default: none)
+  CLOUDBEAVER_LDAP_ADMIN_GROUP      : The full DN of the LDAP group whose members administrate Cloudbeaver (default: none)
   ADT_SESSION_PASSPHRASE            : Secret used to encrypt the front-end login session cookie (default: none, required)
   APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup (PEM bundle including certificate chain)
   APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
@@ -386,7 +387,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "26.2.2-acc"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "26.2.2-0"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_AI_CHAT_DISABLED" true
 
