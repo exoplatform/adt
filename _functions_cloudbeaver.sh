@@ -54,6 +54,18 @@ do_start_cloudbeaver() {
     return
   fi
 
+  # Cloudbeaver LDAP login, same directory and bind account as the front-end (apache2 AuthLDAP* settings).
+  # The bind credentials and the admin group (full DN of the LDAP group granted the Cloudbeaver admin rights)
+  # come from the environment.
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_HOST" "ldap2.exoplatform.org"
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_PORT" "636"
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_SSL" "true"
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_BASE_DN" "dc=exoplatform,dc=org"
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_LOGIN_ATTR" "cn"
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_ADMIN_GROUP" "${CLOUDBEAVER_LDAP_ADMIN_GROUP:-}"
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_USER" "${LDAP_ACCEPTANCE_BIND_DN:-}"
+  env_var "DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_PASSWORD" "${LDAP_ACCEPTANCE_BIND_PASSWORD:-}"
+
   echo_info "Starting Cloudbeaver container ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} based on image ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION}"
 
   # Ensure there is no container with the same name
@@ -80,17 +92,43 @@ do_start_cloudbeaver() {
 
   local DB_ADDR=$(${DOCKER_CMD} inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${DEPLOYMENT_CONTAINER_NAME})
 
+  # Only LDAP users can log in (no local or anonymous access), so the LDAP bind account is mandatory
+  if [ -z "${DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_USER}" ] || [ -z "${DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_PASSWORD}" ]; then
+    echo_warn "LDAP_ACCEPTANCE_BIND_DN / LDAP_ACCEPTANCE_BIND_PASSWORD are not set, nobody will be able to log in to Cloudbeaver"
+  fi
+  if [ -z "${DEPLOYMENT_CLOUDBEAVER_LDAP_ADMIN_GROUP}" ]; then
+    echo_warn "CLOUDBEAVER_LDAP_ADMIN_GROUP is not set, nobody will be able to administrate Cloudbeaver"
+  fi
+
   # Check for update
   ${DOCKER_CMD} pull ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION} 2>/dev/null || true 
 
+  # The password goes through an env file (mktemp creates it with 0600): it doesn't appear in the docker
+  # command line and, unlike a name-only -e, it doesn't depend on the environment surviving the docker
+  # command (sudo, ...)
+  local tmpfile=$(mktemp)
+  echo "CLOUDBEAVER_LDAP_BIND_PASSWORD=${DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_PASSWORD}" > $tmpfile
+
   ${DOCKER_CMD} run \
   -d \
-  -p "${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}:8978" \
+  -p "127.0.0.1:${DEPLOYMENT_CLOUDBEAVER_HTTP_PORT}:8978" \
   -v "${DEPLOYMENT_DIR}/data-sources.json:/opt/cloudbeaver/workspace/GlobalConfiguration/.dbeaver/data-sources.json" \
   -e "CLOUDBEAVER_ROOT_URI=/cloudbeaver" \
   -e "CLOUDBEAVER_AI_CHAT_DISABLED=${DEPLOYMENT_CLOUDBEAVER_AI_CHAT_DISABLED}" \
+  -e "CB_SERVER_NAME=eXo Acceptance - ${INSTANCE_KEY}" \
+  -e "CLOUDBEAVER_APP_GRANT_CONNECTIONS_ACCESS_TO_ANONYMOUS_TEAM=true" \
+  -e "CLOUDBEAVER_LDAP_HOST=${DEPLOYMENT_CLOUDBEAVER_LDAP_HOST}" \
+  -e "CLOUDBEAVER_LDAP_PORT=${DEPLOYMENT_CLOUDBEAVER_LDAP_PORT}" \
+  -e "CLOUDBEAVER_LDAP_BASE_DN=${DEPLOYMENT_CLOUDBEAVER_LDAP_BASE_DN}" \
+  -e "CLOUDBEAVER_LDAP_BIND_USER=${DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_USER}" \
+  --env-file $tmpfile \
+  -e "CLOUDBEAVER_LDAP_LOGIN_ATTR=${DEPLOYMENT_CLOUDBEAVER_LDAP_LOGIN_ATTR}" \
+  -e "CLOUDBEAVER_LDAP_IDENTIFIER_ATTR=${DEPLOYMENT_CLOUDBEAVER_LDAP_LOGIN_ATTR}" \
+  -e "CLOUDBEAVER_LDAP_ENABLE_SSL=${DEPLOYMENT_CLOUDBEAVER_LDAP_SSL}" \
+  -e "CLOUDBEAVER_LDAP_ADMIN_GROUP=${DEPLOYMENT_CLOUDBEAVER_LDAP_ADMIN_GROUP}" \
   --add-host=host.docker.internal:${DB_ADDR} \
   --name ${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} ${DEPLOYMENT_CLOUDBEAVER_IMAGE}:${DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION}
+  rm $tmpfile
 
   echo_info "${DEPLOYMENT_CLOUDBEAVER_CONTAINER_NAME} container started"  
   check_cloudbeaver_availability
