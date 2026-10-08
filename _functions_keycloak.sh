@@ -77,11 +77,7 @@ do_start_keycloak() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
   env_var DEP_URL "$(echo ${DEPLOYMENT_URL} | sed -e 's/\(.*\)/\L\1/')"
-  if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ]; then 
-    evaluate_file_content ${ETC_DIR}/keycloak/client_saml2_def.json.template ${DEPLOYMENT_DIR}/client_def.json
-  else
-    evaluate_file_content ${ETC_DIR}/keycloak/client_openid_def.json.template ${DEPLOYMENT_DIR}/client_def.json
-  fi
+  evaluate_file_content ${ETC_DIR}/keycloak/client_def.json.j2 ${DEPLOYMENT_DIR}/client_def.json
   local _startArgs=""
   if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false}; then 
     _startArgs="--proxy-headers=xforwarded --hostname-strict=false"
@@ -99,7 +95,7 @@ do_start_keycloak() {
   -e KC_BOOTSTRAP_ADMIN_PASSWORD=b00tstrap_p@ssw0rd \
   -e PROXY_ADDRESS_FORWARDING=${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false} \
   -e KC_HTTP_RELATIVE_PATH=/auth \
-  -p "${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
+  -p "127.0.0.1:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}:8080" \
   -v ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}:/opt/keycloak/data \
   -v ${DEPLOYMENT_DIR}/logs/keycloak:/opt/keycloak/data/log \
   -v ${DEPLOYMENT_DIR}/themes/keycloak:/opt/keycloak/themes \

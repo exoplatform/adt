@@ -59,7 +59,7 @@ do_start_frontail() {
 
   ${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_FRONTAIL_HTTP_PORT}:9001" \
+    -p "127.0.0.1:${DEPLOYMENT_FRONTAIL_HTTP_PORT}:9001" \
     -v "$(dirname ${DEPLOYMENT_LOG_PATH}):/logs" \
     -h 'frontail' \
     --name ${DEPLOYMENT_FRONTAIL_CONTAINER_NAME} ${DEPLOYMENT_FRONTAIL_IMAGE}:${DEPLOYMENT_FRONTAIL_IMAGE_VERSION} --disable-usage-stats --url-path /livelogs /logs/${DEPLOYMENT_SERVER_LOG_FILE}

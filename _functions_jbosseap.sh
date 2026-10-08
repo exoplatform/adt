@@ -33,7 +33,7 @@ do_configure_jbosseap_jmx() {
   # JMX settings
   echo_info "Creating JMX configuration files ..."
   cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.access
-  evaluate_file_content ${ETC_DIR}/jmx/jmxremote.password.template ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
+  evaluate_file_content ${ETC_DIR}/jmx/jmxremote.password.j2 ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/standalone/configuration/jmxremote.password
   echo_info "Done."
   # Open firewall ports
@@ -140,7 +140,7 @@ do_configure_jbosseap_standalone() {
       echo_info "Done."
     fi
     # Path of the standalone file to use
-    find_instance_file STANDALONE_FILE "${ETC_DIR}/plf" "standalone-local.conf" "${STANDALONE_PRODUCT_NAME}"
+    find_instance_file STANDALONE_FILE "${ETC_DIR}/plf" "standalone-local.conf.j2" "${STANDALONE_PRODUCT_NAME}"
     if [ "${STANDALONE_FILE}" != "UNSET" ]; then
       echo_info "Installing bin/standalone-local.conf ..."
       evaluate_file_content ${STANDALONE_FILE} ${DEPLOYMENT_DIR}/bin/standalone-local.conf

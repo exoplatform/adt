@@ -94,10 +94,10 @@ do_start_onlyoffice() {
 
   local ONLYOFFICE_IMAGE_VERSION_MAJOR=$(echo $DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION | cut -d '.' -f1)
   if [[ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" =~ ^[0-9]+$ ]] && [ "${ONLYOFFICE_IMAGE_VERSION_MAJOR}" -lt "7" ]; then 
-    evaluate_file_content ${ETC_DIR}/onlyoffice/local.json.template ${DEPLOYMENT_DIR}/local.json
+    evaluate_file_content ${ETC_DIR}/onlyoffice/local.json.j2 ${DEPLOYMENT_DIR}/local.json
     ${DOCKER_CMD} run \
       -d \
-      -p "${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
+      -p "127.0.0.1:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_logs:/var/log/onlyoffice  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_data:/var/www/onlyoffice/Data  \
       -v ${DEPLOYMENT_ONLYOFFICE_CONTAINER_NAME}_lib:/var/lib/onlyoffice  \
@@ -107,7 +107,7 @@ do_start_onlyoffice() {
   else 
     ${DOCKER_CMD} run \
       -d \
-      -p "${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
+      -p "127.0.0.1:${DEPLOYMENT_ONLYOFFICE_HTTP_PORT}:80" \
       -e JWT_ENABLED="true" \
       -e JWT_SECRET="${DEPLOYMENT_ONLYOFFICE_SECRET}" \
       -e SECURE_LINK_SECRET=${DEPLOYMENT_ONLYOFFICE_LINK_SECRET} \

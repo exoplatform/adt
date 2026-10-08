@@ -1,0 +1,48 @@
+{% if DEPLOYMENT_DB_TYPE == "DOCKER_POSTGRES" -%}
+{% set conn = {"id": "postgres-jdbc-1882354e194-49822a460cd9ce75", "provider": "postgresql", "driver": "postgres-jdbc", "name": "PostgreSQL@Acceptance", "port": "5432", "jdbc": "postgresql"} -%}
+{% else -%}
+{% set conn = {"id": "mysql8-18823545840-4c316f51e9ff0ee", "provider": "mysql", "driver": "mysql8", "name": "MySQL@Acceptance", "port": "3306", "jdbc": "mysql"} -%}
+{% endif -%}
+{
+	"folders": {},
+	"connections": {
+		"{{ conn.id }}": {
+			"provider": "{{ conn.provider }}",
+			"driver": "{{ conn.driver }}",
+			"name": "{{ conn.name }}",
+			"save-password": true,
+			"show-system-objects": true,
+			"read-only": {{ DEPLOYMENT_CLOUDBEAVER_READONLY }},
+			"configuration": {
+				"host": "host.docker.internal",
+				"port": "{{ conn.port }}",
+				"database": "{{ DEPLOYMENT_DATABASE_NAME }}",
+				"url": "jdbc:{{ conn.jdbc }}://host.docker.internal:{{ conn.port }}/{{ DEPLOYMENT_DATABASE_NAME }}",
+				"user": "{{ DEPLOYMENT_DATABASE_USER }}",
+				"password": "{{ DEPLOYMENT_DATABASE_USER }}",
+				"configurationType": "MANUAL",
+				"type": "dev",
+				"properties": {
+{%- if DEPLOYMENT_DB_TYPE == "DOCKER_POSTGRES" %}
+					"readOnly": "{{ DEPLOYMENT_CLOUDBEAVER_READONLY }}"
+{%- else %}
+					"allowPublicKeyRetrieval": "true"
+{%- endif %}
+				},
+				"auth-model": "native",
+				"handlers": {}
+			}
+		}
+	},
+	"connection-types": {
+		"dev": {
+			"name": "Development",
+			"color": "255,255,255",
+			"description": "Regular development database",
+			"auto-commit": true,
+			"confirm-execute": false,
+			"confirm-data-change": false,
+			"auto-close-transactions": false
+		}
+	}
+}

@@ -33,7 +33,7 @@ do_create_jmx_credentials_files() {
   # JMX settings
   echo_info "Creating JMX configuration files ..."
   cp -f ${ETC_DIR}/jmx/jmxremote.access ${DEPLOYMENT_DIR}/conf/jmxremote.access
-  evaluate_file_content ${ETC_DIR}/jmx/jmxremote.password.template ${DEPLOYMENT_DIR}/conf/jmxremote.password
+  evaluate_file_content ${ETC_DIR}/jmx/jmxremote.password.j2 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   chmod 400 ${DEPLOYMENT_DIR}/conf/jmxremote.password
   echo_info "Done."
   # Open firewall ports
@@ -159,8 +159,8 @@ do_configure_tomcat_ldap() {
     echo_info "Start Deploying Directory ${USER_DIRECTORY} conf ..."
     mkdir -p ${DEPLOYMENT_DIR}/gatein/conf/portal/portal
     cp ${ETC_DIR}/gatein/portal/portal/configuration.xml ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/configuration.xml
-    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/idm-configuration.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/idm-configuration.xml
-    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml.template ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml
+    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/idm-configuration.xml.j2 ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/idm-configuration.xml
+    evaluate_file_content ${ETC_DIR}/gatein/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml.j2 ${DEPLOYMENT_DIR}/gatein/conf/portal/portal/picketlink-idm-${USER_DIRECTORY}-config.xml
     echo_info "End Deploying Directory ${USER_DIRECTORY} conf ..."
   fi
 }
@@ -343,7 +343,7 @@ do_configure_tomcat_setenv() {
       echo_info "Done."
     fi
     # Path of the setenv file to use
-    find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-local.sh" "${SET_ENV_PRODUCT_NAME}"
+    find_instance_file SET_ENV_FILE "${ETC_DIR}/plf" "setenv-local.sh.j2" "${SET_ENV_PRODUCT_NAME}"
     if [ "${SET_ENV_FILE}" != "UNSET" ]; then
       echo_info "Installing bin/setenv-local.sh ..."
       evaluate_file_content ${SET_ENV_FILE} ${DEPLOYMENT_DIR}/bin/setenv-local.sh

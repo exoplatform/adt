@@ -152,7 +152,7 @@ do_provision_caldav() {
 
   # Generate Baikal config YAML
   local _configTmp="${TMP_DIR}/baikal-config-${INSTANCE_KEY}.yaml"
-  evaluate_file_content ${ETC_DIR}/baikal/config.yaml.template "${_configTmp}"
+  evaluate_file_content ${ETC_DIR}/baikal/config.yaml.j2 "${_configTmp}"
 
   echo_info "Writing Baikal config and initializing database..."
 

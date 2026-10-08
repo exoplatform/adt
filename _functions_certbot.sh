@@ -65,7 +65,7 @@ do_generate_certbot_certificate() {
   fi
 
   echo_info "Deploying Basic Apache instance configuration for generating/renewing certificate..."
-  evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-certbot.template ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-certbot.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
   do_reload_apache ${ADT_DEV_MODE}
 
   sudo certbot --config-dir "${DEPLOYMENT_CERTBOT_CONFIG_FOLDER}" --text --agree-tos --non-interactive ${certbotAction} \

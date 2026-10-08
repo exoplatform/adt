@@ -99,15 +99,13 @@ do_start_jitsi_legacy() {
     echo_info "Jitsi not specified, skiping its containers startup"
     return
   fi
-  # TL;DR: export All envrionment variables included on this template
   if [[ "$DEPLOYMENT_JITSI_IMAGE_VERSION" =~ ^stable-([0-9]+) ]]; then
     build_number="${BASH_REMATCH[1]}"
     jitsi_major_version=$(( build_number / 1000 ))
   else
     jitsi_major_version="10" # default latest version
   fi
-  export DEPLOYMENT_URL DEPLOYMENT_JITSI_NETWORK_NAME DEPLOYMENT_JITSI_JVB_PORT jitsi_major_version
-  evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
+  evaluate_file_content ${ETC_DIR}/jitsi/jitsi.env.j2 ${DEPLOYMENT_DIR}/jitsi.env
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
@@ -115,7 +113,7 @@ do_start_jitsi_legacy() {
   ${DOCKER_CMD} pull ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}
   ${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --memory "${DEPLOYMENT_JITSI_MEM_LIMIT}" \
@@ -162,7 +160,7 @@ do_start_jitsi_legacy() {
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_JVB_PORT}:${DEPLOYMENT_JITSI_JVB_PORT}/udp" \
-    -p "${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
     -e VIDEOBRIDGE_MAX_MEMORY="${DEPLOYMENT_JITSI_JVB_XMX}" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -206,7 +204,7 @@ do_start_jitsi_legacy() {
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:80" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:443" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -228,7 +226,7 @@ do_start_jitsi_legacy() {
   ${DOCKER_CMD} run \
     -d \
     --init=true \
-    -p "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}:80" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}:80" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \
@@ -255,15 +253,13 @@ do_start_jitsi_rootless() {
     echo_info "Jitsi not specified, skiping its containers startup"
     return
   fi
-  # TL;DR: export All envrionment variables included on this template
   if [[ "$DEPLOYMENT_JITSI_IMAGE_VERSION" =~ ^stable-([0-9]+) ]]; then
     build_number="${BASH_REMATCH[1]}"
     jitsi_major_version=$(( build_number / 1000 ))
   else
     jitsi_major_version="10" # default latest version
   fi
-  export DEPLOYMENT_URL DEPLOYMENT_JITSI_NETWORK_NAME DEPLOYMENT_JITSI_JVB_PORT jitsi_major_version
-  evaluate_file_content ${ETC_DIR}/jitsi/jitsi${jitsi_major_version}x.env.template ${DEPLOYMENT_DIR}/jitsi.env
+  evaluate_file_content ${ETC_DIR}/jitsi/jitsi.env.j2 ${DEPLOYMENT_DIR}/jitsi.env
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME}
@@ -271,7 +267,7 @@ do_start_jitsi_rootless() {
   ${DOCKER_CMD} pull ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}
   ${DOCKER_CMD} run \
     -d \
-    -p "${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_CALL_HTTP_PORT}:80" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --memory "${DEPLOYMENT_JITSI_MEM_LIMIT}" \
@@ -318,7 +314,7 @@ do_start_jitsi_rootless() {
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_JITSI_JVB_PORT}:${DEPLOYMENT_JITSI_JVB_PORT}/udp" \
-    -p "${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_JVB_COLIBRI_PORT}:9090" \
     -e VIDEOBRIDGE_MAX_MEMORY="${DEPLOYMENT_JITSI_JVB_XMX}" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -363,7 +359,7 @@ do_start_jitsi_rootless() {
   ${DOCKER_CMD} run \
     -d \
     --mount type=tmpfs,destination=/config \
-    -p "${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:8000" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:8000" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:8443" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
@@ -384,7 +380,7 @@ do_start_jitsi_rootless() {
   ${DOCKER_CMD} run \
     -d \
     --init=true \
-    -p "${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}:80" \
+    -p "127.0.0.1:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT}:80" \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --restart unless-stopped \

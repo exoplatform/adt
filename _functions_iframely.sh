@@ -67,7 +67,7 @@ do_start_iframely() {
   ${DOCKER_CMD} run \
     -d \
     --init=true \
-    -p "${DEPLOYMENT_IFRAMELY_PORT}:8061" \
+    -p "127.0.0.1:${DEPLOYMENT_IFRAMELY_PORT}:8061" \
     -h 'iframely' \
     --health-cmd='wget -qO- http://iframely:8061 &> /dev/null || exit 1' \
     --health-interval=30s \

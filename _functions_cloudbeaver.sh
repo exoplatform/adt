@@ -77,18 +77,15 @@ do_start_cloudbeaver() {
   fi
 
   case ${DEPLOYMENT_DB_TYPE} in
-    DOCKER_MYSQL | DOCKER_MARIADB)
-      evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.mysql.template ${DEPLOYMENT_DIR}/data-sources.json
+    DOCKER_MYSQL | DOCKER_MARIADB | DOCKER_POSTGRES)
+      evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.j2 ${DEPLOYMENT_DIR}/data-sources.json
     ;;
-    DOCKER_POSTGRES)
-      evaluate_file_content ${ETC_DIR}/cloudbeaver/data-sources.json.postgres.template ${DEPLOYMENT_DIR}/data-sources.json
-    ;;  
     *)
       echo_error "Invalid database type \"${DEPLOYMENT_DB_TYPE}\""
       print_usage
       exit 1
     ;;
-  esac  
+  esac
 
   local DB_ADDR=$(${DOCKER_CMD} inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' ${DEPLOYMENT_CONTAINER_NAME})
 

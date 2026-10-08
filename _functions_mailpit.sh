@@ -72,7 +72,7 @@ do_start_mailpit() {
   ${DOCKER_CMD} run \
     -d \
     -p "${DEPLOYMENT_MAILPIT_SMTP_PORT}:1025" \
-    -p "${DEPLOYMENT_MAILPIT_HTTP_PORT}:8025" \
+    -p "127.0.0.1:${DEPLOYMENT_MAILPIT_HTTP_PORT}:8025" \
     -v ${DEPLOYMENT_MAILPIT_CONTAINER_NAME}:/data \
     -e "MP_WEBROOT=/mailpit" \
     -e "MP_MAX_MESSAGES=5000" \

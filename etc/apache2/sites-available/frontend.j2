@@ -1,0 +1,7 @@
+<VirtualHost *:80>
+
+    ServerName  {{ ACCEPTANCE_HOST }}
+
+    Include {{ APACHE_CONF_DIR }}/includes/acceptance-frontend.include
+
+</VirtualHost>
