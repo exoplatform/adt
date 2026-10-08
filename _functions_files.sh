@@ -54,13 +54,16 @@ find_file() {
 # Apply Jinja2 template from $1 file
 #
 j2() {
-  if ! which j2 &>/dev/null; then 
+  # type -P only looks for an executable in the PATH, "which"/"command -v" are not reliable here
+  # as this function has the same name than the binary
+  if ! type -P j2 &>/dev/null; then 
     local tmpfile=$(mktemp)
     env > $tmpfile
     ${DOCKER_CMD} run --env-file $tmpfile --rm -v "$2":"$2" ${DEPLOYMENT_J2CLI_IMAGE}:${DEPLOYMENT_J2CLI_VERSION} $1 $2
     rm $tmpfile
   else 
-    j2 $1 $2
+    # "command" bypasses this function, otherwise it calls itself until the shell crashes (segfault)
+    command j2 "$@"
   fi
 }
 
