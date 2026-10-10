@@ -312,6 +312,12 @@ do_provision_saml_keystore() {
     "${_kc_api}/admin/realms/master/clients/${_clientId}/certificates/saml.signing")
   local _spCertB64=$(echo "${_spCerts}" | jq -r '.certificate')
   local _spKeyB64=$(echo "${_spCerts}" | jq -r '.privateKey')
+  if [ -z "${_spKeyB64}" ] || [ "${_spKeyB64}" = "null" ]; then
+    # Keycloak 26.8+ no longer returns the private key from the certificates endpoint (download is deprecated),
+    # it is still available in the client attributes.
+    _spKeyB64=$(curl -s -H "Authorization: Bearer ${_token}" \
+      "${_kc_api}/admin/realms/master/clients/${_clientId}" | jq -r '.attributes["saml.signing.private.key"]')
+  fi
 
   local _tmpdir="${TMP_DIR}/keycloak-saml-${INSTANCE_KEY}"
   rm -rf "${_tmpdir}"

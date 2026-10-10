@@ -382,7 +382,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
-      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "26.6"
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "26.8"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_MODE" "SAML"
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
