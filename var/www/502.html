@@ -3,664 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="30">
+    <meta name="robots" content="noindex">
+    <meta name="color-scheme" content="dark light">
     <meta name="description" content="eXo Acceptance - 502 - Bad Gateway">
-    <title>502 - Bad Gateway</title>
+    <script>
+        // Same storage and values as the dashboard: theme = "accent:scheme", customColor = "#rrggbb".
+        // Applied before first paint; without a stored choice the system preference decides.
+        (function () {
+            var root = document.documentElement, raw = '', custom = '';
+            try { raw = localStorage.getItem('theme') || ''; custom = localStorage.getItem('customColor') || ''; } catch (e) {}
+            var parts = raw.indexOf(':') > 0 ? raw.split(':') : ['', raw];
+            var accent = parts[0], scheme = parts[1];
+            accent = { twilight: 'default', midnight: 'default', lavender: 'default', gold: 'default', sunset: 'rose', crimson: 'rose' }[accent] || accent;
+            if (['ocean', 'forest', 'rose', 'slate', 'custom'].indexOf(accent) < 0) accent = 'default';
+            if (accent === 'custom') {
+                if (/^#[0-9a-f]{6}$/i.test(custom)) {
+                    root.style.setProperty('--accent-src', custom);
+                } else {
+                    accent = 'default';
+                }
+            }
+            root.setAttribute('data-accent', accent);
+            if (scheme !== 'light' && scheme !== 'dark') {
+                scheme = window.matchMedia && matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+            }
+            root.setAttribute('data-bs-theme', scheme);
+        })();
+    </script>
+    <title>502 - Bad Gateway - eXo Acceptance</title>
     <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48x48.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* Self-contained on purpose: error pages must render when the app, CDNs or style.css are unreachable.
+           Palette, accent themes and derivation mirror style.css and login.php. */
         :root {
-            --gradient-start: #1a1a2e;
-            --gradient-mid: #16213e;
-            --gradient-end: #0f3460;
-            --glass-bg: rgba(255, 255, 255, 0.06);
-            --glass-border: rgba(255, 255, 255, 0.12);
-            --accent: #f472b6;
-            --accent-secondary: #ec4899;
-            --accent-glow: rgba(244, 114, 182, 0.4);
-            --text-primary: #f1f5f9;
-            --text-secondary: #94a3b8;
-            --text-muted: #64748b;
+            --bg-base: #06060e; --card-base: #0c0c1a; --field-base: #1a1a32; --border: rgba(255,255,255,0.12);
+            --text: #f0f0f8; --muted: #9898b8; --shadow: rgba(0,0,0,0.35);
+            --success: #00d68f; --warning: #ffb142; --danger: #ff5252; --info: #54a0ff;
+            --accent-src: #6c5ce7;
+            --glow-pct: 28%;
         }
-
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        body {
-            min-height: 100vh;
-            background: linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-mid) 50%, var(--gradient-end) 100%);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            overflow-x: hidden;
-            position: relative;
-            color: var(--text-primary);
+        :root[data-bs-theme=dark] { color-scheme: dark; }
+        :root[data-bs-theme=light] { color-scheme: light; }
+        :root[data-bs-theme=light] {
+            --bg-base: #f2f2f8; --card-base: #ffffff; --field-base: #f6f6fb; --border: rgba(10,10,20,0.14);
+            --text: #14142a; --muted: #5c5c78; --shadow: rgba(40,40,80,0.12);
+            --warning: #9a4d00; --danger: #b71c1c; --info: #2e588c;
+            --glow-pct: 18%;
         }
-
-        /* Background orbs */
-        .bg-orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            opacity: 0.3;
-            animation: float 20s ease-in-out infinite;
-            pointer-events: none;
-            z-index: 0;
+        :root[data-bs-theme=light][data-accent=default] { --accent-src: #5b4ae0; }
+        :root[data-accent=ocean]  { --accent-src: #0ea5e9; }
+        :root[data-accent=forest] { --accent-src: #10b981; }
+        :root[data-accent=rose]   { --accent-src: #ec4899; }
+        :root[data-accent=slate]  { --accent-src: #64748b; }
+        :root {
+            --accent: oklch(from var(--accent-src) clamp(0.52, l, 0.80) c h);
+            --accent-tint: oklch(from var(--accent) 0.6 c h);
+            --on-accent: oklch(from var(--accent) clamp(0, (0.58 - l) * 1000, 1) 0 h);
+            --hover-tone: oklch(from var(--on-accent) calc(1 - l) 0 h);
+            --accent-text: oklch(from var(--accent) max(l, 0.78) c h);
+            --bg: color-mix(in srgb, var(--accent-tint) 3%, var(--bg-base));
+            --card: color-mix(in srgb, var(--accent-tint) 5%, var(--card-base));
+            --field: color-mix(in srgb, var(--accent-tint) 9%, var(--field-base));
+            --glow: color-mix(in srgb, var(--accent) var(--glow-pct), transparent);
+            --accent-hover: color-mix(in srgb, var(--accent) 88%, var(--hover-tone));
         }
-        .bg-orb--1 {
-            width: 600px; height: 600px;
-            background: radial-gradient(circle, #ec4899, transparent 70%);
-            top: -200px; right: -100px;
-            animation-duration: 25s;
-        }
-        .bg-orb--2 {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, #f97316, transparent 70%);
-            bottom: -150px; left: -100px;
-            animation-duration: 20s; animation-delay: -5s;
-        }
-        .bg-orb--3 {
-            width: 300px; height: 300px;
-            background: radial-gradient(circle, #8b5cf6, transparent 70%);
-            top: 50%; left: 60%;
-            animation-duration: 18s; animation-delay: -10s;
-        }
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            25% { transform: translate(30px, -40px) scale(1.05); }
-            50% { transform: translate(-20px, 20px) scale(0.95); }
-            75% { transform: translate(40px, 30px) scale(1.02); }
-        }
-
-        /* Grid */
-        .grid-bg {
-            position: fixed; inset: 0;
-            background-image:
-                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
-            background-size: 60px 60px;
-            z-index: 0; pointer-events: none;
-        }
-
-        .error-wrapper {
-            position: relative; z-index: 1;
-            width: 100%; max-width: 720px; padding: 20px;
-        }
-
-        .error-container {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid var(--glass-border);
-            border-radius: 24px;
-            padding: 48px 40px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.05) inset;
-            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(40px) scale(0.96); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        /* Language switcher */
-        .lang-switcher {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            margin-bottom: 28px;
-        }
-        .lang-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 14px;
-            border-radius: 100px;
-            border: 1px solid rgba(255,255,255,0.08);
-            background: rgba(255,255,255,0.04);
-            color: var(--text-muted);
-            font-size: 0.8rem;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-decoration: none;
-        }
-        .lang-btn:hover {
-            background: rgba(255,255,255,0.08);
-            color: var(--text-secondary);
-            border-color: rgba(255,255,255,0.15);
-        }
-        .lang-btn.active {
-            background: rgba(244, 114, 182, 0.15);
-            border-color: rgba(244, 114, 182, 0.3);
-            color: var(--accent);
-        }
-        .lang-btn img {
-            width: 18px;
-            height: 14px;
-            border-radius: 2px;
-            object-fit: cover;
-        }
-
-        /* Animated icon */
-        .error-icon {
-            width: 100px; height: 100px;
-            margin: 0 auto 32px;
-            position: relative;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .error-icon__ring {
-            position: absolute; inset: 0;
-            border-radius: 50%;
-            border: 2px solid transparent;
-            border-top-color: var(--accent);
-            animation: spin 3s linear infinite;
-        }
-        .error-icon__ring:nth-child(2) {
-            inset: 8px; border-top-color: #f97316;
-            animation-duration: 2s; animation-direction: reverse;
-        }
-        .error-icon__ring:nth-child(3) {
-            inset: 16px; border-top-color: #8b5cf6;
-            animation-duration: 4s;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        .error-icon i {
-            font-size: 2rem; color: var(--accent);
-            animation: pulse-icon 2s ease-in-out infinite;
-            position: relative; z-index: 1;
-        }
-        @keyframes pulse-icon {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.7; transform: scale(0.9); }
-        }
-
-        /* Broken connection animation */
-        .connection-animation {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin-bottom: 8px;
-        }
-        .connection-dot {
-            width: 10px; height: 10px;
-            border-radius: 50%;
-            background: var(--accent);
-            animation: connectionPulse 1.5s ease-in-out infinite;
-        }
-        .connection-dot:nth-child(2) { animation-delay: 0.2s; }
-        .connection-dot:nth-child(3) { animation-delay: 0.4s; background: #f97316; }
-        .connection-line {
-            width: 30px; height: 2px;
-            background: linear-gradient(90deg, var(--accent), transparent, #ef4444);
-            position: relative;
-            animation: lineBroken 1.5s ease-in-out infinite;
-        }
-        .connection-line::after {
-            content: '✕';
-            position: absolute;
-            left: 50%; top: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 10px;
-            color: #ef4444;
-        }
-        @keyframes connectionPulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(0.8); opacity: 0.5; }
-        }
-        @keyframes lineBroken {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        /* Error code badge */
-        .error-code {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(244, 114, 182, 0.1);
-            border: 1px solid rgba(244, 114, 182, 0.2);
-            border-radius: 100px;
-            padding: 6px 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--accent);
-            letter-spacing: 1.5px;
-            text-transform: uppercase;
-            margin-bottom: 20px;
-        }
-        .error-code__dot {
-            width: 8px; height: 8px;
-            background: #ef4444;
-            border-radius: 50%;
-            animation: blink 1s ease-in-out infinite;
-        }
-        @keyframes blink {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-        }
-
-        .error-title {
-            font-size: 1.75rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 12px;
-            letter-spacing: -0.5px;
-            line-height: 1.3;
-        }
-        .error-subtitle {
-            font-size: 1.05rem;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            margin-bottom: 36px;
-            max-width: 500px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        /* Info cards */
-        .info-cards {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-            margin-bottom: 36px;
-        }
-        .info-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 24px 20px;
-            text-align: left;
-            transition: all 0.3s ease;
-        }
-        .info-card:hover {
-            background: rgba(255,255,255,0.07);
-            border-color: rgba(255,255,255,0.1);
-            transform: translateY(-2px);
-        }
-        .info-card__icon {
-            width: 40px; height: 40px;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1rem;
-            margin-bottom: 14px;
-        }
-        .info-card__icon--warning { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-        .info-card__icon--info { background: rgba(249, 115, 22, 0.15); color: #f97316; }
-        .info-card__title {
-            font-size: 0.9rem; font-weight: 600;
-            color: var(--text-primary); margin-bottom: 6px;
-        }
-        .info-card__text {
-            font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;
-        }
-
-        /* CTA button */
-        .btn-retry {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(135deg, #ec4899, #f472b6);
-            color: white;
-            border: none;
-            border-radius: 14px;
-            padding: 14px 32px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            box-shadow: 0 4px 20px var(--accent-glow);
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-        }
-        .btn-retry::before {
-            content: '';
-            position: absolute; inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15), transparent);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        .btn-retry:hover {
-            transform: translateY(-2px) scale(1.02);
-            box-shadow: 0 8px 30px var(--accent-glow);
-            color: white;
-        }
-        .btn-retry:hover::before { opacity: 1; }
-        .btn-retry:active { transform: translateY(0) scale(0.98); }
-        .btn-retry i { transition: transform 0.4s ease; }
-        .btn-retry:hover i { transform: rotate(180deg); }
-
-        /* Progress bar */
-        .refresh-bar { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.06); }
-        .refresh-bar__label {
-            font-size: 0.78rem; color: var(--text-muted);
-            margin-bottom: 10px;
-            display: flex; align-items: center; justify-content: center; gap: 6px;
-        }
-        .refresh-bar__track {
-            width: 100%; height: 3px;
-            background: rgba(255,255,255,0.06);
-            border-radius: 100px; overflow: hidden;
-        }
-        .refresh-bar__fill {
-            height: 100%; width: 0%;
-            background: linear-gradient(90deg, var(--accent), #f97316);
-            border-radius: 100px;
-            animation: progress 30s linear forwards;
-        }
-        @keyframes progress { from { width: 0%; } to { width: 100%; } }
-
-        /* Contact */
-        .contact-section { margin-top: 24px; padding-top: 20px; }
-        .contact-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            color: var(--text-muted);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: all 0.3s ease;
-            padding: 8px 16px;
-            border-radius: 10px;
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.04);
-        }
-        .contact-link:hover {
-            color: var(--accent);
-            background: rgba(244, 114, 182, 0.06);
-            border-color: rgba(244, 114, 182, 0.15);
-        }
-
-        /* Footer */
-        .footer {
-            position: relative; z-index: 1;
-            text-align: center;
-            margin-top: 32px;
-            color: var(--text-muted);
-            font-size: 0.78rem;
-            opacity: 0.6;
-            animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-        }
-
-        /* Responsive */
-        @media (max-width: 576px) {
-            .error-container { padding: 36px 24px; border-radius: 20px; }
-            .error-title { font-size: 1.4rem; }
-            .error-subtitle { font-size: 0.95rem; }
-            .info-cards { grid-template-columns: 1fr; }
-            .error-icon { width: 80px; height: 80px; margin-bottom: 24px; }
-            .error-icon i { font-size: 1.5rem; }
-            .lang-switcher { flex-wrap: wrap; }
-        }
-
-        @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after {
-                animation-duration: 0.01ms !important;
-                animation-iteration-count: 1 !important;
-                transition-duration: 0.01ms !important;
+        :root[data-bs-theme=light] { --accent-text: oklch(from var(--accent) min(l, 0.5) c h); }
+        @media (prefers-color-scheme: light) {
+            :root:not([data-bs-theme]) {
+                --accent-text: oklch(from var(--accent) min(l, 0.5) c h);
+                --bg-base: #f2f2f8; --card-base: #ffffff; --field-base: #f6f6fb; --border: rgba(10,10,20,0.14);
+                --text: #14142a; --muted: #5c5c78; --shadow: rgba(40,40,80,0.12); --accent-src: #5b4ae0;
+                --warning: #9a4d00; --danger: #b71c1c; --info: #2e588c;
+                --glow-pct: 18%;
             }
-            .refresh-bar__fill { animation: progress 30s linear forwards; }
         }
-
-        /* Screen-reader only */
-        .sr-only {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 16px;
+            background: radial-gradient(900px 500px at 50% -10%, var(--glow), transparent 70%), var(--bg);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: var(--text); -webkit-font-smoothing: antialiased;
         }
-
-        /* Focus-visible ring for keyboard users */
-        :focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 3px;
+        main {
+            width: 100%; max-width: 560px; padding: 32px 32px 28px; border-radius: 20px; text-align: center;
+            background: var(--card); border: 1px solid var(--border); box-shadow: 0 24px 60px var(--shadow);
         }
-        :focus:not(:focus-visible) {
-            outline: none;
+        .tone-info    { --tone: var(--info); }
+        .tone-warning { --tone: var(--warning); }
+        .tone-danger  { --tone: var(--danger); }
+        .lang { display: inline-flex; gap: 4px; padding: 3px; border-radius: 999px; background: var(--field); border: 1px solid var(--border); }
+        .lang button {
+            font: inherit; font-size: .78rem; font-weight: 600; padding: 4px 12px; border: 0; border-radius: 999px; cursor: pointer;
+            color: var(--muted); background: none;
         }
-
-        /* Lang button focus */
-        .lang-btn:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 3px;
-            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15);
+        .lang button:hover { color: var(--text); }
+        .lang button[aria-pressed=true] { color: var(--on-accent); background: var(--accent); }
+        .hero { margin-top: 26px; display: flex; flex-direction: column; align-items: center; }
+        .hero__icon {
+            width: 64px; height: 64px; padding: 16px; border-radius: 18px; color: var(--tone);
+            background: color-mix(in srgb, var(--tone) 14%, transparent); border: 1px solid color-mix(in srgb, var(--tone) 30%, transparent);
         }
-
-        /* Home button focus */
-        .btn-home:focus-visible {
-            outline: 3px solid rgba(255, 255, 255, 0.9);
-            outline-offset: 3px;
+        .code {
+            margin-top: 14px; font-size: 4.5rem; font-weight: 800; line-height: 1; letter-spacing: -0.04em;
+            color: var(--accent-text); font-variant-numeric: tabular-nums;
         }
-
-        /* Contact link focus */
-        .contact-link:focus-visible {
-            outline: 2px solid var(--accent);
-            outline-offset: 3px;
+        .badge {
+            display: inline-flex; align-items: center; gap: 8px; margin-top: 14px; padding: 5px 12px; border-radius: 999px;
+            font-size: .78rem; font-weight: 600; color: var(--tone);
+            background: color-mix(in srgb, var(--tone) 12%, transparent); border: 1px solid color-mix(in srgb, var(--tone) 28%, transparent);
         }
+        .badge::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        h1 { margin-top: 14px; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.25; }
+        .sub { margin: 8px auto 0; max-width: 440px; color: var(--muted); font-size: .92rem; line-height: 1.55; }
+        .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 24px; text-align: left; }
+        .card { padding: 14px 16px; border-radius: 14px; background: var(--field); border: 1px solid var(--border); }
+        .card h2 { display: flex; align-items: center; gap: 8px; font-size: .86rem; font-weight: 600; }
+        .card h2 svg { width: 16px; height: 16px; flex: none; color: var(--accent-text); }
+        .card p { margin-top: 6px; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+        .actions { margin-top: 24px; }
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 22px; border-radius: 10px;
+            font-size: .95rem; font-weight: 600; text-decoration: none; transition: background .15s;
+        }
+        .btn svg { width: 18px; height: 18px; flex: none; }
+        .btn--primary { color: var(--on-accent); background: var(--accent); }
+        .btn--primary:hover { background: var(--accent-hover); }
+        a:focus-visible, button:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
+        .refresh { margin-top: 16px; color: var(--muted); font-size: .82rem; }
+        .refresh b { color: var(--text); font-variant-numeric: tabular-nums; }
+        .bar { height: 4px; margin: 8px auto 0; max-width: 240px; border-radius: 999px; overflow: hidden; background: var(--field); }
+        .bar__fill { height: 100%; width: 100%; border-radius: inherit; background: var(--accent); transform-origin: left; animation: drain 30s linear forwards; }
+        @keyframes drain { to { transform: scaleX(0); } }
+        .help { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-size: .85rem; color: var(--muted); }
+        .help a { display: inline-flex; align-items: center; gap: 6px; color: var(--accent-text); text-decoration: none; font-weight: 500; }
+        .help a:hover, .help a:focus-visible { text-decoration: underline; }
+        .help svg { width: 15px; height: 15px; }
+        footer { font-size: .76rem; color: var(--muted); text-align: center; }
+        .theme-toggle {
+            position: fixed; top: 16px; right: 16px; width: 40px; height: 40px; border-radius: 10px; cursor: pointer;
+            display: grid; place-items: center; color: var(--muted); background: var(--card); border: 1px solid var(--border);
+        }
+        .theme-toggle:hover { color: var(--text); }
+        .theme-toggle svg { width: 20px; height: 20px; }
+        .theme-toggle .sun { display: none; }
+        :root[data-bs-theme=dark] .theme-toggle .sun { display: block; }
+        :root[data-bs-theme=dark] .theme-toggle .moon { display: none; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+        @media (max-width: 520px) {
+            main { padding: 26px 18px 22px; border-radius: 16px; }
+            .cards { grid-template-columns: 1fr; }
+            .code { font-size: 3.6rem; }
+        }
+        @media (prefers-reduced-motion: reduce) { .bar__fill { animation: none; } }
     </style>
 </head>
-<body>
-    <!-- Background effects -->
-    <div class="bg-orb bg-orb--1" aria-hidden="true"></div>
-    <div class="bg-orb bg-orb--2" aria-hidden="true"></div>
-    <div class="bg-orb bg-orb--3" aria-hidden="true"></div>
-    <div class="grid-bg" aria-hidden="true"></div>
-
-    <main id="main-content" aria-labelledby="error-title">
-    <div class="error-wrapper">
-        <div class="error-container text-center">
-
-            <!-- Language Switcher -->
-            <nav aria-label="Language selection">
-            <div class="lang-switcher" role="group" aria-label="Language selection">
-                <button class="lang-btn active" onclick="switchLang('en')" id="lang-btn-en" aria-pressed="true" aria-label="Switch to English">
-                    <img src="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/gb.svg" alt="English" aria-hidden="true">
-                    English
-                </button>
-                <button class="lang-btn" onclick="switchLang('fr')" id="lang-btn-fr" aria-pressed="false" aria-label="Passer en Français">
-                    <img src="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/fr.svg" alt="Français" aria-hidden="true">
-                    Français
-                </button>
-                <button class="lang-btn" onclick="switchLang('de')" id="lang-btn-de" aria-pressed="false" aria-label="Auf Deutsch wechseln">
-                    <img src="https://cdnjs.cloudflare.com/ajax/libs/flag-icons/7.2.3/flags/4x3/de.svg" alt="Deutsch" aria-hidden="true">
-                    Deutsch
-                </button>
-            </div>
-
-            <!-- Animated Icon with Connection Animation -->
-            <div class="error-icon" aria-hidden="true">
-                <div class="error-icon__ring"></div>
-                <div class="error-icon__ring"></div>
-                <div class="error-icon__ring"></div>
-                <i class="fas fa-plug-circle-xmark"></i>
-            </div>
-
-            <!-- Connection Animation -->
-            <div class="connection-animation">
-                <div class="connection-dot"></div>
-                <div class="connection-line"></div>
-                <div class="connection-dot"></div>
-                <div class="connection-line"></div>
-                <div class="connection-dot"></div>
-            </div>
-
-            <!-- Error Badge -->
-            <div class="error-code">
-                <span class="error-code__dot" aria-hidden="true"></span>
-                Error 502
-            </div>
-
-            <!-- Title -->
-            <h1 class="error-title" id="error-title">Bad Gateway</h1>
-            <p class="error-subtitle" id="error-subtitle">
-                The server received an invalid response from the upstream server while trying to fulfill your request.
-            </p>
-
-            <!-- Info Cards -->
-            <div class="info-cards">
-                <div class="info-card">
-                    <div class="info-card__icon info-card__icon--warning">
-                        <i class="fas fa-server"></i>
-                    </div>
-                    <div class="info-card__title" id="card1-title">What happened?</div>
-                    <div class="info-card__text" id="card1-text">Our server couldn't get a valid response from the upstream server. This usually indicates a communication problem between servers.</div>
-                </div>
-                <div class="info-card">
-                    <div class="info-card__icon info-card__icon--info">
-                        <i class="fas fa-rotate"></i>
-                    </div>
-                    <div class="info-card__title" id="card2-title">What can I do?</div>
-                    <div class="info-card__text" id="card2-text">Wait a few moments and refresh the page. This issue is typically temporary and resolves itself quickly.</div>
-                </div>
-            </div>
-
-            <!-- Retry Button -->
-            <a href="/" class="btn-retry" id="btn-retry">
-                <i class="fas fa-sync-alt"></i>
-                <span id="btn-retry-text">Try Again</span>
-            </a>
-
-            <!-- Auto-refresh Progress -->
-            <div class="refresh-bar">
-                <div class="refresh-bar__label">
-                    <i class="fas fa-redo-alt"></i>
-                    <span id="refresh-label">Auto-refreshing in</span> <span id="countdown">30</span>s
-                </div>
-                <div class="refresh-bar__track">
-                    <div class="refresh-bar__fill"></div>
-                </div>
-            </div>
-
-            <!-- Contact -->
-            <div class="contact-section">
-                <a href="mailto:exo-swf@exoplatform.com" class="contact-link" aria-label="Contact support by email at exo-swf@exoplatform.com">
-                    <i class="fas fa-envelope"></i>
-                    <span id="contact-text">Contact Support</span> — exo-swf@exoplatform.com
-                </a>
-            </div>
-        </div>
-
-        <div class="footer">
-            Copyright &copy; 2000&ndash;<span class="js-year">2026</span>. All rights reserved, eXo Platform SAS.
-        </div>
+<body class="tone-danger">
+<button type="button" class="theme-toggle" id="th" aria-label="Switch to light mode" title="Toggle dark / light mode">
+    <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+    <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+</button>
+<main id="main-content" aria-labelledby="error-title">
+    <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="fr" aria-pressed="false">FR</button>
+        <button type="button" data-lang="de" aria-pressed="false">DE</button>
     </div>
-    </main>
+    <div class="hero">
+        <svg class="hero__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 2v6M15 2v6M6 8h12v3a6 6 0 0 1-12 0zM12 17v5"/></svg>
+        <div class="code" aria-hidden="true">502</div>
+        <div class="badge"><span class="sr-only">Error 502: </span><span id="badge">Bad Gateway</span></div>
+        <h1 id="error-title">Bad Gateway</h1>
+        <p class="sub" id="subtitle">The server received an invalid response from the upstream server while trying to fulfill your request.</p>
+    </div>
+    <div class="cards">
+        <section class="card"><h2><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span id="c1t">What happened?</span></h2><p id="c1x">Our server couldn't get a valid response from the upstream server. This usually indicates a communication problem between servers.</p></section>
+        <section class="card"><h2><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2M3 12A9 9 0 0 1 18.5 5.8M18 2v4h-4M6 22v-4h4"/></svg><span id="c2t">What can I do?</span></h2><p id="c2x">Wait a few moments and refresh the page. This issue is typically temporary and resolves itself quickly.</p></section>
+    </div>
+    <div class="actions">
+        <a href="/" class="btn btn--primary" id="btn-primary"><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-15.5 6.2M3 12A9 9 0 0 1 18.5 5.8M18 2v4h-4M6 22v-4h4"/></svg><span id="btn-primary-text">Try Again</span></a>
+        <p class="refresh" id="refresh"><span id="refresh-label">Auto-refreshing in</span> <b id="countdown">30</b>s</p>
+        <div class="bar" aria-hidden="true"><div class="bar__fill"></div></div>
+    </div>
+    <p class="help">
+        <a href="mailto:exo-swf@exoplatform.com" aria-label="Contact support by email at exo-swf@exoplatform.com"><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span id="contact">Contact Support</span> &mdash; exo-swf@exoplatform.com</a>
+    </p>
+</main>
+<footer>Copyright &copy; 2000&ndash;<span id="year">2026</span>. All rights reserved, eXo Platform SAS.</footer>
+<div aria-live="polite" aria-atomic="true" class="sr-only" id="lang-announce"></div>
 
-    <script>document.querySelectorAll('.js-year').forEach(function(el) { el.textContent = new Date().getFullYear(); });</script>
-    <script>
-        // Translation data
-        const translations = {
-            en: {
-                title: "Bad Gateway",
-                subtitle: "The server received an invalid response from the upstream server while trying to fulfill your request.",
-                card1Title: "What happened?",
-                card1Text: "Our server couldn't get a valid response from the upstream server. This usually indicates a communication problem between servers.",
-                card2Title: "What can I do?",
-                card2Text: "Wait a few moments and refresh the page. This issue is typically temporary and resolves itself quickly.",
-                btnRetry: "Try Again",
-                refreshLabel: "Auto-refreshing in",
-                contactText: "Contact Support"
-            },
-            fr: {
-                title: "Passerelle incorrecte",
-                subtitle: "Le serveur a reçu une réponse invalide du serveur en amont lors du traitement de votre demande.",
-                card1Title: "Que s'est-il passé ?",
-                card1Text: "Notre serveur n'a pas pu obtenir une réponse valide du serveur en amont. Cela indique généralement un problème de communication entre les serveurs.",
-                card2Title: "Que puis-je faire ?",
-                card2Text: "Patientez quelques instants et actualisez la page. Ce problème est généralement temporaire et se résout rapidement.",
-                btnRetry: "Réessayer",
-                refreshLabel: "Actualisation automatique dans",
-                contactText: "Contacter le support"
-            },
-            de: {
-                title: "Ungültiges Gateway",
-                subtitle: "Der Server hat eine ungültige Antwort vom vorgelagerten Server erhalten, während er Ihre Anfrage bearbeiten wollte.",
-                card1Title: "Was ist passiert?",
-                card1Text: "Unser Server konnte keine gültige Antwort vom vorgelagerten Server erhalten. Dies deutet normalerweise auf ein Kommunikationsproblem zwischen den Servern hin.",
-                card2Title: "Was kann ich tun?",
-                card2Text: "Warten Sie einen Moment und aktualisieren Sie die Seite. Dieses Problem ist in der Regel vorübergehend und behebt sich schnell von selbst.",
-                btnRetry: "Erneut versuchen",
-                refreshLabel: "Automatische Aktualisierung in",
-                contactText: "Support kontaktieren"
-            }
-        };
-
-        // Detect browser language
-        function detectLanguage() {
-            const browserLang = (navigator.language || navigator.userLanguage || 'en').substring(0, 2).toLowerCase();
-            if (translations[browserLang]) return browserLang;
-            return 'en';
+<script>
+    var RETRY_ENABLED = (function () { var RETRY; RETRY=true; return RETRY; })();
+    var translations = {
+        "en": {
+                "title": "Bad Gateway",
+                "subtitle": "The server received an invalid response from the upstream server while trying to fulfill your request.",
+                "card1Title": "What happened?",
+                "card1Text": "Our server couldn't get a valid response from the upstream server. This usually indicates a communication problem between servers.",
+                "card2Title": "What can I do?",
+                "card2Text": "Wait a few moments and refresh the page. This issue is typically temporary and resolves itself quickly.",
+                "btnRetry": "Try Again",
+                "refreshLabel": "Auto-refreshing in",
+                "contactText": "Contact Support",
+                "badge": "Bad Gateway",
+                "btnHome": "Return Home"
+        },
+        "fr": {
+                "title": "Passerelle incorrecte",
+                "subtitle": "Le serveur a reçu une réponse invalide du serveur en amont lors du traitement de votre demande.",
+                "card1Title": "Que s'est-il passé ?",
+                "card1Text": "Notre serveur n'a pas pu obtenir une réponse valide du serveur en amont. Cela indique généralement un problème de communication entre les serveurs.",
+                "card2Title": "Que puis-je faire ?",
+                "card2Text": "Patientez quelques instants et actualisez la page. Ce problème est généralement temporaire et se résout rapidement.",
+                "btnRetry": "Réessayer",
+                "refreshLabel": "Actualisation automatique dans",
+                "contactText": "Contacter le support",
+                "badge": "Passerelle incorrecte",
+                "btnHome": "Retour à l'accueil"
+        },
+        "de": {
+                "title": "Ungültiges Gateway",
+                "subtitle": "Der Server hat eine ungültige Antwort vom vorgelagerten Server erhalten, während er Ihre Anfrage bearbeiten wollte.",
+                "card1Title": "Was ist passiert?",
+                "card1Text": "Unser Server konnte keine gültige Antwort vom vorgelagerten Server erhalten. Dies deutet normalerweise auf ein Kommunikationsproblem zwischen den Servern hin.",
+                "card2Title": "Was kann ich tun?",
+                "card2Text": "Warten Sie einen Moment und aktualisieren Sie die Seite. Dieses Problem ist in der Regel vorübergehend und behebt sich schnell von selbst.",
+                "btnRetry": "Erneut versuchen",
+                "refreshLabel": "Automatische Aktualisierung in",
+                "contactText": "Support kontaktieren",
+                "badge": "Ungültiges Gateway",
+                "btnHome": "Zur Startseite"
         }
+};
 
-        // Switch language
-        function switchLang(lang) {
-            const t = translations[lang];
-            if (!t) return;
+    function $(id) { return document.getElementById(id); }
+    function setText(id, v) { var el = $(id); if (el) el.textContent = v; }
 
-            document.getElementById('error-title').textContent = t.title;
-            document.getElementById('error-subtitle').textContent = t.subtitle;
-            document.getElementById('card1-title').textContent = t.card1Title;
-            document.getElementById('card1-text').textContent = t.card1Text;
-            document.getElementById('card2-title').textContent = t.card2Title;
-            document.getElementById('card2-text').textContent = t.card2Text;
-            document.getElementById('btn-retry-text').textContent = t.btnRetry;
-            document.getElementById('refresh-label').textContent = t.refreshLabel;
-            document.getElementById('contact-text').textContent = t.contactText;
+    function switchLang(lang) {
+        var t = translations[lang];
+        if (!t) return;
+        setText('badge', t.badge); setText('error-title', t.title); setText('subtitle', t.subtitle);
+        setText('c1t', t.card1Title); setText('c1x', t.card1Text); setText('c2t', t.card2Title); setText('c2x', t.card2Text);
+        setText('contact', t.contactText);
+        setText('btn-primary-text', RETRY_ENABLED ? t.btnRetry : t.btnHome);
+        setText('refresh-label', t.refreshLabel);
+        document.documentElement.lang = lang;
+        document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
+        setText('lang-announce', t.title);
+        try { localStorage.setItem('preferred-lang', lang); } catch (e) {}
+    }
+    document.querySelectorAll('.lang button').forEach(function (b) { b.addEventListener('click', function () { switchLang(b.dataset.lang); }); });
+    (function () {
+        var lang = null;
+        try { lang = localStorage.getItem('preferred-lang'); } catch (e) {}
+        if (!lang || !translations[lang]) lang = ((navigator.language || 'en').substring(0, 2).toLowerCase());
+        switchLang(translations[lang] ? lang : 'en');
+    })();
 
-            document.documentElement.lang = lang;
+    setText('year', new Date().getFullYear());
 
-            // Update active button
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.classList.remove('active');
-                btn.setAttribute('aria-pressed', 'false');
-            });
-            const activeBtn = document.getElementById('lang-btn-' + lang);
-            activeBtn.classList.add('active');
-            activeBtn.setAttribute('aria-pressed', 'true');
-            const announcer = document.getElementById('lang-announce');
-            if (announcer) announcer.textContent = t.title;
+    // Theme toggle, same storage as the dashboard (keeps the chosen accent)
+    $('th').addEventListener('click', function () {
+        var root = document.documentElement, next = root.getAttribute('data-bs-theme') === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-bs-theme', next);
+        var accent = root.getAttribute('data-accent') || 'default';
+        try { localStorage.setItem('theme', accent + ':' + next); } catch (e) {}
+        this.setAttribute('aria-label', next === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    });
+    $('th').setAttribute('aria-label', document.documentElement.getAttribute('data-bs-theme') === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
 
-            // Save preference
-            try { localStorage.setItem('preferred-lang', lang); } catch(e) {}
-        }
-
-        // Initialize language
-        (function() {
-            let lang = null;
-            try { lang = localStorage.getItem('preferred-lang'); } catch(e) {}
-            if (!lang || !translations[lang]) lang = detectLanguage();
-            switchLang(lang);
-        })();
-
-        // Countdown timer
-        let seconds = 30;
-        const countdownEl = document.getElementById('countdown');
-        const interval = setInterval(() => {
+    // Retry pages: count down, then reload
+    if (RETRY_ENABLED && $('countdown')) {
+        var seconds = 30, timer = setInterval(function () {
             seconds--;
-            if (countdownEl) countdownEl.textContent = seconds;
-            if (seconds <= 0) clearInterval(interval);
+            setText('countdown', Math.max(seconds, 0));
+            if (seconds <= 0) { clearInterval(timer); location.reload(); }
         }, 1000);
-    </script>
-
-    <div aria-live="polite" aria-atomic="true" class="sr-only" id="lang-announce"></div>
+    }
+</script>
 </body>
 </html>
