@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex">
+    <meta name="color-scheme" content="light dark">
+    <meta name="description" content="eXo Acceptance instance - 404 - Page Not Found">
+    <title>404 - Page Not Found</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48x48.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png">
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    <style>
+        /* Instance error pages: a different design from the dashboard on purpose. They are shown on the
+           instance's own hostname (no shared storage with the dashboard), so there is no saved theme or
+           accent here: light/dark follows the system. Self-contained: no CDN, no style.css. */
+        :root {
+            --bg: #f5f7fa; --surface: #ffffff; --line: rgba(15,30,55,0.12); --text: #14213a; --muted: #55627a;
+            --brand: #2f5e92; --brand-deep: #1b3a63; --on-brand: #ffffff;
+            --ok: #0a7a52; --warn: #9a4d00; --bad: #b71c1c;
+            --field: #eef2f7;
+            color-scheme: light;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0b1220; --surface: #121b2e; --line: rgba(255,255,255,0.12); --text: #eaf0fb; --muted: #9aa8c2;
+                --brand: #5b8fd0; --brand-deep: #0f2442; --ok: #36d399; --warn: #ffb142; --bad: #ff6b6b;
+                --field: #18233a;
+                color-scheme: dark;
+            }
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            min-height: 100vh; display: grid; grid-template-columns: minmax(300px, 38%) 1fr;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: var(--bg); color: var(--text); -webkit-font-smoothing: antialiased;
+        }
+        .tone-ok { --tone: var(--ok); } .tone-warn { --tone: var(--warn); } .tone-bad { --tone: var(--bad); }
+
+        /* Brand panel */
+        aside {
+            position: relative; overflow: hidden; padding: 40px 36px; display: flex; flex-direction: column; justify-content: space-between; gap: 24px;
+            color: #fff; background: linear-gradient(160deg, #2f5e92 0%, var(--brand-deep) 100%);
+        }
+        aside::after {
+            content: attr(data-code); position: absolute; right: -12px; bottom: -48px; font-size: 14rem; font-weight: 800; line-height: 1;
+            letter-spacing: -0.06em; color: rgba(255,255,255,0.08); pointer-events: none; user-select: none;
+        }
+        .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 1.05rem; position: relative; z-index: 1; }
+        .brand img { width: 40px; height: 40px; }
+        .brand small { display: block; font-weight: 500; font-size: .76rem; opacity: .75; }
+        .inst { position: relative; z-index: 1; }
+        .inst .label { font-size: .72rem; text-transform: uppercase; letter-spacing: .1em; opacity: .7; }
+        .inst .host {
+            margin-top: 6px; font-family: ui-monospace, "JetBrains Mono", "SF Mono", Menlo, monospace; font-size: .95rem;
+            word-break: break-all; padding: 8px 12px; border-radius: 8px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.18);
+        }
+        .lang { position: relative; z-index: 1; display: flex; gap: 6px; }
+        .lang button {
+            font: inherit; font-size: .78rem; font-weight: 600; padding: 5px 12px; border-radius: 6px; cursor: pointer;
+            color: #fff; background: transparent; border: 1px solid rgba(255,255,255,0.3);
+        }
+        .lang button:hover { background: rgba(255,255,255,0.12); }
+        .lang button[aria-pressed=true] { background: #fff; color: var(--brand-deep); border-color: #fff; }
+
+        /* Content */
+        main { display: flex; flex-direction: column; justify-content: center; padding: 48px clamp(24px, 6vw, 80px); max-width: 780px; }
+        .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--tone); }
+        .eyebrow svg { width: 20px; height: 20px; }
+        h1 { margin-top: 10px; font-size: clamp(1.7rem, 3.2vw, 2.4rem); font-weight: 800; letter-spacing: -0.02em; line-height: 1.15; }
+        .sub { margin-top: 12px; max-width: 520px; color: var(--muted); font-size: 1rem; line-height: 1.6; }
+
+        /* Request path */
+        .path { margin-top: 30px; display: flex; align-items: flex-start; }
+        .node { flex: 1; min-width: 0; text-align: center; }
+        .node__dot {
+            width: 34px; height: 34px; margin: 0 auto; border-radius: 50%; display: grid; place-items: center;
+            color: #fff; background: var(--ok);
+        }
+        .node__dot svg { width: 18px; height: 18px; }
+        .node--end .node__dot { background: var(--tone); }
+        .node__name { margin-top: 8px; font-size: .8rem; font-weight: 600; }
+        .node__state { font-size: .74rem; color: var(--muted); }
+        .node--end .node__state { color: var(--tone); font-weight: 600; }
+        .link { flex: 0 0 12%; height: 2px; margin-top: 16px; background: var(--ok); }
+        .link--end { background: repeating-linear-gradient(90deg, var(--tone) 0 6px, transparent 6px 11px); }
+
+        .notes { margin-top: 30px; display: grid; gap: 14px; }
+        .note { display: grid; grid-template-columns: 4px 1fr; gap: 14px; }
+        .note::before { content: ''; border-radius: 4px; background: var(--brand); }
+        .note h2 { font-size: .9rem; font-weight: 700; }
+        .note p { margin-top: 3px; color: var(--muted); font-size: .9rem; line-height: 1.55; }
+
+        .actions { margin-top: 32px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+        .btn {
+            display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 8px; font-size: .95rem; font-weight: 600;
+            text-decoration: none; color: var(--on-brand); background: var(--brand-deep); transition: filter .15s;
+        }
+        @media (prefers-color-scheme: dark) { .btn { background: var(--brand); color: #07101f; } }
+        .btn:hover { filter: brightness(1.12); }
+        .btn svg { width: 18px; height: 18px; flex: none; }
+        a:focus-visible, button:focus-visible { outline: 2px solid var(--brand); outline-offset: 2px; }
+        .refresh { font-size: .84rem; color: var(--muted); }
+        .refresh b { color: var(--text); font-variant-numeric: tabular-nums; }
+        .bar { margin-top: 6px; width: 160px; height: 4px; border-radius: 999px; overflow: hidden; background: var(--field); }
+        .bar__fill { height: 100%; background: var(--brand); transform-origin: left; animation: drain 30s linear forwards; }
+        @keyframes drain { to { transform: scaleX(0); } }
+
+        .foot { margin-top: 40px; padding-top: 16px; border-top: 1px solid var(--line); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px 24px; font-size: .8rem; color: var(--muted); }
+        .foot a { color: var(--brand); font-weight: 600; text-decoration: none; }
+        .foot a:hover { text-decoration: underline; }
+        .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+        @media (max-width: 800px) {
+            body { grid-template-columns: 1fr; }
+            aside { padding: 24px 20px; gap: 16px; }
+            aside::after { font-size: 8rem; bottom: -24px; }
+            main { padding: 28px 20px 36px; }
+        }
+        @media (prefers-reduced-motion: reduce) { .bar__fill { animation: none; } }
+    </style>
+</head>
+<body class="tone-ok">
+<aside data-code="404">
+    <div class="brand"><img src="/images/logo.svg" alt="" width="40" height="40"><span>eXo Acceptance<small id="kind">Instance</small></span></div>
+    <div class="inst"><div class="label" id="host-label">Instance</div><div class="host" id="host">&nbsp;</div></div>
+    <div class="lang" role="group" aria-label="Language">
+        <button type="button" data-lang="en" aria-pressed="true">EN</button>
+        <button type="button" data-lang="fr" aria-pressed="false">FR</button>
+        <button type="button" data-lang="de" aria-pressed="false">DE</button>
+    </div>
+</aside>
+<main id="main-content" aria-labelledby="error-title">
+    <div class="eyebrow"><svg class="hero__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8.5 11h5"/></svg><span><span class="sr-only">Error </span>404 &middot; <span id="badge">Page Not Found</span></span></div>
+    <h1 id="error-title">Page not found on this instance</h1>
+    <p class="sub" id="subtitle">This address doesn't exist on this instance. The link may be outdated, or the feature isn't deployed here.</p>
+
+    <div class="path" role="img" aria-labelledby="path-desc">
+        <span class="sr-only" id="path-desc"></span>
+        <div class="node"><div class="node__dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></div><div class="node__name" id="n1">Your browser</div></div>
+        <div class="link"></div>
+        <div class="node"><div class="node__dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"/></svg></div><div class="node__name" id="n2">Web server</div></div>
+        <div class="link link--end"></div>
+        <div class="node node--end"><div class="node__dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 8v5M12 16.5h.01"/></svg></div><div class="node__name" id="n3">Instance</div><div class="node__state" id="n3s">answered</div></div>
+    </div>
+
+    <div class="notes">
+        <section class="note"><div><h2 id="c1t">What happened?</h2><p id="c1x">The instance answered, but nothing exists at this address. It may have been moved, or belong to another version.</p></div></section>
+        <section class="note"><div><h2 id="c2t">What can I do?</h2><p id="c2x">Check the URL for typos, or open the instance home page and navigate from there.</p></div></section>
+    </div>
+
+    <div class="actions">
+        <a href="/" class="btn btn--primary" id="btn-primary"><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg><span id="btn-primary-text">Open instance home</span></a>
+        
+    </div>
+
+    <div class="foot">
+        <a href="mailto:exo-swf@exoplatform.com" aria-label="Contact support by email at exo-swf@exoplatform.com"><span id="contact">Contact Support</span> &mdash; exo-swf@exoplatform.com</a>
+        <span>&copy; 2000&ndash;<span id="year">2026</span> eXo Platform SAS</span>
+    </div>
+</main>
+<div aria-live="polite" aria-atomic="true" class="sr-only" id="lang-announce"></div>
+<script>
+    var RETRY_ENABLED = (function () { var RETRY; RETRY=false; return RETRY; })();
+    var translations = {
+        "en": {
+                "title": "Page not found on this instance",
+                "subtitle": "This address doesn't exist on this instance. The link may be outdated, or the feature isn't deployed here.",
+                "card1Title": "What happened?",
+                "card1Text": "The instance answered, but nothing exists at this address. It may have been moved, or belong to another version.",
+                "card2Title": "What can I do?",
+                "card2Text": "Check the URL for typos, or open the instance home page and navigate from there.",
+                "btnHome": "Open instance home",
+                "contactText": "Contact Support",
+                "badge": "Page Not Found",
+                "btnRetry": "Try Again",
+                "refreshLabel": "Auto-refreshing in",
+                "kind": "Instance",
+                "nodeBrowser": "Your browser",
+                "nodeServer": "Web server",
+                "nodeInstance": "Instance",
+                "nodeState": "answered"
+        },
+        "fr": {
+                "title": "Page introuvable sur cette instance",
+                "subtitle": "Cette adresse n'existe pas sur cette instance. Le lien est peut-être obsolète, ou la fonctionnalité n'est pas déployée ici.",
+                "card1Title": "Que s'est-il passé ?",
+                "card1Text": "L'instance a répondu, mais rien n'existe à cette adresse. La page a peut-être été déplacée ou appartient à une autre version.",
+                "card2Title": "Que puis-je faire ?",
+                "card2Text": "Vérifiez l'URL, ou ouvrez la page d'accueil de l'instance et naviguez à partir de là.",
+                "btnHome": "Ouvrir l'accueil de l'instance",
+                "contactText": "Contacter le support",
+                "badge": "Page non trouvée",
+                "btnRetry": "Réessayer",
+                "refreshLabel": "Actualisation automatique dans",
+                "kind": "Instance",
+                "nodeBrowser": "Votre navigateur",
+                "nodeServer": "Serveur web",
+                "nodeInstance": "Instance",
+                "nodeState": "répond"
+        },
+        "de": {
+                "title": "Seite auf dieser Instanz nicht gefunden",
+                "subtitle": "Diese Adresse existiert auf dieser Instanz nicht. Der Link ist möglicherweise veraltet oder die Funktion ist hier nicht bereitgestellt.",
+                "card1Title": "Was ist passiert?",
+                "card1Text": "Die Instanz hat geantwortet, aber unter dieser Adresse existiert nichts. Die Seite wurde möglicherweise verschoben oder gehört zu einer anderen Version.",
+                "card2Title": "Was kann ich tun?",
+                "card2Text": "Überprüfen Sie die URL auf Tippfehler oder öffnen Sie die Startseite der Instanz und navigieren Sie von dort aus.",
+                "btnHome": "Instanz-Startseite öffnen",
+                "contactText": "Support kontaktieren",
+                "badge": "Seite nicht gefunden",
+                "btnRetry": "Erneut versuchen",
+                "refreshLabel": "Automatische Aktualisierung in",
+                "kind": "Instanz",
+                "nodeBrowser": "Ihr Browser",
+                "nodeServer": "Webserver",
+                "nodeInstance": "Instanz",
+                "nodeState": "antwortet"
+        }
+};
+
+    function $(id) { return document.getElementById(id); }
+    function setText(id, v) { var el = $(id); if (el) el.textContent = v; }
+
+    function switchLang(lang) {
+        var t = translations[lang];
+        if (!t) return;
+        setText('badge', t.badge); setText('error-title', t.title); setText('subtitle', t.subtitle);
+        setText('c1t', t.card1Title); setText('c1x', t.card1Text); setText('c2t', t.card2Title); setText('c2x', t.card2Text);
+        setText('contact', t.contactText); setText('kind', t.kind); setText('host-label', t.kind);
+        setText('n1', t.nodeBrowser); setText('n2', t.nodeServer); setText('n3', t.nodeInstance); setText('n3s', t.nodeState);
+        setText('path-desc', t.nodeBrowser + ' → ' + t.nodeServer + ' → ' + t.nodeInstance + ': ' + t.nodeState);
+        setText('btn-primary-text', RETRY_ENABLED ? t.btnRetry : t.btnHome);
+        setText('refresh-label', t.refreshLabel);
+        document.documentElement.lang = lang;
+        document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
+        setText('lang-announce', t.title);
+        try { localStorage.setItem('preferred-lang', lang); } catch (e) {}
+    }
+    document.querySelectorAll('.lang button').forEach(function (b) { b.addEventListener('click', function () { switchLang(b.dataset.lang); }); });
+    (function () {
+        var lang = null;
+        try { lang = localStorage.getItem('preferred-lang'); } catch (e) {}
+        if (!lang || !translations[lang]) lang = ((navigator.language || 'en').substring(0, 2).toLowerCase());
+        switchLang(translations[lang] ? lang : 'en');
+    })();
+    setText('host', location.host);
+    setText('year', new Date().getFullYear());
+
+    if (RETRY_ENABLED && $('countdown')) {
+        var seconds = 30, timer = setInterval(function () {
+            seconds--;
+            setText('countdown', Math.max(seconds, 0));
+            if (seconds <= 0) { clearInterval(timer); location.reload(); }
+        }, 1000);
+    }
+</script>
+</body>
+</html>

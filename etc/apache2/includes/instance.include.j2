@@ -5,10 +5,10 @@
     CustomLog       {{ ADT_DATA }}/var/log/apache2/{{ DEPLOYMENT_EXT_HOST }}-access.log combined
 
     # Error pages
-    ErrorDocument 404 /404.html
-    ErrorDocument 500 /500.html
-    ErrorDocument 502 /502.html
-    ErrorDocument 503 /503.html
+    ErrorDocument 404 /errors/instance/404.html
+    ErrorDocument 500 /errors/instance/500.html
+    ErrorDocument 502 /errors/instance/502.html
+    ErrorDocument 503 /errors/instance/503.html
 
     # don't loose time with IP address lookups
     HostnameLookups Off
@@ -131,10 +131,7 @@
 
     ProxyRequests           Off
     ProxyPreserveHost       On
-    ProxyPass               /404.html            !
-    ProxyPass               /500.html            !
-    ProxyPass               /502.html            !
-    ProxyPass               /503.html            !
+    ProxyPass               /errors/instance/    !
     ProxyPass               /robots.txt          !
     ProxyPass               /style.css           !
     ProxyPass               /logs/               !
@@ -144,6 +141,11 @@
     ProxyPass               /.well-known/acme-challenge/  !
     ProxyPass               /icons/              !
     ProxyPass               /images/favicon.ico  !
+    ProxyPass               /images/favicon-16x16.png !
+    ProxyPass               /images/favicon-32x32.png !
+    ProxyPass               /images/favicon-48x48.png !
+    ProxyPass               /images/apple-touch-icon.png !
+    ProxyPass               /images/logo.svg     !
 
 {% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" or DEPLOYMENT_JITSI_ENABLED == "true" %}
     <IfModule mod_proxy_wstunnel.c>

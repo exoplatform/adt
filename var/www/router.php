@@ -23,7 +23,7 @@ if (!empty($config['hostsAllowed'])) {
     if (!in_array($_SERVER['REMOTE_ADDR'], $config['hostsAllowed'])) {
         logAccess(403);
         http_response_code(403);
-        header("Location: /403.html");
+        header("Location: /errors/frontend/403.html");
         exit;
     }
 }
@@ -73,5 +73,5 @@ if (file_exists($_SERVER["DOCUMENT_ROOT"] . $path)) {
 // default behavior
 logAccess(404);
 http_response_code(404);
-header("Location: /404.html");
+header("Location: /errors/frontend/404.html");
 exit;

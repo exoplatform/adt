@@ -1,10 +1,10 @@
-const CACHE = 'adt-v23';
+const CACHE = 'adt-v24';
 
 const PRECACHE = [
   '/manifest.json',
   '/images/icon-192.png', '/images/icon-512.png',
   '/images/icon-maskable-192.png', '/images/icon-maskable-512.png', '/images/logo.svg',
-  '/404.html', '/500.html', '/502.html', '/503.html'
+  '/errors/frontend/403.html', '/errors/frontend/404.html', '/errors/frontend/500.html', '/errors/frontend/502.html', '/errors/frontend/503.html'
 ];
 
 const PAGES = ['/', '/qa', '/sales', '/customers', '/company',
@@ -67,7 +67,7 @@ self.addEventListener('fetch', function(e) {
         return putInCache(e.request, response);
       }).catch(function() {
         return caches.match(e.request).then(function(cached) {
-          return cached || caches.match('/404.html').then(function(fb) {
+          return cached || caches.match('/errors/frontend/404.html').then(function(fb) {
             return fb || new Response('', { status: 408 });
           });
         });
