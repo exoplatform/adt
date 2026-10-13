@@ -115,6 +115,8 @@ chmod 777 ${ADT_DATA}/var/sessions # apache tracks login sessions here
 # Read by Apache on every request (evicted sessions): must exist, even empty
 touch ${ADT_DATA}/var/sessions/revoked.txt
 chmod 666 ${ADT_DATA}/var/sessions/revoked.txt
+mkdir -p ${ADT_DATA}/var/audit
+chmod 777 ${ADT_DATA}/var/audit # apache appends the audit log of dashboard actions here
 # Recopy default data
 # Copy everything in it
 if [[ "${SCRIPT_DIR}" != "${ADT_DATA}" ]]; then

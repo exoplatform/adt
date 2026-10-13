@@ -2091,6 +2091,10 @@ function componentDebugMenu()
                 <i class="fas fa-users me-2 text-info"></i>
                 <a href="/debug-sessions">Debug Sessions</a>
             </li>
+            <li class="list-group-item">
+                <i class="fas fa-clipboard-list me-2 text-secondary"></i>
+                <a href="/debug-audit">Audit log</a>
+            </li>
         </ul>
     </div>
 </div>

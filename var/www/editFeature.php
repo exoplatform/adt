@@ -2,6 +2,8 @@
 require_once(dirname(__FILE__) . '/lib/functions.php');
 
 if( !empty($_POST['key']) ){
+    auditLog('feature.edit', ['key' => basename($_POST['key']),
+        'fields' => array_values(array_filter(['specifications', 'status', 'issue', 'description', 'branch'], fn($f) => !empty($_POST[$f])))]);
     $file_base = getenv('ADT_DATA') . "/conf/features/" . basename($_POST['key']);
     $file_spec = $file_base  . ".spec";
     $file_status = $file_base . ".status";

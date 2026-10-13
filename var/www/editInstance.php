@@ -3,6 +3,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 
 $note_file = getenv('ADT_DATA') . "/conf/instances/" . basename($_POST['key'] ?? '') . ".note";
 
+auditLog('instance.edit', ['key' => basename($_POST['key'] ?? ''), 'note' => !empty($_POST['note']) ? 'set' : 'removed']);
 if( !empty($_POST['note']) ) {
     file_put_contents($note_file, $_POST['note']);
 } else {

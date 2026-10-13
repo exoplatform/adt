@@ -3,6 +3,7 @@ require_once(dirname(__FILE__) . '/lib/functions.php');
 require_once(dirname(__FILE__) . '/lib/functions-ui.php');
 checkCaches();
 if (array_key_exists('refreshInstances', $_GET)) {
+  auditLog('cache.refresh-instances');
   refreshGlobalAcceptanceInstances();
   header("Location: /debug-caches");
   exit;

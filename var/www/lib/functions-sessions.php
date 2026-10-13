@@ -138,6 +138,7 @@ function evictSession($id)
   $rec['evicted_by'] = $_SERVER['REMOTE_USER'] ?? '';
   file_put_contents($file, json_encode($rec), LOCK_EX);
   listSessions(); // regenerates revoked.txt
+  auditLog('session.evict', ['target' => $rec['user'] ?? '', 'session' => substr($id, 0, 8)]);
   return true;
 }
 
@@ -156,6 +157,7 @@ function evictAllSessions($exceptId = null)
     }
   }
   listSessions(); // regenerates revoked.txt
+  auditLog('session.evict-all', ['count' => $count]);
   return $count;
 }
 

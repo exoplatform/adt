@@ -31,4 +31,42 @@ function debug_var_toggle($var) {
   return $content;
 }
 
-?>
+/**
+ * Open a debug page: <html>, head, navigation, page title and the debug menu.
+ * Close it with debugPageEnd(). $autoRefresh is passed to pageHeader().
+ */
+function debugPageBegin($title, $heading, $subtitle, $autoRefresh = false) {
+  echo '<html lang="en"><head>';
+  pageHeader("debug - " . $title, $autoRefresh);
+  echo '</head><body>';
+  pageTracker();
+  pageNavigation();
+  echo '<div id="wrap"><div id="main">';
+  echo '<div class="page-header"><h1 class="page-header__title">' . htmlspecialchars($heading) . '</h1>';
+  echo '<p class="page-header__subtitle">' . htmlspecialchars($subtitle) . '</p></div>';
+  echo '<div class="container-fluid"><div class="row"><div class="col-12">';
+  echo componentDebugMenu();
+}
+
+function debugPageEnd() {
+  echo '</div></div></div></div></div>';
+  pageFooter();
+  echo '</body></html>';
+}
+
+/** Bootstrap alert, message is escaped */
+function debugAlert($type, $message) {
+  return '<div class="alert alert-' . $type . '">' . htmlspecialchars($message) . '</div>';
+}
+
+/** Human readable size ("1.5G") */
+function debugBytes($bytes) {
+  $units = ['B', 'K', 'M', 'G', 'T'];
+  $i = 0;
+  $bytes = (float)$bytes;
+  while ($bytes >= 1024 && $i < count($units) - 1) {
+    $bytes /= 1024;
+    $i++;
+  }
+  return sprintf($i ? '%.1f%s' : '%d%s', $bytes, $units[$i]);
+}
