@@ -192,6 +192,11 @@
                 # by the dashboard); the 403 error page then sends the user back to the login page.
                 # Uses the raw cookie: the decrypted HTTP_SESSION is only set after authorization.
                 Require    expr "!(%{req:Cookie} =~ /(?:^|; ?)adt_session=([^;]+)/ && file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1($1) . '*')"
+                # Users blocked from /debug-sessions (sha1 of the lowercased login, same file). RequireNone, not a negated
+                # expr: a false expr using REMOTE_USER ends as a bare 401 instead of the 403 page
+                <RequireNone>
+                    Require expr "file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1(tolower(%{REMOTE_USER})) . '*'"
+                </RequireNone>
                 AuthLDAPMaxSubGroupDepth 1
             </RequireAll>
     </Location>
@@ -216,6 +221,11 @@
                 # by the dashboard); the 403 error page then sends the user back to the login page.
                 # Uses the raw cookie: the decrypted HTTP_SESSION is only set after authorization.
                 Require    expr "!(%{req:Cookie} =~ /(?:^|; ?)adt_session=([^;]+)/ && file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1($1) . '*')"
+                # Users blocked from /debug-sessions (sha1 of the lowercased login, same file). RequireNone, not a negated
+                # expr: a false expr using REMOTE_USER ends as a bare 401 instead of the 403 page
+                <RequireNone>
+                    Require expr "file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1(tolower(%{REMOTE_USER})) . '*'"
+                </RequireNone>
                 AuthLDAPMaxSubGroupDepth 1
             </RequireAll>
     </LocationMatch>

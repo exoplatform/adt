@@ -103,7 +103,10 @@ function listSessions()
   return $sessions;
 }
 
-/** Rebuild revoked.txt (one session id per line) from the evicted, not yet expired sessions */
+/**
+ * Rebuild revoked.txt from the evicted, not yet expired sessions (sha1 of the session cookie) and the
+ * blocked users (sha1 of the lowercased login), one per line. Apache rejects any request matching one.
+ */
 function rewriteRevokedList(array $sessions)
 {
   $ids = [];
@@ -111,6 +114,9 @@ function rewriteRevokedList(array $sessions)
     if (!empty($s['evicted'])) {
       $ids[] = $s['id'];
     }
+  }
+  foreach (listBlocked() as $b) {
+    $ids[] = $b['hash'];
   }
   $content = $ids ? implode("\n", $ids) . "\n" : '';
   $file = sessionsDir() . '/revoked.txt';
@@ -142,23 +148,111 @@ function evictSession($id)
   return true;
 }
 
-/** Evict every tracked, not yet evicted session except $exceptId. Returns how many were evicted. */
-function evictAllSessions($exceptId = null)
+/** Flag as evicted the tracked sessions accepted by $filter, returns how many. Regenerates revoked.txt. */
+function evictWhere(callable $filter)
 {
   $count = 0;
   foreach (listSessions() as $s) {
-    if (empty($s['evicted']) && $s['id'] !== $exceptId) {
-      $file = sessionsDir() . "/{$s['id']}.json";
+    if (empty($s['evicted']) && $filter($s)) {
       $s['evicted'] = true;
       $s['evicted_at'] = time();
       $s['evicted_by'] = $_SERVER['REMOTE_USER'] ?? '';
-      file_put_contents($file, json_encode($s), LOCK_EX);
+      file_put_contents(sessionsDir() . "/{$s['id']}.json", json_encode($s), LOCK_EX);
       $count++;
     }
   }
   listSessions(); // regenerates revoked.txt
+  return $count;
+}
+
+/** Evict every tracked, not yet evicted session except $exceptId. Returns how many were evicted. */
+function evictAllSessions($exceptId = null)
+{
+  $count = evictWhere(fn($s) => $s['id'] !== $exceptId);
   auditLog('session.evict-all', ['count' => $count]);
   return $count;
+}
+
+/** Evict all the sessions of a user (except $exceptId). Returns how many were evicted. */
+function evictUserSessions($user, $exceptId = null)
+{
+  $count = evictWhere(fn($s) => strcasecmp($s['user'], $user) === 0 && $s['id'] !== $exceptId);
+  auditLog('session.evict-user', ['target' => $user, 'count' => $count]);
+  return $count;
+}
+
+/** Directory of the login blocks (one JSON file per blocked user) */
+function blockedDir()
+{
+  return sessionsDir() . '/blocked';
+}
+
+/** Key of a user in the blocks and in revoked.txt: Apache computes the same with tolower(REMOTE_USER) */
+function userHash($user)
+{
+  return sha1(strtolower($user));
+}
+
+/** Active login blocks, soonest to expire first. Expired ones are removed. */
+function listBlocked()
+{
+  $blocks = [];
+  foreach (glob(blockedDir() . '/*.json') ?: [] as $file) {
+    $rec = json_decode((string)@file_get_contents($file), true);
+    if (!is_array($rec) || ($rec['until'] ?? 0) <= time()) {
+      @unlink($file);
+      continue;
+    }
+    $blocks[] = $rec;
+  }
+  usort($blocks, fn($a, $b) => $a['until'] <=> $b['until']);
+  return $blocks;
+}
+
+/** The active block of a user, or null */
+function userBlock($user)
+{
+  foreach (listBlocked() as $b) {
+    if ($b['hash'] === userHash($user)) {
+      return $b;
+    }
+  }
+  return null;
+}
+
+/** Block the login of a user for $minutes and evict their sessions (except $exceptId) */
+function blockUser($user, $minutes, $exceptId = null)
+{
+  $dir = blockedDir();
+  if (!is_dir($dir)) {
+    @mkdir($dir, 0777, true);
+  }
+  $rec = [
+    'hash' => userHash($user),
+    'user' => $user,
+    'until' => time() + max(1, (int)$minutes) * 60,
+    'by' => $_SERVER['REMOTE_USER'] ?? '',
+    'at' => time(),
+  ];
+  file_put_contents("$dir/{$rec['hash']}.json", json_encode($rec), LOCK_EX);
+  evictWhere(fn($s) => strcasecmp($s['user'], $user) === 0 && $s['id'] !== $exceptId); // also rewrites revoked.txt
+  auditLog('user.block', ['target' => $user, 'minutes' => (int)$minutes]);
+}
+
+function unblockUser($hash)
+{
+  if (!preg_match('/^[0-9a-f]{40}$/', $hash)) {
+    return false;
+  }
+  $file = blockedDir() . "/$hash.json";
+  $rec = is_file($file) ? json_decode((string)file_get_contents($file), true) : null;
+  if (!is_array($rec)) {
+    return false;
+  }
+  @unlink($file);
+  listSessions(); // regenerates revoked.txt
+  auditLog('user.unblock', ['target' => $rec['user'] ?? '']);
+  return true;
 }
 
 /** "2h 05m" style duration */
