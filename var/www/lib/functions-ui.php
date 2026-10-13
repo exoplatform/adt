@@ -2095,6 +2095,10 @@ function componentDebugMenu()
                 <i class="fas fa-clipboard-list me-2 text-secondary"></i>
                 <a href="/debug-audit">Audit log</a>
             </li>
+            <li class="list-group-item">
+                <i class="fas fa-heartbeat me-2 text-danger"></i>
+                <a href="/debug-health">Health (host, disk, Docker)</a>
+            </li>
         </ul>
     </div>
 </div>
