@@ -2103,6 +2103,10 @@ function componentDebugMenu()
                 <i class="fas fa-file-alt me-2 text-primary"></i>
                 <a href="/debug-logs">Apache logs</a>
             </li>
+            <li class="list-group-item">
+                <i class="fas fa-cubes me-2 text-success"></i>
+                <a href="/debug-instances">Instances</a>
+            </li>
         </ul>
     </div>
 </div>
