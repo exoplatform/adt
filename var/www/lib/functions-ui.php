@@ -2099,6 +2099,10 @@ function componentDebugMenu()
                 <i class="fas fa-heartbeat me-2 text-danger"></i>
                 <a href="/debug-health">Health (host, disk, Docker)</a>
             </li>
+            <li class="list-group-item">
+                <i class="fas fa-file-alt me-2 text-primary"></i>
+                <a href="/debug-logs">Apache logs</a>
+            </li>
         </ul>
     </div>
 </div>
