@@ -2107,6 +2107,10 @@ function componentDebugMenu()
                 <i class="fas fa-cubes me-2 text-success"></i>
                 <a href="/debug-instances">Instances</a>
             </li>
+            <li class="list-group-item">
+                <i class="fas fa-file-code me-2 text-info"></i>
+                <a href="/debug-config">Config and environment</a>
+            </li>
         </ul>
     </div>
 </div>
