@@ -20,7 +20,7 @@ class PHPGit_Configuration
      * Holds the actual configuration
      * @var array
      */
-    protected $configuration = array();
+    protected $configuration = [];
 
     /**
      * Holds the Git repository instance.

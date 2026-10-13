@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 ?>
 <html lang="en">
@@ -224,25 +224,19 @@ checkCaches();
                     $translations = getTranslationBranches($projects);
 
                     // Filter accepted features
-                    $acceptedFeatures = array_filter($features, function($feature, $name) {
-                        return in_array($name, getAcceptanceBranches()) && !isTranslation($name);
-                    }, ARRAY_FILTER_USE_BOTH);
+                    $acceptedFeatures = array_filter($features, fn($feature, $name) => in_array($name, getAcceptanceBranches()) && !isTranslation($name), ARRAY_FILTER_USE_BOTH);
                     
                     // Filter other features (not accepted, not backup)
-                    $otherFeatures = array_filter($features, function($feature, $name) {
-                        return !in_array($name, getAcceptanceBranches()) && !isBackup($name);
-                    }, ARRAY_FILTER_USE_BOTH);
+                    $otherFeatures = array_filter($features, fn($feature, $name) => !in_array($name, getAcceptanceBranches()) && !isBackup($name), ARRAY_FILTER_USE_BOTH);
 
                     // Data attributes used by the client-side filters
                     // (search matches project names only)
-                    $projectSearchKey = function($project) use ($projectsNames) {
-                        return strtolower($project . ' ' . ($projectsNames[$project] ?? ''));
-                    };
+                    $projectSearchKey = fn($project) => strtolower($project . ' ' . ($projectsNames[$project] ?? ''));
                     // data-projects lists [search key, behind commits, ahead commits] per project
                     $featureFilterAttrs = function($feature, $FBProjects) use ($projectSearchKey) {
-                        $projects = array();
+                        $projects = [];
                         foreach ($FBProjects as $project => $data) {
-                            $projects[] = array($projectSearchKey($project), (int) $data['behind_commits'], (int) $data['ahead_commits']);
+                            $projects[] = [$projectSearchKey($project), (int) $data['behind_commits'], (int) $data['ahead_commits']];
                         }
                         return 'data-feature="' . htmlspecialchars($feature) . '" data-projects="' . htmlspecialchars(json_encode($projects)) . '"';
                     };
@@ -262,7 +256,7 @@ checkCaches();
                         </div>
                         <select id="featureName" class="form-select form-select-sm w-auto" aria-label="Feature">
                             <option value="">All features</option>
-                            <?php foreach (array('Deployed' => $acceptedFeatures, 'Other' => $otherFeatures) as $group => $groupFeatures): ?>
+                            <?php foreach (['Deployed' => $acceptedFeatures, 'Other' => $otherFeatures] as $group => $groupFeatures): ?>
                             <?php if (!empty($groupFeatures)): ?>
                             <optgroup label="<?= $group ?>">
                                 <?php foreach (array_keys($groupFeatures) as $feature): ?>
@@ -375,7 +369,7 @@ checkCaches();
                                     </thead>
                                     <tbody>
                                         <?php foreach ($projects as $project):
-                                            $inFeatures = array_filter($acceptedFeatures, function ($FBProjects) use ($project) { return array_key_exists($project, $FBProjects); });
+                                            $inFeatures = array_filter($acceptedFeatures, fn($FBProjects) => array_key_exists($project, $FBProjects));
                                             if (empty($inFeatures)) continue; ?>
                                         <tr>
                                             <th scope="row" class="features-matrix__project"><i class="fas fa-cube me-1" aria-hidden="true"></i><?= htmlspecialchars($projectsNames[$project]) ?></th>
@@ -439,9 +433,7 @@ checkCaches();
                                                 <span class="badge bg-info me-2"><?= $projectCount ?> project(s)</span>
                                                 <?php if ($projectCount > 0): ?>
                                                     <small class="text-muted">
-                                                        <?= htmlspecialchars(implode(', ', array_map(function($p) use ($projectsNames) {
-                                                            return $projectsNames[$p];
-                                                        }, array_keys($firstProjects)))) ?>
+                                                        <?= htmlspecialchars(implode(', ', array_map(fn($p) => $projectsNames[$p], array_keys($firstProjects)))) ?>
                                                         <?= $projectCount > 3 ? '...' : '' ?>
                                                     </small>
                                                 <?php endif; ?>

@@ -1,5 +1,5 @@
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions.php');
 
 if( !empty($_POST['key']) ){
     auditLog('feature.edit', ['key' => basename($_POST['key']),
@@ -69,7 +69,7 @@ clearCaches();
 $redirect_url = sanitizeLocalRedirect($_POST['from'] ?? null);
 
 // Add cache clearing parameter if not already present
-if (strpos($redirect_url, '?') === false) {
+if (!str_contains($redirect_url, '?')) {
     $redirect_url .= '?clearCaches=true';
 } else {
     $redirect_url .= '&clearCaches=true';

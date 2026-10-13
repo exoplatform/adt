@@ -11,34 +11,34 @@
  */
 
 /** Directory holding the tracked sessions and revoked.txt */
-function sessionsDir()
+function sessionsDir(): string
 {
   return getenv('ADT_DATA') . '/var/sessions';
 }
 
 /** Raw (still encrypted) value of the session cookie, as Apache sees it, or '' */
-function sessionCookieValue()
+function sessionCookieValue(): string
 {
   return preg_match('/(?:^|; ?)adt_session=([^;]+)/', $_SERVER['HTTP_COOKIE'] ?? '', $m) ? $m[1] : '';
 }
 
 /** Identifier of the current session (what Apache hashes in its revocation check), or null */
-function currentSessionId()
+function currentSessionId(): ?string
 {
   $raw = sessionCookieValue();
   return $raw === '' || ($_SERVER['HTTP_SESSION'] ?? '') === '' ? null : sha1($raw);
 }
 
 /** Whether the current request carries an evicted session cookie */
-function isSessionRevoked()
+function isSessionRevoked(): bool
 {
   $raw = sessionCookieValue();
   $revoked = $raw === '' ? false : @file_get_contents(sessionsDir() . '/revoked.txt');
-  return $revoked !== false && strpos($revoked, sha1($raw)) !== false;
+  return $revoked !== false && str_contains($revoked, sha1($raw));
 }
 
 /** Anti-CSRF token for the eviction form, derived from the (secret) current session */
-function sessionsCsrfToken()
+function sessionsCsrfToken(): string
 {
   return hash_hmac('sha256', 'evict-session', $_SERVER['HTTP_SESSION'] ?? '');
 }
@@ -47,7 +47,7 @@ function sessionsCsrfToken()
  * Record the current request's session (throttled: at most one write every 30s per session).
  * Never fails the page if the directory is not writable.
  */
-function trackSession()
+function trackSession(): void
 {
   $id = currentSessionId();
   $dir = sessionsDir();
@@ -85,7 +85,7 @@ function trackSession()
  * Tracked sessions (still valid ones, newest activity first). Expired ones are pruned.
  * Evicted ones are kept, flagged, until their cookie would have expired anyway.
  */
-function listSessions()
+function listSessions(): array
 {
   $dir = sessionsDir();
   $sessions = [];
@@ -107,7 +107,7 @@ function listSessions()
  * Rebuild revoked.txt from the evicted, not yet expired sessions (sha1 of the session cookie) and the
  * blocked users (sha1 of the lowercased login), one per line. Apache rejects any request matching one.
  */
-function rewriteRevokedList(array $sessions)
+function rewriteRevokedList(array $sessions): void
 {
   $ids = [];
   foreach ($sessions as $s) {
@@ -126,7 +126,7 @@ function rewriteRevokedList(array $sessions)
 }
 
 /** Evict a tracked session. Returns true if it was found. */
-function evictSession($id)
+function evictSession(string $id): bool
 {
   if (!preg_match('/^[0-9a-f]{40}$/', $id)) {
     return false;
@@ -149,7 +149,7 @@ function evictSession($id)
 }
 
 /** Flag as evicted the tracked sessions accepted by $filter, returns how many. Regenerates revoked.txt. */
-function evictWhere(callable $filter)
+function evictWhere(callable $filter): int
 {
   $count = 0;
   foreach (listSessions() as $s) {
@@ -166,7 +166,7 @@ function evictWhere(callable $filter)
 }
 
 /** Evict every tracked, not yet evicted session except $exceptId. Returns how many were evicted. */
-function evictAllSessions($exceptId = null)
+function evictAllSessions(?string $exceptId = null): int
 {
   $count = evictWhere(fn($s) => $s['id'] !== $exceptId);
   auditLog('session.evict-all', ['count' => $count]);
@@ -174,7 +174,7 @@ function evictAllSessions($exceptId = null)
 }
 
 /** Evict all the sessions of a user (except $exceptId). Returns how many were evicted. */
-function evictUserSessions($user, $exceptId = null)
+function evictUserSessions(string $user, ?string $exceptId = null): int
 {
   $count = evictWhere(fn($s) => strcasecmp($s['user'], $user) === 0 && $s['id'] !== $exceptId);
   auditLog('session.evict-user', ['target' => $user, 'count' => $count]);
@@ -182,19 +182,19 @@ function evictUserSessions($user, $exceptId = null)
 }
 
 /** Directory of the login blocks (one JSON file per blocked user) */
-function blockedDir()
+function blockedDir(): string
 {
   return sessionsDir() . '/blocked';
 }
 
 /** Key of a user in the blocks and in revoked.txt: Apache computes the same with tolower(REMOTE_USER) */
-function userHash($user)
+function userHash(string $user): string
 {
   return sha1(strtolower($user));
 }
 
 /** Active login blocks, soonest to expire first. Expired ones are removed. */
-function listBlocked()
+function listBlocked(): array
 {
   $blocks = [];
   foreach (glob(blockedDir() . '/*.json') ?: [] as $file) {
@@ -210,7 +210,7 @@ function listBlocked()
 }
 
 /** The active block of a user, or null */
-function userBlock($user)
+function userBlock(string $user): ?array
 {
   foreach (listBlocked() as $b) {
     if ($b['hash'] === userHash($user)) {
@@ -221,7 +221,7 @@ function userBlock($user)
 }
 
 /** Block the login of a user for $minutes and evict their sessions (except $exceptId) */
-function blockUser($user, $minutes, $exceptId = null)
+function blockUser(string $user, int $minutes, ?string $exceptId = null): void
 {
   $dir = blockedDir();
   if (!is_dir($dir)) {
@@ -239,7 +239,7 @@ function blockUser($user, $minutes, $exceptId = null)
   auditLog('user.block', ['target' => $user, 'minutes' => (int)$minutes]);
 }
 
-function unblockUser($hash)
+function unblockUser(string $hash): bool
 {
   if (!preg_match('/^[0-9a-f]{40}$/', $hash)) {
     return false;
@@ -256,7 +256,7 @@ function unblockUser($hash)
 }
 
 /** "2h 05m" style duration */
-function durationLabel($seconds)
+function durationLabel(int|float $seconds): string
 {
   $seconds = max(0, (int)$seconds);
   $d = intdiv($seconds, 86400);

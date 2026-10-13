@@ -4,18 +4,18 @@
 //   instead of showing "Access Forbidden".
 // - A user blocked from /debug-sessions gets a 403 once logged in: say so, and retry the request as soon as
 //   the block has expired (its entry is then dropped from revoked.txt).
-require_once(dirname(__FILE__) . '/../../lib/functions-sessions.php');
+require_once(__DIR__ . '/../../lib/functions-sessions.php');
 
 if (isSessionRevoked()) {
   header('Location: /login?next=' . rawurlencode($_SERVER['REQUEST_URI'] ?? '/'));
   exit;
 }
 
-$html = file_get_contents(dirname(__FILE__) . '/403.html');
+$html = file_get_contents(__DIR__ . '/403.html');
 $user = $_SERVER['REMOTE_USER'] ?? $_SERVER['REDIRECT_REMOTE_USER'] ?? '';
 if ($user !== '') {
   $block = userBlock($user); // drops the expired blocks
-  $revoked = static fn() => strpos((string)@file_get_contents(sessionsDir() . '/revoked.txt'), userHash($user)) !== false;
+  $revoked = static fn() => str_contains((string)@file_get_contents(sessionsDir() . '/revoked.txt'), userHash($user));
   if ($block) {
     $notice = '<p class="sub" role="alert">Your access has been blocked by an administrator until '
       . htmlspecialchars(gmdate('H:i', $block['until'])) . ' UTC.</p>';

@@ -1,12 +1,12 @@
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 
 $data = getenv('ADT_DATA') ?: '/';
 
 /** Run a command with a short timeout, returns its output lines or null when unavailable */
-function healthRun($cmd)
+function healthRun(string $cmd): ?array
 {
   $disabled = array_map('trim', explode(',', (string)ini_get('disable_functions')));
   if (!function_exists('shell_exec') || in_array('shell_exec', $disabled, true)) {
@@ -16,12 +16,12 @@ function healthRun($cmd)
   return $out === null || trim($out) === '' ? null : explode("\n", trim($out));
 }
 
-function healthRow($label, $value)
+function healthRow(string $label, string $value): string
 {
   return '<tr><th scope="row" class="w-25">' . htmlspecialchars($label) . '</th><td>' . $value . '</td></tr>';
 }
 
-function healthMeter($used, $total)
+function healthMeter(int|float $used, int|float $total): string
 {
   $pct = $total > 0 ? round(100 * $used / $total) : 0;
   $class = $pct >= 90 ? 'bg-danger' : ($pct >= 75 ? 'bg-warning' : 'bg-success');

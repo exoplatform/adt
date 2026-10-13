@@ -1,6 +1,6 @@
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 
 $logDir = getenv('ADT_DATA') . '/var/log/apache2';
@@ -24,7 +24,7 @@ $status = (string)($_GET['status'] ?? '');
 $refresh = isset($_GET['refresh']);
 
 /** Last lines of a file (reads at most the last 2MB), oldest first */
-function logTail($path, $maxBytes = 2097152)
+function logTail(string $path, int $maxBytes = 2097152): array
 {
   $size = filesize($path);
   $h = fopen($path, 'rb');
@@ -58,7 +58,7 @@ if ($file !== '') {
   }
   $out = array_slice($out, -$lines);
 }
-$isError = substr($file, -10) === '-error.log';
+$isError = str_ends_with($file, '-error.log');
 
 debugPageBegin('logs', 'Debug Apache logs', 'Tail of the frontend and instance Apache logs', false);
 ?>

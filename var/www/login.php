@@ -40,10 +40,10 @@ header('X-Frame-Options: DENY');
 // Already signed in: no need to show the form (Apache exposes the decrypted session as HTTP_SESSION)
 // Keys are prefixed with the AuthName ("<realm>-user"); only the user name is looked at here.
 // An evicted session (see /debug-sessions) is not signed in: show the form instead of looping back.
-require_once(dirname(__FILE__) . '/lib/functions-sessions.php');
+require_once(__DIR__ . '/lib/functions-sessions.php');
 parse_str(isSessionRevoked() ? '' : ($_SERVER['HTTP_SESSION'] ?? ''), $session);
 foreach ($session as $key => $value) {
-    if (substr($key, -5) === '-user' && $value !== '') {
+    if (str_ends_with($key, '-user') && $value !== '') {
         header('Location: ' . ($next ?? '/'));
         exit;
     }

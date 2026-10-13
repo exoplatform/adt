@@ -1,8 +1,8 @@
 <?php
-require_once(dirname(__FILE__) . '/PHPGit/Repository.php');
-require_once(dirname(__FILE__) . '/functions-debug.php');
-require_once(dirname(__FILE__) . '/functions-sessions.php');
-require_once(dirname(__FILE__) . '/functions-audit.php');
+require_once(__DIR__ . '/PHPGit/Repository.php');
+require_once(__DIR__ . '/functions-debug.php');
+require_once(__DIR__ . '/functions-sessions.php');
+require_once(__DIR__ . '/functions-audit.php');
 
 date_default_timezone_set('UTC');
 
@@ -30,7 +30,7 @@ function currentPageURL()
 function getGitDirectoriesList($directory)
 {
   // create an array to hold directory list
-  $results = array();
+  $results = [];
   // create a handler for the directory
   $handler = opendir($directory);
   // open directory and walk through the filenames
@@ -49,17 +49,17 @@ function getGitDirectoriesList($directory)
 function isFeature($branch)
 {
   // All feature branches must be on the origin (see bug: SWF-2520)
-  return strpos($branch, "origin/feature/") !== false;
+  return str_contains($branch, "origin/feature/");
 }
 
 function isTranslation($branch)
 {
-  return strpos($branch, "translation") !== false && strpos($branch, "origin/integration") !== false;
+  return str_contains($branch, "translation") && str_contains($branch, "origin/integration");
 }
 
 function isBackup($branch)
 {
-  return strpos($branch, "backup") !== false || strpos($branch, "tmp") !== false || strpos($branch, "temp") !== false;
+  return str_contains($branch, "backup") || str_contains($branch, "tmp") || str_contains($branch, "temp");
 }
 
 function cmpPLFBranches($a, $b)
@@ -120,25 +120,25 @@ function append_data($url, $data)
  */
 function fetchUrlsParallel($urls, $timeout = 5)
 {
-  $results = array();
+  $results = [];
   if (!function_exists('curl_multi_init')) {
-    $context = stream_context_create(array('http' => array('timeout' => $timeout)));
+    $context = stream_context_create(['http' => ['timeout' => $timeout]]);
     foreach ($urls as $url) {
       $results[$url] = @file_get_contents($url, false, $context);
     }
     return $results;
   }
   $multi = curl_multi_init();
-  $handles = array();
+  $handles = [];
   foreach ($urls as $url) {
     $handle = curl_init($url);
-    curl_setopt_array($handle, array(
+    curl_setopt_array($handle, [
       CURLOPT_RETURNTRANSFER => true,
       CURLOPT_FOLLOWLOCATION => true,
       CURLOPT_FAILONERROR    => true,
       CURLOPT_CONNECTTIMEOUT => $timeout,
       CURLOPT_TIMEOUT        => $timeout,
-    ));
+    ]);
     curl_multi_add_handle($multi, $handle);
     $handles[$url] = $handle;
   }
@@ -190,7 +190,7 @@ function runAfterResponse($lockKey, $callback, $ttl = 30)
 function getDirectoryList($directory)
 {
   // create an array to hold directory list
-  $results = array();
+  $results = [];
   // create a handler for the directory
   $handler = opendir($directory) or die($directory . " doesn't exist");
   // open directory and walk through the filenames
@@ -209,7 +209,7 @@ function getDirectoryList($directory)
 function processIsRunning($pid)
 {
   // create an array to hold the result
-  $output = array();
+  $output = [];
   // execute a ps for the given pid
   exec("ps -p " . $pid, $output);
   // The process is running if there is a row N#1 (N#0 is the header)
@@ -230,7 +230,7 @@ function getRepositories()
   }
 
   if (empty($features)) {
-    $repositories = array(
+    $repositories = [
         "maven-depmgt-pom" => "DEPMGT POM",
         "gatein-wci" => "GateIn WCI",
         "kernel" => "Kernel",
@@ -292,7 +292,7 @@ function getRepositories()
         "anti-bruteforce" => "Anti Brute Force",
         "anti-malware" => "Anti Malware",
         "data-upgrade" => "Data upgrade",
-        "platform-private-distributions" => "PLF Private Dist");
+        "platform-private-distributions" => "PLF Private Dist"];
     if (extension_loaded('apc') && function_exists('apc_store')) {
       apc_store('repositories', $repositories);
     } elseif (extension_loaded('apcu') && function_exists('apcu_store')) {
@@ -307,7 +307,7 @@ function getRepositories()
 function getModuleCiPrefix($item)
 {
     // Add here only modules having prefix
-    $modules = array(
+    $modules = [
         "agenda" => "addon-",
         "agenda-connectors" => "addon-",
         "caldav-integration" => "addon-",
@@ -364,7 +364,7 @@ function getModuleCiPrefix($item)
         "task" => "meeds-addon-",
         "web-conferencing" => "addon-",
         "microservices" => "addon-",
-        "multifactor-authentication" => "addon-");
+        "multifactor-authentication" => "addon-"];
   return array_key_exists($item, $modules) ? $modules[$item] : "";
 }
 
@@ -412,7 +412,7 @@ function getFeatureBranches($projects)
   $features = cacheGet('features');
 
   if (empty($features)) {
-    $features = array();
+    $features = [];
     foreach ($projects as $project) {
       $repoObject = new PHPGit_Repository(getenv('ADT_DATA') . "/sources/" . $project . ".git");
       $branches = array_filter(preg_replace('/.*\/feature\//', '',
@@ -451,7 +451,7 @@ function getFeatureBranches($projects)
 function getTranslationBranches($projects)
 {
   $features = cacheGet('translation');
-  $projectsToIgnore = array(
+  $projectsToIgnore = [
       "agenda" => true,
       "agenda-connectors" => true,
       "caldav-integration" => true,
@@ -504,10 +504,10 @@ function getTranslationBranches($projects)
       "web-conferencing" => true,
       "external-visio-connector" => true,
       "multifactor-authentication" => true,
-      "microservices" => true); // Addons with different version than product is ignored, See ACC-144
+      "microservices" => true]; // Addons with different version than product is ignored, See ACC-144
 
   if (empty($features)) {
-    $features = array();
+    $features = [];
     foreach ($projects as $project) {
 
       if(array_key_exists($project, $projectsToIgnore)) {
@@ -529,7 +529,7 @@ function getTranslationBranches($projects)
         $baseBranchToCompareWith = getGitBaseBranchToCompareWith($github_org, $github_repo, 'integration/'.$branch);
         if (preg_match("/git@github\.com:(.*)\/(.*)\.git/", $fetch_url, $matches)) {
           $github_repo = $matches[2];
-          if (strpos($baseBranchToCompareWith, 'stable') !== false) {
+          if (str_contains($baseBranchToCompareWith, 'stable')) {
             $github_org = 'exoplatform';
             $baseRemotenameToCompareWith = 'blessed';
           } else {
@@ -571,13 +571,13 @@ function getLocalAcceptanceInstances()
   }
 
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
-    $instances = array();
+    $instances = [];
     $vhosts = getDirectoryList(getenv('ADT_DATA') . "/conf/adt/");
     $now = new DateTime();
     foreach ($vhosts as $vhost) {
       // Parse deployment descriptor
       $descriptor_array = parse_ini_file(getenv('ADT_DATA') . "/conf/adt/" . $vhost);
-      $matches = array();
+      $matches = [];
       if (preg_match("/([^\-]*)\-(.*)\-SNAPSHOT/", $descriptor_array['PRODUCT_VERSION'], $matches)) {
         $descriptor_array['BASE_VERSION'] = $matches[1];
         $descriptor_array['BRANCH_NAME'] = $matches[2];
@@ -663,14 +663,14 @@ function getLocalAcceptanceInstances()
 
       // Deployment Labels
       if (empty($descriptor_array['DEPLOYMENT_LABELS'])) {
-        $descriptor_array['DEPLOYMENT_LABELS']=array();
+        $descriptor_array['DEPLOYMENT_LABELS']=[];
       } else {
         $descriptor_array['DEPLOYMENT_LABELS']=explode(',',$descriptor_array['DEPLOYMENT_LABELS']);
       }
 
       // Deployment Addons
       if (empty($descriptor_array['DEPLOYMENT_ADDONS'])) {
-        $descriptor_array['DEPLOYMENT_ADDONS']=array();
+        $descriptor_array['DEPLOYMENT_ADDONS']=[];
       } else {
         $descriptor_array['DEPLOYMENT_ADDONS']=explode(',',$descriptor_array['DEPLOYMENT_ADDONS']);
       }
@@ -923,13 +923,13 @@ function getLocalAcceptanceInstances()
  */
 function fetchGlobalAcceptanceInstances(&$complete)
 {
-  $urls = array();
+  $urls = [];
   foreach (explode(",", getenv('ACCEPTANCE_SERVERS')) as $server) {
     if (trim($server) !== '') {
       $urls[] = trim($server) . '/rest/local-instances.php';
     }
   }
-  $instances = array();
+  $instances = [];
   $complete = true;
   foreach (fetchUrlsParallel($urls) as $body) {
     $values = is_string($body) ? json_decode($body) : null;
@@ -999,13 +999,13 @@ function artifactAgeFromVersion($versions)
       && checkdate((int) $matches[2], (int) $matches[3], (int) $matches[1])) {
     $built_day = new DateTime($matches[1] . '-' . $matches[2] . '-' . $matches[3]);
     $days = (int) $built_day->diff(new DateTime('today'))->format('%a');
-    return array(
+    return [
         'ARTIFACT_AGE_STRING' => $days === 0 ? 'today' : $days . ' day(s) ago',
         'ARTIFACT_AGE_CLASS' => $days > 5 ? "red" : ($days > 2 ? "orange" : "green"),
         'ARTIFACT_AGE_TITLE' => 'Built on ' . $built_day->format('Y-m-d') . ' (from the version)',
-    );
+    ];
   }
-  return array('ARTIFACT_AGE_STRING' => '', 'ARTIFACT_AGE_CLASS' => '', 'ARTIFACT_AGE_TITLE' => '');
+  return ['ARTIFACT_AGE_STRING' => '', 'ARTIFACT_AGE_CLASS' => '', 'ARTIFACT_AGE_TITLE' => ''];
 }
 
 /**
@@ -1032,21 +1032,21 @@ function jvmSizeToGB($size)
  */
 function getLocalServerStats()
 {
-  $stats = array('host' => $_SERVER['SERVER_NAME'], 'time' => time());
+  $stats = ['host' => $_SERVER['SERVER_NAME'], 'time' => time()];
 
   // Memory (kB)
-  $meminfo = array();
-  foreach (@file('/proc/meminfo', FILE_IGNORE_NEW_LINES) ?: array() as $line) {
+  $meminfo = [];
+  foreach (@file('/proc/meminfo', FILE_IGNORE_NEW_LINES) ?: [] as $line) {
     if (preg_match('/^(\w+):\s+(\d+)/', $line, $matches)) {
       $meminfo[$matches[1]] = (int) $matches[2];
     }
   }
-  $stats['mem'] = isset($meminfo['MemTotal'], $meminfo['MemAvailable']) ? array(
+  $stats['mem'] = isset($meminfo['MemTotal'], $meminfo['MemAvailable']) ? [
       'total_kb' => $meminfo['MemTotal'],
       'used_kb' => $meminfo['MemTotal'] - $meminfo['MemAvailable'],
       'swap_total_kb' => $meminfo['SwapTotal'] ?? 0,
       'swap_used_kb' => ($meminfo['SwapTotal'] ?? 0) - ($meminfo['SwapFree'] ?? 0),
-  ) : null;
+  ] : null;
 
   // CPU
   $cpuinfo = (string) @file_get_contents('/proc/cpuinfo');
@@ -1054,11 +1054,11 @@ function getLocalServerStats()
   preg_match_all('/^physical id\s*:\s*(\d+)$/m', $cpuinfo, $sockets);
   preg_match('/^cpu cores\s*:\s*(\d+)$/m', $cpuinfo, $cores);
   $threads = preg_match_all('/^processor\s*:/m', $cpuinfo);
-  $stats['cpu'] = array(
+  $stats['cpu'] = [
       'model' => isset($model[1]) ? trim(preg_replace('/\s+/', ' ', $model[1])) : null,
       'threads' => $threads ?: null,
       'cores' => isset($cores[1]) ? (int) $cores[1] * max(1, count(array_unique($sockets[1]))) : null,
-  );
+  ];
   $loadavg = explode(' ', (string) @file_get_contents('/proc/loadavg'));
   $stats['load'] = count($loadavg) >= 3 ? array_map('floatval', array_slice($loadavg, 0, 3)) : null;
   $uptime = (string) @file_get_contents('/proc/uptime');
@@ -1069,10 +1069,10 @@ function getLocalServerStats()
   $disk_total = @disk_total_space($data_dir);
   $disk_free = @disk_free_space($data_dir);
   $stats['disk'] = ($disk_total && $disk_free !== false)
-      ? array('total_b' => $disk_total, 'used_b' => $disk_total - $disk_free) : null;
+      ? ['total_b' => $disk_total, 'used_b' => $disk_total - $disk_free] : null;
 
   // Instance JVMs: resident memory (VmRSS) of each running process
-  $jvms = array();
+  $jvms = [];
   $readable = true;
   foreach (getLocalAcceptanceInstances() as $descriptor_arrays) {
     foreach ($descriptor_arrays as $descriptor_array) {
@@ -1090,22 +1090,22 @@ function getLocalServerStats()
       if (!empty($descriptor_array['INSTANCE_ID'])) {
         $label .= ' (' . $descriptor_array['INSTANCE_ID'] . ')';
       }
-      $jvms[] = array(
+      $jvms[] = [
           'key' => $descriptor_array['INSTANCE_KEY'],
           'label' => $label,
           'rss_kb' => isset($rss[1]) ? (int) $rss[1] : 0,
           'xmx_gb' => jvmSizeToGB($descriptor_array['DEPLOYMENT_JVM_SIZE_MAX'] ?? ''),
-      );
+      ];
     }
   }
-  usort($jvms, function ($a, $b) { return $b['rss_kb'] - $a['rss_kb']; });
-  $stats['jvm'] = array(
+  usort($jvms, fn($a, $b) => $b['rss_kb'] - $a['rss_kb']);
+  $stats['jvm'] = [
       'running' => count($jvms),
       'rss_kb' => array_sum(array_column($jvms, 'rss_kb')),
       'xmx_gb' => array_sum(array_column($jvms, 'xmx_gb')),
       'readable' => $readable,
       'list' => $jvms,
-  );
+  ];
   return $stats;
 }
 
@@ -1119,12 +1119,12 @@ function getGlobalServerStats()
 {
   $stats = cacheGet('all_server_stats');
   if (empty($stats) || getenv('ADT_DEV_MODE')) {
-    $stats = array();
+    $stats = [];
     if (getenv('ADT_DEV_MODE')) {
       $local = getLocalServerStats();
       $stats[$local['host']] = $local;
     } else {
-      $servers = array();
+      $servers = [];
       foreach (explode(",", getenv('ACCEPTANCE_SERVERS')) as $server) {
         $servers[trim($server) . '/rest/local-stats.php'] = trim($server);
       }
@@ -1134,7 +1134,7 @@ function getGlobalServerStats()
           $stats[$server_stats['host']] = $server_stats;
         } else {
           $host = parse_url($servers[$url], PHP_URL_HOST) ?: $servers[$url];
-          $stats[$host] = array('host' => $host, 'error' => 'unreachable');
+          $stats[$host] = ['host' => $host, 'error' => 'unreachable'];
         }
       }
     }
@@ -1165,7 +1165,7 @@ function getGlobalFilteredInstances($cacheKey, $ttl, $sourceGetter, $labels, $al
 {
   $instances = cacheGet($cacheKey);
   if (empty($instances) || getenv('ADT_DEV_MODE')) {
-    $instances = array();
+    $instances = [];
     foreach ($sourceGetter() as $plf_branch => $descriptor_arrays) {
       $filtered_instances = $exclude
         ? filterInstancesWithoutLabels($descriptor_arrays, $labels)
@@ -1186,7 +1186,7 @@ function getGlobalFilteredInstances($cacheKey, $ttl, $sourceGetter, $labels, $al
  */
 function getGlobalDevInstances() {
   return getGlobalFilteredInstances('dev_instances', 120, 'getGlobalAcceptanceInstances',
-    array('sales', 'qa', 'company', 'doc', 'translation', 'cp'), false, true);
+    ['sales', 'qa', 'company', 'doc', 'translation', 'cp'], false, true);
 }
 
 /**
@@ -1196,7 +1196,7 @@ function getGlobalDevInstances() {
  */
 function getGlobalSalesUserInstances()
 {
-  return getGlobalFilteredInstances('sales_user_instances', 120, 'getGlobalAcceptanceInstances', array("sales", "user"), true);
+  return getGlobalFilteredInstances('sales_user_instances', 120, 'getGlobalAcceptanceInstances', ["sales", "user"], true);
 }
 
 /**
@@ -1206,7 +1206,7 @@ function getGlobalSalesUserInstances()
  */
 function getGlobalSalesDemoInstances()
 {
-  return getGlobalFilteredInstances('sales_demo_instances', 300, 'getGlobalAcceptanceInstances', array("sales", "demo"), true);
+  return getGlobalFilteredInstances('sales_demo_instances', 300, 'getGlobalAcceptanceInstances', ["sales", "demo"], true);
 }
 
 /**
@@ -1216,7 +1216,7 @@ function getGlobalSalesDemoInstances()
  */
 function getGlobalSalesEvalInstances()
 {
-  return getGlobalFilteredInstances('sales_eval_instances', 300, 'getGlobalAcceptanceInstances', array("sales", "eval"), true);
+  return getGlobalFilteredInstances('sales_eval_instances', 300, 'getGlobalAcceptanceInstances', ["sales", "eval"], true);
 }
 
 /**
@@ -1225,7 +1225,7 @@ function getGlobalSalesEvalInstances()
  * @return array
  */
 function getGlobalQAInstances() {
-  return getGlobalFilteredInstances('qa_instances', 120, 'getGlobalAcceptanceInstances', array("qa"));
+  return getGlobalFilteredInstances('qa_instances', 120, 'getGlobalAcceptanceInstances', ["qa"]);
 }
 
 /**
@@ -1234,7 +1234,7 @@ function getGlobalQAInstances() {
  * @return array
  */
 function getGlobalQAUserInstances() {
-  return getGlobalFilteredInstances('qa_user_instances', 120, 'getGlobalQAInstances', array("auto"), false, true);
+  return getGlobalFilteredInstances('qa_user_instances', 120, 'getGlobalQAInstances', ["auto"], false, true);
 }
 
 /**
@@ -1243,7 +1243,7 @@ function getGlobalQAUserInstances() {
  * @return array
  */
 function getGlobalQAAutoInstances() {
-  return getGlobalFilteredInstances('qa_auto_instances', 120, 'getGlobalQAInstances', array("auto"));
+  return getGlobalFilteredInstances('qa_auto_instances', 120, 'getGlobalQAInstances', ["auto"]);
 }
 
 /**
@@ -1252,7 +1252,7 @@ function getGlobalQAAutoInstances() {
  * @return array
  */
 function getGlobalCPInstances() {
-  return getGlobalFilteredInstances('cp_instances', 300, 'getGlobalAcceptanceInstances', array("cp"));
+  return getGlobalFilteredInstances('cp_instances', 300, 'getGlobalAcceptanceInstances', ["cp"]);
 }
 
 /**
@@ -1261,7 +1261,7 @@ function getGlobalCPInstances() {
  * @return array
  */
 function getGlobalCompanyInstances() {
-  return getGlobalFilteredInstances('company_instances', 500, 'getGlobalAcceptanceInstances', array("company"));
+  return getGlobalFilteredInstances('company_instances', 500, 'getGlobalAcceptanceInstances', ["company"]);
 }
 
 /**
@@ -1270,7 +1270,7 @@ function getGlobalCompanyInstances() {
  * @return array
  */
 function getGlobalDocInstances() {
-  return getGlobalFilteredInstances('doc_instances', 300, 'getGlobalAcceptanceInstances', array("doc"));
+  return getGlobalFilteredInstances('doc_instances', 300, 'getGlobalAcceptanceInstances', ["doc"]);
 }
 
 /**
@@ -1279,7 +1279,7 @@ function getGlobalDocInstances() {
  * @return array
  */
 function getGlobalTranslationInstances() {
-  return getGlobalFilteredInstances('translation_instances', 300, 'getGlobalAcceptanceInstances', array("translation"));
+  return getGlobalFilteredInstances('translation_instances', 300, 'getGlobalAcceptanceInstances', ["translation"]);
 }
 
 /**
@@ -1316,9 +1316,9 @@ function isDeploymentInCategoryArray($category_descriptor_arrays) {
  * @return bool
  */
 function isInstanceFeatureBranch($descriptor_arrays) {
-  if ( !empty($descriptor_arrays->BRANCH_NAME) && strpos($descriptor_arrays->BRANCH_NAME, "translation") === false ) {
+  if ( !empty($descriptor_arrays->BRANCH_NAME) && !str_contains($descriptor_arrays->BRANCH_NAME, "translation") ) {
     return true;
-  } elseif (isInstanceWithLabels($descriptor_arrays, array('fb')) ) {
+  } elseif (isInstanceWithLabels($descriptor_arrays, ['fb']) ) {
     return true;
   } else {
     return false;
@@ -1335,7 +1335,7 @@ function isInstanceFeatureBranch($descriptor_arrays) {
 function isInstanceTranslation($descriptor_arrays) {
   if ( !empty($descriptor_arrays->BRANCH_NAME) && strpos($descriptor_arrays->BRANCH_NAME, "translation") === true ) {
     return true;
-  } elseif (isInstanceWithLabels($descriptor_arrays, array('translation')) ) {
+  } elseif (isInstanceWithLabels($descriptor_arrays, ['translation']) ) {
     return true;
   } else {
     return false;
@@ -1350,7 +1350,7 @@ function isInstanceTranslation($descriptor_arrays) {
  * @return bool
  */
 function isInstanceDoc($descriptor_arrays) {
-  return isInstanceWithLabels($descriptor_arrays, array('doc'));
+  return isInstanceWithLabels($descriptor_arrays, ['doc']);
 }
 
 /**
@@ -1361,7 +1361,7 @@ function isInstanceDoc($descriptor_arrays) {
  * @return bool
  */
 function isInstanceBuyPage($descriptor_arrays) {
-  return isInstanceWithLabels($descriptor_arrays, array('buy'));
+  return isInstanceWithLabels($descriptor_arrays, ['buy']);
 }
 
 /**
@@ -1372,7 +1372,7 @@ function isInstanceBuyPage($descriptor_arrays) {
  * @return bool
  */
 function isInstanceQA($descriptor_arrays) {
-  return isInstanceWithLabels($descriptor_arrays, array('qa'));
+  return isInstanceWithLabels($descriptor_arrays, ['qa']);
 }
 
 /**
@@ -1383,7 +1383,7 @@ function isInstanceQA($descriptor_arrays) {
  * @return bool
  */
 function isInstanceCompany($descriptor_arrays) {
-  return isInstanceWithLabels($descriptor_arrays, array('company'));
+  return isInstanceWithLabels($descriptor_arrays, ['company']);
 }
 
 /**
@@ -1437,7 +1437,7 @@ function isInstanceWithLabels($instance, $labels, $all_labels = false) {
  * @return array
  */
 function filterInstancesWithLabels($descriptor_arrays, $labels, $all_labels = false) {
-  $instances = array();
+  $instances = [];
   foreach ($descriptor_arrays as $descriptor_array) {
     if (isInstanceWithLabels($descriptor_array, $labels, $all_labels)) {
       $instances[] = $descriptor_array;
@@ -1456,7 +1456,7 @@ function filterInstancesWithLabels($descriptor_arrays, $labels, $all_labels = fa
  * @return array
  */
 function filterInstancesWithoutLabels($descriptor_arrays, $labels, $all_labels = false) {
-  $instances = array();
+  $instances = [];
   foreach ($descriptor_arrays as $descriptor_array) {
     if (!isInstanceWithLabels($descriptor_array, $labels, $all_labels)) {
       $instances[] = $descriptor_array;
@@ -1469,7 +1469,7 @@ function getAcceptanceBranches()
 {
   $branches = cacheGet('acceptance_branches');
   if (empty($branches) || getenv('ADT_DEV_MODE')) {
-    $branches = array();
+    $branches = [];
     foreach (getGlobalAcceptanceInstances() as $descriptor_arrays) {
       foreach ($descriptor_arrays as $descriptor_array) {
         if (!empty($descriptor_array->SCM_BRANCH)) {

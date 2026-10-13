@@ -1,13 +1,13 @@
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 
 $data = getenv('ADT_DATA');
 $confDir = "$data/conf/apache";
 
 /** Hide the value of the secret directives/variables in a configuration text */
-function maskSecrets($text)
+function maskSecrets(string $text): string
 {
   // Apache directives holding a secret
   $text = preg_replace('/^(\s*(?:AuthLDAPBindPassword|SessionCryptoPassphrase|SSLCertificateKeyFile|SetEnv\s+\S*(?:PASS\w*|SECRET|TOKEN)\S*))\s+.*$/mi', '$1 ********', $text);

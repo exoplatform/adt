@@ -3,7 +3,7 @@
 date_default_timezone_set("UTC");
 
 // Allow to invalidate caches
-require_once(dirname(__FILE__) . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions.php');
 checkCaches();
 
 // Default index file
@@ -38,7 +38,7 @@ $ext = pathinfo($path, PATHINFO_EXTENSION);
 
 // Hide the .php extension: redirect explicit .php requests (except the /rest/
 // cross-instance API) to the extension-less URL, mirroring the Apache rewrite rules
-if ($ext === "php" && strpos(ltrim($path, "/"), "rest/") !== 0) {
+if ($ext === "php" && !str_starts_with(ltrim($path, "/"), "rest/")) {
     $query = parse_url($_SERVER["REQUEST_URI"], PHP_URL_QUERY);
     header("Location: " . substr($path, 0, -4) . ($query !== null ? "?$query" : ""), true, 301);
     exit;

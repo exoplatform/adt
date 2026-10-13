@@ -1,13 +1,13 @@
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 
 $data = getenv('ADT_DATA');
 $confDir = "$data/conf/apache";
 
 /** Mask the values of the sensitive keys of a descriptor */
-function maskDescriptor(array $d)
+function maskDescriptor(array $d): array
 {
   foreach ($d as $k => $v) {
     if (preg_match('/PASS(WORD|PHRASE)?|SECRET|TOKEN|PRIVATE|CREDENTIAL|_KEY$/i', $k) && $k !== 'INSTANCE_KEY' && $v !== '') {

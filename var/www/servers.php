@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 ?>
 <html lang="en">
@@ -302,8 +302,8 @@ checkCaches();
             </div>
             <div class="server-cards">
                 <?php foreach ($server_specs as $hostname => $spec):
-                    $meta   = isset($host_meta[$hostname]) ? $host_meta[$hostname] : ['css' => 'accX', 'short' => $hostname];
-                    $counts = isset($servers_counter[$hostname]) ? $servers_counter[$hostname] : ['nb' => 0, 'jvm-min' => 0, 'jvm-max' => 0];
+                    $meta   = $host_meta[$hostname] ?? ['css' => 'accX', 'short' => $hostname];
+                    $counts = $servers_counter[$hostname] ?? ['nb' => 0, 'jvm-min' => 0, 'jvm-max' => 0];
                 ?>
                 <div class="server-card accent-<?= $meta['css'] ?>" data-host="<?= htmlspecialchars($hostname) ?>">
                     <div class="server-card__header">
@@ -539,7 +539,7 @@ checkCaches();
                             if (empty($ports)) return '';
                             $standard = true;
                             $short = array_map(function ($port) use ($prefix, &$standard) {
-                                if ($prefix !== '' && strpos((string) $port, (string) $prefix) === 0 && strlen($port) === strlen($prefix) + 2) {
+                                if ($prefix !== '' && str_starts_with((string) $port, (string) $prefix) && strlen($port) === strlen($prefix) + 2) {
                                     return substr($port, -2);
                                 }
                                 $standard = false;

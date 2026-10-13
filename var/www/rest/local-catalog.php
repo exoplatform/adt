@@ -53,7 +53,7 @@ header("Content-type: application/json; charset=utf-8");
 // Merge remote catalog and local catalog and print result; Merge order is crucial for staging catalog duplicates removal.
 $mergedArray=array_merge(json_decode($local_catalog, true),json_decode($remote_catalog, true));
 if ($stagingCatalog) {
-    $uniqueArray = array();
+    $uniqueArray = [];
     foreach ($mergedArray as $obj) {
         if (searchDuplicateCatalog($uniqueArray, $obj) === false) {
             $uniqueArray[] = $obj;

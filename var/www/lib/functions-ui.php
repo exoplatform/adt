@@ -1,6 +1,6 @@
 <?php
-require_once(dirname(__FILE__) . '/functions-ui-form-edit-fb.php');
-require_once(dirname(__FILE__) . '/functions-ui-form-edit-note.php');
+require_once(__DIR__ . '/functions-ui-form-edit-fb.php');
+require_once(__DIR__ . '/functions-ui-form-edit-note.php');
 
 /**
  * Insert the page header lines
@@ -677,7 +677,7 @@ function pageNavigation()
       foreach ($nav as $label => $url) {
         $active = ($url == $_SERVER['REQUEST_URI']) ? 'active' : '';
         $ariaCurrent = ($url == $_SERVER['REQUEST_URI']) ? ' aria-current="page"' : '';
-        $icon = isset($icons[$label]) ? $icons[$label] : 'fa-circle';
+        $icon = $icons[$label] ?? 'fa-circle';
         echo '<a class="sidebar__link ' . $active . '" href="' . $url . '"' . $ariaCurrent . ' title="' . $label . '">';
         echo '<i class="fas ' . $icon . ' sidebar__icon" aria-hidden="true"></i>';
         echo '<span>' . $label . '</span>';
@@ -1098,7 +1098,7 @@ function componentAddonsTags($deployment_descriptor)
     }
     foreach ($labels as $label) {
       $label_array = explode(':', $label, 2);
-      $version = isset($label_array[1]) ? $label_array[1] : 'latest';
+      $version = $label_array[1] ?? 'latest';
       $content .= '<span class="badge bg-info" rel="tooltip" title="version: ' . htmlspecialchars($version) . '">' . htmlspecialchars($label_array[0]) . '</span> ';
     }
   }
@@ -1961,8 +1961,8 @@ function renderInstanceCard($inst, array $opts = [])
             // Servers not yet updated still send "Unknown" for releases: derive it here too
             $built = (empty($inst->ARTIFACT_AGE_STRING) || $inst->ARTIFACT_AGE_STRING === 'Unknown')
                 ? artifactAgeFromVersion(($inst->ARTIFACT_TIMESTAMP ?? '') . ' ' . $inst->PRODUCT_VERSION)
-                : array('ARTIFACT_AGE_STRING' => $inst->ARTIFACT_AGE_STRING, 'ARTIFACT_AGE_CLASS' => $inst->ARTIFACT_AGE_CLASS,
-                        'ARTIFACT_AGE_TITLE' => $inst->ARTIFACT_AGE_TITLE ?? 'Time since artifact was built');
+                : ['ARTIFACT_AGE_STRING' => $inst->ARTIFACT_AGE_STRING, 'ARTIFACT_AGE_CLASS' => $inst->ARTIFACT_AGE_CLASS,
+                        'ARTIFACT_AGE_TITLE' => $inst->ARTIFACT_AGE_TITLE ?? 'Time since artifact was built'];
             ?>
             <?php if ($built['ARTIFACT_AGE_STRING'] !== ''): ?>
             <span class="<?= $built['ARTIFACT_AGE_CLASS'] ?>" title="<?= htmlspecialchars($built['ARTIFACT_AGE_TITLE']) ?>"><i class="fas fa-calendar-alt me-1"></i>built <?= $built['ARTIFACT_AGE_STRING'] ?></span>

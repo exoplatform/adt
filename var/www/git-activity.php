@@ -1,14 +1,14 @@
 <!DOCTYPE html>
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 
-$days_back = isset($_GET['days']) ? max(1, min(365, intval($_GET['days']))) : 30;
+$days_back = max(1, min(365, intval($_GET['days'] ?? 30)));
 $since = date('Y-m-d', strtotime("-{$days_back} days"));
 $projects = getRepositories();
 $repo_names = array_keys($projects);
-$ignored_authors = array('exo-swf', 'Crowdin Bot', 'eXo CI server', 'eXo');
+$ignored_authors = ['exo-swf', 'Crowdin Bot', 'eXo CI server', 'eXo'];
 $github_token = getenv('GITHUB_TOKEN') ?: '';
 $github_search_limited = false;
 
@@ -43,12 +43,12 @@ function isIgnored($name) {
  * Maven groupIds tracked for dependency links - only modules published
  * under these groups can be one of our own repos.
  */
-$dependency_link_prefixes = array('io.meeds', 'addon.meeds', 'org.exoplatform', 'addon.exo');
+$dependency_link_prefixes = ['io.meeds', 'addon.meeds', 'org.exoplatform', 'addon.exo'];
 
 function groupIdMatchesDependencyPrefix($groupId) {
   global $dependency_link_prefixes;
   foreach ($dependency_link_prefixes as $prefix) {
-    if ($groupId === $prefix || strpos($groupId, $prefix . '.') === 0) return true;
+    if ($groupId === $prefix || str_starts_with($groupId, $prefix . '.')) return true;
   }
   return false;
 }
@@ -105,14 +105,14 @@ function parsePomXml($xmlContent) {
 function pomOwnHeaderSegment($xml) {
   $parentBlock = pomExtractBlock($xml, 'parent');
   $ownXml = $parentBlock !== null ? str_replace("<parent>{$parentBlock}</parent>", '', $xml) : $xml;
-  $boundaryTags = array('properties', 'dependencyManagement', 'dependencies', 'build',
-    'modules', 'profiles', 'scm', 'licenses', 'developers', 'distributionManagement');
+  $boundaryTags = ['properties', 'dependencyManagement', 'dependencies', 'build',
+    'modules', 'profiles', 'scm', 'licenses', 'developers', 'distributionManagement'];
   $cutAt = strlen($ownXml);
   foreach ($boundaryTags as $tag) {
     $pos = strpos($ownXml, "<{$tag}>");
     if ($pos !== false && $pos < $cutAt) $cutAt = $pos;
   }
-  return array(substr($ownXml, 0, $cutAt), $parentBlock);
+  return [substr($ownXml, 0, $cutAt), $parentBlock];
 }
 
 /** The pom's own groupId:artifactId (groupId falls back to the parent's when omitted). */
@@ -132,7 +132,7 @@ function pomOwnCoordinates($xml) {
  * scope=provided/type=zip entries instead, and that's just as real a link.
  */
 function pomUpperLinks($xml) {
-  $links = array();
+  $links = [];
 
   $parentBlock = pomExtractBlock($xml, 'parent');
   if ($parentBlock !== null) {
@@ -169,10 +169,10 @@ function getRepoDependencyGraph($projects) {
   $cached = cacheGet($cache_key);
   if ($cached !== false) return $cached;
 
-  $coordinates = array(); // "groupId:artifactId" => repo
-  $group_owners = array(); // groupId => repo, or false once claimed by >1 repo (ambiguous)
-  $upper_links = array(); // repo => [ "groupId:artifactId", ... ]
-  $github_urls = array(); // repo => url|null
+  $coordinates = []; // "groupId:artifactId" => repo
+  $group_owners = []; // groupId => repo, or false once claimed by >1 repo (ambiguous)
+  $upper_links = []; // repo => [ "groupId:artifactId", ... ]
+  $github_urls = []; // repo => url|null
 
   foreach (array_keys($projects) as $repo) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
@@ -193,11 +193,11 @@ function getRepoDependencyGraph($projects) {
       $upper_links[$repo] = pomUpperLinks($xml);
     } catch (Exception $e) {}
   }
-  $group_owners = array_filter($group_owners, function($v) { return $v !== false; });
+  $group_owners = array_filter($group_owners, fn($v) => $v !== false);
 
-  $links = array();
+  $links = [];
   foreach ($upper_links as $repo => $targets) {
-    $resolved = array();
+    $resolved = [];
     foreach ($targets as $coord) {
       // A submodule (e.g. "social-component-core") is often referenced instead
       // of the tracked repo's own root artifactId (e.g. "social") - fall back
@@ -206,14 +206,14 @@ function getRepoDependencyGraph($projects) {
         $target = $coordinates[$coord];
       } else {
         $groupId = strstr($coord, ':', true);
-        $target = isset($group_owners[$groupId]) ? $group_owners[$groupId] : null;
+        $target = $group_owners[$groupId] ?? null;
       }
       if ($target !== null && $target !== $repo) $resolved[$target] = true;
     }
     if (!empty($resolved)) $links[$repo] = array_keys($resolved);
   }
 
-  $result = array('links' => $links, 'github_url' => $github_urls);
+  $result = ['links' => $links, 'github_url' => $github_urls];
   cacheSet($cache_key, $result, 3600);
   return $result;
 }
@@ -252,7 +252,7 @@ function resolveGithubUser($email) {
   if ($github_search_limited) return null;
 
   $header = "User-Agent: ADT-Git-Activity\r\n" . ($github_token ? "Authorization: token {$github_token}\r\n" : "");
-  $opts = array('http' => array('method' => 'GET', 'header' => $header, 'timeout' => 4, 'ignore_errors' => true));
+  $opts = ['http' => ['method' => 'GET', 'header' => $header, 'timeout' => 4, 'ignore_errors' => true]];
   $response = @file_get_contents("https://api.github.com/search/users?q=" . urlencode($email) . "+in:email", false, stream_context_create($opts));
 
   $username = null;
@@ -276,7 +276,7 @@ function resolveGithubUser($email) {
 }
 
 function getGitCommitActivityByDay($repos, $days) {
-  $activity = array();
+  $activity = [];
   $since = date('Y-m-d', strtotime("-{$days} days"));
   for ($i = $days; $i >= 0; $i--) {
     $date = date('Y-m-d', strtotime("-{$i} days"));
@@ -293,7 +293,7 @@ function getGitCommitActivityByDay($repos, $days) {
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 2);
         $date = trim($parts[0]);
-        $committer = isset($parts[1]) ? trim($parts[1]) : '';
+        $committer = trim($parts[1] ?? '');
         if (isset($activity[$date]) && !isIgnored($committer)) $activity[$date]++;
       }
     } catch (Exception $e) {}
@@ -302,12 +302,12 @@ function getGitCommitActivityByDay($repos, $days) {
 }
 
 function getGitCommitActivityByDayAndRepo($projects, $days, $top_n = 5) {
-  $dates = array();
+  $dates = [];
   for ($i = $days; $i >= 0; $i--) {
     $dates[] = date('Y-m-d', strtotime("-{$i} days"));
   }
   $since = $dates[0];
-  $daily = array();
+  $daily = [];
   foreach ($projects as $repo => $label) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
     if (!is_dir($path)) continue;
@@ -319,25 +319,25 @@ function getGitCommitActivityByDayAndRepo($projects, $days, $top_n = 5) {
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 2);
         $date = trim($parts[0]);
-        $committer = isset($parts[1]) ? trim($parts[1]) : '';
+        $committer = trim($parts[1] ?? '');
         if (isIgnored($committer)) continue;
         $daily[$label][$date] = ($daily[$label][$date] ?? 0) + 1;
       }
     } catch (Exception $e) {}
   }
-  $totals = array();
+  $totals = [];
   foreach ($daily as $label => $by_date) $totals[$label] = array_sum($by_date);
   arsort($totals);
   $top_labels = array_slice(array_keys($totals), 0, $top_n);
-  $series = array();
+  $series = [];
   foreach ($top_labels as $label) {
-    $series[$label] = array_map(function($d) use ($daily, $label) { return $daily[$label][$d] ?? 0; }, $dates);
+    $series[$label] = array_map(fn($d) => $daily[$label][$d] ?? 0, $dates);
   }
-  return array('dates' => $dates, 'series' => $series);
+  return ['dates' => $dates, 'series' => $series];
 }
 
 function getGitCommitsByDayOfWeek($activity) {
-  $day_names = array('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun');
+  $day_names = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   $totals = array_fill(0, 7, 0);
   foreach ($activity as $date => $count) {
     $totals[date('N', strtotime($date)) - 1] += $count;
@@ -346,7 +346,7 @@ function getGitCommitsByDayOfWeek($activity) {
 }
 
 function getGitCommitsByRepo($projects, $days) {
-  $result = array();
+  $result = [];
   $since = date('Y-m-d', strtotime("-{$days} days"));
   foreach ($projects as $repo => $label) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
@@ -363,18 +363,18 @@ function getGitCommitsByRepo($projects, $days) {
           if (!empty($c) && !isIgnored($c)) $count++;
         }
       }
-      $result[] = array('repo' => $repo, 'label' => $label, 'commits' => $count, 'github_url' => $gh_base);
+      $result[] = ['repo' => $repo, 'label' => $label, 'commits' => $count, 'github_url' => $gh_base];
     } catch (Exception $e) {}
   }
-  usort($result, function($a, $b) { return $b['commits'] - $a['commits']; });
+  usort($result, fn($a, $b) => $b['commits'] - $a['commits']);
   return $result;
 }
 
 function getGitCommitsByAuthor($repos, $days) {
-  $result = array();
+  $result = [];
   $since = date('Y-m-d', strtotime("-{$days} days"));
-  $author_counts = array();
-  $author_emails = array();
+  $author_counts = [];
+  $author_emails = [];
   foreach ($repos as $repo) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
     if (!is_dir($path)) continue;
@@ -386,8 +386,8 @@ function getGitCommitsByAuthor($repos, $days) {
       foreach (explode("\n", $output) as $line) {
         $parts = explode('|', $line, 3);
         $author = trim($parts[0]);
-        $email = isset($parts[1]) ? trim($parts[1]) : '';
-        $committer = isset($parts[2]) ? trim($parts[2]) : '';
+        $email = trim($parts[1] ?? '');
+        $committer = trim($parts[2] ?? '');
         if (empty($author) || isIgnored($author) || isIgnored($committer)) continue;
         $author_counts[$author] = ($author_counts[$author] ?? 0) + 1;
         if (empty($author_emails[$author]) && !empty($email)) $author_emails[$author] = $email;
@@ -397,18 +397,18 @@ function getGitCommitsByAuthor($repos, $days) {
   arsort($author_counts);
   foreach (array_slice($author_counts, 0, 30) as $author => $count) {
     $github_user = isset($author_emails[$author]) ? resolveGithubUser($author_emails[$author]) : null;
-    $result[] = array(
+    $result[] = [
       'author' => $author,
       'commits' => $count,
       'github_url' => $github_user ? "https://github.com/{$github_user}" : null,
       'avatar_url' => getGithubAvatarUrl($github_user)
-    );
+    ];
   }
   return $result;
 }
 
 function getGitRecentCommits($projects, $limit = 50) {
-  $all_commits = array();
+  $all_commits = [];
   $since = date('Y-m-d', strtotime("-90 days"));
   foreach ($projects as $repo => $label) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
@@ -424,7 +424,7 @@ function getGitRecentCommits($projects, $limit = 50) {
         if (count($parts) >= 6) {
           if (isIgnored($parts[1]) || isIgnored($parts[4])) continue;
           $github_user = resolveGithubUser($parts[2]);
-          $all_commits[] = array(
+          $all_commits[] = [
             'repo' => $repo,
             'label' => $label,
             'hash' => substr($parts[0], 0, 8),
@@ -437,12 +437,12 @@ function getGitRecentCommits($projects, $limit = 50) {
             'repo_url' => $gh_base,
             'author_url' => $github_user ? "https://github.com/{$github_user}" : ($gh_base ? "{$gh_base}/commits?author=" . rawurlencode($parts[2]) : null),
             'avatar_url' => getGithubAvatarUrl($github_user)
-          );
+          ];
         }
       }
     } catch (Exception $e) {}
   }
-  usort($all_commits, function($a, $b) { return strcmp($b['date'], $a['date']); });
+  usort($all_commits, fn($a, $b) => strcmp($b['date'], $a['date']));
   return array_slice($all_commits, 0, $limit);
 }
 
@@ -459,12 +459,12 @@ function getGitHubPRData($org, $token = '', $days = 30) {
   if (!empty($cached)) return $cached;
 
   $since = date('Y-m-d', strtotime("-{$days} days"));
-  $result = array('created' => 0, 'merged' => 0);
+  $result = ['created' => 0, 'merged' => 0];
   $header = "User-Agent: ADT-Git-Activity\r\n" . ($token ? "Authorization: token {$token}\r\n" : "");
 
-  foreach (array('created' => "created:>={$since}", 'merged' => "merged:>={$since}") as $key => $qualifier) {
+  foreach (['created' => "created:>={$since}", 'merged' => "merged:>={$since}"] as $key => $qualifier) {
     $url = "https://api.github.com/search/issues?q=is:pr+org:{$org}+{$qualifier}&per_page=1";
-    $opts = array('http' => array('method' => 'GET', 'header' => $header, 'timeout' => 10));
+    $opts = ['http' => ['method' => 'GET', 'header' => $header, 'timeout' => 10]];
     $response = @file_get_contents($url, false, stream_context_create($opts));
     if ($response === false) continue;
     $data = json_decode($response, true);
@@ -483,12 +483,12 @@ function getGitHubPRData($org, $token = '', $days = 30) {
 
 $bundle = cacheGet("git_activity_bundle_{$days_back}");
 if (empty($bundle)) {
-  $bundle = array(
+  $bundle = [
     'activity' => getGitCommitActivityByDay($repo_names, $days_back),
     'repo_trend' => getGitCommitActivityByDayAndRepo($projects, $days_back),
     'repo_stats' => getGitCommitsByRepo($projects, $days_back),
     'author_stats' => getGitCommitsByAuthor($repo_names, $days_back),
-  );
+  ];
   cacheSet("git_activity_bundle_{$days_back}", $bundle, 300);
 }
 $activity = $bundle['activity'];
@@ -504,7 +504,7 @@ if (empty($recent_commits)) {
 }
 
 $total_commits = array_sum($activity);
-$active_repos = count(array_filter($repo_stats, function($r) { return $r['commits'] > 0; }));
+$active_repos = count(array_filter($repo_stats, fn($r) => $r['commits'] > 0));
 $total_authors = count($author_stats);
 
 $busiest_day = null;
@@ -514,8 +514,8 @@ foreach ($activity as $date => $count) {
 $top_repo = !empty($repo_stats) && $repo_stats[0]['commits'] > 0 ? $repo_stats[0] : null;
 $top_author = !empty($author_stats) ? $author_stats[0] : null;
 
-$github_pr_data = array();
-$github_orgs = array('meeds-io', 'exoplatform');
+$github_pr_data = [];
+$github_orgs = ['meeds-io', 'exoplatform'];
 foreach ($github_orgs as $org) {
   $github_pr_data[$org] = getGitHubPRData($org, $github_token, $days_back);
 }
@@ -772,22 +772,20 @@ ksort($dependency_table_repos);
                 <?php foreach ($dependency_table_repos as $repo => $label): ?>
                 <tr id="repo-<?= htmlspecialchars($repo) ?>">
                   <td>
-                    <?php $repo_url = isset($dependency_repo_github_urls[$repo]) ? $dependency_repo_github_urls[$repo] : null; ?>
+                    <?php $repo_url = $dependency_repo_github_urls[$repo] ?? null; ?>
                     <?php if ($repo_url): ?><a href="<?= htmlspecialchars($repo_url) ?>" target="_blank" class="link-reset" title="Open <?= htmlspecialchars($label) ?> on GitHub"><span class="badge bg-secondary"><?= htmlspecialchars($label) ?></span></a><?php else: ?><span class="badge bg-secondary"><?= htmlspecialchars($label) ?></span><?php endif; ?>
                   </td>
                   <td>
                     <?php
-                    $targets = isset($dependency_links[$repo]) ? $dependency_links[$repo] : array();
-                    usort($targets, function($a, $b) use ($projects) {
-                      return strcasecmp(isset($projects[$a]) ? $projects[$a] : $a, isset($projects[$b]) ? $projects[$b] : $b);
-                    });
+                    $targets = $dependency_links[$repo] ?? [];
+                    usort($targets, fn($a, $b) => strcasecmp($projects[$a] ?? $a, $projects[$b] ?? $b));
                     ?>
                     <?php if (empty($targets)): ?>
                     <span class="text-muted">&mdash;</span>
                     <?php else: ?>
                     <div class="dependency-badges">
                     <?php foreach ($targets as $target): ?>
-                      <?php $target_label = isset($projects[$target]) ? $projects[$target] : $target; ?>
+                      <?php $target_label = $projects[$target] ?? $target; ?>
                       <a href="#repo-<?= htmlspecialchars($target) ?>" class="link-reset dependency-link" title="Jump to <?= htmlspecialchars($target_label) ?>"><span class="badge bg-secondary"><?= htmlspecialchars($target_label) ?></span></a>
                     <?php endforeach; ?>
                     </div>
@@ -943,10 +941,10 @@ document.addEventListener('DOMContentLoaded', function() {
   new Chart(document.getElementById('repoChart'), {
     type: 'bar',
     data: {
-      labels: <?= json_encode(array_map(function($r) { return $r['label']; }, $repo_stats)) ?>,
+      labels: <?= json_encode(array_map(fn($r) => $r['label'], $repo_stats)) ?>,
       datasets: [{
         label: 'Commits',
-        data: <?= json_encode(array_map(function($r) { return $r['commits']; }, $repo_stats)) ?>,
+        data: <?= json_encode(array_map(fn($r) => $r['commits'], $repo_stats)) ?>,
         backgroundColor: 'rgba(' + hexToRgb(chartColors.success) + ', 0.6)',
         borderColor: chartColors.success,
         borderWidth: 1,
@@ -968,10 +966,10 @@ document.addEventListener('DOMContentLoaded', function() {
   new Chart(document.getElementById('authorChart'), {
     type: 'bar',
     data: {
-      labels: <?= json_encode(array_map(function($a) { return $a['author']; }, $author_stats)) ?>,
+      labels: <?= json_encode(array_map(fn($a) => $a['author'], $author_stats)) ?>,
       datasets: [{
         label: 'Commits',
-        data: <?= json_encode(array_map(function($a) { return $a['commits']; }, $author_stats)) ?>,
+        data: <?= json_encode(array_map(fn($a) => $a['commits'], $author_stats)) ?>,
         backgroundColor: 'rgba(' + hexToRgb(chartColors.warning) + ', 0.6)',
         borderColor: chartColors.warning,
         borderWidth: 1,

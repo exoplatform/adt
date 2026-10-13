@@ -3,8 +3,8 @@
 /**
  * Include the command class
  */
-require_once(dirname(__FILE__).'/Command.php');
-require_once(dirname(__FILE__).'/Configuration.php');
+require_once(__DIR__.'/Command.php');
+require_once(__DIR__.'/Configuration.php');
 
 /**
  * Simple PHP wrapper for Git repository
@@ -38,10 +38,10 @@ class PHPGit_Repository
      */
     protected $options;
 
-    protected static $defaultOptions = array(
+    protected static $defaultOptions = [
         'command_class'   => 'PHPGit_Command', // class used to create a command
         'git_executable'  => '/usr/bin/git'       // path of the executable on the server
-    );
+    ];
 
     /**
      * Instanciate a new Git repository wrapper
@@ -50,7 +50,7 @@ class PHPGit_Repository
      * @param   boolean $debug
      * @param   array $options
      */
-    public function __construct($dir, $debug = false, array $options = array())
+    public function __construct($dir, $debug = false, array $options = [])
     {
         $this->dir      = $dir;
         $this->debug    = $debug;
@@ -82,7 +82,7 @@ class PHPGit_Repository
      * @param   array $options
      * @return PHPGit_Repository
      **/
-    public static function create($dir, $debug = false, array $options = array())
+    public static function create($dir, $debug = false, array $options = [])
     {
         $options = array_merge(self::$defaultOptions, $options);
         $commandString = $options['git_executable'].' init';
@@ -104,7 +104,7 @@ class PHPGit_Repository
      * @param   array $options
      * @return PHPGit_Repository
      **/
-    public static function cloneUrl($url, $dir, $debug = false, array $options = array())
+    public static function cloneUrl($url, $dir, $debug = false, array $options = [])
     {
         $options = array_merge(self::$defaultOptions, $options);
         $commandString = $options['git_executable'].' clone '.escapeshellarg($url).' '.escapeshellarg($dir);
@@ -169,7 +169,7 @@ class PHPGit_Repository
     public function getTags()
     {
         $output = $this->git('tag');
-        return $output ? array_filter(explode("\n", $output)) : array();
+        return $output ? array_filter(explode("\n", $output)) : [];
     }
 
     /**
@@ -189,24 +189,24 @@ class PHPGit_Repository
      */
     private function parseLogsIntoArray($logOutput)
     {
-      $commits = array();
+      $commits = [];
       foreach(explode("\n", $logOutput) as $line) {
         $infos = explode('|', $line);
-        $commits[] = array(
+        $commits[] = [
             'id' => $infos[0],
             'tree' => $infos[1],
-            'author' => array(
+            'author' => [
                 'name' => $infos[2],
                 'email' => $infos[3]
-            ),
+            ],
             'authored_date' => $infos[4],
-            'commiter' => array(
+            'commiter' => [
                 'name' => $infos[5],
                 'email' => $infos[6]
-            ),
+            ],
             'committed_date' => $infos[7],
             'message' => $infos[8]
-        );
+        ];
       }
       return $commits;
     }

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <?php
-require_once(dirname(__FILE__) . '/lib/functions.php');
-require_once(dirname(__FILE__) . '/lib/functions-ui.php');
+require_once(__DIR__ . '/lib/functions.php');
+require_once(__DIR__ . '/lib/functions-ui.php');
 checkCaches();
 
 $stable_version = '7.2.x';
@@ -12,14 +12,14 @@ $stable_version = '7.2.x';
 // wrongly shows every public repo as "private" or lets a private repo's
 // badge attempt render GitHub's "not found" error). A short static list
 // is simpler and doesn't depend on network conditions at page-render time.
-$private_repos = array('ai', 'platform-private-distributions');
+$private_repos = ['ai', 'platform-private-distributions'];
 
 function getRepoGithubOrgAndUrl($repoObject) {
   try {
     $url = $repoObject->git('config --get remote.origin.url');
     if (preg_match("#git@github\.com:(.+)/(.+)\.git#", $url, $m) ||
         preg_match("#https://github\.com/(.+)/(.+)\.git#", $url, $m)) {
-      return array('org' => $m[1], 'repo' => $m[2], 'url' => "https://github.com/{$m[1]}/{$m[2]}");
+      return ['org' => $m[1], 'repo' => $m[2], 'url' => "https://github.com/{$m[1]}/{$m[2]}"];
     }
   } catch (Exception $e) {}
   return null;
@@ -35,7 +35,7 @@ function isPrivateRepo($repo) {
  * Actions API (cached server-side, rate-limit aware - see rest/crowdin-status.php).
  */
 function crowdinStatusUrl($org, $repo, $workflow, $branch) {
-  $params = array('org' => $org, 'repo' => $repo, 'workflow' => $workflow);
+  $params = ['org' => $org, 'repo' => $repo, 'workflow' => $workflow];
   if ($branch) $params['branch'] = $branch;
   return '/rest/crowdin-status.php?' . http_build_query($params);
 }
@@ -46,7 +46,7 @@ function crowdinStatusUrl($org, $repo, $workflow, $branch) {
  * runs by default, so scheduled workflows need the event set explicitly.
  */
 function crowdinBadgeUrl($org, $repo, $workflow, $branch, $event) {
-  $params = array();
+  $params = [];
   if ($branch) $params['branch'] = $branch;
   if ($event) $params['event'] = $event;
   return "https://img.shields.io/github/actions/workflow/status/{$org}/{$repo}/{$workflow}.json" . ($params ? '?' . http_build_query($params) : '');
@@ -101,7 +101,7 @@ function getCrowdinModules($projects, $stable_version) {
   $modules = cacheGet($cache_key);
   if (!empty($modules)) return $modules;
 
-  $modules = array();
+  $modules = [];
   foreach ($projects as $repo => $label) {
     $path = getenv('ADT_DATA') . "/sources/" . $repo . ".git";
     if (!is_dir($path)) continue;
@@ -111,7 +111,7 @@ function getCrowdinModules($projects, $stable_version) {
       if (!$gh) continue;
 
       if (!gitPathExists($repoObject, 'origin/develop', '.github/workflows/upload-crowdin-main.yml')) {
-        $modules[] = array('repo' => $repo, 'label' => $label, 'has_crowdin' => false);
+        $modules[] = ['repo' => $repo, 'label' => $label, 'has_crowdin' => false];
         continue;
       }
 
@@ -122,7 +122,7 @@ function getCrowdinModules($projects, $stable_version) {
       $stable_ok = gitRefExists($repoObject, "origin/{$stable_branch}")
         && gitPathExists($repoObject, "origin/{$stable_branch}", '.github/workflows/upload-crowdin-branches.yml');
 
-      $modules[] = array(
+      $modules[] = [
         'repo' => $repo,
         'label' => $label,
         'has_crowdin' => true,
@@ -132,18 +132,18 @@ function getCrowdinModules($projects, $stable_version) {
         'is_private' => isPrivateRepo($repo),
         'has_download' => $has_download,
         'stable_branch' => $stable_ok ? $stable_branch : null,
-      );
+      ];
     } catch (Exception $e) {}
   }
-  usort($modules, function($a, $b) { return strcasecmp($a['label'], $b['label']); });
+  usort($modules, fn($a, $b) => strcasecmp($a['label'], $b['label']));
   cacheSet($cache_key, $modules, 3600);
   return $modules;
 }
 
 $projects = getRepositories();
 $modules = getCrowdinModules($projects, $stable_version);
-$active_modules = array_values(array_filter($modules, function($m) { return $m['has_crowdin']; }));
-$skipped_modules = array_values(array_filter($modules, function($m) { return !$m['has_crowdin']; }));
+$active_modules = array_values(array_filter($modules, fn($m) => $m['has_crowdin']));
+$skipped_modules = array_values(array_filter($modules, fn($m) => !$m['has_crowdin']));
 ?>
 <html lang="en">
 <head>

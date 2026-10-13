@@ -36,7 +36,7 @@ function debug_var_toggle($var) {
  * Open a debug page: <html>, head, navigation, page title and the debug menu.
  * Close it with debugPageEnd(). $autoRefresh is passed to pageHeader().
  */
-function debugPageBegin($title, $heading, $subtitle, $autoRefresh = false) {
+function debugPageBegin(string $title, string $heading, string $subtitle, bool $autoRefresh = false): void {
   echo '<html lang="en"><head>';
   pageHeader("debug - " . $title, $autoRefresh);
   echo '</head><body>';
@@ -49,19 +49,19 @@ function debugPageBegin($title, $heading, $subtitle, $autoRefresh = false) {
   echo componentDebugMenu();
 }
 
-function debugPageEnd() {
+function debugPageEnd(): void {
   echo '</div></div></div></div></div>';
   pageFooter();
   echo '</body></html>';
 }
 
 /** Bootstrap alert, message is escaped */
-function debugAlert($type, $message) {
+function debugAlert(string $type, string $message): string {
   return '<div class="alert alert-' . $type . '">' . htmlspecialchars($message) . '</div>';
 }
 
 /** Human readable size ("1.5G") */
-function debugBytes($bytes) {
+function debugBytes(int|float $bytes): string {
   $units = ['B', 'K', 'M', 'G', 'T'];
   $i = 0;
   $bytes = (float)$bytes;

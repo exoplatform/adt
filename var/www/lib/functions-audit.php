@@ -4,13 +4,13 @@
  * Rotated at 5MB (audit.log -> audit.log.1, one generation kept).
  */
 
-function auditDir()
+function auditDir(): string
 {
   return getenv('ADT_DATA') . '/var/audit';
 }
 
 /** Login of the user doing the current request */
-function auditActor()
+function auditActor(): string
 {
   if (!empty($_SERVER['REMOTE_USER'])) {
     return $_SERVER['REMOTE_USER'];
@@ -20,7 +20,7 @@ function auditActor()
 }
 
 /** Append an entry. Never fails the request if the log is not writable. */
-function auditLog($action, array $detail = [])
+function auditLog(string $action, array $detail = []): void
 {
   $dir = auditDir();
   if (!is_dir($dir)) {
@@ -46,7 +46,7 @@ function auditLog($action, array $detail = [])
 /**
  * Latest entries first. $filters: 'action' (prefix match), 'user' (exact), 'q' (substring of the entry).
  */
-function auditRead($limit = 500, array $filters = [])
+function auditRead(int $limit = 500, array $filters = []): array
 {
   $entries = [];
   foreach (["audit.log", "audit.log.1"] as $name) {
@@ -57,7 +57,7 @@ function auditRead($limit = 500, array $filters = [])
       if (!is_array($e)) {
         continue;
       }
-      if (!empty($filters['action']) && strpos($e['action'] ?? '', $filters['action']) !== 0) {
+      if (!empty($filters['action']) && !str_starts_with($e['action'] ?? '', $filters['action'])) {
         continue;
       }
       if (!empty($filters['user']) && ($e['user'] ?? '') !== $filters['user']) {
