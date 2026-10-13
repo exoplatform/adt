@@ -41,7 +41,7 @@ debugPageBegin('audit', 'Debug Audit', 'Administrative actions done from the das
       <div class="col-md-2"><button class="btn btn-sm btn-primary" type="submit">Filter</button> <a class="btn btn-sm btn-outline-secondary" href="/debug-audit">Reset</a></div>
     </form>
     <div class="table-responsive">
-    <table class="table table-sm align-middle">
+    <table class="table table-hover table-themed table-sm align-middle">
       <thead><tr><th>Time (UTC)</th><th>User</th><th>IP</th><th>Action</th><th>Detail</th></tr></thead>
       <tbody>
 <?php foreach ($entries as $e) { ?>

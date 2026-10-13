@@ -19,7 +19,8 @@ function debug_var($var, $html = false) {
 }
 
 function debug_var_toggle($var) {
-  $html_id = random_int(0, PHP_INT_MAX);
+  // An id starting with a digit is not a valid CSS selector: Bootstrap's data-bs-target would throw
+  $html_id = 'debug-toggle-' . random_int(0, PHP_INT_MAX);
   $content = "";
   $content .= '<button type="button" class="btn btn-sm btn-outline-primary mb-2" data-bs-toggle="collapse" data-bs-target="#' . $html_id . '">';
   $content .= '<i class="fas fa-code me-2"></i>Toggle Details';

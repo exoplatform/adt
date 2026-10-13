@@ -86,7 +86,7 @@ $token = sessionsCsrfToken();
                 <p class="text-muted small">Only sessions that visited the dashboard since this feature was enabled are listed.
                   Evicting a session rejects its cookie on every path; the user can log in again.</p>
                 <div class="table-responsive">
-                <table class="table table-sm align-middle">
+                <table class="table table-hover table-themed table-sm align-middle">
                   <thead><tr>
                     <th>User</th><th>IP</th><th>Browser</th><th>Connected</th><th>Last seen</th><th>Expires in</th><th></th>
                   </tr></thead>
@@ -139,7 +139,7 @@ $token = sessionsCsrfToken();
               <div class="card-body">
                 <p class="text-muted small">Block evicts every session of the user and refuses their login for the chosen time (web login only, not <code>curl</code> on <code>/downloads</code> and similar Basic-auth paths).</p>
                 <div class="table-responsive">
-                <table class="table table-sm align-middle">
+                <table class="table table-hover table-themed table-sm align-middle">
                   <thead><tr><th>User</th><th>Sessions</th><th></th></tr></thead>
                   <tbody>
 <?php foreach ($byUser as $u) { $isMe = strtolower($u['user']) === $me; ?>
@@ -179,7 +179,7 @@ $token = sessionsCsrfToken();
             <div class="card mt-4">
               <div class="card-header"><i class="fas fa-ban me-2"></i>Blocked users (<?= count($blocked) ?>)</div>
               <div class="card-body">
-                <table class="table table-sm align-middle mb-0">
+                <table class="table table-hover table-themed table-sm align-middle mb-0">
                   <thead><tr><th>User</th><th>Blocked by</th><th>Remaining</th><th></th></tr></thead>
                   <tbody>
 <?php foreach ($blocked as $b) { ?>

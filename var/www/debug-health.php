@@ -92,7 +92,7 @@ debugPageBegin('health', 'Debug Health', 'Host, disk, Docker and deployment stat
     <div class="card h-100">
       <div class="card-header"><i class="fas fa-server me-2"></i>Host</div>
       <div class="card-body">
-        <table class="table table-sm mb-0"><tbody>
+        <table class="table table-themed table-sm mb-0"><tbody>
 <?= healthRow('Hostname', htmlspecialchars((string)gethostname())) ?>
 <?= healthRow('Uptime', $uptime === null ? 'n/a' : durationLabel($uptime)) ?>
 <?= healthRow('Load average', $load ? htmlspecialchars(implode(' / ', array_map(fn($l) => sprintf('%.2f', $l), $load))) : 'n/a') ?>
@@ -112,7 +112,7 @@ if (!empty($mem['SwapTotal'])) {
     <div class="card h-100">
       <div class="card-header"><i class="fas fa-cogs me-2"></i>Software</div>
       <div class="card-body">
-        <table class="table table-sm mb-0"><tbody>
+        <table class="table table-themed table-sm mb-0"><tbody>
 <?= healthRow('Web server', htmlspecialchars($_SERVER['SERVER_SOFTWARE'] ?? 'n/a')) ?>
 <?= healthRow('PHP', htmlspecialchars(PHP_VERSION . ' (' . PHP_SAPI . ')')) ?>
 <?= healthRow('Cache backend', htmlspecialchars($cacheBackend)) ?>
@@ -126,7 +126,7 @@ if (!empty($mem['SwapTotal'])) {
     <div class="card h-100">
       <div class="card-header"><i class="fas fa-hdd me-2"></i>Disk</div>
       <div class="card-body">
-        <table class="table table-sm"><thead><tr><th>Path</th><th>Used</th><th></th></tr></thead><tbody>
+        <table class="table table-hover table-themed table-sm"><thead><tr><th>Path</th><th>Used</th><th></th></tr></thead><tbody>
 <?php foreach ($fs as $path => [$total, $used]) { ?>
           <tr><td><code><?= htmlspecialchars($path) ?></code></td><td class="text-nowrap"><?= debugBytes($used) ?> / <?= debugBytes($total) ?></td><td><?= healthMeter($used, $total) ?></td></tr>
 <?php } ?>
@@ -134,7 +134,7 @@ if (!empty($mem['SwapTotal'])) {
 <?php if ($sizes === null) { ?>
         <a class="btn btn-sm btn-outline-primary" href="/debug-health?sizes=1">Compute directory sizes</a>
 <?php } else { ?>
-        <table class="table table-sm mb-0"><thead><tr><th>Directory (under ADT_DATA)</th><th>Size</th></tr></thead><tbody>
+        <table class="table table-hover table-themed table-sm mb-0"><thead><tr><th>Directory (under ADT_DATA)</th><th>Size</th></tr></thead><tbody>
 <?php foreach ($sizes as $d => $size) { ?>
           <tr><td><code><?= htmlspecialchars($d) ?></code></td><td><?= $size === null ? 'n/a' : debugBytes($size) ?></td></tr>
 <?php } ?>
@@ -147,7 +147,7 @@ if (!empty($mem['SwapTotal'])) {
     <div class="card h-100">
       <div class="card-header"><i class="fas fa-rocket me-2"></i>Deployments</div>
       <div class="card-body">
-        <table class="table table-sm mb-0"><tbody>
+        <table class="table table-themed table-sm mb-0"><tbody>
 <?= healthRow('Instance descriptors', (string)count($descriptors)) ?>
 <?= healthRow('Last deployment', $lastDeploy ? htmlspecialchars(gmdate('Y-m-d H:i', $lastDeploy)) . ' UTC (' . durationLabel(time() - $lastDeploy) . ' ago)' : 'n/a') ?>
 <?= healthRow('Tracked login sessions', (string)$sessionsCount) ?>
@@ -162,7 +162,7 @@ if (!empty($mem['SwapTotal'])) {
 <?php if ($docker === null) { ?>
         <div class="alert alert-secondary mb-0">Docker is not reachable from the web server (no <code>docker</code> binary or no access to the socket).</div>
 <?php } else { ?>
-        <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <div class="table-responsive"><table class="table table-hover table-themed table-sm align-middle mb-0">
           <thead><tr><th>Name</th><th>Image</th><th>Status</th></tr></thead><tbody>
 <?php foreach ($docker as $line) {
   [$name, $image, $status, $state] = array_pad(explode("\t", $line), 4, '');

@@ -58,7 +58,7 @@ if (extension_loaded('apcu') && function_exists('apcu_cache_info')) {
   foreach ((apcu_cache_info(false)['cache_list'] ?? array()) as $entry) {
     $entries[$entry['info']] = $entry;
   }
-  echo '<div class="table-responsive"><table class="table table-sm"><thead><tr><th>Key</th><th>Role</th><th>Age</th><th>Expires in</th></tr></thead><tbody>';
+  echo '<div class="table-responsive"><table class="table table-hover table-themed table-sm"><thead><tr><th>Key</th><th>Role</th><th>Age</th><th>Expires in</th></tr></thead><tbody>';
   foreach ($watched as $key => $role) {
     $e = $entries[$key] ?? null;
     $age = $e ? (time() - $e['creation_time']) . 's' : '-';
@@ -74,7 +74,7 @@ if (extension_loaded('apcu') && function_exists('apcu_cache_info')) {
   $sma = function_exists('apcu_sma_info') ? apcu_sma_info(true) : null;
   $hits = (int)($stats['num_hits'] ?? 0);
   $misses = (int)($stats['num_misses'] ?? 0);
-  echo '<h6 class="mt-4">APCu usage</h6><table class="table table-sm w-auto"><tbody>';
+  echo '<h6 class="mt-4">APCu usage</h6><table class="table table-themed table-sm w-auto"><tbody>';
   echo '<tr><th scope="row">Entries</th><td>' . (int)($stats['num_entries'] ?? 0) . '</td></tr>';
   echo '<tr><th scope="row">Hits / misses</th><td>' . $hits . ' / ' . $misses . ($hits + $misses ? ' (' . round(100 * $hits / ($hits + $misses)) . '% hit rate)' : '') . '</td></tr>';
   if ($sma) {
@@ -89,7 +89,7 @@ if (extension_loaded('apcu') && function_exists('apcu_cache_info')) {
   usort($list, fn($a, $b) => strcmp($a['info'], $b['info']));
   $token = sessionsCsrfToken();
   echo '<h6 class="mt-4">Entries (' . count($list) . ')</h6>';
-  echo '<div class="table-responsive"><table class="table table-sm align-middle"><thead><tr><th>Key</th><th>Size</th><th>Hits</th><th>Age</th><th>Expires in</th><th></th></tr></thead><tbody>';
+  echo '<div class="table-responsive"><table class="table table-hover table-themed table-sm align-middle"><thead><tr><th>Key</th><th>Size</th><th>Hits</th><th>Age</th><th>Expires in</th><th></th></tr></thead><tbody>';
   foreach (array_slice($list, 0, 300) as $e) {
     $left = ($e['ttl'] > 0) ? max(0, $e['creation_time'] + $e['ttl'] - time()) . 's' : 'never';
     echo '<tr><td class="text-break"><code>' . htmlspecialchars($e['info']) . '</code></td><td>' . debugBytes($e['mem_size'] ?? 0) . '</td><td>' . (int)($e['num_hits'] ?? 0)
@@ -105,7 +105,7 @@ if (extension_loaded('apcu') && function_exists('apcu_cache_info')) {
 if (extension_loaded('memcache') && !empty($GLOBALS['memcache']) && method_exists($GLOBALS['memcache'], 'getStats')) {
   $mc = @$GLOBALS['memcache']->getStats();
   if (is_array($mc)) {
-    echo '<h6 class="mt-4">Memcache usage</h6><table class="table table-sm w-auto"><tbody>';
+    echo '<h6 class="mt-4">Memcache usage</h6><table class="table table-themed table-sm w-auto"><tbody>';
     foreach (['curr_items' => 'Items', 'get_hits' => 'Hits', 'get_misses' => 'Misses', 'bytes' => 'Memory used', 'limit_maxbytes' => 'Memory limit', 'uptime' => 'Uptime (s)'] as $k => $label) {
       if (isset($mc[$k])) {
         echo '<tr><th scope="row">' . $label . '</th><td>' . (in_array($k, ['bytes', 'limit_maxbytes'], true) ? debugBytes($mc[$k]) : (int)$mc[$k]) . '</td></tr>';

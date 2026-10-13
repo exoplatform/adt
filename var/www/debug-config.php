@@ -72,7 +72,7 @@ debugPageBegin('config', 'Debug Config', 'Rendered Apache configuration and envi
     <div class="card h-100">
       <div class="card-header"><i class="fas fa-leaf me-2"></i>Environment</div>
       <div class="card-body">
-        <table class="table table-sm mb-0"><tbody>
+        <table class="table table-themed table-sm mb-0"><tbody>
 <?php foreach ($env as $k => $v) { ?>
           <tr><th scope="row"><code><?= htmlspecialchars($k) ?></code></th><td class="text-break"><?= $v === '' ? '<span class="text-muted">empty</span>' : htmlspecialchars($v) ?></td></tr>
 <?php } ?>

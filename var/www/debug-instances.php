@@ -53,11 +53,11 @@ $issues = count(array_filter($rows, fn($r) => !$r['vhost'] || !$r['include']));
 debugPageBegin('instances', 'Debug Instances', 'Deployment descriptors, status and Apache configuration of each instance');
 ?>
 <div class="card">
-  <div class="card-header"><i class="fas fa-cubes me-2"></i>Instances (<?= count($rows) ?>)<?= $issues ? ' <span class="badge bg-warning text-dark">' . $issues . ' with missing Apache config</span>' : '' ?></div>
+  <div class="card-header"><i class="fas fa-cubes me-2"></i>Instances (<?= count($rows) ?>)<?= $issues ? ' <span class="badge bg-warning">' . $issues . ' with missing Apache config</span>' : '' ?></div>
   <div class="card-body">
     <form method="get" class="mb-3"><input type="search" name="q" value="<?= htmlspecialchars($q) ?>" class="form-control form-control-sm w-auto d-inline-block" placeholder="Filter" aria-label="Filter"> <button class="btn btn-sm btn-primary" type="submit">Filter</button></form>
     <div class="table-responsive">
-    <table class="table table-sm align-middle">
+    <table class="table table-hover table-themed table-sm align-middle">
       <thead><tr><th>Host</th><th>Product</th><th>Status</th><th>Apache</th><th>Deployed</th><th>Logs</th><th></th></tr></thead>
       <tbody>
 <?php foreach ($rows as $i => $r) { ?>
