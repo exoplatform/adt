@@ -100,6 +100,7 @@ Environment Variables
   CROWD_ACCEPTANCE_APP_PASSWORD     : The crowd application's password used to authenticate the front-end (default: none)
   LDAP_ACCEPTANCE_BIND_DN           : The LDAP Bind DN used to authenticate the front-end (default: none)
   LDAP_ACCEPTANCE_BIND_PASSWORD     : The LDAP Bind DN's password used to authenticate the front-end (default: none)
+  LDAP_ACCEPTANCE_APACHE2_ADMIN_DN     : The full DN of the LDAP group allowed to open the front-end debug pages (default: cn=exo-team-swf,ou=groups,dc=exoplatform,dc=org)
   CLOUDBEAVER_LDAP_ADMIN_GROUP      : The full DN of the LDAP group whose members administrate Cloudbeaver (default: none)
   ADT_SESSION_PASSPHRASE            : Secret used to encrypt the front-end login session cookie (default: none, required)
   APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup (PEM bundle including certificate chain)

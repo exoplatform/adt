@@ -12,6 +12,7 @@ require_once(dirname(__FILE__) . '/functions-ui-form-edit-note.php');
  */
 function pageHeader($title = "", $autoRefresh = true)
 {
+  trackSession();
 ?>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -2085,6 +2086,10 @@ function componentDebugMenu()
                 <i class="fas fa-database me-2 text-warning"></i>
                 <a href="/debug-caches">Debug Caches</a>
                 (<a href="/debug-caches?clearCaches=true" class="text-danger">Clear all Caches</a>)
+            </li>
+            <li class="list-group-item">
+                <i class="fas fa-users me-2 text-info"></i>
+                <a href="/debug-sessions">Debug Sessions</a>
             </li>
         </ul>
     </div>

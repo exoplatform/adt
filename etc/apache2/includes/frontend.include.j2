@@ -22,7 +22,7 @@
     DirectoryIndex index.php
 
     # Error pages
-    ErrorDocument 403 /errors/frontend/403.html
+    ErrorDocument 403 /errors/frontend/403.php
     ErrorDocument 404 /errors/frontend/404.html
     ErrorDocument 500 /errors/frontend/500.html
     ErrorDocument 502 /errors/frontend/502.html
@@ -188,12 +188,40 @@
             AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn,mail,displayName
             <RequireAll>
                 Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
+                # Sessions evicted from /debug-sessions (sha1 of the session cookie, listed in revoked.txt
+                # by the dashboard); the 403 error page then sends the user back to the login page.
+                # Uses the raw cookie: the decrypted HTTP_SESSION is only set after authorization.
+                Require    expr "!(%{req:Cookie} =~ /(?:^|; ?)adt_session=([^;]+)/ && file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1($1) . '*')"
                 AuthLDAPMaxSubGroupDepth 1
             </RequireAll>
     </Location>
 
+    # Debug pages (debug*.php, with or without extension): members of the LDAP group LDAP_ACCEPTANCE_APACHE2_ADMIN_DN only.
+    # AuthMerging is Off by default, so this Require replaces the exo-employees one above
+    # mod_authnz_ldap does not inherit AuthLDAPURL from <Location />: repeat the auth settings.
+    <LocationMatch "^/debug[^/]*$">
+            SessionEnv On
+            AuthName "eXo Employees only"
+            AuthType form
+            AuthFormProvider ldap
+            AuthFormLoginRequiredLocation "/login?next=%{escape:%{REQUEST_URI}?%{QUERY_STRING}}"
+            AuthzSendForbiddenOnFailure On
+
+            AuthLDAPBindDN          "{{ LDAP_ACCEPTANCE_BIND_DN }}"
+            AuthLDAPBindPassword    {{ LDAP_ACCEPTANCE_BIND_PASSWORD }}
+            AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn,mail,displayName
+            <RequireAll>
+                Require    ldap-group {{ LDAP_ACCEPTANCE_APACHE2_ADMIN_DN }}
+                # Sessions evicted from /debug-sessions (sha1 of the session cookie, listed in revoked.txt
+                # by the dashboard); the 403 error page then sends the user back to the login page.
+                # Uses the raw cookie: the decrypted HTTP_SESSION is only set after authorization.
+                Require    expr "!(%{req:Cookie} =~ /(?:^|; ?)adt_session=([^;]+)/ && file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1($1) . '*')"
+                AuthLDAPMaxSubGroupDepth 1
+            </RequireAll>
+    </LocationMatch>
+
     # Login page (public) and the handlers processing the form
-    <LocationMatch "^/(login(\.php)?|403\.html)$">
+    <LocationMatch "^/(login(\.php)?|403\.html)$|^/errors/frontend/403\.(html|php)$">
         Require all granted
     </LocationMatch>
     # Lets login.php see whether the visitor already has a session (redirected to /)

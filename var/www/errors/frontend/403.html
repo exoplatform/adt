@@ -133,6 +133,8 @@
         .btn svg { width: 18px; height: 18px; flex: none; }
         .btn--primary { color: var(--on-accent); background: var(--accent); }
         .btn--primary:hover { background: var(--accent-hover); }
+        .btn--secondary { color: var(--text); background: var(--field); border: 1px solid var(--border); margin-left: 8px; }
+        .btn--secondary:hover { border-color: var(--accent-text); }
         a:focus-visible, button:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 2px; }
         .refresh { margin-top: 16px; color: var(--muted); font-size: .82rem; }
         .refresh b { color: var(--text); font-variant-numeric: tabular-nums; }
@@ -187,7 +189,7 @@
     </div>
     <div class="actions">
         <a href="/" class="btn btn--primary" id="btn-primary"><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11 12 3l9 8M5 10v10h14V10"/></svg><span id="btn-primary-text">Return Home</span></a>
-        
+        <a href="/logout" class="btn btn--secondary" id="btn-logout"><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg><span id="btn-logout-text">Sign in with another account</span></a>
     </div>
     <p class="help">
         <a href="mailto:exo-swf@exoplatform.com" aria-label="Contact support by email at exo-swf@exoplatform.com"><svg class="" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg><span id="contact">Contact Support</span> &mdash; exo-swf@exoplatform.com</a>
@@ -207,6 +209,7 @@
                 "card2Title": "What can I do?",
                 "card2Text": "Check if you're logged in with the correct account, or contact your administrator to request access permissions.",
                 "btnHome": "Return Home",
+                "btnLogout": "Sign in with another account",
                 "contactText": "Contact Support",
                 "badge": "Access Forbidden",
                 "btnRetry": "Try Again",
@@ -220,6 +223,7 @@
                 "card2Title": "Que puis-je faire ?",
                 "card2Text": "Vérifiez que vous êtes connecté avec le bon compte, ou contactez votre administrateur pour demander les droits d'accès.",
                 "btnHome": "Retour à l'accueil",
+                "btnLogout": "Se connecter avec un autre compte",
                 "contactText": "Contacter le support",
                 "badge": "Accès interdit",
                 "btnRetry": "Réessayer",
@@ -233,6 +237,7 @@
                 "card2Title": "Was kann ich tun?",
                 "card2Text": "Überprüfen Sie, ob Sie mit dem richtigen Konto angemeldet sind, oder kontaktieren Sie Ihren Administrator, um Zugriffsrechte anzufordern.",
                 "btnHome": "Zur Startseite",
+                "btnLogout": "Mit anderem Konto anmelden",
                 "contactText": "Support kontaktieren",
                 "badge": "Zugriff verboten",
                 "btnRetry": "Erneut versuchen",
@@ -250,6 +255,7 @@
         setText('c1t', t.card1Title); setText('c1x', t.card1Text); setText('c2t', t.card2Title); setText('c2x', t.card2Text);
         setText('contact', t.contactText);
         setText('btn-primary-text', RETRY_ENABLED ? t.btnRetry : t.btnHome);
+        setText('btn-logout-text', t.btnLogout);
         setText('refresh-label', t.refreshLabel);
         document.documentElement.lang = lang;
         document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });

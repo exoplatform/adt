@@ -110,6 +110,11 @@ mkdir -p ${FEATURES_CONF_DIR}
 chmod 777 ${FEATURES_CONF_DIR} # apache needs to write here
 mkdir -p ${INSTANCES_CONF_DIR}
 chmod 777 ${INSTANCES_CONF_DIR} # apache needs to write here
+mkdir -p ${ADT_DATA}/var/sessions
+chmod 777 ${ADT_DATA}/var/sessions # apache tracks login sessions here
+# Read by Apache on every request (evicted sessions): must exist, even empty
+touch ${ADT_DATA}/var/sessions/revoked.txt
+chmod 666 ${ADT_DATA}/var/sessions/revoked.txt
 # Recopy default data
 # Copy everything in it
 if [[ "${SCRIPT_DIR}" != "${ADT_DATA}" ]]; then
@@ -143,6 +148,7 @@ case "${ACTION}" in
     # Create the main vhost from the template
     configurable_env_var "CROWD_ACCEPTANCE_APP_NAME" ""
     configurable_env_var "CROWD_ACCEPTANCE_APP_PASSWORD" ""
+    configurable_env_var "LDAP_ACCEPTANCE_APACHE2_ADMIN_DN" "cn=exo-team-swf,ou=groups,dc=exoplatform,dc=org"
     configurable_env_var "APACHE_SSL_CERTIFICATE_FILE" ""
     configurable_env_var "APACHE_SSL_CERTIFICATE_KEY_FILE" ""
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
