@@ -37,6 +37,7 @@ source "${SCRIPT_DIR}/_functions_matrix.sh"
 source "${SCRIPT_DIR}/_functions_clamav.sh"
 source "${SCRIPT_DIR}/_functions_ai.sh"
 source "${SCRIPT_DIR}/_functions_frontail.sh"
+source "${SCRIPT_DIR}/_functions_debugproxy.sh"
 source "${SCRIPT_DIR}/_functions_mongoexpress.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
 source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
@@ -200,6 +201,8 @@ Environment Variables
   DEPLOYMENT_LOGBACK_LOGGERS        : Enable Debug logging for java packages (comma seperated eg: org.exoplatform:DEBUG,org.hibernate,org.springframework:ERROR), Default logging level is DEBUG
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
   DEPLOYMENT_STAGING_ENABLED        : Enable Staging nexus repositories deployment 
+  DEPLOYMENT_DEBUG_ENABLED          : Enable the JVM remote debug (JDWP). Reachable through the authenticated vhost URI /debug-ws (default: false)
+  DEPLOYMENT_DEBUG_EXPOSE_PORT      : Legacy : expose the JDWP port on all interfaces, WITHOUT authentication (default: false)
 
   DEPLOYMENT_CERTBOT_ENABLED                : Enable Certbot integration for automatic SSL certificate issuance and renewal
   DEPLOYMENT_CERTBOT_CERT_EXPIRE_PERIOD     : Certificate renewal threshold in seconds (e.g., 2592000 = 30 days before expiry)
@@ -428,6 +431,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CALDAV_DB_ENCRYPTION_KEY" ""
 
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
+      # By default the JDWP port is not exposed : it is reachable through the (authenticated) instance vhost at /debug-ws
+      configurable_env_var "DEPLOYMENT_DEBUG_EXPOSE_PORT" false
+      configurable_env_var "DEPLOYMENT_DEBUGPROXY_IMAGE" "ghcr.io/vi/websocat"
+      configurable_env_var "DEPLOYMENT_DEBUGPROXY_IMAGE_VERSION" "v1.14.1"
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
       configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
 
@@ -1374,6 +1381,7 @@ initialize_product_settings() {
    do_get_clamav_settings
    do_get_ai_settings
    do_get_frontail_settings
+   do_get_debugproxy_settings
    do_get_mongo_express_settings
    do_get_keycloak_settings
    do_get_cloudbeaver_settings
@@ -1628,6 +1636,7 @@ do_init_empty_data(){
   do_drop_data
   do_drop_mailpit_data
   do_drop_frontail_data
+  do_drop_debugproxy_data
   do_drop_keycloak_data
   do_drop_phpldapadmin_data
   do_drop_caldav_data
@@ -2005,8 +2014,16 @@ do_deploy() {
   # SFTP port
   env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
   
-  # Remote debug port
+  # Remote debug port (JDWP)
   env_var "DEPLOYMENT_DEBUG_PORT" "${DEPLOYMENT_PORT_PREFIX}26"
+  # Remote debug WebSocket adapter port (loopback only, reached through Apache)
+  env_var "DEPLOYMENT_DEBUG_WS_PORT" "${DEPLOYMENT_PORT_PREFIX}27"
+  # JDWP bind address : loopback unless the legacy exposed mode is requested
+  if ${DEPLOYMENT_DEBUG_EXPOSE_PORT}; then
+    env_var "DEPLOYMENT_DEBUG_BIND_ADDRESS" "*"
+  else
+    env_var "DEPLOYMENT_DEBUG_BIND_ADDRESS" "127.0.0.1"
+  fi
 
   # CMIS server  port
   env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
@@ -2263,6 +2280,7 @@ do_start() {
   do_start_clamav
   do_start_ai
   do_start_frontail
+  do_start_debugproxy
   do_start_keycloak
   do_start_jitsi
   do_start_sftp
@@ -2275,7 +2293,8 @@ do_start() {
   do_start_chat_server
   do_start_mongo_express
 
-  if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
+  if ${DEPLOYMENT_DEBUG_ENABLED:-false} && ${DEPLOYMENT_DEBUG_EXPOSE_PORT}; then
+    echo_warn "Debug port ${DEPLOYMENT_DEBUG_PORT} is exposed WITHOUT authentication (DEPLOYMENT_DEBUG_EXPOSE_PORT=true)"
     do_ufw_open_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
   fi
 
@@ -2417,7 +2436,13 @@ do_start() {
     echo_info "IFRAMELY URL  : ${DEPLOYMENT_IFRAMELY_LINK}"
   fi
   if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
-    echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT}"
+    if ${DEPLOYMENT_DEBUG_EXPOSE_PORT}; then
+      echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT} (exposed, no authentication)"
+    else
+      echo_info "DEBUG : ${DEPLOYMENT_URL}/debug-ws (LDAP authentication)"
+      echo_info " - Hint : the debug port is not exposed. Click the debug badge (stethoscope) of this instance on $(do_build_url "${ACCEPTANCE_SCHEME}" "${ACCEPTANCE_HOST}" "${ACCEPTANCE_PORT}" "/") to get the commands to attach your IDE"
+      echo_info "          (websocat + adt-debug.sh bridge with your LDAP login, then attach the debugger to localhost:5005)"
+    fi
   fi
   if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
     echo_info "DEV Mode is enabled."
@@ -2530,6 +2555,7 @@ do_stop() {
       do_stop_clamav
       do_stop_ai
       do_stop_frontail
+      do_stop_debugproxy
       do_stop_phpldapadmin
       do_stop_mongo_express
       do_stop_keycloak
@@ -2581,6 +2607,7 @@ do_undeploy() {
     do_drop_clamav_data
     do_drop_ai_data
     do_drop_frontail_data
+    do_drop_debugproxy_data
     do_drop_keycloak_data
     do_drop_phpldapadmin_data
     do_drop_cloudbeaver_data

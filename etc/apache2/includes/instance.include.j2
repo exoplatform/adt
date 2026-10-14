@@ -147,13 +147,14 @@
     ProxyPass               /images/apple-touch-icon.png !
     ProxyPass               /images/logo.svg     !
 
-{% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" or DEPLOYMENT_JITSI_ENABLED == "true" %}
+{% set debug_ws = DEPLOYMENT_DEBUG_ENABLED == "true" and DEPLOYMENT_DEBUG_EXPOSE_PORT != "true" %}
+{% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" or DEPLOYMENT_JITSI_ENABLED == "true" or debug_ws %}
     <IfModule mod_proxy_wstunnel.c>
 {% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" %}
 {% if DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED == "true" %}
         # Proxify of websocket url pattern for onlyoffice
    
-        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io|mailpit|cloudbeaver)/
+        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io|mailpit|cloudbeaver|debug-ws)/
         RewriteCond %{HTTP:Upgrade} websocket [NC]
         RewriteCond %{HTTP:Connection} upgrade [NC]
         RewriteRule ^/?(.*) "ws://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/$1$2" [P,L]
@@ -196,6 +197,13 @@
             ProxyPassReverse "http://localhost:{{ DEPLOYMENT_HTTP_PORT }}/matrix/rest/matrix/notify"
         </Location>
 {% endif %}
+{% endif %}
+
+{% if debug_ws %}
+        # Remote debug (JDWP) over WebSocket : authenticated by the LDAP rule of the vhost, forwarded to the loopback adapter
+        <Location "/debug-ws">
+            ProxyPass "ws://127.0.0.1:{{ DEPLOYMENT_DEBUG_WS_PORT }}/"
+        </Location>
 {% endif %}
 
 {% if DEPLOYMENT_JITSI_ENABLED == "true" %}

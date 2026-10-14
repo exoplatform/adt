@@ -74,6 +74,9 @@
 {%- if DEPLOYMENT_FRONTAIL_ENABLED == "true" %}
 {{ protected("^/livelogs.*") }}
 {%- endif %}
+{%- if DEPLOYMENT_DEBUG_ENABLED == "true" and DEPLOYMENT_DEBUG_EXPOSE_PORT != "true" %}
+{{ protected("^/debug-ws.*") }}
+{%- endif %}
 {%- if DEPLOYMENT_CLOUDBEAVER_ENABLED == "true" %}
 {{ protected("^/cloudbeaver.*", 'Header set Cache-Control "max-age=63072000, public"') }}
 {%- endif %}

@@ -56,6 +56,22 @@ List all deployed instances
 
     # adt.sh list
 
+Remote debug of an instance
+---------------------------
+
+The remote debug (JDWP) of an instance has no authentication and no encryption : its port is NOT exposed.
+With DEPLOYMENT_DEBUG_ENABLED=true it listens on the loopback of the server only, and it is reachable through the
+instance vhost on https://<instance-host>/debug-ws, protected by the LDAP authentication of the vhost. A small
+websocat container (<instance>_debugproxy, see _functions_debugproxy.sh) adapts WebSocket to the JDWP port.
+
+Developers do not need this project : the instructions (websocat installation, IntelliJ and Eclipse setup,
+troubleshooting) are shown by the front-end in a dialog opened from the debug badge of the instance, and the helper
+script they run on their machine is served by the front-end on /adt-debug.sh (see componentRemoteDebugModal() in
+var/www/lib/functions-ui.php and var/www/adt-debug.sh). The start output of the instance gives this hint too.
+
+DEPLOYMENT_DEBUG_EXPOSE_PORT=true exposes the JDWP port on all interfaces and opens it in the firewall,
+WITHOUT any authentication (anyone who can reach it can run code in the instance). Avoid it.
+
 Usage
 -----
 
@@ -189,5 +205,7 @@ Usage
 
       DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
       DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
+      DEPLOYMENT_DEBUG_ENABLED          : Enable the JVM remote debug (JDWP). Reachable through the authenticated vhost URI /debug-ws, see "Remote debug of an instance" (default: false)
+      DEPLOYMENT_DEBUG_EXPOSE_PORT      : Legacy : expose the JDWP port on all interfaces, WITHOUT authentication (default: false)
 
 

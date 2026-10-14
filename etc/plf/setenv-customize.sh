@@ -210,7 +210,7 @@ CATALINA_OPTS="${CATALINA_OPTS} -Dexo.accountsetup.skip=${EXO_SKIP_ACCOUNT_SETUP
 [ ! -z ${EXO_JODCONVERTER_OFFICEHOME} ] && CATALINA_OPTS="${CATALINA_OPTS} -Dexo.jodconverter.officehome=\"${EXO_JODCONVERTER_OFFICEHOME}\""
 # Debug Mode
 if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
-  CATALINA_OPTS="${CATALINA_OPTS} -agentlib:jdwp=transport=dt_socket,address=*:${DEPLOYMENT_DEBUG_PORT},server=y,suspend=n"
+  CATALINA_OPTS="${CATALINA_OPTS} -agentlib:jdwp=transport=dt_socket,address=${DEPLOYMENT_DEBUG_BIND_ADDRESS:-127.0.0.1}:${DEPLOYMENT_DEBUG_PORT},server=y,suspend=n"
 fi
 # DEV Mode
 if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
