@@ -838,6 +838,8 @@ function pageFooter() {
     </a>
   </footer>
 
+  <?php if (!empty($GLOBALS['adtRemoteDebugModal'])) { echo componentRemoteDebugModal(); } ?>
+
   <button type="button" id="scrollTopBtn" aria-label="Scroll to top" title="Scroll to top">
     <i class="fas fa-arrow-up" aria-hidden="true"></i>
   </button>
@@ -1205,8 +1207,179 @@ function componentDevModeEnabled($deployment_descriptor, $is_label_addon = true)
  */
 function componentDebugModeEnabled($deployment_descriptor, $is_label_addon = true)
 {
-  return componentFlagBadge($deployment_descriptor, 'DEPLOYMENT_DEBUG_ENABLED', 'fas fa-stethoscope', 'bg-danger',
-    'This instance is enabled with Debug mode.', $is_label_addon);
+  $badge = componentFlagBadge($deployment_descriptor, 'DEPLOYMENT_DEBUG_ENABLED', 'fas fa-stethoscope', 'bg-danger',
+    'This instance is enabled with Debug mode. Click to see how to attach a debugger.', $is_label_addon);
+  if ($badge === '') {
+    return '';
+  }
+  // Opens the remote debug instructions (modal rendered by pageFooter), pre-filled with the instance host
+  $host = property_exists($deployment_descriptor, 'DEPLOYMENT_EXT_HOST') ? (string)$deployment_descriptor->DEPLOYMENT_EXT_HOST : '';
+  if (!preg_match('/^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$/', $host)) {
+    $host = '';
+  }
+  $GLOBALS['adtRemoteDebugModal'] = true;
+  return '<a href="#remoteDebugModal" role="button" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#remoteDebugModal" data-host="' . htmlspecialchars($host) . '">' . $badge . '</a>';
+}
+
+/**
+ * Return the markup of the "Remote debug" instructions modal, opened by the debug badge of an instance
+ * (see componentDebugModeEnabled(), which flags the page as needing it). The instance host is injected
+ * client side from the data-host attribute of the badge that opened it.
+ *
+ * @return string html markup
+ */
+function componentRemoteDebugModal()
+{
+  $websocatVersion = 'v1.14.1';
+  $installCommand = "mkdir -p ~/.local/bin\n"
+      . "curl -sSL -o ~/.local/bin/websocat https://github.com/vi/websocat/releases/download/$websocatVersion/websocat.x86_64-unknown-linux-musl\n"
+      . "chmod +x ~/.local/bin/websocat";
+  $installWindows = "Invoke-WebRequest https://github.com/vi/websocat/releases/download/$websocatVersion/websocat.x86_64-pc-windows-gnu.exe -OutFile websocat.exe";
+  ob_start();
+?>
+<!-- Remote debug instructions (opened from the debug badge of an instance) -->
+<div class="modal fade" id="remoteDebugModal" tabindex="-1" aria-labelledby="remoteDebugTitle" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="remoteDebugTitle"><i class="fas fa-stethoscope me-2"></i>Remote debug <span class="text-muted fs-6 rd-host-title"></span></h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-info">
+          <i class="fas fa-shield-halved me-2"></i>
+          The debug port is <strong>not exposed on the network</strong> (a debugger has full control of the JVM).
+          You reach it through the instance URL with your <strong>eXo LDAP login</strong>, using a small bridge on your machine.
+        </div>
+
+        <ul class="nav nav-pills mb-3" id="rdOsTabs" role="tablist">
+          <li class="nav-item" role="presentation"><button class="nav-link active" id="rdTabUnix" data-bs-toggle="tab" data-bs-target="#rdPaneUnix" type="button" role="tab" aria-controls="rdPaneUnix" aria-selected="true"><i class="fab fa-linux me-1"></i><i class="fab fa-apple me-1"></i>Linux / macOS</button></li>
+          <li class="nav-item" role="presentation"><button class="nav-link" id="rdTabWin" data-bs-toggle="tab" data-bs-target="#rdPaneWin" type="button" role="tab" aria-controls="rdPaneWin" aria-selected="false"><i class="fab fa-windows me-1"></i>Windows</button></li>
+        </ul>
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="rdPaneUnix" role="tabpanel" aria-labelledby="rdTabUnix" tabindex="0">
+            <h6><span class="badge bg-secondary me-2">1</span>Install websocat (once)</h6>
+            <p class="mb-2">A single static binary, no root needed. Linux x86_64:</p>
+            <div class="position-relative mb-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" data-copy="rdInstall" aria-label="Copy to clipboard"><i class="fas fa-copy me-1"></i>Copy</button>
+              <pre id="rdInstall" class="mb-0 pe-5"><?= htmlspecialchars($installCommand) ?></pre>
+            </div>
+            <p class="small text-muted">macOS: <code>brew install websocat</code>. Linux ARM: use the <code>aarch64-unknown-linux-musl</code> file.
+              Others: <a href="https://github.com/vi/websocat/releases" target="_blank" rel="noopener">websocat releases</a>.
+              ("musl" only means the binary is statically linked: it runs on any Linux distribution.)</p>
+
+            <h6 class="mt-4"><span class="badge bg-secondary me-2">2</span>Get the helper script (once)</h6>
+            <p class="mb-2"><a class="btn btn-sm btn-primary" href="/adt-debug.sh" download="adt-debug.sh"><i class="fas fa-download me-1"></i>Download adt-debug.sh</a></p>
+
+            <h6 class="mt-4"><span class="badge bg-secondary me-2">3</span>Open the bridge</h6>
+            <p class="mb-2">It asks for your LDAP password, then listens on <code>localhost:5005</code>. Keep it running while you debug (<kbd>Ctrl</kbd>+<kbd>C</kbd> to stop).</p>
+            <div class="position-relative mb-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" data-copy="rdRun" aria-label="Copy to clipboard"><i class="fas fa-copy me-1"></i>Copy</button>
+              <pre id="rdRun" class="mb-0 pe-5">chmod +x adt-debug.sh
+./adt-debug.sh -u &lt;your-ldap-user&gt; <span class="rd-host">&lt;instance-host&gt;</span></pre>
+            </div>
+            <p class="small text-muted"><code>-p &lt;port&gt;</code> changes the local port. The user and password can also be given with the
+              <code>ADT_DEBUG_USER</code> and <code>ADT_DEBUG_PASSWORD</code> environment variables.</p>
+          </div>
+
+          <div class="tab-pane fade" id="rdPaneWin" role="tabpanel" aria-labelledby="rdTabWin" tabindex="0">
+            <p class="mb-2"><strong>Option A: PowerShell</strong> (nothing else to install, the helper script is not needed)</p>
+            <h6><span class="badge bg-secondary me-2">1</span>Download websocat (once)</h6>
+            <div class="position-relative mb-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" data-copy="rdWinInstall" aria-label="Copy to clipboard"><i class="fas fa-copy me-1"></i>Copy</button>
+              <pre id="rdWinInstall" class="mb-0 pe-5"><?= htmlspecialchars($installWindows) ?></pre>
+            </div>
+            <h6 class="mt-3"><span class="badge bg-secondary me-2">2</span>Open the bridge</h6>
+            <p class="mb-2">From the same folder. A window asks for your LDAP login, then it listens on <code>localhost:5005</code>. Keep it running while you debug (<kbd>Ctrl</kbd>+<kbd>C</kbd> to stop).</p>
+            <div class="position-relative mb-2">
+              <button type="button" class="btn btn-sm btn-outline-secondary position-absolute top-0 end-0 m-2" data-copy="rdWinRun" aria-label="Copy to clipboard"><i class="fas fa-copy me-1"></i>Copy</button>
+              <pre id="rdWinRun" class="mb-0 pe-5">$c = Get-Credential -UserName "&lt;your-ldap-user&gt;" -Message "eXo LDAP login"
+.\websocat.exe -E --binary --basic-auth "$($c.UserName):$($c.GetNetworkCredential().Password)" tcp-l:127.0.0.1:5005 wss://<span class="rd-host">&lt;instance-host&gt;</span>/debug-ws</pre>
+            </div>
+            <p class="small text-muted">If PowerShell says the file is blocked, run <code>Unblock-File .\websocat.exe</code> once.</p>
+
+            <p class="mt-3 mb-2"><strong>Option B: Git Bash or WSL</strong></p>
+            <p class="small mb-0">Same as <em>Linux / macOS</em> (download <code>adt-debug.sh</code> and run it). WSL: follow the Linux steps as they are.
+              Git Bash: install websocat with <code>mkdir -p ~/bin &amp;&amp; curl -sSL -o ~/bin/websocat.exe https://github.com/vi/websocat/releases/download/<?= $websocatVersion ?>/websocat.x86_64-pc-windows-gnu.exe</code>
+              (then reopen Git Bash so <code>~/bin</code> is in the <code>PATH</code>).</p>
+          </div>
+        </div>
+
+        <h6 class="mt-4"><span class="badge bg-secondary me-2"><i class="fas fa-bug"></i></span>Then attach your IDE to <code>localhost:5005</code></h6>
+        <div class="row">
+          <div class="col-12 col-md-6">
+            <strong>IntelliJ IDEA</strong>
+            <ol class="small">
+              <li><em>Run &gt; Edit Configurations...</em>, <em>+</em> &gt; <em>Remote JVM Debug</em></li>
+              <li><em>Debugger mode</em>: Attach to remote JVM, <em>Transport</em>: Socket</li>
+              <li><em>Host</em>: <code>localhost</code>, <em>Port</em>: <code>5005</code></li>
+              <li>Select the module containing your sources (<em>Use module classpath</em>) and click <em>Debug</em></li>
+            </ol>
+          </div>
+          <div class="col-12 col-md-6">
+            <strong>Eclipse</strong>
+            <ol class="small">
+              <li><em>Run &gt; Debug Configurations...</em>, right-click <em>Remote Java Application</em> &gt; <em>New</em></li>
+              <li><em>Project</em>: the project containing your sources</li>
+              <li><em>Connection Type</em>: Standard (Socket Attach)</li>
+              <li><em>Host</em>: <code>localhost</code>, <em>Port</em>: <code>5005</code>, then <em>Debug</em></li>
+            </ol>
+          </div>
+        </div>
+
+        <details class="mt-3">
+          <summary>Troubleshooting</summary>
+          <ul class="small mt-2 mb-0">
+            <li><strong>Authentication failed</strong>: wrong LDAP user or password, or you are not allowed to access the instance.</li>
+            <li><strong>not found</strong>: the instance was deployed before the secured remote debug existed: redeploy it.</li>
+            <li><strong>adapter isn't reachable</strong>: the instance is stopped or restarting.</li>
+            <li>The IDE says <em>Connection refused</em>: the bridge is not running, or the port differs from the one set in the IDE.</li>
+            <li>Only one debugger can be attached to an instance at a time: detach before attaching again.</li>
+            <li>The credentials are passed to <code>websocat</code> as an argument: other users of <em>your</em> machine can see them in the process list while the bridge runs. Don't use it on a shared machine.</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+  (function () {
+    var modal = document.getElementById('remoteDebugModal');
+    if (!modal) return;
+    // Fill the commands with the host of the instance whose badge was clicked
+    modal.addEventListener('show.bs.modal', function (ev) {
+      var host = (ev.relatedTarget && ev.relatedTarget.getAttribute('data-host')) || '';
+      modal.querySelectorAll('.rd-host').forEach(function (el) { el.textContent = host || '<instance-host>'; });
+      modal.querySelector('.rd-host-title').textContent = host;
+      // Open the tab matching the visitor's system
+      var win = /Win/i.test(navigator.platform || navigator.userAgent || '');
+      var tab = document.getElementById(win ? 'rdTabWin' : 'rdTabUnix');
+      if (tab && window.bootstrap) bootstrap.Tab.getOrCreateInstance(tab).show();
+    });
+    modal.querySelectorAll('[data-copy]').forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        var text = document.getElementById(btn.getAttribute('data-copy')).textContent;
+        var done = function (ok) {
+          btn.innerHTML = ok ? '<i class="fas fa-check me-1"></i>Copied' : '<i class="fas fa-xmark me-1"></i>Copy failed';
+          setTimeout(function () { btn.innerHTML = '<i class="fas fa-copy me-1"></i>Copy'; }, 1800);
+        };
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
+          return;
+        }
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (e) {}
+        document.body.removeChild(ta);
+        done(ok);
+      });
+    });
+  })();
+</script>
+<?php
+  return ob_get_clean();
 }
 
 /**
