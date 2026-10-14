@@ -857,6 +857,28 @@ function pageFooter() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
       });
 
+      // On touch devices a tap leaves the tooltip stuck (hover/focus never
+      // ends), notably when the tap opens a modal: hide tooltips on tap and
+      // whenever a modal opens
+      function hideAllTooltips() {
+        document.querySelectorAll('[rel=tooltip]').forEach(function(el) {
+          var tip = bootstrap.Tooltip.getInstance(el);
+          if (tip) tip.hide();
+        });
+      }
+      document.addEventListener('show.bs.modal', hideAllTooltips);
+      if (window.matchMedia && window.matchMedia('(hover: none)').matches) {
+        document.addEventListener('click', function(e) {
+          var trigger = e.target.closest && e.target.closest('[rel=tooltip]');
+          if (!trigger) { hideAllTooltips(); return; }
+          // Let the action run (modal, link), then drop the tooltip
+          setTimeout(function() {
+            var tip = bootstrap.Tooltip.getInstance(trigger);
+            if (tip) tip.hide();
+          }, 0);
+        });
+      }
+
       // Initialize Bootstrap popovers with HTML support
       var popoverTriggerList = [].slice.call(document.querySelectorAll('[rel=popover]'));
       var popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
