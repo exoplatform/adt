@@ -391,7 +391,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
-      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "26.2.2-0"
+      configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION" "26.2.3-0"
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_AI_CHAT_DISABLED" true
 
