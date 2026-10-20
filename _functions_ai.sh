@@ -93,6 +93,12 @@ do_start_ai() {
   echo_info "${DEPLOYMENT_AI_CONTAINER_NAME} container started"
 
   check_ai_availability
+
+  if [ -n "${DEPLOYMENT_AI_OLLAMA_PREFERRED_MODEL}" ]; then
+    echo_info "Pulling preferred AI model ${DEPLOYMENT_AI_OLLAMA_PREFERRED_MODEL} (no-op when already present) ..."
+    ${DOCKER_CMD} exec ${DEPLOYMENT_AI_CONTAINER_NAME} ollama pull ${DEPLOYMENT_AI_OLLAMA_PREFERRED_MODEL}
+    echo_info "Preferred AI model ${DEPLOYMENT_AI_OLLAMA_PREFERRED_MODEL} ready"
+  fi
 }
   
 check_ai_availability() {
