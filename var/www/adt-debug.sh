@@ -136,7 +136,7 @@ if command -v curl >/dev/null 2>&1; then
   _curl_tls=()
   ${INSECURE} && _curl_tls=(-k)
   set +e
-  _code="$(printf 'user = "%s"\n' "${_escaped}" | curl -s ${_curl_tls[@]+"${_curl_tls[@]}"} -K - -o /dev/null -m 3 -w '%{http_code}' \
+  _code="$(printf 'user = "%s"\n' "${_escaped}" | curl -s --http1.1 ${_curl_tls[@]+"${_curl_tls[@]}"} -K - -o /dev/null -m 3 -w '%{http_code}' \
     -H 'Connection: Upgrade' -H 'Upgrade: websocket' -H 'Sec-WebSocket-Version: 13' \
     -H 'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==' "${HTTP_URL}")"
   _rc=$?
