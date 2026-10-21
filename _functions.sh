@@ -423,7 +423,7 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_CALDAV_ENABLED" false
       configurable_env_var "DEPLOYMENT_CALDAV_IMAGE" "ckulka/baikal"
-      configurable_env_var "DEPLOYMENT_CALDAV_IMAGE_VERSION" "nginx"
+      configurable_env_var "DEPLOYMENT_CALDAV_IMAGE_VERSION" "nginx-php8.2"
       configurable_env_var "DEPLOYMENT_CALDAV_ADMIN_PASSWORD" "ba1kalAdm1n"
       configurable_env_var "DEPLOYMENT_CALDAV_CALENDAR_USERNAME" "calendar"
       configurable_env_var "DEPLOYMENT_CALDAV_CALENDAR_PASSWORD" "ba1kalUs3r"

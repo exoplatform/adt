@@ -68,6 +68,7 @@ do_start_phpldapadmin() {
     -e LDAP_URL="${DEPLOYMENT_LDAP_LINK}" \
     -e LDAP_BASE="${USER_DIRECTORY_BASE_DN}" \
     -e LDAP_ADMIN="${USER_DIRECTORY_ADMIN_DN}" \
+    -v ${ETC_DIR}/php/php-certfr-2026-ale-014.ini:/etc/php/7.0/fpm/conf.d/zz-certfr-2026-ale-014.ini:ro \
     -p "${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT}:80" \
     --name ${DEPLOYMENT_PHPLDAPADMIN_CONTAINER_NAME} ${DEPLOYMENT_PHPLDAPADMIN_IMAGE}:${DEPLOYMENT_PHPLDAPADMIN_IMAGE_VERSION}
   echo_info "${DEPLOYMENT_PHPLDAPADMIN_CONTAINER_NAME} container started"  

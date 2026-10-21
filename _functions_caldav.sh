@@ -83,6 +83,8 @@ do_start_caldav() {
     -v ${DEPLOYMENT_CALDAV_CONFIG_VOLUME}:/var/www/baikal/config \
     -v ${DEPLOYMENT_CALDAV_SPECIFIC_VOLUME}:/var/www/baikal/Specific \
     -v ${ETC_DIR}/baikal/nginx-prefix.sh:/docker-entrypoint.d/50-baikal-prefix.sh:ro \
+    -v ${ETC_DIR}/php/php-certfr-2026-ale-014.ini:/etc/php/8.2/fpm/conf.d/zz-certfr-2026-ale-014.ini:ro \
+    -v ${ETC_DIR}/php/php-certfr-2026-ale-014.ini:/etc/php/8.2/cli/conf.d/zz-certfr-2026-ale-014.ini:ro \
     --health-cmd="curl --fail http://localhost:80 || exit 1" \
     --health-interval=30s \
     --health-retries=3 \
