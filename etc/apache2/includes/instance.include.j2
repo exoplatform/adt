@@ -154,7 +154,7 @@
 {% if DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED == "true" %}
         # Proxify of websocket url pattern for onlyoffice
    
-        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io|mailpit|cloudbeaver|debug-ws)/
+        RewriteCond %{REQUEST_URI} !^/(cometd|chatServer|jitsiweb|xmpp-websocket|colibri-ws|whiteboard|livelogs|socket.io|mailpit|cloudbeaver|debug-ws)(/|$)
         RewriteCond %{HTTP:Upgrade} websocket [NC]
         RewriteCond %{HTTP:Connection} upgrade [NC]
         RewriteRule ^/?(.*) "ws://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/$1$2" [P,L]
