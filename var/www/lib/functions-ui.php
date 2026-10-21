@@ -1235,7 +1235,12 @@ function componentDebugModeEnabled($deployment_descriptor, $is_label_addon = tru
     return '';
   }
   // Opens the remote debug instructions (modal rendered by pageFooter), pre-filled with the instance host
+  // Prefer the vhost alias (the public fqdn) when there is one : it is the name the TLS certificate is issued for,
+  // so websocat doesn't fail with a certificate error as it does with the internal instance host
   $host = property_exists($deployment_descriptor, 'DEPLOYMENT_EXT_HOST') ? (string)$deployment_descriptor->DEPLOYMENT_EXT_HOST : '';
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_APACHE_VHOST_ALIAS') && (string)$deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS !== '') {
+    $host = (string)$deployment_descriptor->DEPLOYMENT_APACHE_VHOST_ALIAS;
+  }
   if (!preg_match('/^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$/', $host)) {
     $host = '';
   }
@@ -1300,7 +1305,7 @@ function componentRemoteDebugModal()
               <pre id="rdRun" class="mb-0 pe-5">chmod +x adt-debug.sh
 ./adt-debug.sh -u &lt;your-ldap-user&gt; <span class="rd-host">&lt;instance-host&gt;</span></pre>
             </div>
-            <p class="small text-muted"><code>-p &lt;port&gt;</code> changes the local port. The user and password can also be given with the
+            <p class="small text-muted"><code>-p &lt;port&gt;</code> changes the local port. <code>-k</code> skips the TLS certificate check: use it only as a fallback if you get a certificate / host name mismatch error. The user and password can also be given with the
               <code>ADT_DEBUG_USER</code> and <code>ADT_DEBUG_PASSWORD</code> environment variables.</p>
           </div>
 
@@ -1318,6 +1323,7 @@ function componentRemoteDebugModal()
               <pre id="rdWinRun" class="mb-0 pe-5">$c = Get-Credential -UserName "&lt;your-ldap-user&gt;" -Message "eXo LDAP login"
 .\websocat.exe -E --binary --basic-auth "$($c.UserName):$($c.GetNetworkCredential().Password)" tcp-l:127.0.0.1:5005 wss://<span class="rd-host">&lt;instance-host&gt;</span>/debug-ws</pre>
             </div>
+            <p class="small text-muted">On a certificate / host name mismatch error, add <code>-k</code> after <code>--binary</code> (skips the certificate check, fallback only).</p>
             <p class="small text-muted">If PowerShell says the file is blocked, run <code>Unblock-File .\websocat.exe</code> once.</p>
 
             <p class="mt-3 mb-2"><strong>Option B: Git Bash or WSL</strong></p>
