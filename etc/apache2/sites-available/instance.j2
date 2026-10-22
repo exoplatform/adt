@@ -80,6 +80,9 @@
 {%- if DEPLOYMENT_CLOUDBEAVER_ENABLED == "true" %}
 {{ protected("^/cloudbeaver.*", 'Header set Cache-Control "max-age=63072000, public"') }}
 {%- endif %}
+{%- if DEPLOYMENT_LAM_ENABLED == "true" %}
+{{ protected("^/lam.*") }}
+{%- endif %}
 {%- if DEPLOYMENT_MONGO_EXPRESS_ENABLED == "true" %}
 {{ protected("^/mongoexpress.*") }}
 {%- endif %}

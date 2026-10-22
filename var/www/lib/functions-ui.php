@@ -1846,10 +1846,10 @@ function componentDeploymentActions($deployment_descriptor)
     $content .= '</a>';
   }
   
-  // phpLDAPAdmin
-  if (property_exists($deployment_descriptor, 'DEPLOYMENT_PHPLDAPADMIN_ENABLED') && $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_ENABLED) {
-    $content .= '<a href="http://' . $deploymentURL . ':' . $deployment_descriptor->DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT . '" rel="tooltip" title="phpLDAPAdmin" class="btn btn-outline-secondary">';
-    $content .= '<i class="fas fa-address-book"></i>';
+  // LDAP Account Manager
+  if (property_exists($deployment_descriptor, 'DEPLOYMENT_LAM_ENABLED') && $deployment_descriptor->DEPLOYMENT_LAM_ENABLED) {
+    $content .= '<a href="http://' . $deploymentURL . '/lam/" rel="tooltip" title="LDAP Account Manager" class="btn btn-outline-secondary">';
+    $content .= '<i class="fas fa-users-gear"></i>';
     $content .= '</a>';
   }
   
@@ -2232,7 +2232,8 @@ function componentAccessInfoCards()
                     <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
                     <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
                     <code class="d-block mt-1">password: exo</code>
-                </div>',
+                </div>
+                <p class="card-text mt-2 mb-0">Use the <i class="fas fa-users-gear"></i> icon to manage entries with LDAP Account Manager.</p>',
     ],
   ];
 

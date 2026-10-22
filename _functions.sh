@@ -41,7 +41,7 @@ source "${SCRIPT_DIR}/_functions_debugproxy.sh"
 source "${SCRIPT_DIR}/_functions_mongoexpress.sh"
 source "${SCRIPT_DIR}/_functions_keycloak.sh"
 source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
-source "${SCRIPT_DIR}/_functions_phpldapadmin.sh"
+source "${SCRIPT_DIR}/_functions_lam.sh"
 source "${SCRIPT_DIR}/_functions_jitsi.sh"
 source "${SCRIPT_DIR}/_functions_sftp.sh"
 source "${SCRIPT_DIR}/_functions_cmis.sh"
@@ -395,9 +395,9 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_READONLY" true
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_AI_CHAT_DISABLED" true
 
-      configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_ENABLED" false
-      configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_IMAGE" "rschaeuble/phpldapadmin"
-      configurable_env_var "DEPLOYMENT_PHPLDAPADMIN_IMAGE_VERSION" "latest"
+      configurable_env_var "DEPLOYMENT_LAM_ENABLED" false
+      configurable_env_var "DEPLOYMENT_LAM_IMAGE" "ghcr.io/ldapaccountmanager/lam"
+      configurable_env_var "DEPLOYMENT_LAM_IMAGE_VERSION" "stable"
 
       configurable_env_var "DEPLOYMENT_JITSI_ENABLED" false
       configurable_env_var "DEPLOYMENT_JITSI_MEM_LIMIT" 4g
@@ -1385,7 +1385,7 @@ initialize_product_settings() {
    do_get_mongo_express_settings
    do_get_keycloak_settings
    do_get_cloudbeaver_settings
-   do_get_phpldapadmin_settings
+   do_get_lam_settings
    do_get_jitsi_settings
    do_get_sftp_settings
    do_get_caldav_settings
@@ -1638,7 +1638,7 @@ do_init_empty_data(){
   do_drop_frontail_data
   do_drop_debugproxy_data
   do_drop_keycloak_data
-  do_drop_phpldapadmin_data
+  do_drop_lam_data
   do_drop_caldav_data
 
   do_create_data
@@ -1991,8 +1991,8 @@ do_deploy() {
   # Cloudbeaver  port
   env_var "DEPLOYMENT_CLOUDBEAVER_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}96"
 
-  # PHPLDAPADMIN port
-  env_var "DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}80"
+  # LAM port
+  env_var "DEPLOYMENT_LAM_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}80"
 
   # Jitsi  port
   env_var "DEPLOYMENT_JITSI_CALL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}81"
@@ -2288,7 +2288,7 @@ do_start() {
   do_start_caldav
   do_start_database
   do_start_cloudbeaver
-  do_start_phpldapadmin
+  do_start_lam
   do_start_es
   do_start_chat_server
   do_start_mongo_express
@@ -2298,8 +2298,8 @@ do_start() {
     do_ufw_open_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
   fi
 
-  if ${DEPLOYMENT_PHPLDAPADMIN_ENABLED:-false} ; then
-    do_ufw_open_port ${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT} "phpLDAPAdmin HTTP Port" ${ADT_DEV_MODE}
+  if ${DEPLOYMENT_LAM_ENABLED:-false} ; then
+    do_ufw_open_port ${DEPLOYMENT_LAM_HTTP_PORT} "LDAP Account Manager HTTP Port" ${ADT_DEV_MODE}
   fi
 
   if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then
@@ -2556,7 +2556,7 @@ do_stop() {
       do_stop_ai
       do_stop_frontail
       do_stop_debugproxy
-      do_stop_phpldapadmin
+      do_stop_lam
       do_stop_mongo_express
       do_stop_keycloak
       do_stop_cloudbeaver
@@ -2609,7 +2609,7 @@ do_undeploy() {
     do_drop_frontail_data
     do_drop_debugproxy_data
     do_drop_keycloak_data
-    do_drop_phpldapadmin_data
+    do_drop_lam_data
     do_drop_cloudbeaver_data
     do_drop_jitsi_data
     do_drop_sftp_data
@@ -2633,7 +2633,7 @@ do_undeploy() {
     do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
     # Close debug port
     [ ! -z "${DEPLOYMENT_DEBUG_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
-    [ ! -z "${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_PHPLDAPADMIN_HTTP_PORT} "phpLDAPAdmin HTTP Port" ${ADT_DEV_MODE}
+    [ ! -z "${DEPLOYMENT_LAM_HTTP_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_LAM_HTTP_PORT} "LDAP Account Manager HTTP Port" ${ADT_DEV_MODE}
     if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
       # close firewall port for Onlyoffice documentserver only if addon was deployed
       do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
