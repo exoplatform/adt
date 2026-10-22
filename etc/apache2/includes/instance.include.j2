@@ -118,6 +118,9 @@
 {% if DEPLOYMENT_CLOUDBEAVER_ENABLED == "true" %}
     RewriteRule ^/cloudbeaver$ /cloudbeaver/ [R]
 {% endif %}
+{% if DEPLOYMENT_LAM_ENABLED == "true" %}
+    RewriteRule ^/lam$ /lam/ [R]
+{% endif %}
 {% if DEPLOYMENT_CALDAV_ENABLED == "true" %}
     RewriteRule ^/baikal$ /baikal/ [R]
 {% endif %}
@@ -247,6 +250,11 @@
 {% if DEPLOYMENT_CLOUDBEAVER_ENABLED == "true" %}
     ProxyPass               /cloudbeaver/        http://localhost:{{ DEPLOYMENT_CLOUDBEAVER_HTTP_PORT }}/cloudbeaver/
     ProxyPassReverse        /cloudbeaver/        http://localhost:{{ DEPLOYMENT_CLOUDBEAVER_HTTP_PORT }}/cloudbeaver/
+{% endif %}
+
+{% if DEPLOYMENT_LAM_ENABLED == "true" %}
+    ProxyPass               /lam/        http://localhost:{{ DEPLOYMENT_LAM_HTTP_PORT }}/lam/
+    ProxyPassReverse        /lam/        http://localhost:{{ DEPLOYMENT_LAM_HTTP_PORT }}/lam/
 {% endif %}
 
 {% if DEPLOYMENT_FRONTAIL_ENABLED == "true" %}
