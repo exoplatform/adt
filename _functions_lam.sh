@@ -74,7 +74,7 @@ do_start_lam() {
     -e LDAP_USER="${USER_DIRECTORY_ADMIN_DN}" \
     -e LAM_PASSWORD="${USER_DIRECTORY_ADMIN_PASSWORD}" \
     -e LDAP_USERS_DN="ou=People,o=portal,o=gatein,${USER_DIRECTORY_BASE_DN}" \
-    -e LDAP_GROUPS_DN="ou=Platform,o=portal,o=gatein,${USER_DIRECTORY_BASE_DN}" \
+    -e LDAP_GROUPS_DN="ou=groups,${USER_DIRECTORY_BASE_DN}" \
     -v ${ETC_DIR}/php/php-certfr-2026-ale-014.ini:/etc/php/8.4/apache2/conf.d/zz-certfr-2026-ale-014.ini:ro \
     -p "127.0.0.1:${DEPLOYMENT_LAM_HTTP_PORT}:80" \
     --name ${DEPLOYMENT_LAM_CONTAINER_NAME} ${DEPLOYMENT_LAM_IMAGE}:${DEPLOYMENT_LAM_IMAGE_VERSION}
