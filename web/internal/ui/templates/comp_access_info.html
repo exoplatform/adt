@@ -1,0 +1,48 @@
+<!-- Desktop: 3 always-expanded cards. Mobile: collapsible accordion (same
+     markup, styled/behaved differently per breakpoint — see .access-info-*
+     rules in style.css) so the static reference text doesn't eat a full
+     screen of scroll before real page content on small viewports. -->
+<div class="access-info-grid mt-4">
+    <div class="access-info-item card h-100">
+        <button type="button" class="access-info-toggle card-header" data-bs-toggle="collapse" data-bs-target="#accessInfoJmx" aria-expanded="false" aria-controls="accessInfoJmx">
+            <i class="fas fa-plug me-2"></i>JMX Access
+            <i class="fas fa-chevron-down access-info-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="collapse access-info-body" id="accessInfoJmx">
+            <div class="card-body">
+                <p class="card-text">Each instance can be accessed using JMX with the URL linked to the monitoring icon. Credentials can be found on CI Build.</p>
+            </div>
+        </div>
+    </div>
+    <div class="access-info-item card h-100">
+        <button type="button" class="access-info-toggle card-header" data-bs-toggle="collapse" data-bs-target="#accessInfoKeycloak" aria-expanded="false" aria-controls="accessInfoKeycloak">
+            <i class="fas fa-key me-2"></i>Keycloak Access
+            <i class="fas fa-chevron-down access-info-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="collapse access-info-body" id="accessInfoKeycloak">
+            <div class="card-body">
+                <p class="card-text">Each deployed Keycloak can be accessed using the Keycloak icon with credentials:</p>
+                <div class="mt-2 p-2 rounded code-bg">
+                    <code class="d-block">root / password</code>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="access-info-item card h-100">
+        <button type="button" class="access-info-toggle card-header" data-bs-toggle="collapse" data-bs-target="#accessInfoLdap" aria-expanded="false" aria-controls="accessInfoLdap">
+            <i class="fas fa-address-book me-2"></i>LDAP Access
+            <i class="fas fa-chevron-down access-info-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="collapse access-info-body" id="accessInfoLdap">
+            <div class="card-body">
+                <p class="card-text">Each LDAP deployed can be accessed with:</p>
+                <div class="mt-2 p-2 rounded code-bg">
+                    <code class="d-block">Base DN: dc=exoplatform,dc=com</code>
+                    <code class="d-block mt-1">User DN: cn=admin,dc=exoplatform,dc=com</code>
+                    <code class="d-block mt-1">password: exo</code>
+                </div>
+                <p class="card-text mt-2 mb-0">Use the <i class="fas fa-users-gear"></i> icon to manage entries with LDAP Account Manager.</p>
+            </div>
+        </div>
+    </div>
+</div>

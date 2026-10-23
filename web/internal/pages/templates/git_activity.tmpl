@@ -1,0 +1,247 @@
+
+<div id="wrap">
+  <div id="main" role="main">
+    <div class="container-fluid">
+
+      <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 mb-4">
+        <div class="page-header mb-0">
+          <h1 class="page-header__title">Git Activity</h1>
+          <p class="page-header__subtitle">Commit activity across {{ .NumRepos }} repositories over the last {{ .Days }} days (base branch <code>develop</code>, excluding merge commits and bot accounts)</p>
+        </div>
+        <div class="btn-group btn-group-sm days-filter">
+          <a href="?days=7" class="btn btn-outline-secondary {{ .Active7 }}">7d</a>
+          <a href="?days=14" class="btn btn-outline-secondary {{ .Active14 }}">14d</a>
+          <a href="?days=30" class="btn btn-outline-secondary {{ .Active30 }}">30d</a>
+          <a href="?days=90" class="btn btn-outline-secondary {{ .Active90 }}">90d</a>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <i class="fas fa-chart-simple" aria-hidden="true"></i> Overview
+      </div>
+      <div class="bento mb-2">
+        <div class="bento__item bento__item--3" style="--card-accent: var(--accent)">
+          <div class="metric">
+            <span class="metric__label"><i class="fas fa-code-commit"></i> Commits</span>
+            <span class="metric__value">{{ .Total }}</span>
+            <span class="metric__change">last {{ .Days }} days</span>
+          </div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--success)">
+          <div class="metric">
+            <span class="metric__label"><span class="pulse-dot on"></span> Active Repositories</span>
+            <span class="metric__value">{{ .Active }} / {{ .NumRepos }}</span>
+            <span class="metric__change">with commits</span>
+          </div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--info)">
+          <div class="metric">
+            <span class="metric__label"><i class="fas fa-users"></i> Contributors</span>
+            <span class="metric__value">{{ .Contributors }}</span>
+            <span class="metric__change">unique authors</span>
+          </div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--warning)">
+          <div class="metric">
+            <span class="metric__label"><i class="fas fa-chart-line"></i> Avg Commits / Day</span>
+            <span class="metric__value">{{ .Avg }}</span>
+            <span class="metric__change">over {{ .Days }} days</span>
+          </div>
+        </div>
+      </div>
+      <div class="bento mb-4">
+        <div class="bento__item bento__item--4" style="--card-accent: var(--accent2)">
+          <div class="metric">
+            <span class="metric__label"><i class="fas fa-fire"></i> Busiest Day</span>
+            <span class="metric__value metric__value--label">{{ esc .BusiestDay }}</span>
+            <span class="metric__change">{{ .BusiestChange }}</span>
+          </div>
+        </div>
+        <div class="bento__item bento__item--4" style="--card-accent: var(--accent)">
+          <div class="metric">
+            <span class="metric__label"><i class="fas fa-cube"></i> Most Active Repository</span>
+            <span class="metric__value metric__value--label">
+              {{ if .TopRepo }}{{ if .TopRepo.GithubURL }}<a href="{{ esc .TopRepo.GithubURL }}" target="_blank" class="link-reset">{{ esc .TopRepo.Label }}</a>{{ else }}{{ esc .TopRepo.Label }}{{ end }}{{ else }}—{{ end }}
+            </span>
+            <span class="metric__change">{{ .RepoChange }}</span>
+          </div>
+        </div>
+        <div class="bento__item bento__item--4" style="--card-accent: var(--info)">
+          <div class="metric">
+            <span class="metric__label"><i class="fas fa-trophy"></i> Top Contributor</span>
+            <span class="metric__value metric__value--label">
+              {{ if .TopAuthor }}{{ if .TopAuthor.AvatarURL }}<img src="{{ esc .TopAuthor.AvatarURL }}" class="avatar-sm" alt="">{{ end }}{{ if .TopAuthor.GithubURL }}<a href="{{ esc .TopAuthor.GithubURL }}" target="_blank" class="link-reset">{{ esc .TopAuthor.Author }}</a>{{ else }}{{ esc .TopAuthor.Author }}{{ end }}{{ else }}—{{ end }}
+            </span>
+            <span class="metric__change">{{ .AuthorChange }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <i class="fab fa-github" aria-hidden="true"></i> Pull Requests
+      </div>
+      <div class="bento mb-4">
+{{ range .PRs }}        <div class="bento__item bento__item--6" style="--card-accent: var(--accent2)">
+          <div class="d-flex justify-content-between align-items-center mb-2">
+            <span class="metric__label"><i class="fab fa-github"></i> {{ esc .Org }}</span>
+          </div>
+          <div class="row text-center">
+            <div class="col-6">
+              <span class="metric__value" style="color: var(--success)">{{ .Created }}</span>
+              <div class="metric__label mt-1">PRs Created</div>
+            </div>
+            <div class="col-6">
+              <span class="metric__value" style="color: var(--accent-text)">{{ .Merged }}</span>
+              <div class="metric__label mt-1">PRs Merged</div>
+            </div>
+          </div>
+        </div>
+{{ end }}      </div>
+
+      <div class="section-title">
+        <i class="fas fa-chart-line" aria-hidden="true"></i> Activity Trends
+      </div>
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <i class="fas fa-chart-bar me-1"></i> Commits per Day
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="commitsChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-12">
+          <div class="card">
+            <div class="card-header">
+              <i class="fas fa-code-branch me-1"></i> Repository Activity Trend
+              <small class="text-muted ms-2">(top {{ .TrendCount }} repositories)</small>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="repoTrendChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header">
+              <i class="fas fa-cube me-1"></i> Commits by Repository
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="repoChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header">
+              <i class="fas fa-users me-1"></i> Top Contributors
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="authorChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100">
+            <div class="card-header">
+              <i class="fas fa-calendar-week me-1"></i> Commits by Day of Week
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="dowChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <i class="fas fa-diagram-project" aria-hidden="true"></i> Dependency Links
+      </div>
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-diagram-project me-1"></i> Repository dependency links
+          <small class="text-muted ms-2">(pom.xml parent &amp; imported BOMs on <code>develop</code>)</small>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 activity-list">
+              <thead class="table-dark">
+                <tr>
+                  <th>Repository</th>
+                  <th>Depends on</th>
+                </tr>
+              </thead>
+              <tbody>
+{{ if not .DepRows }}                <tr><td colspan="2" class="text-center text-muted py-3">No dependency links found</td></tr>
+{{ end }}{{ range .DepRows }}                <tr id="repo-{{ esc .Repo }}">
+                  <td>
+                    {{ if .URL }}<a href="{{ esc .URL }}" target="_blank" class="link-reset" title="Open {{ esc .Label }} on GitHub"><span class="badge bg-secondary">{{ esc .Label }}</span></a>{{ else }}<span class="badge bg-secondary">{{ esc .Label }}</span>{{ end }}
+                  </td>
+                  <td>
+                    {{ if .Targets }}<div class="dependency-badges">
+{{ range .Targets }}                      <a href="#repo-{{ esc .Repo }}" class="link-reset dependency-link" title="Jump to {{ esc .Label }}"><span class="badge bg-secondary">{{ esc .Label }}</span></a>
+{{ end }}                    </div>{{ else }}<span class="text-muted">&mdash;</span>{{ end }}
+                  </td>
+                </tr>
+{{ end }}              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-title">
+        <i class="fas fa-history" aria-hidden="true"></i> Recent Commits
+      </div>
+      <div class="card mb-4">
+        <div class="card-header">
+          <i class="fas fa-history me-1"></i> Last 50 commits
+          <small class="text-muted ms-2">(last 90 days — main branches only, no merges)</small>
+        </div>
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover table-striped mb-0 activity-list">
+              <thead class="table-dark">
+                <tr>
+                  <th>Date</th>
+                  <th>Repository</th>
+                  <th>Author</th>
+                  <th>Commit</th>
+                  <th>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+{{ if not .Recent }}                <tr><td colspan="5" class="text-center text-muted py-3">No commits found</td></tr>
+{{ end }}{{ range .Recent }}                <tr>
+                  <td class="text-nowrap"><small>{{ esc .Date }}</small></td>
+                  <td>{{ if .RepoURL }}<a href="{{ esc .RepoURL }}" target="_blank" class="link-reset"><span class="badge bg-secondary">{{ esc .Label }}</span></a>{{ else }}<span class="badge bg-secondary">{{ esc .Label }}</span>{{ end }}</td>
+                  <td>
+                    {{ if .AvatarURL }}<img src="{{ esc .AvatarURL }}" class="avatar-sm" alt="">{{ end }}{{ if .AuthorURL }}<a href="{{ esc .AuthorURL }}" target="_blank" class="link-reset">{{ esc .Author }}</a>{{ else }}{{ esc .Author }}{{ end }}
+                  </td>
+                  <td>{{ if .GithubURL }}<a href="{{ esc .GithubURL }}" target="_blank"><code>{{ esc .Hash }}</code></a>{{ else }}<code>{{ esc .Hash }}</code>{{ end }}</td>
+                  <td class="commit-msg" rel="tooltip" title="{{ esc .Message }}">{{ esc .Short }}</td>
+                </tr>
+{{ end }}              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

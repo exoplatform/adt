@@ -1,0 +1,120 @@
+  <div id="wrap">
+    <div id="main">
+      <div class="page-header">
+        <h1 class="page-header__title">Debug Sessions</h1>
+        <p class="page-header__subtitle">Connected users, session time and eviction</p>
+      </div>
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            {{ .Menu }}
+{{ with .Notice }}            <div class="alert alert-{{ .Kind }}">{{ esc .Text }}</div>
+{{ end }}            <div class="card">
+              <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="fas fa-users me-2"></i>Login sessions ({{ len .Sessions }})</span>
+                <span class="form-check form-switch mb-0">
+                  <input class="form-check-input" type="checkbox" role="switch" id="autorefresh">
+                  <label class="form-check-label small" for="autorefresh">Auto-refresh (10s)</label>
+                </span>
+                <form method="post" class="d-inline" data-confirm="Evict all other sessions?">
+                  <input type="hidden" name="action" value="evict-all">
+                  <input type="hidden" name="token" value="{{ .Token }}">
+                  <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-users-slash me-1"></i>Evict all</button>
+                </form>
+              </div>
+              <div class="card-body">
+                <p class="text-muted small">Only sessions that visited the dashboard since this feature was enabled are listed.
+                  Evicting a session rejects its cookie on every path; the user can log in again.</p>
+                <div class="table-responsive">
+                <table class="table table-hover table-themed table-sm align-middle">
+                  <thead><tr>
+                    <th>User</th><th>IP</th><th>Browser</th><th>Connected</th><th>Last seen</th><th>Expires in</th><th></th>
+                  </tr></thead>
+                  <tbody>
+{{ range .Sessions }}                    <tr>
+                      <td>{{ esc .Name }} <span class="text-muted">({{ esc .User }})</span>{{ if .You }} <span class="badge bg-info">you</span>{{ end }}</td>
+                      <td>{{ esc .IP }}</td>
+                      <td class="small text-truncate" style="max-width:260px" title="{{ esc .UA }}">{{ esc .UA }}</td>
+                      <td>{{ .Connected }} ago</td>
+                      <td>{{ .LastSeen }} ago</td>
+                      <td>{{ .Expires }}</td>
+                      <td>
+{{ if .Evicted }}                        <span class="badge bg-danger">Evicted</span>
+{{ else if .You }}                        <button class="btn btn-sm btn-outline-secondary" disabled>Evict</button>
+{{ else }}                        <form method="post" class="d-inline" data-confirm="Evict {{ esc .User }}?">
+                          <input type="hidden" name="id" value="{{ esc .ID }}">
+                          <input type="hidden" name="token" value="{{ $.Token }}">
+                          <button type="submit" class="btn btn-sm btn-outline-danger"><i class="fas fa-user-slash me-1"></i>Evict</button>
+                        </form>
+{{ end }}                      </td>
+                    </tr>
+{{ else }}                    <tr><td colspan="7" class="text-muted">No tracked session.</td></tr>
+{{ end }}                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div>
+            <div class="card mt-4">
+              <div class="card-header"><i class="fas fa-user-lock me-2"></i>Users ({{ len .Users }})</div>
+              <div class="card-body">
+                <p class="text-muted small">Block evicts every session of the user and refuses their login for the chosen time (web login only, not <code>curl</code> on <code>/downloads</code> and similar Basic-auth paths).</p>
+                <div class="table-responsive">
+                <table class="table table-hover table-themed table-sm align-middle">
+                  <thead><tr><th>User</th><th>Sessions</th><th></th></tr></thead>
+                  <tbody>
+{{ range .Users }}                    <tr>
+                      <td>{{ esc .Name }} <span class="text-muted">({{ esc .User }})</span>{{ if .IsMe }} <span class="badge bg-info">you</span>{{ end }}</td>
+                      <td>{{ .Count }}</td>
+                      <td class="text-nowrap">
+                        <form method="post" class="d-inline" data-confirm="Evict all the sessions of {{ esc .User }}?">
+                          <input type="hidden" name="action" value="evict-user">
+                          <input type="hidden" name="user" value="{{ esc .User }}">
+                          <input type="hidden" name="token" value="{{ $.Token }}">
+                          <button type="submit" class="btn btn-sm btn-outline-danger"{{ if .Disabled }} disabled{{ end }}>Evict user</button>
+                        </form>
+{{ if not .IsMe }}                        <form method="post" class="d-inline-flex gap-1 align-items-center" data-confirm="Block {{ esc .User }}?">
+                          <input type="hidden" name="action" value="block">
+                          <input type="hidden" name="user" value="{{ esc .User }}">
+                          <input type="hidden" name="token" value="{{ $.Token }}">
+                          <select name="minutes" class="form-select form-select-sm w-auto" aria-label="Block duration">
+                            <option value="15">15 min</option><option value="60" selected>1 hour</option><option value="480">8 hours</option><option value="1440">24 hours</option>
+                          </select>
+                          <button type="submit" class="btn btn-sm btn-outline-warning"><i class="fas fa-ban me-1"></i>Block</button>
+                        </form>
+{{ end }}                      </td>
+                    </tr>
+{{ else }}                    <tr><td colspan="3" class="text-muted">No connected user.</td></tr>
+{{ end }}                  </tbody>
+                </table>
+                </div>
+              </div>
+            </div>
+{{ if .Blocked }}            <div class="card mt-4">
+              <div class="card-header"><i class="fas fa-ban me-2"></i>Blocked users ({{ len .Blocked }})</div>
+              <div class="card-body">
+                <table class="table table-hover table-themed table-sm align-middle mb-0">
+                  <thead><tr><th>User</th><th>Blocked by</th><th>Remaining</th><th></th></tr></thead>
+                  <tbody>
+{{ range .Blocked }}                    <tr>
+                      <td>{{ esc .User }}</td>
+                      <td>{{ esc .By }}</td>
+                      <td>{{ .Remaining }}</td>
+                      <td>
+                        <form method="post" class="d-inline">
+                          <input type="hidden" name="action" value="unblock">
+                          <input type="hidden" name="hash" value="{{ esc .Hash }}">
+                          <input type="hidden" name="token" value="{{ $.Token }}">
+                          <button type="submit" class="btn btn-sm btn-outline-success">Unblock</button>
+                        </form>
+                      </td>
+                    </tr>
+{{ end }}                  </tbody>
+                </table>
+              </div>
+            </div>
+{{ end }}          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+<script src="/js/debug_sessions.js?v={{ v }}"></script>

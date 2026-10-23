@@ -1,0 +1,1 @@
+<tr><th scope="row" class="w-25">{{ esc .Label }}</th><td>{{ if .Code }}<code>{{ esc .Value }}</code>{{ else if .Esc }}{{ esc .Value }}{{ else }}{{ .Value }}{{ end }}{{ .Suffix }}{{ with .Meter }}{{ template "debug_health_meter.tmpl" . }}{{ end }}</td></tr>

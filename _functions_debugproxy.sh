@@ -22,7 +22,7 @@ fi
 # small WebSocket <-> TCP adapter (websocat) running in a container on the host network.
 #
 # Client side : the instructions (dialog of the debug badge) and the helper script (/adt-debug.sh) are served by the
-#               front-end, see componentRemoteDebugModal() in var/www/lib/functions-ui.php. They boil down to :
+#               front-end, see the remote debug dialog of web/internal/ui. They boil down to :
 #                 websocat -E --binary --basic-auth user:password tcp-l:127.0.0.1:5005 wss://<host>/debug-ws
 #               then attach the IDE debugger to localhost:5005
 #

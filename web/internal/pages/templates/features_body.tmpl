@@ -1,0 +1,195 @@
+<!-- Main ================================================== -->
+<div id="wrap">
+    <div id="main" role="main">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <!-- Page Header -->
+                    <div class="page-header">
+                        <h1 class="page-header__title">Feature Branches</h1>
+                        <p class="page-header__subtitle">Git feature branches (<code>feature/.*</code>) with branch health overview</p>
+                    </div>
+
+{{ if .Filters }}                    <!-- Filters -->
+                    <div id="featureFilters" class="filter-bar d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <div class="instances-search mb-0 flex-grow-1">
+                            <i class="fas fa-search instances-search__icon"></i>
+                            <input type="text" id="featureSearch" class="instances-search__input" placeholder="Filter by project...">
+                            <button type="button" id="featureFiltersReset" class="btn btn-sm filter-reset d-none" title="Clear filters">
+                                <i class="fas fa-times" aria-hidden="true"></i>Clear
+                                <span class="filter-reset__count" aria-hidden="true"></span>
+                                <span class="visually-hidden">filters</span>
+                            </button>
+                        </div>
+                        <select id="featureName" class="form-select form-select-sm w-auto" aria-label="Feature">
+                            <option value="">All features</option>
+{{ range .Groups }}                            <optgroup label="{{ .Label }}">
+{{ range .Names }}                                <option value="{{ esc . }}">{{ esc . }}</option>
+{{ end }}                            </optgroup>
+{{ end }}                        </select>
+                        <div class="btn-group btn-group-sm" role="group" aria-label="Branch type">
+                            <button type="button" class="btn btn-outline-secondary" data-scope="all">All</button>
+                            <button type="button" class="btn btn-outline-secondary" data-scope="deployed"><i class="fas fa-check-circle me-1"></i>Deployed</button>
+                            <button type="button" class="btn btn-outline-secondary" data-scope="other"><i class="fas fa-exclamation-triangle me-1"></i>Other</button>
+                        </div>
+                        <button type="button" id="featureBehindOnly" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Only modules behind their base branch">
+                            <i class="fas fa-arrow-down me-1"></i>Needs rebase
+                        </button>
+                        <button type="button" id="featureAheadOnly" class="btn btn-sm btn-outline-secondary" rel="tooltip" title="Only modules with dev commits not yet backported (more than 1 commit ahead)">
+                            <i class="fas fa-code-merge me-1"></i>Needs backport
+                        </button>
+                        <div class="btn-group btn-group-sm ms-auto features-view-switch" role="group" aria-label="Deployed branches view">
+                            <button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>
+                            <button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view: projects &times; features"><i class="fas fa-table me-1"></i>Table</button>
+                        </div>
+                    </div>
+                    <div id="featuresNoMatch" class="empty-section d-none">
+                        <i class="fas fa-filter"></i>
+                        <h4>No branches match the current filters</h4>
+                    </div>
+{{ end }}{{ with .Deployed }}
+                    <!-- Feature Branches deployed on acceptance -->
+                    <div class="card mb-4 features-section" data-section="deployed">
+                        <div class="card-header">
+                            <div class="w-100">
+                                <div class="d-flex align-items-center flex-wrap card-header__title">
+                                    <i class="fas fa-check-circle text-success me-2"></i>
+                                    <h5 class="mb-0">Feature Branches deployed on acceptance</h5>
+                                    <span class="badge bg-success ms-2 features-count" data-total="{{ len .Cards }}">{{ len .Cards }}</span>
+                                </div>
+                                <small class="text-muted d-block mt-1">Status compared to each project code base branch</small>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="features-cards">
+{{ range .Cards }}                            <div class="feature-card feature-item card mb-3" id="feature-{{ esc .Slug }}" {{ .Attrs }}>
+                                <div class="card-body">
+                                    <a name="{{ esc .Slug }}"></a>
+
+                                    <!-- Feature Header -->
+                                    <div class="feature-title">
+                                        <a href="{{ esc .Href }}" class="text-warning">
+                                            <i class="fas fa-bookmark" aria-hidden="true"></i>
+                                        </a>
+                                        <h5 class="feature-branch-link">
+                                            <code>{{ esc .Name }}</code>
+                                        </h5>
+                                        <div class="feature-actions ms-auto">
+                                        <a href="{{ .CiRebase }}" target="_blank"
+                                           class="btn btn-sm btn-outline-primary" rel="tooltip" title="Rebase this feature branch">
+                                                <i class="fas fa-sync-alt" aria-hidden="true"></i> Rebase
+                                            </a>
+                                            {{ .CiDot }}
+                                        </div>
+                                    </div>
+
+                                    <!-- Projects Grid -->
+                                    <div class="project-grid">
+{{ range .Chips }}                                            <div class="project-chip" data-search="{{ esc .Search }}" data-behind="{{ .Behind }}" data-ahead="{{ .Ahead }}">
+                                                <div class="project-chip-header">
+                                                    <span class="project-chip-name"><i class="fas fa-cube me-1" aria-hidden="true"></i>{{ esc .Label }}</span>
+                                                    <a href="https://ci.exoplatform.org/job/FB/job/{{ .CiJob }}-fb-ci/"
+                                                       target="_blank" rel="tooltip" title="CI job for {{ esc .Label }} (green: passing, red: failing, yellow: unstable, grey: not run)">
+                                                        <span class="ci-dot"><img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/{{ .CiJob }}-fb-ci&amp;subject=&amp;status=+" loading="lazy" alt="CI build status for {{ esc .Label }}"></span>
+                                                    </a>
+                                                </div>
+                                                <div class="text-center">
+                                                    {{ .Status }}
+                                                </div>
+                                            </div>
+{{ end }}                                    </div>
+                                </div>
+                            </div>
+{{ end }}                            </div>
+
+                            <!-- Table view: projects x deployed features matrix -->
+                            <div class="features-matrix-wrap">
+                                <table class="table table-sm align-middle features-matrix" aria-label="Deployed feature branches status per project">
+                                    <thead>
+                                        <tr>
+                                            <th scope="col" class="features-matrix__project">Project</th>
+{{ range .Cards }}                                            <th scope="col" data-feature="{{ esc .Name }}">
+                                                <code>{{ esc .Name }}</code>
+                                                <div class="features-matrix__rebase">
+                                                    <a href="{{ .CiRebase }}" target="_blank" rel="tooltip" title="Rebase this feature branch"><i class="fas fa-sync-alt"></i></a>
+                                                    {{ .CiDot }}
+                                                </div>
+                                            </th>
+{{ end }}                                        </tr>
+                                    </thead>
+                                    <tbody>
+{{ range .Rows }}                                        <tr>
+                                            <th scope="row" class="features-matrix__project"><i class="fas fa-cube me-1" aria-hidden="true"></i>{{ esc .Label }}</th>
+{{ range .Cells }}{{ if .Present }}                                            <td data-feature="{{ esc .Name }}" data-search="{{ esc .Search }}" data-behind="{{ .Behind }}" data-ahead="{{ .Ahead }}">
+                                                <div class="features-matrix__cell">
+                                                    {{ .Status }}
+                                                    <a href="https://ci.exoplatform.org/job/FB/job/{{ .CiJob }}-fb-ci/" target="_blank" rel="tooltip" title="CI job for {{ esc .Label }} on {{ esc .Name }} (green: passing, red: failing, yellow: unstable, grey: not run)">
+                                                        <span class="ci-dot"><img src="https://ci.exoplatform.org/buildStatus/icon?job=fb/{{ .CiJob }}-fb-ci&amp;subject=&amp;status=+" loading="lazy" alt="CI build status for {{ esc .Label }}"></span>
+                                                    </a>
+                                                </div>
+                                            </td>
+{{ else }}                                            <td data-feature="{{ esc .Name }}" class="features-matrix__empty" aria-label="Not part of this feature">&mdash;</td>
+{{ end }}{{ end }}                                        </tr>
+{{ end }}                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+{{ end }}{{ with .Other }}
+                    <!-- Others branches -->
+                    <div class="card mb-4 features-section" data-section="other">
+                        <div class="card-header">
+                            <div class="w-100">
+                                <div class="d-flex align-items-center flex-wrap card-header__title">
+                                    <i class="fas fa-exclamation-triangle text-warning me-2"></i>
+                                    <h5 class="mb-0">Other branches</h5>
+                                    <span class="badge bg-warning ms-2 features-count" data-total="{{ len . }}">{{ len . }}</span>
+                                </div>
+                                <small class="text-danger d-block mt-1">
+                                    <i class="fas fa-broom me-1"></i>
+                                    ARE YOU SURE YOU DON'T NEED TO DO SOME BRANCH CLEANUP?
+                                </small>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+{{ range . }}                                <div class="col-md-6 col-lg-4 mb-3 feature-item" id="feature-{{ esc .Slug }}" {{ .Attrs }}>
+                                    <div class="feature-card card h-100">
+                                        <div class="card-body">
+                                            <div class="feature-title">
+                                                <a href="{{ esc .Href }}" class="text-warning">
+                                                    <i class="fas fa-bookmark" aria-hidden="true"></i>
+                                                </a>
+                                                <code class="small">{{ esc .Name }}</code>
+                                            </div>
+                                            <div class="mt-2">
+                                                <span class="badge bg-info me-2">{{ .Count }} project(s)</span>
+{{ if .Count }}                                                    <small class="text-muted">
+                                                        {{ esc .First }}
+                                                        {{ .More }}
+                                                    </small>
+{{ end }}                                            </div>
+{{ if .Count }}                                            <div class="mt-2 d-flex gap-2 flex-wrap">
+{{ range .Badges }}                                                    <span class="badge bg-light text-dark">
+                                                        {{ . }}
+                                                    </span>
+{{ end }}{{ if .Rest }}                                                    <span class="badge bg-secondary">+{{ .Rest }} more</span>
+{{ end }}                                            </div>
+{{ end }}                                        </div>
+                                    </div>
+                                </div>
+{{ end }}                            </div>
+                        </div>
+                    </div>
+{{ end }}                    <!-- Empty state -->
+{{ if .Empty }}                    <div class="empty-section">
+                        <i class="fas fa-code-branch"></i>
+                        <h4>No branches found</h4>
+                        <p class="text-muted">There are currently no feature branches to display.</p>
+                    </div>
+{{ end }}                </div>
+            </div>
+        </div>
+        <!-- /container -->
+    </div>
+</div>

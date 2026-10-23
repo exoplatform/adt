@@ -1,6 +1,6 @@
 # ADT – Acceptance Deployment Tool
 
-A set of Bash scripts, templates and a PHP front-end that deploy eXo products
+A set of Bash scripts, templates and a Go front-end (`adt-web`) that deploy eXo products
 (eXo Platform, Meeds, GateIn…) as throw-away instances for testing, demos and
 acceptance. Each instance gets its own ports, database, Apache vhost and,
 optionally, a set of companion services running in Docker.
@@ -18,7 +18,7 @@ optionally, a set of companion services running in Docker.
 - **Reverse proxy**: one Apache vhost per instance, with LDAP authentication,
   optional HTTPS, per-instance Awstats and logrotate.
 - **Remote debug** (JDWP) behind the authenticated vhost, with no exposed port.
-- **Web front-end** (`var/www`): dashboard of instances across acceptance
+- **Web front-end** (`web/`, Go): dashboard of instances across acceptance
   servers, features, Crowdin health, sales and company pages, instance
   editing and a `/debug` section for admins (health, config, caches, sessions,
   audit log, Apache logs…).
@@ -34,8 +34,10 @@ Mandatory:
 
 Optional:
 
-- Apache 2.4 with PHP 8 to serve the front-end and the instance reverse proxies
+- Apache 2.4 to authenticate and proxy the front-end and to reverse-proxy the instances
   (not needed with `ADT_DEV_MODE=true`)
+- Go 1.26 **or** Docker, to build the front-end (`./adt.sh build-web`); the hosts need no Go toolchain
+  because the build falls back to a `golang` container
 - A local MySQL (`~/.my.cnf`) to use `DEPLOYMENT_DB_TYPE=MYSQL`
 - UFW, which opens and closes the ports an instance needs
 - Awstats, for usage statistics
@@ -72,16 +74,40 @@ as options instead, use `adt-dev.sh`:
 ```
 
 Other actions: `start-all`, `stop-all`, `restart-all`, `undeploy-all`,
-`download-dataset`, `init`, `update-repos` and `web-server`.
+`download-dataset`, `init`, `update-repos`, `build-web`, `deploy-web` and `web-server`.
 
 ### Try the front-end locally
 
 ```sh
-./adt.sh web-server   # forces ADT_DEV_MODE=true and starts the PHP built-in server
+./adt.sh web-server   # builds adt-web, forces ADT_DEV_MODE=true and runs it in the foreground
 ```
 
 In development mode Apache, Awstats and UFW are disabled and the front-end is
-served on `http://localhost:8080`.
+served on `http://localhost:8080` with a fake identity (`ADT_DEV_USER`, `ADT_DEV_NAME`,
+`ADT_DEV_MAIL`).
+
+### Front-end deployment (`adt-web`)
+
+`adt.sh init` deploys the dashboard in four steps, all driven by the same ADT variables as the Apache
+vhost (the environment of the user running it, `/etc/default/adt`, `~/.adtrc`):
+
+1. builds `${ADT_WEB_BIN}` (default `${ADT_DATA}/bin/adt-web`) from `web/`, with the local Go when it is
+   recent enough, otherwise in a `golang` container; nothing is rebuilt when the sources did not change;
+2. renders the service environment file `${ADT_WEB_ENV_FILE}` from `etc/adt-web/adt-web.env.j2`
+   (`ACCEPTANCE_SERVERS`, the socket, ...);
+3. restarts the `${ADT_WEB_SERVICE}` systemd service (`sudo service adt-web restart`) when the binary or
+   that file changed, and waits until it answers on `${ADT_WEB_SOCKET}`;
+4. reloads Apache, whose vhost (`etc/apache2/includes/frontend.include.j2`) keeps doing the LDAP login and
+   hands the verified identity to `adt-web` through request headers over that unix socket.
+
+The systemd unit and the sudo rule are provisioned outside this repository. `adt.sh build-web` and
+`adt.sh deploy-web` run the steps on their own. Servers still running the PHP front-end and servers running
+`adt-web` can coexist: they exchange the same `/rest/*.php` JSON.
+
+The pages carry no inline script or event handler: the scripts are the files of `web/static/js`, and the pages are
+served with a Content-Security-Policy that only allows scripts from the dashboard itself and the CDNs it uses.
+`ADT_WEB_CSP` sets it to `enforce` (default), `report-only` (the browser only logs what it would block, useful to
+try a change) or `off`.
 
 ## Configuration
 
@@ -137,7 +163,7 @@ flowchart LR
   user([Developer / QA])
   subgraph host[Acceptance server]
     apache["Apache 2.4<br/>LDAP auth, TLS, vhost per instance"]
-    fe["PHP front-end<br/>var/www"]
+    fe["adt-web (Go)<br/>web/"]
     cli["adt.sh<br/>_functions*.sh + etc/ templates"]
     subgraph inst[Instance: product-version]
       app["Tomcat / JBoss EAP<br/>eXo Platform"]
@@ -225,7 +251,7 @@ flowchart LR
 | `adt.sh`, `adt-dev.sh` | Entry points |
 | `_functions*.sh` | Core logic, one file per area (`_functions_tomcat.sh`, `_functions_database.sh`, `_functions_keycloak.sh`…) |
 | `etc/` | Jinja2 templates: Apache, Tomcat, JBoss EAP, Keycloak, Matrix, OnlyOffice, logrotate… |
-| `var/www/` | PHP front-end and debug pages |
+| `web/` | The Go front-end `adt-web`: pages, `/rest/*` API, static files |
 | `dev/login-test/` | Docker Compose stack (OpenLDAP + Apache) to try the front-end login locally |
 | `integration-tests.sh` | Integration tests |
 

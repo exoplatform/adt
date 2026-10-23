@@ -1,0 +1,36 @@
+
+<div class="row g-3">
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><i class="fas fa-file-code me-2"></i>Rendered Apache configuration</div>
+      <div class="card-body">
+        <form method="get" class="mb-3">
+          <select name="file" class="form-select form-select-sm w-auto d-inline-block" aria-label="File" data-autosubmit>
+{{ range .Labels }}            <option value="{{ esc .Value }}"{{ if .Selected }} selected{{ end }}>{{ esc .Value }}</option>
+{{ end }}          </select>
+        </form>
+{{ if .None }}        <div class="alert alert-secondary mb-0">No rendered configuration found in <code>{{ esc .ConfDir }}</code>.</div>
+{{ else }}        <p class="small text-muted"><code>{{ esc .Path }}</code> &middot; {{ esc .Mtime }} UTC &middot; {{ .Size }}</p>
+        <pre class="debug-dump" style="max-height:60vh;overflow:auto"><code>{{ esc .Content }}</code></pre>
+{{ end }}      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-leaf me-2"></i>Environment</div>
+      <div class="card-body">
+        <table class="table table-themed table-sm mb-0"><tbody>
+{{ range .Env }}          <tr><th scope="row"><code>{{ esc .Key }}</code></th><td class="text-break">{{ if .Empty }}<span class="text-muted">empty</span>{{ else }}{{ esc .Value }}{{ end }}</td></tr>
+{{ end }}        </tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-puzzle-piece me-2"></i>Apache modules (0)</div>
+      <div class="card-body">
+        <div class="alert alert-secondary mb-0">Module list not available (adt-web does not run inside Apache).</div>
+      </div>
+    </div>
+  </div>
+</div>

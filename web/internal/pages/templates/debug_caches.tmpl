@@ -1,0 +1,31 @@
+  <!-- Main ================================================== -->
+  <div id="wrap">
+    <div id="main">
+      <div class="page-header">
+        <h1 class="page-header__title">Debug Caches</h1>
+        <p class="page-header__subtitle">In-process cache status</p>
+      </div>
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            {{ .Menu }}
+
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-database me-2"></i>Cache Information
+              </div>
+              <div class="card-body">
+<div class="table-responsive"><table class="table table-hover table-themed table-sm"><thead><tr><th>Key</th><th>Role</th><th>Age</th><th>Expires in</th></tr></thead><tbody>
+{{- range .Well }}<tr><td><code>{{ esc .Key }}</code></td><td>{{ esc .Role }}</td><td>{{ .Age }}</td><td>{{ .Left }}</td></tr>{{ end -}}
+</tbody></table></div><p><a class="btn btn-sm btn-outline-primary" href="/debug-caches?refreshInstances=true">Refresh instances now</a> <a class="btn btn-sm btn-outline-danger" href="/debug-caches?clearCaches=true">Clear all caches</a></p><h6 class="mt-4">Cache entries</h6><table class="table table-themed table-sm w-auto"><tbody><tr><th scope="row">Entries</th><td>{{ .Entries }}</td></tr><tr><th scope="row">Hits / misses</th><td>{{ .Hits }} / {{ .Misses }}{{ .Rate }}</td></tr><tr><th scope="row">Up since</th><td>{{ .Started }} UTC</td></tr></tbody></table><h6 class="mt-4">Entries ({{ .Count }})</h6><div class="table-responsive"><table class="table table-hover table-themed table-sm align-middle"><thead><tr><th>Key</th><th>Size</th><th>Hits</th><th>Age</th><th>Expires in</th><th></th></tr></thead><tbody>
+{{- range .List }}<tr><td class="text-break"><code>{{ esc .Key }}</code></td><td>-</td><td>{{ .Hits }}</td><td>{{ .Age }}</td><td>{{ .Left }}</td><td><form method="post" class="d-inline"><input type="hidden" name="action" value="delete-key"><input type="hidden" name="token" value="{{ $.Token }}"><input type="hidden" name="key" value="{{ esc .Key }}"><button class="btn btn-sm btn-outline-danger" type="submit">Delete</button></form></td></tr>{{ end }}
+{{- if not .Count }}<tr><td colspan="6" class="text-muted">The cache is empty.</td></tr>{{ end -}}
+</tbody></table></div><div class="alert alert-info">Cache</div>{{ .Dump }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <!-- /container -->
+    </div>
+  </div>

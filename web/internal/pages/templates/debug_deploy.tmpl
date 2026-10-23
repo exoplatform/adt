@@ -1,0 +1,98 @@
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Instances</div><div class="fs-3">{{ .Total }}</div><div class="small"><span class="text-success">{{ .Up }} up</span> · <span class="text-danger">{{ .Down }} down</span></div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Servers</div><div class="fs-3">{{ .ServerCount }}</div><div class="small"><a href="/debug-deploy?servers=1">Check them now</a></div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">Source</div><div class="fs-6">{{ esc .Source }}</div><div class="small">{{ .AllMs }} ms · <a href="/debug-deploy?clearCaches=true">clear caches</a></div></div></div></div>
+  <div class="col-6 col-lg-3"><div class="card h-100"><div class="card-body"><div class="text-muted small">To look at</div><div class="fs-3">{{ len .Problems }}</div><div class="small"><a href="#problems">See the list</a></div></div></div></div>
+</div>
+
+{{ if .Servers }}<div class="card mb-4">
+  <div class="card-header"><i class="fas fa-network-wired me-2"></i>Servers</div>
+  <div class="card-body">
+    <table class="table table-hover table-themed table-sm align-middle mb-0">
+      <thead><tr><th>Server</th><th>Status</th><th>Time</th><th>Instances</th><th>Size</th></tr></thead>
+      <tbody>
+{{ range .Servers }}        <tr>
+          <td><code>{{ esc .Server }}</code></td>
+          <td><span class="badge {{ .Class }}">{{ .Code }}</span></td>
+          <td>{{ .Ms }} ms</td>
+          <td>{{ if .CountOK }}{{ .Count }}{{ else }}<span class="text-danger">invalid answer</span>{{ end }}</td>
+          <td>{{ .Size }}</td>
+        </tr>
+{{ end }}      </tbody>
+    </table>
+  </div>
+</div>
+{{ else if .ServersAlert }}{{ .ServersAlert }}
+{{ end }}
+<div class="card mb-4" id="problems">
+  <div class="card-header"><i class="fas fa-exclamation-triangle me-2"></i>To look at ({{ len .Problems }})</div>
+  <div class="card-body">
+{{ if not .Problems }}    <div class="alert alert-success mb-0">Nothing to report.</div>
+{{ else }}    <ul class="list-unstyled mb-0">
+{{ range .Problems }}      <li class="mb-1"><span class="badge bg-{{ .Level }} me-2">{{ esc .Level }}</span><strong>{{ esc .Name }}</strong> {{ esc .Text }}</li>
+{{ end }}    </ul>
+{{ end }}  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header"><i class="fas fa-layer-group me-2"></i>Category getters</div>
+  <div class="card-body">
+    <div class="table-responsive">
+    <table class="table table-hover table-themed table-sm align-middle">
+      <thead><tr><th>Getter</th><th>Rule</th><th>Categories</th><th>Instances</th><th>Time</th><th></th></tr></thead>
+      <tbody>
+{{ range .Getters }}        <tr>
+          <td><code>{{ esc .Short }}()</code></td>
+          <td class="small">{{ esc .Rule }}</td>
+          <td>{{ .CatCount }}</td>
+          <td>{{ .Count }}</td>
+          <td>{{ .Ms }} ms</td>
+          <td>{{ if .Count }}<button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#g{{ .N }}">Details</button>{{ end }}</td>
+        </tr>
+{{ if .Count }}        <tr class="collapse" id="g{{ .N }}"><td colspan="6">
+{{ range .Cats }}          <h6 class="mt-2">{{ esc .Name }} <span class="text-muted">({{ len .Items }})</span></h6>
+          <ul class="list-unstyled ms-3 mb-2">
+{{ range .Items }}            <li><i class="fas fa-cube text-muted me-2"></i>{{ esc .Desc }} <span class="text-muted small">{{ esc .Host }}</span></li>
+{{ end }}          </ul>
+{{ end }}          {{ .Dump }}
+        </td></tr>
+{{ end }}{{ end }}      </tbody>
+    </table>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-header"><i class="fas fa-cubes me-2"></i>Instance explorer ({{ len .Explorer }} of {{ .Total }})</div>
+  <div class="card-body">
+    <form method="get" class="row g-2 mb-3">
+      <div class="col-md-5"><input type="search" name="q" value="{{ esc .Q }}" class="form-control form-control-sm" placeholder="Key, host, version, server or label" aria-label="Filter"></div>
+      <div class="col-md-2">
+        <select name="status" class="form-select form-select-sm" aria-label="Status">
+          <option value="">Any status</option>
+{{ range .Statuses }}          <option value="{{ .Value }}"{{ if .Selected }} selected{{ end }}>{{ .Value }}</option>
+{{ end }}        </select>
+      </div>
+      <div class="col-md-3"><button class="btn btn-sm btn-primary" type="submit">Filter</button> <a class="btn btn-sm btn-outline-secondary" href="/debug-deploy">Reset</a></div>
+    </form>
+    <div class="table-responsive">
+    <table class="table table-hover table-themed table-sm align-middle">
+      <thead><tr><th>Instance</th><th>Server</th><th>Version</th><th>Status</th><th>Labels</th><th>Artifact</th><th>Deployed</th><th>Listed in</th></tr></thead>
+      <tbody>
+{{ range .Explorer }}        <tr>
+          <td>{{ esc .Host }}<div class="small text-muted">{{ esc .Key }}</div></td>
+          <td class="small">{{ esc .Server }}</td>
+          <td class="small">{{ esc .Version }}</td>
+          <td><span class="badge {{ .Badge }}">{{ esc .Status }}</span></td>
+          <td>{{ range .Labels }}<span class="badge bg-secondary me-1">{{ esc . }}</span>{{ end }}</td>
+          <td class="small text-nowrap">{{ esc .Artifact }}</td>
+          <td class="small text-nowrap">{{ esc .Deployed }}</td>
+          <td class="small">{{ if .Listed }}{{ esc .Listed }}{{ else }}<span class="text-warning">none</span>{{ end }}</td>
+        </tr>
+{{ else }}        <tr><td colspan="8" class="text-muted">No instance.</td></tr>
+{{ end }}      </tbody>
+    </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,143 @@
+<!-- Main ================================================== -->
+<div id="wrap">
+    <div id="main" role="main">
+        <div class="container-fluid">
+
+            <!-- Page Header -->
+            <div class="page-header">
+                <h1 class="page-header__title">Servers</h1>
+                <p class="page-header__subtitle">Acceptance server hardware overview and port registry</p>
+            </div>
+
+            <!-- ══ Section 1 – Server overview cards ══════════════════ -->
+            <div class="section-title mt-3">
+                <i class="fas fa-server" aria-hidden="true"></i> Acceptance Servers
+            </div>
+            <div class="server-cards">{{ range .Cards }}
+                <div class="server-card accent-{{ .Css }}" data-host="{{ esc .Hostname }}">
+                    <div class="server-card__header">
+                        <div>
+                            <div class="server-card__name">
+                                <i class="fas fa-server me-1"></i>{{ esc .Alias }}
+                            </div>
+                            <div class="server-card__hostname">{{ esc .Hostname }}</div>
+                        </div>
+                        <div class="server-card__badge" title="Deployed instances">
+                            <i class="fas fa-cubes"></i>{{ .Nb }}
+                        </div>
+                    </div>
+                    <dl class="server-card__specs">
+                        <dt><i class="fas fa-microchip me-1"></i>CPU</dt>
+                        <dd>{{ esc .CPU }}</dd>
+
+                        <dt><i class="fas fa-th-large me-1"></i>Cores</dt>
+                        <dd>{{ esc .Cores }}</dd>
+
+                        <dt><i class="fas fa-layer-group me-1"></i>JVM config</dt>
+                        <dd>
+                            <span class="jvm-range" title="Sum of configured -Xms → -Xmx">
+                                <span class="jvm-min">{{ .JvmMin }} GB</span>
+                                <span class="text-muted">→</span>
+                                <span class="jvm-max">{{ .JvmMax }} GB</span>
+                            </span>
+                        </dd>
+                    </dl>
+                    <div class="server-live" aria-live="polite">
+                        <div class="server-live__footer"><span><i class="fas fa-spinner fa-spin me-1"></i>Loading live usage...</span></div>
+                    </div>
+                </div>{{ end }}
+            </div>
+
+            <!-- ══ Section 2 – Deployment port registry ═══════════════ -->
+            <div class="section-title">
+                <i class="fas fa-network-wired"></i> Deployment Port Registry
+            </div>
+            <div class="instances-search">
+                <i class="fas fa-search instances-search__icon"></i>
+                <input type="text" id="portRegistrySearch" class="instances-search__input" placeholder="Filter by instance, version, server...">
+            </div>
+            <div class="d-flex flex-wrap align-items-center gap-2 mb-3" id="portRegistryFilters">
+                <select id="filterStatus" class="form-select form-select-sm w-auto" aria-label="Filter by status">
+                    <option value="">All statuses</option>
+                    <option value="up"{{ .SelUp }}>Running</option>
+                    <option value="down"{{ .SelDown }}>Stopped</option>
+                </select>
+                <select id="filterHost" class="form-select form-select-sm w-auto" aria-label="Filter by server">
+                    <option value="">All servers</option>{{ range .Hosts }}
+                    <option value="{{ esc .Host }}">{{ esc .Label }}</option>{{ end }}
+                </select>
+                <select id="filterDb" class="form-select form-select-sm w-auto" aria-label="Filter by database">
+                    <option value="">All databases</option>{{ range .DBs }}
+                    <option value="{{ esc . }}">{{ esc . }}</option>{{ end }}
+                </select>
+                <button type="button" id="filterReset" class="btn btn-sm btn-outline-secondary d-none"><i class="fas fa-times me-1"></i>Clear filters</button>
+            </div>
+            <div class="table-responsive mb-5 port-registry-scroll">
+                <table class="table table-hover align-middle table-sm" id="portRegistryTable" aria-label="Deployment port registry">
+                    <caption class="sr-only">Deployment port registry listing all instances grouped by server, with their assigned ports</caption>
+                    <thead>
+                        <tr>
+                            <th class="col-left">Instance</th>
+                            <th class="col-left">Version</th>
+                            <th class="col-center">DB</th>
+                            <th class="col-center">Prefix</th>
+                            <th class="col-center">HTTP</th>
+                            <th class="col-left" title="Shown as the suffix after the prefix; highlighted when outside the instance prefix range">Other ports</th>
+                        </tr>
+                    </thead>
+                    <tbody>{{ range .Groups }}
+                        <tr class="category-row accent-{{ esc .Css }}" data-host-group="{{ esc .Css }}" data-total="{{ .N }}">
+                            <td colspan="6">
+                                <span class="host-pill {{ esc .Css }}">{{ esc .Short }}</span>
+                                <span class="ms-2 category-row__count">{{ .N }} instance{{ .Plural }}</span>
+                            </td>
+                        </tr>{{ range .Rows }}
+                        <tr class="accent-{{ esc .Css }}" id="instance-{{ esc .Key }}" data-host-group="{{ esc .Css }}" data-status="{{ .Status }}" data-host="{{ esc .Host }}" data-db="{{ esc .DB }}">
+                            <td class="col-left">
+                                <div class="d-flex align-items-center gap-2">
+                                    {{ .StatusIcon }}
+                                    {{ .AppServerIcon }}
+                                    <span>{{ .Label }}</span>
+                                </div>
+                                <div class="registry-flags">
+                                    {{ .Upgrade }}
+                                    {{ .Patch }}
+                                    {{ .Certbot }}
+                                    {{ .DevMode }}
+                                    {{ .StagingMode }}
+                                    {{ .DebugMode }}{{ with .Addons }}
+                                    <span class="addons-chip" rel="tooltip" data-bs-html="true" title="{{ esc .Title }}">
+                                        <i class="fas fa-puzzle-piece me-1"></i>{{ .Count }} add-on{{ .Plural }}
+                                        <span class="visually-hidden"> {{ esc .Names }}</span>
+                                    </span>{{ end }}
+                                    {{ .Labels }}
+                                </div>
+                            </td>
+                            <td class="col-left">
+                                <span class="text-mono small port-registry-version" title="{{ esc .VersionTitle }}">{{ .Version }}</span>{{ if .FeatureBranch }}
+                                    <span class="port-badge d-block mt-1" title="Feature branch"><i class="fas fa-code-branch me-1"></i>{{ esc .FeatureBranch }}</span>{{ end }}
+                            </td>
+                            <td class="col-center">
+                                <span class="db-chip">{{ esc .DB }}</span>
+                            </td>
+                            <td class="col-center">
+                                <span class="port-badge">{{ esc .Prefix }}xx</span>
+                            </td>
+                            <td class="col-center">
+                                <span class="port-badge">{{ esc .HTTPPort }}</span>
+                            </td>
+                            <td class="col-left">
+                                <div class="port-chips">
+                                    {{ with .JMX }}{{ template "servers_portchip.tmpl" . }}{{ end }}
+                                    {{ with .Mongo }}{{ template "servers_portchip.tmpl" . }}{{ end }}
+                                    {{ with .ES }}{{ template "servers_portchip.tmpl" . }}{{ end }}
+                                </div>
+                            </td>
+                        </tr>{{ end }}{{ end }}
+                    </tbody>
+                </table>
+            </div>
+            <script src="/js/servers.js?v={{ v }}"></script>
+
+
+        </div><!-- /container-fluid -->

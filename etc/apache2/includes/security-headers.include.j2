@@ -1,0 +1,6 @@
+    # Headers of everything Apache itself answers on the dashboard host (error pages, downloads, datasets, logs, stats, the
+    # login and logout handlers). setifempty: adt-web sets its own on its pages (the sign-in page is DENY) and they stay.
+    Header always setifempty X-Content-Type-Options "nosniff"
+    Header always setifempty X-Frame-Options "SAMEORIGIN"
+    Header always setifempty Referrer-Policy "strict-origin-when-cross-origin"
+    Header always setifempty Permissions-Policy "camera=(), microphone=(), geolocation=()"

@@ -1,0 +1,47 @@
+
+<div class="instance-card" data-sort-status="{{ .SortStatus }}" data-sort-version="{{ esc .SortVersion }}" data-sort-deployed="{{ esc .SortDeployed }}">
+    <div class="instance-card__top">
+        <div class="instance-card__status">
+            {{ if .Up }}<span class="pulse-dot on" title="Running" role="img" aria-label="Status: Up"></span>{{ else }}<span class="pulse-dot off" title="Stopped" role="img" aria-label="Status: Down"></span>{{ end }}
+        </div>
+        <div class="instance-card__info">
+            <div class="instance-card__name">
+                {{ if .RichName }}{{ .InfoIcon }}
+                    {{ .Link }}
+                {{ else }}
+                    {{ .InfoIcon }}
+                    {{ .Visibility }}
+                    {{ .Link }}
+                {{ end }}
+            </div>
+            <div class="instance-card__meta">
+                {{ if .MetaDownloadFirst }}{{ .Download }}
+                    {{ .Version }}{{ else }}{{ .Version }}
+                    {{ .Download }}{{ end }}
+            </div>
+        </div>
+        <div class="instance-card__actions-top">
+            {{ .Tools }}
+        </div>
+    </div>
+    <div class="instance-card__details">
+        <span class="instance-card__db">{{ .Database }}</span>
+        {{ if .FeatureLabel }}<span class="instance-card__feature">{{ .FeatureLabel }}</span>{{ end }}
+        <div class="instance-card__ages">
+            {{ if .ShowBuilt }}{{ if .Built.String }}<span class="{{ compSafe .Built.Class }}" title="{{ esc .Built.Title }}"><i class="fas fa-calendar-alt me-1"></i>built {{ compSafe .Built.String }}</span>{{ else }}<span class="text-muted" title="Release artifact: its build date is not tracked"><i class="fas fa-tag me-1"></i>release</span>{{ end }}
+            {{ end }}<span title="Time since instance was deployed"><i class="fas fa-clock me-1"></i>deployed {{ compSafe .DeployedAge }}</span>
+        </div>
+    </div>
+    <div class="instance-card__badge-group">
+    {{ if .FBBadges }}<div class="instance-card__badges">
+        {{ .FBStatus }}
+        {{ .FBIssue }}
+    </div>
+    {{ end }}{{ if .Badges }}<div class="instance-card__badges">
+        {{ .Badges }}
+    </div>
+    {{ end }}</div>
+    {{ if .Actions }}<div class="instance-card__actions">
+        {{ .ActionsMarkup }}
+    </div>
+    {{ end }}</div>

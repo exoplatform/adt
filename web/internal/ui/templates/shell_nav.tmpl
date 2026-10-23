@@ -1,0 +1,66 @@
+  <!-- Skip to main content -->
+  <a href="#main" class="skip-to-content sr-only-focusable">
+    <i class="fas fa-arrow-down me-1" aria-hidden="true"></i>Skip to main content
+  </a>
+
+  <!-- Mobile top bar -->
+  <div class="mobile-bar d-md-none">
+    <button class="mobile-bar__btn" data-click="toggleSidebar" aria-label="Open navigation menu">
+      <i class="fas fa-bars"></i>
+    </button>
+    <span class="mobile-bar__brand" title="{{ esc .Host }}">Acceptance</span>
+    <div class="mobile-bar__actions">
+      <button class="mobile-bar__theme-btn" data-click="toggleScheme" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <i class="fas fa-moon" id="mobileThemeIcon"></i>
+      </button>
+{{ if .Expiry }}      <div class="session-menu" id="sessionMenu" data-expiry="{{ .Expiry }}">
+        <a class="mobile-bar__theme-btn session-menu__toggle" href="/logout" id="sessionMenuToggle" aria-label="Account session" aria-haspopup="true" aria-expanded="false" aria-controls="sessionMenuPanel">
+          <i class="fas fa-right-from-bracket" aria-hidden="true"></i>
+        </a>
+        <div class="session-menu__panel" id="sessionMenuPanel" role="dialog" aria-label="Session" hidden>
+          <div class="session-menu__label">Session expires in</div>
+          <div class="session-menu__remaining" id="sessionRemaining">{{ esc .Remaining }}</div>
+          <div class="session-menu__at">{{ .ExpiresAt }}</div>
+          <a class="btn btn-sm btn-outline-danger session-menu__signout" href="/logout"><i class="fas fa-right-from-bracket me-1" aria-hidden="true"></i>Sign out</a>
+        </div>
+      </div>
+{{ else }}      <a class="mobile-bar__theme-btn" href="/logout" aria-label="Sign out" title="Sign out">
+        <i class="fas fa-right-from-bracket"></i>
+      </a>
+{{ end }}{{ if .HasName }}      <a href="https://my.exoplatform.org/hr/employees/myAccount" title="Edit my avatar" target="_blank" rel="noopener">
+        <img class="mobile-bar__avatar" src="{{ esc .MobileAvatar }}" alt="" width="28" height="28">
+      </a>
+{{ end }}    </div>
+  </div>
+
+  <!-- Sidebar overlay (mobile) -->
+  <div class="sidebar-overlay d-md-none" id="sidebarOverlay" data-click="toggleSidebar"></div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+    <a class="sidebar__brand" href="/" title="Home">
+      <div class="sidebar__brand-icon" style="background:transparent">
+        <img src="/images/logo.svg" alt="Acceptance" width="28" height="28">
+      </div>
+      <div class="sidebar__brand-info">
+        <div class="sidebar__brand-text" title="{{ esc .Host }}">Acceptance</div>
+        <div class="sidebar__brand-version">{{ esc .Host }}</div>
+      </div>
+    </a>
+
+    <nav class="sidebar__nav">
+      <div class="sidebar__section">Navigation</div>
+{{ range .Links }}<a class="sidebar__link {{ .Active }}" href="{{ .URL }}"{{ .Aria }} title="{{ .Label }}"><i class="fas {{ .Icon }} sidebar__icon" aria-hidden="true"></i><span>{{ .Label }}</span></a>{{ end }}
+    </nav>
+
+    <div class="sidebar__footer">
+{{ if .HasName }}      <div class="sidebar__user" title="{{ esc .Name }}">
+        <a href="https://my.exoplatform.org/hr/employees/myAccount" title="Edit my avatar" target="_blank" rel="noopener">
+          <img class="sidebar__user-avatar" src="{{ esc .SidebarAvatar }}" alt="" width="32" height="32">
+        </a>
+        <span class="sidebar__user-name">{{ esc .Name }}</span>
+      </div>
+      <a class="sidebar__footer-btn" href="/logout" title="{{ esc .SignOutTitle }}"><i class="fas fa-right-from-bracket"></i> <span>Sign out</span>{{ if .Expiry }} <span class="sidebar__session" data-session-expiry="{{ .Expiry }}">{{ esc .Remaining }}</span>{{ end }}</a>
+{{ end }}{{ raw "shell_nav_controls.html" }}  </aside>
+
+  <script src="/js/nav.js?v={{ v }}"></script>

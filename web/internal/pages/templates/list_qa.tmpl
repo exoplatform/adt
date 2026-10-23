@@ -1,0 +1,20 @@
+<div class="container-fluid">
+<div class="row">
+<div class="col-12">
+<div class="page-header">
+    <h1 class="page-header__title">QA Environments</h1>
+    <p class="page-header__subtitle">Instances deployed for <strong>eXo QA Team members</strong> usage only</p>
+</div>
+{{ template "list_search" }}{{ if .User }}{{ template "list_section" .User }}{{ else }}{{ template "list_nothing" }}{{ end }}
+  <div class="alert alert-warning mt-4">
+    <i class="fas fa-robot me-2"></i>
+    These instances are deployed for <strong>Automatic QA Tests</strong> usage only (<strong>NOT FOR MANUAL TESTS</strong>).
+  </div>
+{{ if .Auto }}{{ template "list_section" .Auto }}{{ else }}{{ template "list_nothing" }}{{ end }}
+  <!-- Info cards with synchronized design -->
+  {{ .Info }}
+
+</div>
+</div>
+</div>
+<!-- /container -->

@@ -1,0 +1,44 @@
+      <!-- Pin/unpin toggle -->
+      <button class="sidebar__footer-btn" id="sidebarPinBtn" data-click="toggleSidebarPin" title="Collapse sidebar">
+        <i class="fas fa-chevron-left"></i> <span>Collapse</span>
+      </button>
+
+      <!-- Theme accent dropdown -->
+      <div class="dropdown dropup">
+        <button class="sidebar__footer-btn dropdown-toggle" id="themeDropdown" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false" aria-label="Select theme" title="Change theme">
+          <i class="fas fa-palette"></i> <span>Default</span>
+        </button>
+        <ul class="dropdown-menu" id="themeDropdownMenu" aria-labelledby="themeDropdown" style="min-width:160px">
+          <li><button class="dropdown-item" data-click="pickTheme" data-arg="default"><i class="fas fa-circle me-2" style="color:#6c5ce7;font-size:0.65rem"></i>Default</button></li>
+          <li><button class="dropdown-item" data-click="pickTheme" data-arg="ocean"><i class="fas fa-circle me-2" style="color:#0ea5e9;font-size:0.65rem"></i>Ocean</button></li>
+          <li><button class="dropdown-item" data-click="pickTheme" data-arg="forest"><i class="fas fa-circle me-2" style="color:#10b981;font-size:0.65rem"></i>Forest</button></li>
+          <li><button class="dropdown-item" data-click="pickTheme" data-arg="rose"><i class="fas fa-circle me-2" style="color:#ec4899;font-size:0.65rem"></i>Rose</button></li>
+          <li><button class="dropdown-item" data-click="pickTheme" data-arg="slate"><i class="fas fa-circle me-2" style="color:#64748b;font-size:0.65rem"></i>Slate</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li>
+            <label class="dropdown-item d-flex align-items-center" for="customColorPicker" style="cursor:pointer">
+              <span class="me-2" style="display:inline-flex;padding:1.5px;border-radius:50%;background:conic-gradient(from 180deg, #ff0000, #ff9a00, #d0de21, #4fdc4a, #3fdad8, #1c7fee, #ba0cf8, #ff0000)">
+                <input type="color" id="customColorPicker" value="#6c5ce7"
+                       data-input="previewCustomColor" data-change="pickCustomColor"
+                       title="Pick a custom accent color" aria-label="Pick a custom accent color"
+                       style="display:block;width:0.65rem;height:0.65rem;padding:0;border:none;border-radius:50%;overflow:hidden;background:none;cursor:pointer">
+              </span>
+              <span>Custom</span>
+            </label>
+          </li>
+          <li><hr class="dropdown-divider"></li>
+          <li><button class="dropdown-item" data-click="shareTheme"><i class="fas fa-link me-2" style="font-size:0.65rem" aria-hidden="true"></i><span>Copy theme link</span></button></li>
+        </ul>
+      </div>
+
+      <!-- Light/dark toggle -->
+      <button class="sidebar__footer-btn" id="darkModeToggle" data-click="toggleScheme" title="Switch to light mode" aria-label="Switch to light mode" aria-pressed="false">
+        <i class="fas fa-sun" aria-hidden="true"></i> <span>Light mode</span>
+      </button>
+
+      <!-- PWA Install -->
+      <button class="sidebar__footer-btn" id="pwaInstallBtn" data-click="pwaInstall" title="Install app">
+        <i class="fas fa-download"></i> <span>Install app</span>
+      </button>
+    </div>
+

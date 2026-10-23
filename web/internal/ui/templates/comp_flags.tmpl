@@ -1,0 +1,10 @@
+{{ define "comp_labels" }}{{ range . }}<span class="label label-label">{{ esc . }}</span>&nbsp;{{ end }}{{ end }}
+{{ define "comp_addons_distrib" }}<span class="badge bg-secondary" rel="tooltip" title="distribution add-ons: {{ esc . }}"><i class="fas fa-gift"></i></span>{{ end }}
+{{ define "comp_addons" }}{{ template "comp_addons_distrib" .Distrib }} {{ range .Addons }}<span class="badge bg-info" rel="tooltip" title="version: {{ esc .Version }}">{{ esc .Name }}</span> {{ end }}{{ end }}
+{{ define "comp_flag_badge" }}<span{{ if .Badge }} class="badge {{ .BadgeClass }}"{{ end }} rel="tooltip" title="{{ esc .Tooltip }}"><i class="{{ .Icon }}"></i></span>{{ end }}
+{{ define "comp_debug_link" }}<a href="#remoteDebugModal" role="button" class="text-decoration-none" data-bs-toggle="modal" data-bs-target="#remoteDebugModal" data-host="{{ esc .Host }}">{{ .Badge }}</a>{{ end }}
+{{ define "comp_status_icon" }}{{ if . }}<i class="fas fa-circle text-success" rel="tooltip" title="Status: Up" aria-label="Status: Up" role="img"></i>{{ else }}<i class="fas fa-circle text-danger" rel="tooltip" title="Status: Down" aria-label="Status: Down" role="img"></i>{{ end }}{{ end }}
+{{ define "comp_appserver_icon" }}<i class="{{ .Icon }}" rel="tooltip" title="Application Server: {{ esc .Type }}"></i>{{ end }}
+{{ define "comp_spec_icon" }}<a rel="tooltip" title="Specifications link" href="{{ esc . }}" target="_blank"><i class="fas fa-book"></i></a>{{ end }}
+{{ define "comp_database_icon" }}{{ if .Found }}<i class="fas fa-database {{ .Color }}" rel="tooltip" title="{{ esc .Label }}"></i>&nbsp;{{ else }}<i class="fas fa-database text-muted" rel="tooltip" title="No database"></i>&nbsp;{{ end }}{{ if .HasVersion }}<span class="badge bg-info">{{ esc .Version }}</span>{{ else }}<span class="badge bg-secondary">-NC-</span>{{ end }}{{ end }}
+{{ define "comp_visibility_icon" }}<i class="fas {{ .Icon }}{{ .ColorClass }}" rel="tooltip" title="Visibility: {{ compSafe .Security }}"></i>{{ end }}

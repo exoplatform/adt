@@ -1,0 +1,33 @@
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="eXo Platform acceptance dashboard: test deployment instances, feature branches and servers{{ if not .NoTitle }} - {{ esc .Title }}{{ end }}">
+  <meta name="theme-color" content="#6c5ce7">
+  <title>eXo Acceptance{{ if not .NoTitle }} · {{ esc .Title }}{{ end }}</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png" />
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48x48.png" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16.png" />
+  <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/images/logo.svg" />
+  <link rel="manifest" href="/manifest.json">
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+  <!-- Font Awesome 7 (the sort arrows of the table view in style.css name its font family) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.1/css/all.min.css"
+        integrity="sha384-qrALq7+6jBOZIQsNnT6xGkMDru64qD6uTlDra39xrt2SoXl4pO3FX6Roz/RpR/BS" crossorigin="anonymous">
+  <!-- Custom CSS -->
+  <link href="/style.css?v={{ v }}" media="screen" rel="stylesheet" type="text/css" />
+  <!-- Bootstrap 5 JS Bundle with Popper: deferred, so code using `bootstrap`
+       must run on DOMContentLoaded (deferred scripts execute before it) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" defer
+          integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+{{ if .AutoRefresh }}  <!-- Reload every 2 minutes (a script rather than <meta http-equiv="refresh">,
+       which is an accessibility failure) -->
+  <script src="/js/autorefresh.js?v={{ v }}"></script>
+{{ end }}  <!-- Progress bar shown when a page takes a while to load (the server fetches the data of all the
+       acceptance servers before answering, so the current page stays up and usable meanwhile), theme, sidebar and
+       the actions of the buttons: one script, run before the first paint -->
+  <script src="/js/head.js?v={{ v }}"></script>
