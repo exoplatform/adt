@@ -68,10 +68,15 @@ do_generate_certbot_certificate() {
   evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-certbot.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
   do_reload_apache ${ADT_DEV_MODE}
 
+  # certbot saves this hook with the certificate and runs it, as root, after every renewal: the nginx of the instance and Apache read
+  # the certificate when they start or reload only
+  local deployHook="${DOCKER_CMD} exec ${INSTANCE_KEY}_web nginx -s reload || true; [ -x /usr/sbin/service ] && service apache2 reload || true"
+
   sudo certbot --config-dir "${DEPLOYMENT_CERTBOT_CONFIG_FOLDER}" --text --agree-tos --non-interactive ${certbotAction} \
+    --deploy-hook "${deployHook}" \
     --rsa-key-size 4096 -a ${certbotMethodArgs} \
     --cert-name "${certbot_domain}" ${domainOptions} \
-    --server "${DEPLOYMENT_CERTBOT_ACME_SERVER}" --email "certificates@exoplatform.com" ${eabOptions} ${renewalOptions}
+    --server "${DEPLOYMENT_CERTBOT_ACME_SERVER}" --email "${DEPLOYMENT_CERTBOT_EMAIL:-certificates@exoplatform.com}" ${eabOptions} ${renewalOptions}
 
   echo_info "Certificate has been generated/renewed successfully"
 
