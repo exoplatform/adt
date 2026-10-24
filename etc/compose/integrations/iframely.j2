@@ -1,0 +1,4 @@
+{% if DEPLOYMENT_IFRAMELY_ENABLED == "true" %}
+{% set _ = app_opts.append("-Dio.meeds.iframely.url=" ~ DEPLOYMENT_URL ~ "/oembed") %}
+{% set _ = app_depends.append("iframely") %}
+{% endif %}

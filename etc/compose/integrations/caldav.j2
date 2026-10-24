@@ -1,0 +1,4 @@
+{% if DEPLOYMENT_CALDAV_ENABLED == "true" %}
+{% set _ = app_opts.append("-Dexo.agenda.caldav.connector.enabled=true") %}
+{% set _ = app_opts.append("-Dexo.agenda.caldav.connector.url=" ~ DEPLOYMENT_URL ~ "/baikal/cal.php/calendars/{username}/") %}
+{% endif %}
