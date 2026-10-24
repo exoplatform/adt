@@ -122,10 +122,14 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - name: Install Jinja2
-        run: sudo apt-get install -y -qq python3-jinja2
+      - name: Install Jinja2 and zstd
+        run: sudo apt-get install -y -qq python3-jinja2 zstd
       - name: Resolution of the docker image tags
         run: tests/registry_test.sh
+      - name: Reading of the datasets
+        run: tests/dataset_test.sh
+      - name: Properties added to exo.properties
+        run: tests/properties_test.sh
       - name: Compose project templates (docker compose config, nginx -t)
         run: tests/compose_templates_test.sh
 

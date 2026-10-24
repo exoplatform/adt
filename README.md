@@ -159,12 +159,41 @@ The most useful ones:
 | `PRODUCT_VERSION` | The tag of the image: a release, `-SNAPSHOT`, or `-MLT` / `-MBL` / `-GA` resolved in the registry (with optional `Z` wildcard, e.g. `7.2.Z-GA`) |
 | `INSTANCE_ID` | Distinguishes several deployments of the same product and version |
 | `DEPLOYMENT_DB_TYPE` | `HSQLDB`, `MYSQL`, `MARIADB` or `POSTGRES` (the former `DOCKER_*` names are accepted) |
-| `DEPLOYMENT_MODE` | `NO_DATA` (default for deploy) or `KEEP_DATA` (default for restart); the datasets (`RESTORE_DATASET`, `DUMP_DATASET`) are being ported |
+| `DEPLOYMENT_MODE` | `NO_DATA` (default for deploy), `KEEP_DATA` (default for restart), `RESTORE_DATASET` or `DUMP_DATASET` (see Datasets) |
 | `DEPLOYMENT_ADDONS` | Add-ons installed by the add-ons manager of the image |
 | `DEPLOYMENT_PORT_PREFIX` | Port slot of the instance: its nginx listens on `127.0.0.1:<prefix>01` |
 | `DEPLOYMENT_APACHE_SECURITY` | `private` (LDAP login) or `public` |
 | `DEPLOYMENT_APACHE_HTTPS_ENABLED` | Add an HTTPS vhost; nginx then serves the same certificate |
 | `LDAP_ACCEPTANCE_*` | LDAP bind and admin group used by the front-end |
+
+## Datasets
+
+A dataset is the data of an instance in one archive, `${ADT_DATA}/datasets/<DS_FILENAME>.tar.zst`: `exo/` (files, jcr values), `search/`
+(Elasticsearch), `backup.sql` (the database), `codec/` and, when the instance has them, `keycloak/` and `matrix_<instance key>/`.
+
+```sh
+# write it (the instance is stopped for the dump, then started again)
+DS_FILENAME=my-dataset DEPLOYMENT_MODE=DUMP_DATASET ./adt.sh restart
+# replace the data of an instance by it, at a deploy or a restart
+DS_FILENAME=my-dataset DEPLOYMENT_MODE=RESTORE_DATASET ./adt.sh deploy
+```
+
+It is the format the former ADT wrote, `.tar.bz2` ones too: the datasets of the instances it deployed restore here. The files are
+given to the user of their image, so it does not matter which user wrote them. The database is read and written through its container,
+the volumes through throwaway containers: nothing needs root. `DS_TARGET_SERVER` copies a dumped dataset to another server.
+A dataset with Matrix data only restores on the same server name (`DEPLOYMENT_APACHE_VHOST_ALIAS`): Synapse cannot rename itself.
+
+### Moving a server from the former ADT (temporary)
+
+The data go through a dataset, so there is nothing else to convert. For each instance, with the same settings as its job:
+
+1. with a checkout of the former ADT, dump it: `DS_FILENAME=<name> DEPLOYMENT_MODE=DUMP_DATASET ./adt.sh restart` (it restarts afterwards);
+2. undeploy it with the former ADT (this frees its ports and its virtual host; the dataset stays in `datasets/`);
+3. with this ADT, deploy it: `DS_FILENAME=<name> DEPLOYMENT_MODE=RESTORE_DATASET ./adt.sh deploy` (same `PRODUCT_NAME`,
+   `PRODUCT_VERSION`, `INSTANCE_ID`, `DEPLOYMENT_PORT_PREFIX`, database type, add-ons and alias).
+
+To go back, deploy it again with the former ADT and the same dataset. Only products and versions from 7.0 can move: undeploy the
+others. `adt.sh deploy` refuses an instance that still has the descriptor of the former ADT, and says so.
 
 ## Remote debug of an instance
 

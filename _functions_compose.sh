@@ -88,10 +88,30 @@ do_prepare_compose_dirs() {
   chmod 777 "${DEPLOYMENT_LOG_DIR}/app" "${DEPLOYMENT_LOG_DIR}/nginx"
 }
 
+# Add the properties the operator asks for to the exo.properties of the instance (after the ones of the integrations: the last
+# definition of a property wins): DEPLOYMENT_PROPERTIES (key=value lines, separated by real or written \n) and the file
+# DEPLOYMENT_PROPERTIES_FILE. They are for what the instance needs and ADT does not know, e.g. the properties of the source of a
+# restored dataset (exo.wallet.admin.key), or of a customer.
+# $1 the exo.properties to complete
+do_append_custom_properties() {
+  local _target=$1 _file="${DEPLOYMENT_PROPERTIES_FILE:-}" _lines="${DEPLOYMENT_PROPERTIES:-}"
+  [ -n "${_lines}" ] || [ -n "${_file}" ] || return 0
+  if [ -n "${_file}" ] && [ ! -f "${_file}" ]; then
+    echo_error "DEPLOYMENT_PROPERTIES_FILE (${_file}) doesn't exist"
+    exit 1
+  fi
+  {
+    echo "# Added by DEPLOYMENT_PROPERTIES and DEPLOYMENT_PROPERTIES_FILE"
+    [ -z "${_lines}" ] || printf '%b\n' "${_lines}"
+    [ -z "${_file}" ] || cat "${_file}"
+  } | grep -v '^[[:space:]]*$' >> "${_target}"
+}
+
 # Render the files of the compose project
 do_render_compose_files() {
   echo_info "Rendering the compose project in ${DEPLOYMENT_DIR} ..."
   evaluate_file_content "${ETC_DIR}/compose/exo.properties.j2" "${DEPLOYMENT_DIR}/exo.properties"
+  do_append_custom_properties "${DEPLOYMENT_DIR}/exo.properties"
   env_var DEPLOYMENT_PROPERTIES_SHA "$(sha256sum "${DEPLOYMENT_DIR}/exo.properties" | cut -d' ' -f1)"
   evaluate_file_content "${ETC_DIR}/compose/docker-compose.yml.j2" "${DEPLOYMENT_COMPOSE_FILE}"
   evaluate_file_content "${ETC_DIR}/compose/nginx.conf.j2" "${DEPLOYMENT_DIR}/nginx.conf"
@@ -102,15 +122,35 @@ do_render_compose_files() {
   echo_info "Done."
 }
 
-# Pull the images of the instance (moving tags such as a SNAPSHOT are refreshed)
+# Pull the images of the instance. The tags of a snapshot move, so the policy is "always" (DEPLOYMENT_PULL_POLICY=missing keeps
+# the images that are here). A registry that does not answer is tried again; when it still does not, the deployment goes on if
+# every image is already here, otherwise it stops with what to do.
 do_compose_pull() {
   if ${ADT_OFFLINE}; then
     echo_warn "Offline mode: the images are not pulled"
     return 0
   fi
-  echo_info "Pulling the images ..."
-  do_compose pull --quiet
-  echo_info "Done."
+  local _policy="${DEPLOYMENT_PULL_POLICY:-always}" _attempt _image _missing=false
+  echo_info "Pulling the images (policy ${_policy}) ..."
+  for _attempt in 1 2 3; do
+    if do_compose pull --quiet --policy "${_policy}"; then
+      echo_info "Done."
+      return 0
+    fi
+    echo_warn "The images could not be pulled (attempt ${_attempt}/3)"
+    [ "${_attempt}" -lt 3 ] && sleep $(( _attempt * 10 ))
+  done
+  for _image in $(do_compose config --images); do
+    if ! ${DOCKER_CMD} image inspect "${_image}" > /dev/null 2>&1; then
+      echo_error "Image ${_image} is not available on this server"
+      _missing=true
+    fi
+  done
+  if ${_missing}; then
+    echo_error "Pulling failed. Check the network, the registry and, for a private image, 'docker login' of the user of ADT."
+    return 1
+  fi
+  echo_warn "Every image is already on this server: the deployment goes on with them (a snapshot may be outdated)."
 }
 
 # Date the application image was built, as the descriptor expects it (YYYYMMDD.HHMMSS, UTC)
@@ -132,12 +172,44 @@ do_install_app_properties() {
     | ${DOCKER_CMD} cp - "${INSTANCE_KEY}_exo:/etc/${_app}/"
 }
 
+# Print the log of the application container while the instance starts (the installation of the add-ons and the startup of the
+# server), so that it is in the output of the job that deploys or starts it. DEPLOYMENT_FOLLOW_LOGS=false keeps it quiet.
+do_follow_app_logs() {
+  ${DEPLOYMENT_FOLLOW_LOGS:-true} || return 0
+  (
+    local _name="${INSTANCE_KEY}_exo" _i
+    # the container is started by the docker compose up that runs at the same time
+    for _i in $(seq 1 900); do
+      [ "$(${DOCKER_CMD} inspect --format '{{.State.Running}}' "${_name}" 2>/dev/null)" = "true" ] && break
+      sleep 1
+    done
+    exec ${DOCKER_CMD} logs --follow "${_name}" 2>&1
+  ) &
+  env_var DEPLOYMENT_FOLLOW_LOGS_PID "$!"
+}
+
+do_stop_following_app_logs() {
+  [ -n "${DEPLOYMENT_FOLLOW_LOGS_PID:-}" ] || return 0
+  # the last lines of the startup are still on their way
+  sleep 2
+  kill "${DEPLOYMENT_FOLLOW_LOGS_PID}" 2>/dev/null || true
+  wait "${DEPLOYMENT_FOLLOW_LOGS_PID}" 2>/dev/null || true
+  env_var DEPLOYMENT_FOLLOW_LOGS_PID ""
+}
+
 # Create/update the containers, give the application its properties, and wait for the instance to be healthy
 do_compose_up() {
   echo_info "Starting the containers of ${INSTANCE_DESCRIPTION} ..."
   do_compose up --no-start --remove-orphans
   do_install_app_properties
-  do_compose up --detach --remove-orphans --wait --wait-timeout "${DEPLOYMENT_START_TIMEOUT:-1800}"
+  do_follow_app_logs
+  if ! do_compose up --detach --remove-orphans --wait --wait-timeout "${DEPLOYMENT_START_TIMEOUT:-1800}"; then
+    do_stop_following_app_logs
+    echo_error "${INSTANCE_DESCRIPTION} did not start. State of its containers:"
+    do_compose ps --all --format '  {{.Service}}: {{.State}} {{.Health}}' || true
+    return 1
+  fi
+  do_stop_following_app_logs
   # nginx.conf is a bind mounted file: compose does not notice when it changed
   ${DOCKER_CMD} exec "${INSTANCE_KEY}_web" nginx -s reload > /dev/null 2>&1 || true
   echo_info "Done."
