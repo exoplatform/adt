@@ -1,0 +1,219 @@
+        /* ── Server summary cards ───────────────────────────── */
+        .server-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+            align-items: start; /* expanding one card must not stretch its row */
+        }
+        .server-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border-card);
+            border-radius: var(--r-md);
+            padding: 1.1rem 1.25rem;
+            transition: box-shadow var(--dur-fast), border-color var(--dur-fast), transform var(--dur-fast);
+            border-top: 4px solid var(--card-accent, #6c757d);
+        }
+        .server-card:hover {
+            border-color: var(--border-active);
+            box-shadow: var(--shadow-card);
+            transform: translateY(-2px);
+        }
+        .server-card__header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: .75rem;
+        }
+        .server-card__hostname {
+            font-size: .78rem;
+            color: var(--text-muted);
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+        }
+        .server-card__name {
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--card-accent, #6c757d);
+        }
+        .server-card__badge {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            background: color-mix(in srgb, var(--card-accent, #6c757d) 16%, transparent);
+            color: var(--card-accent, #6c757d);
+            border: 1px solid color-mix(in srgb, var(--card-accent, #6c757d) 35%, transparent);
+            border-radius: var(--r-full);
+            padding: .2rem .65rem;
+            font-size: .8rem;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .server-card__specs {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: .25rem .6rem;
+            font-size: .8rem;
+            margin-top: .6rem;
+        }
+        .server-card__specs dt {
+            color: var(--text-muted);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .server-card__specs dd {
+            margin: 0;
+            color: var(--bs-body-color);
+        }
+        .jvm-range {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .82rem;
+            font-weight: 500;
+        }
+        .jvm-range .jvm-min { color: var(--success-color); }
+        .jvm-range .jvm-max { color: var(--danger-color); }
+
+        /* ── Live usage meters ──────────────────────────────── */
+        /* overflow-anchor: refreshed content must not shift the page scroll */
+        /* minmax(0, 1fr) tracks: long instance names must ellipsize, not widen the card */
+        .server-live { margin-top: .85rem; display: grid; grid-template-columns: minmax(0, 1fr); gap: .55rem; font-size: .78rem; overflow-anchor: none; }
+        .server-live__top:not(.expanded) li.extra { display: none; }
+        .server-live__row { display: grid; grid-template-columns: 4.2rem minmax(0, 1fr); gap: .15rem .6rem; align-items: center; }
+        .server-live__label { color: var(--text-muted); font-weight: 500; white-space: nowrap; grid-row: span 2; }
+        .server-live__value { display: flex; justify-content: space-between; gap: .5rem; color: var(--bs-body-color); }
+        .server-live__value > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .server-live__value .pct { font-weight: 700; font-variant-numeric: tabular-nums; }
+        .usage-meter { height: 6px; background: var(--bg-field); border-radius: var(--r-full); overflow: hidden; }
+        .usage-meter__fill { height: 100%; width: 0; background: var(--success); border-radius: inherit; transition: width var(--dur-fast); }
+        .usage-meter__fill.warn { background: var(--warning); }
+        .usage-meter__fill.crit { background: var(--danger); }
+        .pct.warn { color: var(--warning); }
+        .pct.crit { color: var(--danger); }
+        .server-live__top { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: minmax(0, 1fr); gap: .1rem; }
+        .server-live__top li { display: flex; justify-content: space-between; gap: .5rem; color: var(--text-secondary); }
+        .server-live__top li a { min-width: 0; color: inherit; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-decoration: none; }
+        .server-live__top li a:hover { color: var(--accent-text); text-decoration: underline; }
+        .server-live__top li span { white-space: nowrap; font-variant-numeric: tabular-nums; }
+        .server-live__top li span small { color: var(--text-muted); }
+        .server-live__toggle { background: none; border: 0; padding: 0; color: var(--accent-text); font-size: .72rem; cursor: pointer; justify-self: start; }
+        .server-live__toggle:hover { text-decoration: underline; }
+        .server-live__footer { color: var(--text-muted); font-size: .72rem; display: flex; justify-content: space-between; }
+        .server-live__error { color: var(--danger); }
+
+        /* Server accent colours (match color-acceptanceX in style.css) */
+        .accent-acc7  { --card-accent: #9b59b6; }
+        .accent-acc12 { --card-accent: #f39c12; }
+        .accent-acc13 { --card-accent: #1abc9c; }
+        .accent-acc14 { --card-accent: #3498db; }
+        .accent-acc15 { --card-accent: #9b59b6; }
+        .accent-accX  { --card-accent: #6c757d; }
+        /* Light surfaces: darken the accent so name/badge text stays readable */
+        [data-bs-theme="light"] .server-card__name,
+        [data-bs-theme="light"] .server-card__badge {
+            color: color-mix(in srgb, var(--card-accent, #6c757d) 55%, #000);
+        }
+        /* Dark surfaces: the purple is too dark to read, lighten it */
+        [data-bs-theme="dark"] .accent-acc7,
+        [data-bs-theme="dark"] .accent-acc15 { --card-accent: #b482c8; }
+
+        /* ── Section headers ────────────────────────────────── */
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--accent-text);
+            padding-bottom: .4rem;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 1rem;
+        }
+        [data-bs-theme="dark"] .section-title {
+            color: var(--table-header-text);
+        }
+
+        /* ── Port badge (monospace chip) ────────────────────── */
+        .port-badge {
+            font-family: var(--font-mono);
+            font-size: .78rem;
+            background: var(--bg-field);
+            border: 1px solid var(--border-card);
+            border-radius: var(--r-sm);
+            padding: .15rem .5rem;
+            white-space: nowrap;
+            color: var(--text-secondary);
+        }
+
+        /* ── Host pill ──────────────────────────────────────── */
+        .host-pill {
+            display: inline-block;
+            padding: .15rem .55rem;
+            border-radius: var(--r-full);
+            font-size: .78rem;
+            font-weight: 600;
+            background: var(--bg-field);
+            white-space: nowrap;
+        }
+        .host-pill.acc7  { color: #9b59b6; border: 1px solid #9b59b6; }
+        .host-pill.acc12 { color: #f39c12; border: 1px solid #f39c12; }
+        .host-pill.acc13 { color: #1abc9c; border: 1px solid #1abc9c; }
+        .host-pill.acc14 { color: #3498db; border: 1px solid #3498db; }
+        .host-pill.acc15 { color: #9b59b6; border: 1px solid #9b59b6; }
+        .host-pill.accX  { color: var(--text-muted); border: 1px solid var(--border-color); }
+        /* Readable pill text: darker on light surfaces, lighter purple on dark ones */
+        [data-bs-theme="light"] .host-pill.acc7,
+        [data-bs-theme="light"] .host-pill.acc15 { color: #553164; }
+        [data-bs-theme="light"] .host-pill.acc12 { color: #86560a; }
+        [data-bs-theme="light"] .host-pill.acc13 { color: #0e6756; }
+        [data-bs-theme="light"] .host-pill.acc14 { color: #1d5478; }
+        [data-bs-theme="dark"] .host-pill.acc7,
+        [data-bs-theme="dark"] .host-pill.acc15 { color: #b482c8; border-color: #b482c8; }
+
+        /* ── Port registry table ────────────────────────────── */
+        /* Bootstrap paints every cell with --bs-table-bg (plain grey in dark
+           mode): let the themed table background show through instead */
+        #portRegistryTable {
+            --bs-table-bg: transparent;
+            --bs-table-color: var(--text-primary);
+            --bs-table-hover-bg: var(--accent-soft);
+            --bs-table-hover-color: var(--text-primary);
+            --bs-table-border-color: var(--border-subtle);
+        }
+        /* Server groups: accent-tinted header and a left accent bar on each row */
+        #portRegistryTable tr.category-row > td {
+            background: color-mix(in srgb, var(--card-accent) 14%, var(--bg-elevated));
+            border-top: 1px solid color-mix(in srgb, var(--card-accent) 35%, transparent);
+            border-bottom: 1px solid color-mix(in srgb, var(--card-accent) 35%, transparent);
+        }
+        #portRegistryTable tbody tr:not(.category-row) > td:first-child {
+            border-left: 3px solid color-mix(in srgb, var(--card-accent) 70%, transparent);
+        }
+        #portRegistryTable thead th {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+        }
+        /* Compact row content */
+        .registry-flags { margin-top: .3rem; display: flex; flex-wrap: wrap; align-items: center; gap: .3rem; }
+        .registry-flags:empty { display: none; }
+        .addons-chip, .db-chip, .port-chip {
+            display: inline-flex; align-items: center; gap: .3rem;
+            font-size: .72rem; line-height: 1.4; white-space: nowrap;
+            padding: .05rem .45rem; border-radius: var(--r-full);
+            background: var(--bg-field); border: 1px solid var(--border-card); color: var(--text-secondary);
+        }
+        .addons-chip { cursor: help; }
+        .port-chips { display: flex; flex-wrap: wrap; gap: .3rem; }
+        .port-chip { font-family: var(--font-mono); }
+        .port-chip__label { font-family: var(--font-sans); color: var(--text-muted); font-size: .66rem; text-transform: uppercase; letter-spacing: .03em; }
+        .port-chip--odd { border-color: color-mix(in srgb, var(--warning) 60%, transparent); color: var(--warning); }
+        .port-registry-version {
+            display: inline-block;
+            max-width: 220px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            vertical-align: bottom;
+        }

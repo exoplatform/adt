@@ -1,0 +1,26 @@
+<div class="container-fluid">
+<div class="row">
+<div class="col-12">
+<div class="page-header">
+    <h1 class="page-header__title">Sales Environments</h1>
+    <p class="page-header__subtitle">Instances deployed for <strong>eXo Sales Team</strong> usage only</p>
+</div>
+{{ template "list_search" }}{{ if .User }}{{ template "list_section" .User }}{{ end }}
+
+  <div class="alert alert-info">
+    <i class="fas fa-chart-pie me-2"></i>
+    These instances are deployed for <strong>eXo Demo</strong> purpose usage only.
+  </div>
+{{ if .Demo }}{{ template "list_section" .Demo }}{{ end }}
+
+  <div class="alert alert-info">
+    <i class="fas fa-chart-bar me-2"></i>
+    These instances are deployed for <strong>Evaluation by Leads</strong> purpose usage only.
+  </div>
+{{ if .Eval }}{{ template "list_section" .Eval }}{{ end }}
+
+<!-- Info cards with synchronized design -->
+{{ .Info }}</div>
+</div>
+</div>
+<!-- /container -->

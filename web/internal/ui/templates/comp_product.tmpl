@@ -1,0 +1,41 @@
+{{ define "comp_info_icon" }}<a href="#" rel="popover" data-bs-content="{{ esc . }}" data-bs-html="true" data-bs-trigger="hover" class="icon-link-target" aria-label="Product details"><i class="fas fa-info-circle text-info" aria-hidden="true"></i></a>{{ end }}
+{{ define "comp_download_popover" }}<strong>GroupId:</strong> {{ compSafe .GroupID }}<br/><strong>ArtifactId:</strong> {{ compSafe .ArtifactID }}<br/><strong>Version/Timestamp:</strong> {{ compSafe .Timestamp }}{{ end }}
+{{ define "comp_download_icon" }}<a href="{{ compSafe .URL }}" rel="popover" data-bs-content="{{ esc .Popover }}" data-bs-html="true" data-bs-trigger="hover" class="icon-link-target" aria-label="Download artifact"><i class="fas fa-download" aria-hidden="true"></i></a>{{ end }}
+{{ define "comp_label_base" }}{{ esc .Name }}{{ if .ID }} ({{ esc .ID }}){{ end }}{{ end }}
+{{ define "comp_label_extra" }}<span class="muted">{{ .Content }}</span>&nbsp;&nbsp;-&nbsp;&nbsp;{{ esc .Extra }}{{ end }}
+{{ define "comp_open_link" }}<a href="{{ compSafe .Href }}" target="_blank">{{ .Text }}</a>{{ if .HTTPSLink }} <a rel="tooltip" title="HTTPS link available" class="icon-link-target" href="{{ compSafe .HTTPSHref }}" target="_blank"><i class="fas fa-lock text-success" aria-hidden="true"></i></a>{{ end }}{{ end }}
+{{ define "comp_version_auto" }}<span class="text-mono">{{ compSafe .Stamp }} <span class="version-auto" rel="tooltip" title="{{ .Tip }}">Auto</span></span>{{ end }}
+{{ define "comp_version" }}<span class="text-mono" rel="tooltip" title="{{ compSafe .Stamp }}">{{ compSafe .Content }}</span>{{ end }}
+{{ define "comp_yesno" }}{{ if . }}<i class="fas fa-check text-success"></i> yes{{ else }}<i class="fas fa-times text-danger"></i> no{{ end }}{{ end }}
+{{ define "comp_popover" -}}
+<div class="popover-content" style="min-width: 250px;">
+{{- "" }}<strong>Product:</strong> {{ .Label }}<br>
+{{- "" }}<strong>Version:</strong> {{ compSafe .Version }}<br>
+{{- "" }}<strong>Packaging:</strong> {{ compSafe .Packaging }} <i class="fas fa-server"></i><br>
+{{- "" }}<strong>Database:</strong> {{ compSafe .Database }}<br>
+{{- "" }}<strong>Visibility:</strong> {{ compSafe .Visibility }} {{ if .Public }}<i class="fas fa-globe text-success"></i>{{ else }}<i class="fas fa-lock text-warning"></i>{{ end }}<br>
+{{- "" }}{{ if .HTTPS }}<strong>HTTPS:</strong> <i class="fas fa-lock text-success"></i> yes{{ else }}<strong>HTTPS:</strong> <i class="fas fa-unlock text-muted"></i> no{{ end }}
+{{- "" }}<br><strong>ES embedded:</strong> {{ template "comp_yesno" .ES }}
+{{- "" }}<br><strong>OnlyOffice:</strong> {{ template "comp_yesno" .OnlyOffice }}
+{{- "" }}<br><strong>CMIS Server:</strong> {{ template "comp_yesno" .CMIS }}
+{{- "" }}{{ if .Chat }}<br><strong>Chat embedded:</strong> {{ template "comp_yesno" .ChatEmbedded }}<br><strong>MongoDB:</strong> v{{ compSafe .MongoVersion }}{{ end }}
+{{- "" }}<br><strong>WebSocket:</strong> {{ template "comp_yesno" .WebSocket }}
+{{- "" }}<br><strong>Virtual Host:</strong> {{ compSafe .VHost }}
+{{- "" }}{{ if .Alias }}<br><strong>Alias:</strong> {{ compSafe .Alias }}{{ end }}
+{{- "" }}{{ if .Info }}<hr><strong>Info:</strong> {{ compSafe .Info }}{{ end }}
+{{- "" }}</div>
+{{- end }}
+{{ define "comp_actions" }}<div class="btn-group btn-group-sm" role="group">{{ range . }}<a href="{{ .Href }}" rel="tooltip" title="{{ .Title }}"{{ if .Blank }} target="_blank"{{ end }} class="btn btn-outline-secondary"><i class="fas {{ .Icon }}"></i></a>{{ end }}</div>{{ end }}
+{{ define "comp_fb_status" }}<span class="badge {{ .Class }}">{{ esc .State }}</span>{{ end }}
+{{ define "comp_fb_scm" }}<a href="/features#{{ esc .Anchor }}" rel="tooltip" title="SCM Branch used to host this FB development"><i class="fas fa-code-branch"></i>&nbsp;{{ esc .Branch }}</a>{{ end }}
+{{ define "comp_fb_issue" }}<a href="https://community.exoplatform.com/portal/dw/tasks/taskDetail/{{ esc . }}" rel="tooltip" title="Opened issue where to put your feedbacks on this new feature"><i class="fas fa-tasks"></i>&nbsp;{{ esc . }}</a>{{ end }}
+{{ define "comp_edit_icon" }}<a href="#" role="button" data-bs-toggle="modal" data-bs-target="#{{ .ID }}" rel="tooltip" title="{{ .Title }}"><i class="fas fa-pencil-alt"></i></a>{{ .Form }}{{ end }}
+{{ define "comp_fb_deploy_icon" }}<a href="{{ compSafe . }}/build?delay=0sec" rel="tooltip" title="Restart or reset data" target="_blank"><i class="fas fa-sync-alt"></i></a>{{ end }}
+{{ define "comp_repo_cherry_behind" }}<span class="commit-stat behind" rel="tooltip" title="Some commits on the base branch that do not exist on this branch">
+                <i class="fas fa-arrow-down"></i> {{ . }}
+              </span>{{ end }}
+{{ define "comp_repo_cherry_ok" }}<span class="commit-stat" rel="tooltip" title="Up to date">
+                <i class="fas fa-check"></i>
+              </span>{{ end }}
+{{ define "comp_repo_stats" }}<div class="commit-stats"><a href="{{ compSafe .BehindURL }}" target="_blank" class="commit-stat {{ .BehindClass }}" rel="tooltip" title="{{ .Behind }} commits behind base branch"><i class="fas fa-arrow-down"></i> {{ .Behind }}</a><a href="{{ compSafe .AheadURL }}" target="_blank" class="commit-stat {{ .AheadClass }}" rel="tooltip" title="{{ .AheadTitle }}"><i class="fas {{ .AheadIcon }}" aria-hidden="true"></i> {{ .Ahead }}</a></div>{{ end }}
+{{ define "comp_restart_link" }}<a href="{{ esc . }}" target="_blank" rel="tooltip" title="Restart or reset data"><i class="fas fa-sync-alt"></i></a>{{ end }}

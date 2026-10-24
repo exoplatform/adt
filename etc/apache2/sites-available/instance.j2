@@ -33,6 +33,8 @@
     RequestHeader set X-Forwarded-Proto "https"
 {% endif %}
 {% if private %}
+    # The logs are served by Apache itself (an Alias), which the <Proxy> rule below does not cover
+{{ protected("^/logs/.*") }}
     Include {{ APACHE_CONF_DIR }}/includes/{{ DEPLOYMENT_EXT_HOST }}.include
 
     # No security for gadgets
@@ -100,13 +102,7 @@
     SSLEngine             on
     SSLCertificateFile       {{ INSTANCE_SSL_CERTIFICATE_FILE }}
     SSLCertificateKeyFile    {{ INSTANCE_SSL_CERTIFICATE_KEY_FILE }}
-    SSLVerifyClient None
-
-    SSLCipherSuite          ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384
-    SSLProtocol             +TLSv1.2 +TLSv1.3
-    SSLHonorCipherOrder     on
-    SSLCompression          off
-    SSLSessionTickets       off
+    Include {{ APACHE_CONF_DIR }}/includes/tls.include
 {% endif %}
 {% endmacro %}
 <VirtualHost *:80>

@@ -1,0 +1,18 @@
+    # Compression of the text types only: archives, jars, fonts, images and PDFs are already compressed (the downloads and
+    # datasets aliases serve many of them) and recompressing them only costs CPU. The filters add Vary: Accept-Encoding.
+    <IfModule brotli_module>
+        BrotliCompressionQuality 5
+        BrotliFilterNote Input instream
+        BrotliFilterNote Output outstream
+        BrotliFilterNote Ratio ratio
+        AddOutputFilterByType BROTLI_COMPRESS text/html text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/json application/manifest+json application/xml application/xhtml+xml application/rss+xml application/atom+xml image/svg+xml
+    </IfModule>
+    <IfModule !brotli_module>
+        <IfModule deflate_module>
+            DeflateCompressionLevel 5
+            DeflateFilterNote Input instream
+            DeflateFilterNote Output outstream
+            DeflateFilterNote Ratio ratio
+            AddOutputFilterByType DEFLATE text/html text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/json application/manifest+json application/xml application/xhtml+xml application/rss+xml application/atom+xml image/svg+xml
+        </IfModule>
+    </IfModule>

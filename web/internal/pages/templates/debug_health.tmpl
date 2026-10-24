@@ -1,0 +1,63 @@
+
+<div class="row g-3">
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-server me-2"></i>Host</div>
+      <div class="card-body">
+        <table class="table table-themed table-sm mb-0"><tbody>
+{{ template "debug_health_row.tmpl" .Hostname }}
+{{ template "debug_health_row.tmpl" .Uptime }}
+{{ template "debug_health_row.tmpl" .Load }}
+{{ range .Mem }}{{ template "debug_health_row.tmpl" . }}{{ end }}
+        </tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-cogs me-2"></i>Software</div>
+      <div class="card-body">
+        <table class="table table-themed table-sm mb-0"><tbody>
+{{ range .Software }}{{ template "debug_health_row.tmpl" . }}
+{{ end }}        </tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-hdd me-2"></i>Disk</div>
+      <div class="card-body">
+        <table class="table table-hover table-themed table-sm"><thead><tr><th>Path</th><th>Used</th><th></th></tr></thead><tbody>
+{{ range .Disks }}          <tr><td><code>{{ esc .Path }}</code></td><td class="text-nowrap">{{ .Used }} / {{ .Total }}</td><td>{{ template "debug_health_meter.tmpl" .Meter }}</td></tr>
+{{ end }}        </tbody></table>
+{{ if not .WantSizes }}        <a class="btn btn-sm btn-outline-primary" href="/debug-health?sizes=1">Compute directory sizes</a>
+{{ else }}        <table class="table table-hover table-themed table-sm mb-0"><thead><tr><th>Directory (under ADT_DATA)</th><th>Size</th></tr></thead><tbody>
+{{ range .Sizes }}          <tr><td><code>{{ esc .Dir }}</code></td><td>{{ .Size }}</td></tr>
+{{ end }}        </tbody></table>
+{{ end }}      </div>
+    </div>
+  </div>
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header"><i class="fas fa-rocket me-2"></i>Deployments</div>
+      <div class="card-body">
+        <table class="table table-themed table-sm mb-0"><tbody>
+{{ range .Deployments }}{{ template "debug_health_row.tmpl" . }}
+{{ end }}        </tbody></table>
+      </div>
+    </div>
+  </div>
+  <div class="col-12">
+    <div class="card">
+      <div class="card-header"><i class="fab fa-docker me-2"></i>Docker containers</div>
+      <div class="card-body">
+{{ if not .DockerOK }}        <div class="alert alert-secondary mb-0">Docker is not reachable from the web server (no <code>docker</code> binary or no access to the socket).</div>
+{{ else if not .Containers }}        <div class="alert alert-secondary mb-0">Docker is reachable but this host has no container.</div>
+{{ else }}        <div class="table-responsive"><table class="table table-hover table-themed table-sm align-middle mb-0">
+          <thead><tr><th>Name</th><th>Image</th><th>Status</th></tr></thead><tbody>
+{{ range .Containers }}          <tr><td>{{ esc .Name }}</td><td class="small">{{ esc .Image }}</td><td><span class="badge {{ .Badge }}">{{ esc .Status }}</span></td></tr>
+{{ end }}        </tbody></table></div>
+{{ end }}      </div>
+    </div>
+  </div>
+</div>

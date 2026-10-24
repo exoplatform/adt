@@ -1,0 +1,23 @@
+    .chart-container { position: relative; height: 250px; width: 100%; }
+    .activity-list { font-size: 0.875rem; }
+    .commit-msg { max-width: 400px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .metric__value--label { font-size: 1.5rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 480px) { .metric__value--label { font-size: 1.1rem; } }
+    .link-reset { color: inherit; text-decoration: none; }
+    .link-reset:hover { text-decoration: underline; }
+    [id^="repo-"] { scroll-margin-top: 1rem; }
+    .dependency-badges { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+    .dependency-link:hover .badge { background-color: var(--accent) !important; }
+    /* Override the generic (static amber) tr.highlight so the jumped-to row follows the active accent theme */
+    tr.dependency-row.highlight td { background: var(--accent-soft) !important; border-bottom: 1px solid var(--accent); }
+    .avatar-sm { width: 20px; height: 20px; border-radius: 50%; vertical-align: middle; margin-right: 0.4rem; }
+    .days-filter { flex-shrink: 0; }
+    @media (max-width: 576px) {
+      .days-filter { width: 100%; }
+      .days-filter .btn { flex: 1 1 0; }
+    }
+    /* Below 768px the sticky .mobile-bar covers the top of the viewport - give
+       jumped-to rows enough clearance to land below it instead of under it. */
+    @media (max-width: 768px) {
+      [id^="repo-"] { scroll-margin-top: 4rem; }
+    }

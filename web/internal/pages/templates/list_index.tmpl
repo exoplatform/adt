@@ -1,0 +1,69 @@
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1 class="page-header__title">Dashboard</h1>
+        <p class="page-header__subtitle">Acceptance test deployment instances</p>
+    </div>
+
+    <!-- Bento Metric Grid -->
+    <div class="bento">
+        <div class="bento__item bento__item--3" style="--card-accent: var(--accent)">
+            <div class="metric">
+                <span class="metric__label"><i class="fas fa-server"></i> Total Instances</span>
+                <span class="metric__value">{{ .Total }}</span>
+            </div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--success)">
+            <div class="metric">
+                <span class="metric__label"><span class="pulse-dot on"></span> Running</span>
+                <span class="metric__value">{{ .Running }}</span>
+                {{ if gt .Running 0 }}<span class="metric__change up">{{ .Pct }}% active</span>
+                {{ end }}</div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--danger)">
+            <div class="metric">
+                {{ if gt .Stopped 0 }}<a href="/servers?status=down" class="metric__link" style="color: inherit; text-decoration: none; display: block" title="Show the stopped instances">
+                    <span class="metric__label"><span class="pulse-dot off"></span> Stopped</span>
+                    <span class="metric__value">{{ .Stopped }}</span>
+                </a>
+                {{ else }}<span class="metric__label"><span class="pulse-dot off"></span> Stopped</span>
+                <span class="metric__value">{{ .Stopped }}</span>
+                {{ end }}</div>
+        </div>
+        <div class="bento__item bento__item--3" style="--card-accent: var(--accent2)">
+            <div class="metric">
+                <span class="metric__label"><i class="fas fa-cubes"></i> Dev Instances</span>
+                <span class="metric__value">{{ .DevCount }}</span>
+                <span class="metric__change" title="{{ esc .Branches }}">{{ .DevLen }} active deployment {{ .Noun }}</span>
+            </div>
+        </div>
+    </div>
+    <!-- Search -->
+    <div class="instances-search">
+        <i class="fas fa-search instances-search__icon"></i>
+        <input type="text" id="instanceSearch" class="instances-search__input" placeholder="Search by name, version, or branch...">
+    </div>
+
+    <!-- Translation Instances -->
+    {{ if .Translation }}<div class="instances-section">
+        <div class="instances-section__header">
+            <i class="fas fa-globe" aria-hidden="true"></i> Translation deployments
+        </div>
+        <div class="instance-grid">
+            {{ .Translation.Cards }}
+        </div>
+    </div>
+    {{ end }}
+    <!-- Dev Instances -->
+    {{ range .Dev }}<div class="instances-section">
+        <div class="instances-section__header">
+            <i class="fas fa-code-branch"></i> {{ .Title }}
+        </div>
+        <div class="instance-grid">
+            {{ .Cards }}
+        </div>
+    </div>
+    {{ end }}
+    <!-- Info cards -->
+    {{ .Info }}
+<!-- /container -->

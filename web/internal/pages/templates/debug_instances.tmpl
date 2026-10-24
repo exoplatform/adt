@@ -1,0 +1,32 @@
+
+<div class="card">
+  <div class="card-header"><i class="fas fa-cubes me-2"></i>Instances ({{ len .Rows }}){{ if .Issues }} <span class="badge bg-warning">{{ .Issues }} with missing Apache config</span>{{ end }}</div>
+  <div class="card-body">
+    <form method="get" class="mb-3"><input type="search" name="q" value="{{ esc .Q }}" class="form-control form-control-sm w-auto d-inline-block" placeholder="Filter" aria-label="Filter"> <button class="btn btn-sm btn-primary" type="submit">Filter</button></form>
+    <div class="table-responsive">
+    <table class="table table-hover table-themed table-sm align-middle">
+      <thead><tr><th>Host</th><th>Product</th><th>Status</th><th>Apache</th><th>Deployed</th><th>Logs</th><th></th></tr></thead>
+      <tbody>
+{{ range $i, $row := .Rows }}        <tr>
+          <td>{{ esc $row.Host }}<div class="small text-muted">{{ esc $row.Key }}</div></td>
+          <td>{{ esc $row.Product }}</td>
+          <td>{{ if not $row.PidKnown }}<span class="badge bg-secondary">unknown</span>{{ else if $row.Up }}<span class="badge bg-success">Up</span>{{ else }}<span class="badge bg-danger">Down</span>{{ end }}</td>
+          <td class="small">
+            {{ esc $row.Security }}{{ if $row.HTTPS }}, https{{ end }}<br>
+            vhost {{ if $row.Vhost }}<i class="fas fa-check text-success"></i>{{ else }}<i class="fas fa-times text-danger"></i>{{ end }}
+            include {{ if $row.Include }}<i class="fas fa-check text-success"></i>{{ else }}<i class="fas fa-times text-danger"></i>{{ end }}
+          </td>
+          <td class="small text-nowrap">{{ esc $row.Deployed }}</td>
+          <td class="small text-nowrap">
+            <a href="/debug-logs?file={{ debugXURL $row.Host }}-error.log">error</a> ·
+            <a href="/debug-logs?file={{ debugXURL $row.Host }}-access.log">access</a>
+          </td>
+          <td><button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="collapse" data-bs-target="#d{{ $i }}">Descriptor</button></td>
+        </tr>
+        <tr class="collapse" id="d{{ $i }}"><td colspan="7">{{ $row.Dump }}</td></tr>
+{{ else }}        <tr><td colspan="7" class="text-muted">No instance descriptor found in <code>{{ esc $.ConfDir }}</code>.</td></tr>
+{{ end }}      </tbody>
+    </table>
+    </div>
+  </div>
+</div>

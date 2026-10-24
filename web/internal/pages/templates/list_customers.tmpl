@@ -1,0 +1,11 @@
+<div class="container-fluid">
+<div class="row">
+<div class="col-12">
+<div class="page-header">
+    <h1 class="page-header__title">Customer Projects</h1>
+    <p class="page-header__subtitle">Instances deployed for <strong>Customer Projects</strong> development team usage only</p>
+</div>
+{{ template "list_search" }}{{ if .Section }}{{ template "list_section" .Section }}{{ else }}{{ template "list_nothing" }}{{ end }}
+  <!-- Info cards with synchronized design -->
+  {{ .Info }}
+{{ template "list_close" }}

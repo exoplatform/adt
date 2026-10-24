@@ -1,0 +1,122 @@
+<div id="wrap">
+  <div id="main" role="main">
+    <div class="container-fluid">
+
+      <div class="page-header">
+        <h1 class="page-header__title">Crowdin Healthcheck</h1>
+        <p class="page-header__subtitle">Crowdin upload/download GitHub Action status per module, on <code>develop</code> and its <code>stable/{{ esc .Stable }}</code> counterpart (<code>-exo</code> suffix for Meeds-io repositories)</p>
+      </div>
+
+{{ if .Active }}      <div class="card mb-4">
+        <div class="card-header">
+          <div class="w-100">
+            <div class="d-flex align-items-center flex-wrap card-header__title">
+              <i class="fas fa-language text-success me-2"></i>
+              <h2 class="h5 mb-0">Modules with Crowdin integration</h2>
+              <span class="badge bg-success ms-2" id="crowdinModulesCount" data-total="{{ len .Active }}">{{ len .Active }}</span>
+            </div>
+            <small class="text-muted d-block mt-1">Status dots (green passing, red failing, grey no status) link to the GitHub Actions run history - private repositories show a hollow dot, since their status can't be looked up without authentication</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="crowdin-toolbar">
+            <div class="crowdin-summary" aria-live="polite">
+              <span><span class="status-dot ok"></span><b data-count="ok">0</b> passing</span>
+              <span><span class="status-dot fail"></span><b data-count="fail">0</b> failing</span>
+              <span data-if="warn"><span class="status-dot warn"></span><b data-count="warn">0</b> warning</span>
+              <span data-if="unknown"><span class="status-dot unknown"></span><b data-count="unknown">0</b> no status</span>
+              <span data-if="is-private"><span class="status-dot is-private"></span><b data-count="is-private">0</b> private</span>
+              <span data-if="is-loading" class="text-muted"><b data-count="is-loading">0</b> loading&hellip;</span>
+            </div>
+            <div class="crowdin-toolbar__actions filter-bar">
+              <button type="button" id="crowdinFailingOnly" class="btn btn-sm btn-outline-secondary" aria-pressed="false" title="Only modules with a failing workflow">
+                <i class="fas fa-exclamation-circle me-1"></i>Failing only
+              </button>
+              <div class="btn-group btn-group-sm crowdin-view-switch" role="group" aria-label="Modules view">
+                <button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>
+                <button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view"><i class="fas fa-table me-1"></i>Table</button>
+              </div>
+            </div>
+          </div>
+          <div id="crowdinNoFailure" class="empty-section d-none">
+            <i class="fas fa-check-circle"></i>
+            <h3 class="h4">No failing workflow</h3>
+          </div>
+          <div class="project-grid crowdin-cards">
+{{ range .Active }}            <div class="project-chip">
+              <div class="project-chip-header">
+                <span class="project-chip-name"><i class="fas fa-cube me-1" aria-hidden="true"></i>{{ esc .Label }}</span>
+              </div>
+
+              <div class="crowdin-branch-group">
+                <a href="{{ esc .GithubURL }}/tree/develop" target="_blank" class="feature-branch-link link-reset">develop</a>
+                <div class="crowdin-branch-row">
+                  {{ .CardUpload }}
+{{ if .HasDownload }}                  {{ .CardDownload }}
+{{ end }}                </div>
+              </div>
+
+{{ if .StableBranch }}              <div class="crowdin-branch-group">
+                <a href="{{ esc .GithubURL }}/tree/{{ .StableBranchURL }}" target="_blank" class="feature-branch-link link-reset">{{ esc .StableBranch }}</a>
+                <div class="crowdin-branch-row">
+                  {{ .CardStable }}
+                </div>
+              </div>
+{{ end }}            </div>
+{{ end }}          </div>
+
+          <!-- Table view -->
+          <table class="crowdin-table" aria-label="Crowdin workflow status per module">
+            <thead>
+              <tr>
+                <th scope="col">Module</th>
+                <th scope="col">Stable branch</th>
+                <th scope="col" class="text-center">Develop upload</th>
+                <th scope="col" class="text-center">Develop download</th>
+                <th scope="col" class="text-center">Stable upload</th>
+              </tr>
+            </thead>
+            <tbody>
+{{ range .Active }}              <tr>
+                <th scope="row"><a href="{{ esc .GithubURL }}" target="_blank" class="link-reset"><i class="fas fa-cube me-1 text-muted" aria-hidden="true"></i>{{ esc .Label }}</a></th>
+                <td>{{ if .StableBranch }}<a href="{{ esc .GithubURL }}/tree/{{ .StableBranchURL }}" target="_blank" class="link-reset"><code>{{ esc .StableBranch }}</code></a>{{ else }}<span class="text-muted">&mdash;</span>{{ end }}</td>
+                <td class="text-center">{{ .RowUpload }}</td>
+                <td class="text-center">{{ if .HasDownload }}{{ .RowDownload }}{{ else }}<span class="text-muted">&mdash;</span>{{ end }}</td>
+                <td class="text-center">{{ if .StableBranch }}{{ .RowStable }}{{ else }}<span class="text-muted">&mdash;</span>{{ end }}</td>
+              </tr>
+{{ end }}            </tbody>
+          </table>
+        </div>
+      </div>
+{{ else if not .Skipped }}      <div class="empty-section">
+        <i class="fas fa-language"></i>
+        <h2 class="h4">No modules found</h2>
+        <p class="text-muted">No mirrored repositories were found under <code>ADT_DATA</code>.</p>
+      </div>
+{{ end }}{{ if .Skipped }}
+      <div class="card mb-4">
+        <div class="card-header">
+          <div class="w-100">
+            <div class="d-flex align-items-center flex-wrap card-header__title">
+              <i class="fas fa-minus-circle text-muted me-2"></i>
+              <h2 class="h5 mb-0">Modules without a Crowdin action</h2>
+              <span class="badge bg-secondary ms-2">{{ len .Skipped }}</span>
+            </div>
+            <small class="text-muted d-block mt-1">No Crowdin workflow on <code>develop</code> - skipped</small>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="project-grid">
+{{ range .Skipped }}            <div class="project-chip project-chip--skipped">
+              <div class="project-chip-header">
+                <span class="project-chip-name"><i class="fas fa-cube me-1" aria-hidden="true"></i>{{ esc .Label }}</span>
+              </div>
+              <span class="badge bg-secondary">skipped</span>
+            </div>
+{{ end }}          </div>
+        </div>
+      </div>
+{{ end }}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+  <!-- Footer ================================================== -->
+  <footer id="footer" role="contentinfo">
+    <span class="sr-only">Copyright</span> &copy; 2006-{{ .Year }} eXo Platform SAS
+    <a href="/stats/awstats.pl?config={{ esc .Host }}" target="_blank" aria-label="View statistics" class="ms-3">
+      <i class="fas fa-chart-bar" aria-hidden="true"></i> Stats
+    </a>
+  </footer>
+
+{{ .Modal }}  <button type="button" id="scrollTopBtn" aria-label="Scroll to top" title="Scroll to top">
+    <i class="fas fa-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <script src="/js/footer.js?v={{ v }}"></script>

@@ -83,6 +83,13 @@ else
   configurable_env_var "ACCEPTANCE_PORT"    "443"
   configurable_env_var "ACCEPTANCE_SERVERS" "https://acceptance.exoplatform.org"
 fi
+# The front-end (adt-web): binary, unix socket Apache proxies to, service and its environment file
+configurable_env_var "ADT_WEB_BIN"          "${ADT_DATA}/bin/adt-web"
+configurable_env_var "ADT_WEB_SOCKET"       "/run/adt-web/adt-web.sock"
+configurable_env_var "ADT_WEB_SOCKET_GROUP" "www-data"
+configurable_env_var "ADT_WEB_SERVICE"      "adt-web"
+configurable_env_var "ADT_WEB_ENV_FILE"     "${ADT_DATA}/conf/adt-web.env"
+configurable_env_var "ADT_WEB_CSP"          "enforce"
 validate_env_var "SCRIPT_DIR"
 validate_env_var "ADT_DATA"
 validate_env_var "ETC_DIR"
@@ -156,7 +163,13 @@ case "${ACTION}" in
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.j2 ${APACHE_CONF_DIR}/conf.d/adt.conf
+    # The parts the virtual hosts share: compression, TLS settings and the security headers
+    for _include in compression tls security-headers; do
+      evaluate_file_content ${ETC_DIR}/apache2/includes/${_include}.include.j2 ${APACHE_CONF_DIR}/includes/${_include}.include
+    done
     evaluate_file_content ${ETC_DIR}/apache2/includes/frontend.include.j2 ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
+    # holds the LDAP bind password and the session passphrase: Apache reads its configuration as root
+    chmod 600 ${APACHE_CONF_DIR}/includes/acceptance-frontend.include
     # Fix : Remove any include in the wrong directory
     rm -f ${APACHE_CONF_DIR}/sites-available/*.include
     case "${ACCEPTANCE_SCHEME}" in
@@ -183,6 +196,8 @@ case "${ACTION}" in
       ;;
     esac
     if ! ${ADT_DEV_MODE}; then
+      # The vhost proxies to adt-web: it must be built, configured and answering before Apache is reloaded
+      do_deploy_web
       if [ -e /usr/sbin/service -a -e /etc/init.d/apache2 ]; then
         echo_info "Reloading Apache server ..."
         sudo /usr/sbin/service apache2 reload
@@ -259,10 +274,16 @@ case "${ACTION}" in
   update-repos)
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
   ;;
+  build-web)
+    do_build_web
+  ;;
+  deploy-web)
+    do_deploy_web
+  ;;
   web-server)
     env_var "ADT_DEV_MODE" "true"
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
-    do_load_php_server
+    do_load_web_server
   ;;
   *)
     echo_error "Invalid action \"${ACTION}\""

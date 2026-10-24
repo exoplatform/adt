@@ -20,6 +20,7 @@ source "${SCRIPT_DIR}/_functions_download.sh"
 source "${SCRIPT_DIR}/_functions_git.sh"
 source "${SCRIPT_DIR}/_functions_ufw.sh"
 source "${SCRIPT_DIR}/_functions_apache.sh"
+source "${SCRIPT_DIR}/_functions_web.sh"
 source "${SCRIPT_DIR}/_functions_logrotate.sh"
 source "${SCRIPT_DIR}/_functions_awstats.sh"
 source "${SCRIPT_DIR}/_functions_plf.sh"
@@ -81,7 +82,9 @@ Action
 
   init             Initializes the environment
   update-repos     Update Git repositories used by the web front-end
-  web-server       Starts a local PHP web server to test the front-end (requires PHP >= 5.4). It automatically activates the development mode.
+  build-web        Builds the adt-web front-end binary (web/, Go) into ADT_WEB_BIN (nothing to do when the sources did not change)
+  deploy-web       Builds adt-web, writes its environment file from the ADT variables and restarts its service when something changed ("init" does it too)
+  web-server       Builds and starts adt-web in the foreground to test the front-end, without Apache. It automatically activates the development mode.
 
 Environment Variables
 ---------------------
@@ -104,6 +107,13 @@ Environment Variables
   LDAP_ACCEPTANCE_APACHE2_ADMIN_DN     : The full DN of the LDAP group allowed to open the front-end debug pages (default: cn=exo-team-swf,ou=groups,dc=exoplatform,dc=org)
   CLOUDBEAVER_LDAP_ADMIN_GROUP      : The full DN of the LDAP group whose members administrate Cloudbeaver (default: none)
   ADT_SESSION_PASSPHRASE            : Secret used to encrypt the front-end login session cookie (default: none, required)
+  ADT_WEB_BIN                       : Where "init" and "build-web" install the adt-web binary (default: \${ADT_DATA}/bin/adt-web)
+  ADT_WEB_SOCKET                    : The unix socket adt-web listens on and Apache proxies to (default: /run/adt-web/adt-web.sock)
+  ADT_WEB_SOCKET_GROUP              : The group given to that socket so Apache (www-data) can connect (default: www-data)
+  ADT_WEB_SERVICE                   : The systemd service "init" restarts when adt-web or its environment changed (default: adt-web)
+  ADT_WEB_ENV_FILE                  : The environment file "init" writes for that service (default: \${ADT_DATA}/conf/adt-web.env)
+  ADT_WEB_CSP                       : The Content-Security-Policy of the adt-web pages: enforce, report-only (the browser only logs what it would block) or off (default: enforce)
+  ADT_WEB_GO_IMAGE                  : The image used to build adt-web when no suitable Go is installed (default: a pinned golang:<go version>-alpine image, by digest)
   APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup (PEM bundle including certificate chain)
   APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
 
@@ -1815,6 +1825,10 @@ do_configure_apache() {
   echo_info "Creating Apache Virtual Host ..."
   mkdir -p ${APACHE_CONF_DIR}
 
+  # The parts the virtual hosts share (also rendered for the front-end by "init")
+  for _include in compression tls; do
+    evaluate_file_content ${ETC_DIR}/apache2/includes/${_include}.include.j2 ${APACHE_CONF_DIR}/includes/${_include}.include
+  done
   # Features (chat, websocket, onlyoffice, keycloak, ...) are enabled/disabled with conditions inside the template
   evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.j2 ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
 
@@ -1846,6 +1860,8 @@ do_configure_apache() {
   fi
   # Security, HTTPS and the rules of each feature are handled with conditions inside the template
   evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  # holds the LDAP bind password: Apache reads its configuration as root
+  chmod 600 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
   echo "OK."
   DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOG_FILE}
   echo_info "Done."
@@ -2775,30 +2791,4 @@ do_undeploy_all() {
   else
     echo_info "No server deployed."
   fi
-}
-
-#
-# Function that loads a php server to test Acceptance FrontEnd
-# requires PHP >= 5.4
-#
-do_load_php_server() {
-  local _php_ini_file="${ETC_DIR}/php/cli-server.ini"
-  local _doc_root="${SCRIPT_DIR}/var/www"
-  local _php_router_file="${SCRIPT_DIR}/var/www/router.php"
-  set +e
-  local _php_exe=$(which php)
-  if [ $? != 0 ]; then
-    echo_error "Unable to find PHP executable"
-    exit 1
-  fi
-  set -e
-  echo_info "Starting the web server (PHP 5.4+ is required)"
-  ${_php_exe} -r \@phpinfo\(\)\; | grep 'PHP Version' -m 1
-  set +e
-  ${_php_exe} -S ${ACCEPTANCE_HOST}:${ACCEPTANCE_PORT} -c ${_php_ini_file} -t ${_doc_root} ${_php_router_file}
-  if [ $? != 0 ]; then
-    echo_error "Unable to start PHP Web Server"
-    exit 1
-  fi
-  set -e
 }

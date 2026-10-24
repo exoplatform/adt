@@ -1,0 +1,25 @@
+{{ define "list_search" -}}
+<div class="instances-search">
+    <i class="fas fa-search instances-search__icon"></i>
+    <input type="text" id="instanceSearch" class="instances-search__input" placeholder="Filter instances...">
+</div>
+{{ end }}
+{{- define "list_nothing" -}}
+<div class="alert alert-warning"><i class="fas fa-exclamation-triangle me-2"></i>Nothing yet ;-)</div>
+{{ end }}
+{{- define "list_close" -}}
+</div>
+</div>
+</div>
+<!-- /container -->
+{{ end }}
+{{- define "list_section" }}
+  <div class="instances-section">
+    <div class="instances-section__header">
+        <i class="{{ .Icon }}"></i> {{ .Title }}
+    </div>
+    <div class="instance-grid">
+  {{ .Cards }}
+    </div>
+  </div>
+  {{ end }}

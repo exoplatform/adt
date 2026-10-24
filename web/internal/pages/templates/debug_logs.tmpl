@@ -1,0 +1,40 @@
+
+<div class="card">
+  <div class="card-header"><i class="fas fa-file-alt me-2"></i>Apache logs</div>
+  <div class="card-body">
+    <form method="get" class="row g-2 mb-3" id="logform">
+      <div class="col-md-4">
+        <select name="file" class="form-select form-select-sm" aria-label="Log file">
+{{ range .Files }}          <option value="{{ esc .Value }}"{{ if .Selected }} selected{{ end }}>{{ esc .Value }} ({{ .Size }})</option>
+{{ end }}        </select>
+      </div>
+      <div class="col-md-2">
+        <select name="lines" class="form-select form-select-sm" aria-label="Lines">
+{{ range .Lines }}          <option value="{{ .Value }}"{{ if .Selected }} selected{{ end }}>Last {{ .Value }}</option>
+{{ end }}        </select>
+      </div>
+      <div class="col-md-2">
+{{ if .IsError }}        <select name="level" class="form-select form-select-sm" aria-label="Level">
+          <option value="">All levels</option>
+{{ range .Levels }}          <option value="{{ .Value }}"{{ if .Selected }} selected{{ end }}>{{ .Value }}</option>
+{{ end }}        </select>
+{{ else }}        <select name="status" class="form-select form-select-sm" aria-label="Status">
+          <option value="">All statuses</option>
+{{ range .Statuses }}          <option value="{{ .Value }}"{{ if .Selected }} selected{{ end }}>{{ .Value }}</option>
+{{ end }}        </select>
+{{ end }}      </div>
+      <div class="col-md-3"><input type="search" name="q" value="{{ esc .Q }}" class="form-control form-control-sm" placeholder="Contains" aria-label="Contains"></div>
+      <div class="col-md-1"><button class="btn btn-sm btn-primary" type="submit">Show</button></div>
+      <div class="col-12">
+        <div class="form-check form-switch">
+          <input class="form-check-input" type="checkbox" role="switch" name="refresh" id="refresh" value="1"{{ if .Refresh }} checked{{ end }}>
+          <label class="form-check-label small" for="refresh">Auto-refresh every 5s</label>
+        </div>
+      </div>
+    </form>
+{{ if .NoFile }}    <div class="alert alert-secondary">No log file found in <code>{{ esc .LogDir }}</code>.</div>
+{{ else }}    <p class="small text-muted">{{ .Count }} line(s) from <code>{{ esc .File }}</code></p>
+    <pre class="debug-dump" style="max-height:65vh;overflow:auto;white-space:pre-wrap;word-break:break-all"><code>{{ esc .Text }}</code></pre>
+{{ end }}  </div>
+</div>
+<script src="/js/debug_logs.js?v={{ v }}"></script>

@@ -1,0 +1,39 @@
+  <!-- Main ================================================== -->
+  <div id="wrap">
+    <div id="main">
+      <div class="page-header">
+        <h1 class="page-header__title">Debug Git</h1>
+        <p class="page-header__subtitle">Repositories, feature/translation/acceptance branch discovery</p>
+      </div>
+      <div class="container-fluid">
+        <div class="row">
+          <div class="col-12">
+            {{ .Menu }}
+
+            <div class="card">
+              <div class="card-header">
+                <i class="fab fa-git-alt me-2"></i>Git Debug Information
+              </div>
+              <div class="card-body">
+<h5 class='mb-3'>## getRepositories</h5>
+{{ .Repos }}<hr class='my-4' />
+<h5 class='mb-3'>## getFeatureBranches(projects)</h5>
+{{ .Features }}<hr class='my-4' />
+<h5 class='mb-3'>## getTranslationBranches(projects)</h5>
+<ul class='list-unstyled ms-3 mb-3'>
+{{ range .TranslationNames }}<li class='mb-1'><i class='fas fa-code-branch text-info me-2'></i>{{ esc . }}</li>
+{{ end }}</ul>
+{{ .Translation }}<hr class='my-4' />
+<h5 class='mb-3'>## getAcceptanceBranches()</h5>
+<ul class='list-unstyled ms-3 mb-3'>
+{{ range .Acceptance }}<li class='mb-1'><i class='fas fa-check-circle text-success me-2'></i>{{ esc . }}</li>
+{{ end }}</ul>
+{{ .AcceptanceDump }}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    <!-- /container -->
+    </div>
+  </div>

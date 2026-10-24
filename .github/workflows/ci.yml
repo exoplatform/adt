@@ -1,0 +1,197 @@
+name: CI
+
+# Syntax and build checks: formatting and build of the Go front-end, parsing of the shell scripts and Jinja
+# templates, and an Apache configuration test of the rendered vhosts on Ubuntu 26.04.
+on:
+  pull_request:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  go:
+    name: Go (gofmt, vet, build)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: web/go.mod
+          cache: false
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "These files are not gofmt-formatted:"
+            echo "$unformatted"
+            exit 1
+          fi
+      - name: go vet
+        run: go vet ./...
+      - name: go build
+        run: go build ./...
+      - name: The Go build image of adt.sh matches go.mod
+        run: |
+          v=$(awk '/^go /{print $2; exit}' go.mod)
+          grep -qE "golang:${v}\.[0-9]+-alpine@sha256:[0-9a-f]{64}" ../_functions_web.sh \
+            || { echo "::error::ADT_WEB_GO_IMAGE_DEFAULT in _functions_web.sh must be golang:${v}.<patch>-alpine@sha256:<digest>"; exit 1; }
+      - name: JavaScript parses
+        run: |
+          for f in static/js/*.js static/sw.js; do node --check "$f"; done
+      # The Content-Security-Policy of the pages allows scripts from /js and the CDNs only
+      - name: Every script URL of the pages is allowed by the policy
+        run: |
+          for u in $(grep -rhoE '<script[^>]*src="https://[^"]+"' internal --include='*.tmpl' | sed 's/.*src="//; s/"$//'); do
+            grep -qF "\"$u\"" internal/app/csp.go || { echo "::error::$u is not in the script-src of internal/app/csp.go"; exit 1; }
+          done
+      - name: No inline script or event handler in the pages
+        run: |
+          bad=$(grep -rnE '<script|[[:space:]]on[a-z]+="|javascript:' internal --include='*.tmpl' --include='*.html' \
+                | grep -vE '<script (type="application/json" id="[A-Za-z]+"|[^>]*src="[^"]+")' || true)
+          if [ -n "$bad" ]; then echo "$bad"; echo "::error::inline script or handler found (use web/static/js and data-* attributes)"; exit 1; fi
+
+  shell:
+    name: Shell scripts parse
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: bash -n
+        run: |
+          for f in $(git ls-files '*.sh'); do
+            echo "bash -n $f"
+            bash -n "$f"
+          done
+
+  templates:
+    name: Jinja templates compile
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Jinja2
+        run: sudo apt-get install -y -qq python3-jinja2
+      - name: Compile every .j2
+        run: |
+          python3 - <<'PY'
+          import subprocess, sys, jinja2
+          env = jinja2.Environment(undefined=jinja2.Undefined)
+          files = subprocess.check_output(["git", "ls-files", "*.j2"], text=True).split()
+          bad = 0
+          for f in files:
+              try:
+                  env.from_string(open(f).read())
+              except jinja2.TemplateSyntaxError as e:
+                  print(f"{f}:{e.lineno}: {e.message}")
+                  bad += 1
+          print(f"{len(files)} templates compiled, {bad} with errors")
+          sys.exit(bad)
+          PY
+
+  apache:
+    name: Apache configuration test (Ubuntu 26.04)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Render the vhosts and run apache2ctl configtest
+        run: |
+          docker run --rm -i -v "$PWD:/repo:ro" -w /repo ubuntu:26.04 bash -s <<'SCRIPT'
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends apache2 libaprutil1-ldap python3-jinja2 openssl ca-certificates >/dev/null
+          # the modules the acceptance hosts load for these templates
+          a2enmod -q auth_form session session_cookie session_crypto request authnz_ldap ldap proxy proxy_http proxy_ajp proxy_wstunnel \
+            rewrite headers expires deflate brotli ssl http2 cgi >/dev/null
+          a2dissite -q 000-default
+          echo "ServerName ci.test" > /etc/apache2/conf-available/ci.conf && a2enconf -q ci
+
+          # the layout of an acceptance host: vhosts and includes under ${ADT_DATA}/conf/apache, loaded through adt.conf
+          ADT_DATA=/srv/adt
+          mkdir -p $ADT_DATA/conf/apache/{includes,sites-available} $ADT_DATA/var/{log/apache2,sessions} $ADT_DATA/{web/static,downloads,datasets}
+          touch $ADT_DATA/var/sessions/revoked.txt
+          openssl req -x509 -newkey rsa:2048 -nodes -keyout /tmp/ci.key -out /tmp/ci.crt -subj /CN=ci.test -days 1 2>/dev/null
+
+          cat > /tmp/render.py <<'PY'
+          import re, sys, zlib, jinja2
+          # usage: render.py TEMPLATE OUTPUT [NAME=value ...]; like `j2 --undefined`, the variables come from the environment.
+          # Every variable the template names that is not given gets a plausible dummy (a distinct port number, "false", or "x").
+          tpl, out, given = sys.argv[1], sys.argv[2], dict(a.split("=", 1) for a in sys.argv[3:])
+          text = open(tpl).read()
+          names = set(re.findall(r"[A-Z][A-Z0-9_]{2,}", " ".join(re.findall(r"\{\{.*?\}\}|\{%.*?%\}", text, re.S))))
+          dummy = lambda n: str(8000 + zlib.crc32(n.encode()) % 1000) if n.endswith("_PORT") else "false" if n.endswith("_ENABLED") else "x"
+          ctx = {n: given.get(n, dummy(n)) for n in names}
+          ctx.update(given)
+          open(out, "w").write(jinja2.Environment(undefined=jinja2.Undefined, keep_trailing_newline=True).from_string(text).render(**ctx))
+          PY
+          R() { python3 /tmp/render.py "$@"; }
+          E=etc/apache2
+          COMMON=(ADT_DATA=$ADT_DATA APACHE_CONF_DIR=$ADT_DATA/conf/apache ACCEPTANCE_SERVERS=https://acceptance.ci.test ADT_APACHE_VERSION=2.4 ADT_APACHE_VERSION_MINOR=66)
+          LDAP=(LDAP_ACCEPTANCE_BIND_DN=cn=ci LDAP_ACCEPTANCE_BIND_PASSWORD=ci LDAP_ACCEPTANCE_APACHE2_ADMIN_DN=cn=admins,dc=ci)
+
+          # the parts the virtual hosts share, as adt.sh renders them
+          for i in compression tls security-headers; do R $E/includes/$i.include.j2 $ADT_DATA/conf/apache/includes/$i.include "${COMMON[@]}"; done
+
+          R $E/conf.d/adt.conf.j2 /etc/apache2/conf-available/adt.conf "${COMMON[@]}" && a2enconf -q adt
+
+          # the dashboard front-end vhost, plain HTTP
+          R $E/includes/frontend.include.j2 $ADT_DATA/conf/apache/includes/acceptance-frontend.include "${COMMON[@]}" "${LDAP[@]}" \
+            ACCEPTANCE_HOST=acceptance.ci.test ADT_SESSION_PASSPHRASE=ci ADT_WEB_SOCKET=/run/adt-web/adt-web.sock
+          R $E/sites-available/frontend.j2 $ADT_DATA/conf/apache/sites-available/acceptance.ci.test "${COMMON[@]}" ACCEPTANCE_HOST=acceptance.ci.test
+          apache2ctl configtest
+          echo "== front-end (http): ok"
+
+          # ... and the HTTPS variant, which replaces the vhost file
+          R $E/sites-available/frontend-full-https.j2 $ADT_DATA/conf/apache/sites-available/acceptance.ci.test "${COMMON[@]}" ACCEPTANCE_HOST=acceptance.ci.test \
+            APACHE_SSL_CERTIFICATE_FILE=/tmp/ci.crt APACHE_SSL_CERTIFICATE_KEY_FILE=/tmp/ci.key
+          apache2ctl configtest
+          echo "== front-end (https): ok"
+
+          # instance vhosts: every optional feature on, every feature off, and HTTPS only
+          FEATURES=(MATRIX CALDAV MAILPIT FRONTAIL CLOUDBEAVER ONLYOFFICE_DOCUMENTSERVER LAM JITSI MONGO_EXPRESS KEYCLOAK ES CMISSERVER IFRAMELY DEBUG)
+          instance() { # name security https httpsonly on|off product
+            local n=$1 host=$1.ci.test v=() f
+            for f in "${FEATURES[@]}"; do v+=("DEPLOYMENT_${f}_ENABLED=$([ "$5" = on ] && echo true || echo false)"); done
+            R $E/includes/instance.include.j2 $ADT_DATA/conf/apache/includes/$host.include "${COMMON[@]}" "${v[@]}" PRODUCT_NAME=$6 \
+              DEPLOYMENT_EXT_HOST=$host DEPLOYMENT_DIR=$ADT_DATA/servers/$n DEPLOYMENT_CERTBOT_WEBROOT_PATH=/srv/wwwcertbot \
+              DEPLOYMENT_APACHE_WEBSOCKET_ENABLED=$([ "$5" = on ] && echo true || echo false) DEPLOYMENT_CHAT_EMBEDDED=false
+            R $E/sites-available/instance.j2 $ADT_DATA/conf/apache/sites-available/$host "${COMMON[@]}" "${LDAP[@]}" "${v[@]}" \
+              DEPLOYMENT_EXT_HOST=$host DEPLOYMENT_APACHE_VHOST_ALIAS=alias-$n.ci.test DEPLOYMENT_APACHE_SECURITY=$2 \
+              DEPLOYMENT_APACHE_HTTPS_ENABLED=$3 DEPLOYMENT_APACHE_HTTPSONLY_ENABLED=$4 DEPLOYMENT_CHAT_EMBEDDED=false \
+              INSTANCE_SSL_CERTIFICATE_FILE=/tmp/ci.crt INSTANCE_SSL_CERTIFICATE_KEY_FILE=/tmp/ci.key
+          }
+          instance all-on private false false on meeds
+          instance all-off public false false off plf
+          instance https-only private true true on plf
+          apache2ctl configtest
+          echo "== instance vhosts (3 scenarios): ok"
+          SCRIPT
