@@ -16,37 +16,16 @@ source "${SCRIPT_DIR}/_functions_aliases.sh"
 source "${SCRIPT_DIR}/_functions_string.sh"
 source "${SCRIPT_DIR}/_functions_system.sh"
 source "${SCRIPT_DIR}/_functions_files.sh"
-source "${SCRIPT_DIR}/_functions_download.sh"
 source "${SCRIPT_DIR}/_functions_git.sh"
 source "${SCRIPT_DIR}/_functions_ufw.sh"
 source "${SCRIPT_DIR}/_functions_apache.sh"
 source "${SCRIPT_DIR}/_functions_web.sh"
 source "${SCRIPT_DIR}/_functions_logrotate.sh"
 source "${SCRIPT_DIR}/_functions_awstats.sh"
-source "${SCRIPT_DIR}/_functions_plf.sh"
-source "${SCRIPT_DIR}/_functions_tomcat.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
-source "${SCRIPT_DIR}/_functions_database.sh"
-source "${SCRIPT_DIR}/_functions_es.sh"
-source "${SCRIPT_DIR}/_functions_chat.sh"
-source "${SCRIPT_DIR}/_functions_onlyoffice.sh"
-source "${SCRIPT_DIR}/_functions_ldap.sh"
-source "${SCRIPT_DIR}/_functions_iframely.sh"
-source "${SCRIPT_DIR}/_functions_mailpit.sh"
-source "${SCRIPT_DIR}/_functions_matrix.sh"
-source "${SCRIPT_DIR}/_functions_clamav.sh"
-source "${SCRIPT_DIR}/_functions_ai.sh"
-source "${SCRIPT_DIR}/_functions_frontail.sh"
-source "${SCRIPT_DIR}/_functions_debugproxy.sh"
-source "${SCRIPT_DIR}/_functions_mongoexpress.sh"
-source "${SCRIPT_DIR}/_functions_keycloak.sh"
-source "${SCRIPT_DIR}/_functions_cloudbeaver.sh"
-source "${SCRIPT_DIR}/_functions_lam.sh"
-source "${SCRIPT_DIR}/_functions_jitsi.sh"
-source "${SCRIPT_DIR}/_functions_sftp.sh"
-source "${SCRIPT_DIR}/_functions_cmis.sh"
+source "${SCRIPT_DIR}/_functions_registry.sh"
+source "${SCRIPT_DIR}/_functions_compose.sh"
 source "${SCRIPT_DIR}/_functions_certbot.sh"
-source "${SCRIPT_DIR}/_functions_caldav.sh"
 
 # #################################################################################
 #
@@ -62,12 +41,12 @@ print_usage() {
 
   usage: $0 <action>
 
-This script manages automated deployment of eXo products for testing purpose.
+This script manages automated deployment of eXo Platform and Meeds (7.0 and later) for testing purpose.
+Every instance is a docker compose project (application, database, search and nginx containers) on its own network.
 
 Action
 ------
-  deploy           Deploys (Download+Configure) the server
-  download-dataset Downloads the dataset required by the server
+  deploy           Deploys (pulls the images and configures) the server
   start            Starts the server
   stop             Stops the server
   restart          Restarts the server
@@ -117,97 +96,56 @@ Environment Variables
   APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup (PEM bundle including certificate chain)
   APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
 
-  REPOSITORY_SERVER_BASE_URL        : The Maven repository URL used to download artifacts (default: https://repository.exoplatform.org)
-  REPOSITORY_USERNAME               : The username to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
-  REPOSITORY_PASSWORD               : The password to logon on \$REPOSITORY_SERVER_BASE_URL if necessary (default: none)
-
   ADT_DEBUG                         : Display debug details (default: false; values : true | false)
-  ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated. (default: false; values : true | false)
+  ADT_DEV_MODE                      : Development mode. Apache server, awstats and ufw are deactivated, nginx is published without TLS. (default: false; values : true | false)
   ADT_OFFLINE                       : Use only local resources, don''t do any remote operations. (default: false; values : true | false)
 
   Instance Settings
   =================
 
   PRODUCT_NAME                      : The product you want to manage. Possible values are :
-    meeds          Meeds.io                                - Apache Tomcat bundle
-    plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
-    plfent         eXo Platform Enterprise Edition         - Apache Tomcat bundle
-  Only versions 7.0 and later are supported.
+    meeds          Meeds.io                                - image meedsio/meeds
+    plfcom         eXo Platform Community Edition          - image exoplatform/exo-community
+    plfent         eXo Platform Enterprise Edition         - image exoplatform/exo-enterprise
+  Only versions 7.0 and later are supported. DEPLOYMENT_IMAGE_REPO overrides the image repository.
 
-  PRODUCT_VERSION                   : The version of the product. Can be either a release (X.Y.Z), a snapshot (X.Y.Z-SNAPSHOT), or a continuous deployment using -MLT (latest) / -MBL (before latest) / -GA (latest GA release only, no milestone/RC/CP/build suffix) with optional Z wildcard for the minor version (e.g. 7.2.0-MLT, 7.2.Z-MLT, 7.2.Z-meed-MLT or 7.2.Z-GA)
+  PRODUCT_VERSION                   : The version of the product, also the tag of the image. Can be a release (X.Y.Z, the newest rebuild X.Y.Z_N is used), a snapshot (X.Y.x-SNAPSHOT), or a build resolved from the tags of the registry: -MLT (latest) / -MBL (before latest) / -GA (latest GA release only, no milestone/RC/CP/build suffix) with optional Z wildcard for the patch version (e.g. 7.2.0-MLT, 7.2.Z-MLT, 7.2.Z-GA)
   INSTANCE_ID                       : The id of the instance. Use this property to deploy several time the same PRODUCT_NAME and PRODUCT_VERSION couple (default: none)
 
   DEPLOYMENT_LABELS                 : Comma separated labels for a deployment \" (default: none)
-
-  DEPLOYMENT_SKIP_ACCOUNT_SETUP     : Do you want to skip the account creation form and use default accounts (default: false; values : true | false)
-  DEPLOYMENT_SKIP_REGISTER          : Do you want to skip the register step (default: false; values : true | false)
-
-  DEPLOYMENT_APACHE_SECURITY        : Do you want to have a public or a private deployment (default: private; values : private | public)
-  DEPLOYMENT_APACHE_VHOST_ALIAS     : Do you want to add an Apache ServerAlias directive to access the deployed instance through a more userfriendly url (ex: try.exoplatform.com for a public demo)
-  DEPLOYMENT_APACHE_HTTPS_ENABLED   : Do you want to add an HTTPs VirtualHost (default: false; values : true | false)
-  DEPLOYMENT_APACHE_HTTPSONLY_ENABLED : Do you want to use a HTTPs VirtualHost (default: false; values : true | false)
-  DEPLOYMENT_PORT_PREFIX            : Default prefix for all ports (2 digits will be added after it for each required port)
+  DEPLOYMENT_PORT_PREFIX            : The prefix of the port of the instance (default: 80). The nginx of the instance is published on 127.0.0.1:<prefix>01
+  DEPLOYMENT_APACHE_SECURITY        : private (LDAP login) or public (default: private)
+  DEPLOYMENT_APACHE_VHOST_ALIAS     : An alias of the virtual host (default: none)
+  DEPLOYMENT_APACHE_HTTPS_ENABLED   : Add an HTTPS virtual host. nginx then serves the same certificate as Apache (default: false)
+  DEPLOYMENT_APACHE_HTTPSONLY_ENABLED : Redirect HTTP to HTTPS (default: false)
+  DEPLOYMENT_APACHE_WEBSOCKET_ENABLED : Forward the websockets (default: true)
 
   DEPLOYMENT_JVM_SIZE_MAX           : Maximum heap memory size (default: 2g)
   DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
-  DEPLOYMENT_JVM_PERMSIZE_MAX       : Maximum permgem memory size (default: 256m)
-  DEPLOYMENT_OPTS                   : Additional JVM parameters to pass to the startup. Take care to escape characters like \" (default: none)
+  DEPLOYMENT_OPTS                   : Additional JVM parameters (JAVA_OPTS of the image) (default: none)
+  DEPLOYMENT_ADDONS                 : Comma separated list of add-ons to install (EXO_ADDONS_LIST / MEEDS_ADDONS_LIST). The jdbc driver of the database is added.
+  DEPLOYMENT_ADDONS_TOREMOVE        : Comma separated list of add-ons to remove
+  DEPLOYMENT_ADDONS_CATALOG         : URL of an add-ons catalog (default: the one of the image)
+  DEPLOYMENT_PATCHES                : Comma separated list of patches to install
+  DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload (in MB, default: 200)
+  DEPLOYMENT_GZIP_ENABLED           : Compression done by the application server itself (default: false, nginx compresses)
+  DEPLOYMENT_START_TIMEOUT          : Seconds to wait for the instance to be healthy at start (default: 1800)
 
   DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
   DEPLOYMENT_DOCKER_CMD             : The docker command to execute (default: docker)
+  DEPLOYMENT_DOCKER_NETWORKS_MAX    : Number of docker bridge networks above which deploy refuses a new instance (default: 30, the capacity of the default address pools)
 
-  DEPLOYMENT_DB_TYPE          : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | DOCKER_MYSQL | DOCKER_POSTGRES | DOCKER_MARIADB | DOCKER_ORACLE | DOCKER_SQLSERVER)
-  DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (no default)
+  DEPLOYMENT_DB_TYPE                : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | MARIADB | POSTGRES; DOCKER_MYSQL, DOCKER_MARIADB and DOCKER_POSTGRES are accepted too)
+  DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (default: the one of the product version, required for MariaDB)
 
-  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET | DUMP_DATASET - The latest dataset - if exists -  is restored)
+  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept)
 
-  DEPLOYMENT_LDAP_URL               : LDAP URL to use if the server is using one (default: none)
-  DEPLOYMENT_LDAP_ADMIN_DN          : LDAP DN to use to logon into the LDAP server
-  DEPLOYMENT_LDAP_ADMIN_PWD         : LDAP password to use to logon into the LDAP server
-
-  DEPLOYMENT_OAUTH_FACEBOOK_CLIENT_ID     : Identifier for Facebook OAuth integration (used by community)
-  DEPLOYMENT_OAUTH_FACEBOOK_CLIENT_SECRET : Secret for Facebook OAuth integration (used by community)
-  DEPLOYMENT_OAUTH_GOOGLE_CLIENT_ID       : Identifier for Google OAuth integration (used by community)
-  DEPLOYMENT_OAUTH_GOOGLE_CLIENT_SECRET   : Secret for Facebook OAuth integration (used by community)
-  DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_ID     : Identifier for LinkedIn OAuth integration (used by community)
-  DEPLOYMENT_OAUTH_LINKEDIN_CLIENT_SECRET : Secret for Facebook OAuth integration (used by community)
-
-  DEPLOYMENT_EXTENSIONS             : Comma separated list of PLF extensions to install. "all" to install all extensions available. Empty string for none. (default: all)
-
-  DEPLOYMENT_ES_ENABLED             : Do we need to configure elasticsearch (default: true; values : true|false)
-  DEPLOYMENT_ES_EMBEDDED            : Do we use an embedded Elasticsearch deployment or not (default: true; values: true|false)
-  DEPLOYMENT_ES_IMAGE               : Which docker image to use for standalone elasticsearch (default: exoplatform/elasticsearch)
-  DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the ES image to use (default 0.5.0 for PLF 4.4, 1.1.1 for plf 5.0, 1.2.0 for PLF 5.1)
+  DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the Elasticsearch image to use (default: the one of the product version)
   DEPLOYMENT_ES_HEAP                : Size of Elasticsearch heap (default: 512m)
-
-  DEPLOYMENT_CHAT_ENABLE            : Do we need to initiallize chat environment
-  DEPLOYMENT_CHAT_EMBEDDED          : Do we use the embedded Chat Server or not (default: true; values: true|false)
-  DEPLOYMENT_CHAT_SERVER_IMAGE      : Which chat server image to use (default: exoplatform/chat-server)"
-  DEPLOYMENT_CHAT_SERVER_VERSION    : Which version of chat server to use with the chat server
-  DEPLOYMENT_CHAT_MONGODB_TYPE      : Type of mongodb deployment (default: DOCKER if chat embedded is true, HOST otherwise, values: HOST|DOCKER) 
-  DEPLOYMENT_CHAT_MONGODB_IMAGE     : Which mongodb image to use (default: mongo)"
-  DEPLOYMENT_CHAT_MONGODB_VERSION   : Which version of mongodb to use with the chat server (default: 3.2)
-  DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS   : Which versions of mongodb to use with the chat server during mongo upgrade
-
-  DEPLOYMENT_CMISSERVER_ENABLED     : Enable the deployment of a dedicated CMIS server, as exo-cloud-drive is not only about CMIS, it can be deloyed without a CMIS server when this param isn't set to true. (default: false; values: true|false)
-  DEPLOYMENT_CMIS_IMAGE             : Which docker image to use for the cmis server (default: exoplatform/cmis-server)
-  DEPLOYMENT_CMIS_IMAGE_VERSION     : Which version of the cmis server image to use (default: 1.0)
-  DEPLOYMENT_CMIS_USERS_PASSWORD    : Which password to use for the cmis users (by default, use the cmis image default)
-
-  DEPLOYMENT_SFTP_ENABLED           : Do you need to configure exo-lecko addon
-  DEPLOYMENT_ES_EMBEDDED_MIGRATION_ENABLED  : Enable elastic serach migration from embedded to standalone
-  DEPLOYMENT_ES_MIGRATION_ENABLED  : Enable elasticserach migration
-  DEPLOYMENT_ES_INTERMEDIATE_UPGRADE_VERSIONS  : elasticseach intermediate versions used in migration
-  DEPLOYMENT_GZIP_ENABLED           : Enable Gzip Compression on the Tomcat Server
-  DEPLOYMENT_LOGBACK_LOGGERS        : Enable Debug logging for java packages (comma seperated eg: org.exoplatform:DEBUG,org.hibernate,org.springframework:ERROR), Default logging level is DEBUG
-  DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload in eXo (in MB)
-  DEPLOYMENT_STAGING_ENABLED        : Enable Staging nexus repositories deployment 
-  DEPLOYMENT_DEBUG_ENABLED          : Enable the JVM remote debug (JDWP). Reachable through the authenticated vhost URI /debug-ws (default: false)
-  DEPLOYMENT_DEBUG_EXPOSE_PORT      : Legacy : expose the JDWP port on all interfaces, WITHOUT authentication (default: false)
 
   DEPLOYMENT_CERTBOT_ENABLED                : Enable Certbot integration for automatic SSL certificate issuance and renewal
   DEPLOYMENT_CERTBOT_CERT_EXPIRE_PERIOD     : Certificate renewal threshold in seconds (e.g., 2592000 = 30 days before expiry)
-  DEPLOYMENT_CERTBOT_ACME_SERVER            : ACME server URL used for certificate issuance (e.g., Let's Encrypt endpoint)
+  DEPLOYMENT_CERTBOT_ACME_SERVER            : ACME server URL used for certificate issuance (e.g., Let\'s Encrypt endpoint)
   DEPLOYMENT_CERTBOT_EAB_KID                : External Account Binding Key ID for ACME registration (leave empty if not required)
   DEPLOYMENT_CERTBOT_EAB_HMAC_KEY           : External Account Binding HMAC key for ACME (leave empty if not required)
   DEPLOYMENT_CERTBOT_FORCE_RENEWAL          : Force renewal of certificate even if not close to expiry
@@ -220,25 +158,13 @@ Environment Variables
 EOF
 }
 
-# find_instance_file <VAR> <DIR> <BASENAME> <PRODUCT_NAME>
-# Finds which file to use and store its path in <VAR>
-# We'll try to find it in the directory <DIR> and we'll select it in this order :
-# <PRODUCT_NAME>-${PRODUCT_VERSION}-<BASENAME>
-# <PRODUCT_NAME>-${PRODUCT_BRANCH}-<BASENAME>
-# <PRODUCT_NAME>-${PRODUCT_MAJOR_BRANCH}-<BASENAME>
-# <PRODUCT_NAME>-<BASENAME>
-# <BASENAME>.patch
-find_instance_file() {
-  local _variable=$1
-  local _patchDir=$2
-  local _basename=$3
-  local _product=$4
-  find_file ${_variable}  \
- "$_patchDir/$_basename"  \
- "$_patchDir/$_product-$_basename"  \
- "$_patchDir/$_product-${PRODUCT_MAJOR_BRANCH}-$_basename"  \
- "$_patchDir/$_product-${PRODUCT_BRANCH}-$_basename"  \
- "$_patchDir/$_product-${PRODUCT_VERSION}-$_basename"
+#
+# Docker properties (needed by every action that looks at the containers)
+#
+initialize_docker_settings() {
+  configurable_env_var "DEPLOYMENT_DOCKER_HOST"     "unix://"
+  configurable_env_var "DEPLOYMENT_DOCKER_CMD"      "docker"
+  configurable_env_var "DOCKER_CMD"                 "${DEPLOYMENT_DOCKER_CMD} -H ${DEPLOYMENT_DOCKER_HOST}"
 }
 
 #
@@ -247,21 +173,18 @@ find_instance_file() {
 initialize_product_settings() {
   validate_env_var "ACTION"
 
-  # Docker properties
-  configurable_env_var "DEPLOYMENT_DOCKER_HOST"     "unix://"
-  configurable_env_var "DEPLOYMENT_DOCKER_CMD"      "docker"
-  configurable_env_var "DOCKER_CMD"                 "${DEPLOYMENT_DOCKER_CMD} -H ${DEPLOYMENT_DOCKER_HOST}"
+  initialize_docker_settings
 
   # ${PRODUCT_BRANCH} is computed from ${PRODUCT_VERSION} and is equal to the version up to the latest dot
-  # and with x added. ex : 3.5.0-M4-SNAPSHOT => 3.5.x, 1.1.6-SNAPSHOT => 1.1.x
+  # and with x added. ex : 7.3.0-M4-SNAPSHOT => 7.3.x, 7.2.Z-GA => 7.2.x
+  # Everything that depends on the minor version of the product (docker images, versions) is keyed on it.
   env_var PRODUCT_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\.[0-9]*\).*'`".x"
   env_var PRODUCT_MAJOR_BRANCH `expr "${PRODUCT_VERSION}" : '\([0-9]*\).*'`".x"
   configurable_env_var "INSTANCE_ID" ""
   configurable_env_var "INSTANCE_TOKEN" ""
 
-
   if [ ! -z "${INSTANCE_TOKEN:-}" ]; then
-    if [[ ! "${INSTANCE_TOKEN}" =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then 
+    if [[ ! "${INSTANCE_TOKEN}" =~ ^\{?[A-F0-9a-f]{8}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{4}-[A-F0-9a-f]{12}\}?$ ]]; then
       echo_error "${INSTANCE_TOKEN} must be a valid UUID Token!"
       exit 1
     fi
@@ -274,61 +197,43 @@ initialize_product_settings() {
 
   # validate additional parameters
   case "${ACTION}" in
-    start | stop | restart | undeploy | deploy | download-dataset)
+    start | stop | restart | undeploy | deploy)
     # Mandatory env vars. They need to be defined before launching the script
       validate_env_var "PRODUCT_NAME"
       validate_env_var "PRODUCT_VERSION"
       configurable_env_var "INSTANCE_ID" ""
 
-      # Defaults values we can override by product/branch/version
-      configurable_env_var "EXO_PROFILES" "all"
-      # Comma separated list of PLF extensions to install. all (by default) to install all extensions available. Empty string for none.
-      configurable_env_var "DEPLOYMENT_EXTENSIONS" "all"
-      # Comma separated list of PLF add-ons to install using the add-ons manager. Empty string for none. (default: none)
+      # Comma separated list of add-ons installed by the add-ons manager of the image. Empty string for none. (default: none)
       configurable_env_var "DEPLOYMENT_ADDONS" ""
       configurable_env_var "DEPLOYMENT_ADDONS_CATALOG" ""
-      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE" "" # used for add-on manager --conflict parameter (default: none) (possible values: fail / skip / overwrite)
-      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE" "" # used for add-on manager --no-compat parameter (default: none) (possible values: true / false)
-      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_UNSTABLE_MODE" "" # used for add-on manager --unstable parameter (default: none) (possible values: true / false)
-      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_PATCHES_NOCOMPAT_MODE" "" # used for add-on manager --no-compat parameter when installing patches (default: none) (possible values: true / false)
-      # Comma separated list of patches to install using addon-ons manager. Empty string for none. (default: none)
+      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE" "" # --conflict of the add-ons manager (fail / skip / overwrite)
+      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE" "" # --no-compat of the add-ons manager (true / false)
+      # Comma separated list of patches to install. Empty string for none. (default: none)
       configurable_env_var "DEPLOYMENT_PATCHES" ""
       configurable_env_var "DEPLOYMENT_PATCHES_CATALOG" "http://patches.exoplatform.org/catalog.json"
-      configurable_env_var "DEPLOYMENT_ADDONS_MANAGER_PATCHES_CONFLICT_MODE" "overwrite" # used for add-on manager --conflict parameter (default: overwrite) (possible values: fail / skip / overwrite)
-      # Comma separated list of addons to remove using addon-ons manager. Empty string for none. (default: none)
+      # Comma separated list of add-ons to remove. Empty string for none. (default: none)
       configurable_env_var "DEPLOYMENT_ADDONS_TOREMOVE" ""
-      # Additional command line settings to pass to the startup
+      # Additional JVM settings (JAVA_OPTS of the image)
       configurable_env_var "DEPLOYMENT_OPTS" ""
-      configurable_env_var "DEPLOYMENT_APPSRV_VERSION" "7.0.75" #Default version used to download additional resources like JMX lib
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
-      configurable_env_var "DEPLOYMENT_DB_IDM_DEFAULT_NAME" "idm"
-      configurable_env_var "DEPLOYMENT_DB_JCR_DEFAULT_NAME" "jcr"
-      configurable_env_var "DEPLOYMENT_DB_JPA_DEFAULT_NAME" "jpa"
-      env_var "DEPLOYMENT_GATEIN_CONF_PATH" "gatein/conf/configuration.properties"
-      env_var "DEPLOYMENT_SERVER_SCRIPT" "bin/gatein.sh"
-      env_var "DEPLOYMENT_SERVER_LOG_FILE" "catalina.out"
-      env_var "DEPLOYMENT_APPSRV_TYPE" "tomcat" #Server type
 
       env_var "DEPLOYMENT_BUILD_URL" "$(dirname ${BUILD_URL})"
 
-      env_var "DEPLOYMENT_ADDONS_MANAGER_VERSION" "1.0.0-RC4" #Add-ons Manager to use      
-
-      configurable_env_var "REPOSITORY_SERVER_BASE_URL" "https://repository.exoplatform.org"
-      configurable_env_var "REPOSITORY_USERNAME" ""
-      configurable_env_var "REPOSITORY_PASSWORD" ""
-
-      env_var "DEPLOYMENT_CRASH_ENABLED" false
-
       configurable_env_var "DEPLOYMENT_ES_ENABLED" true
+      configurable_env_var "DEPLOYMENT_ES_HEAP" "512m"
+      configurable_env_var "DEPLOYMENT_NGINX_IMAGE" "nginx"
+      configurable_env_var "DEPLOYMENT_NGINX_IMAGE_VERSION" "1.30.2-alpine"
+      # Throwaway container used when files created by the containers (other uids) have to be removed
+      configurable_env_var "DEPLOYMENT_HELPER_IMAGE" "alpine:3"
 
+      #
+      # Companion services. They are not available yet in the compose project: a deployment that enables one is refused.
+      #
       env_var "DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED" false
-      configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
-      configurable_env_var "DEPLOYMENT_ONLYOFFICE_LINK_SECRET" "$(uuidgen | sha256sum | awk '{ print $1 }')"
-
-      configurable_env_var "DEPLOYMENT_JMX_READONLY_PASSWORD" "$(getrandomstring)"
-      configurable_env_var "DEPLOYMENT_JMX_READWRITE_PASSWORD" "$(getrandomstring)"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_SECRET" "$(fqdn_rand_string 64 'onlyoffice-secret' ${INSTANCE_KEY})"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_LINK_SECRET" "$(fqdn_rand_string 64 'onlyoffice-link-secret' ${INSTANCE_KEY})"
 
       configurable_env_var "DEPLOYMENT_LDAP_ENABLED" false
       configurable_env_var "DEPLOYMENT_LDAP_IMAGE" "dinkel/openldap"
@@ -341,7 +246,7 @@ initialize_product_settings() {
       configurable_env_var "GROUP_DIRECTORY_BASE_DN" ""
       configurable_env_var "USER_DIRECTORY_ADMIN_DN" "cn=admin,dc=exoplatform,dc=com"
       configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
-      # Iframely
+
       configurable_env_var "DEPLOYMENT_IFRAMELY_ENABLED" false
       configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE" "jolt/iframely"
       configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE_VERSION" "v2.3.0"
@@ -350,7 +255,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE" "axllent/mailpit"
       configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE_VERSION" "v1.32.0"
 
-      # Matrix
       configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse"
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
@@ -361,12 +265,10 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_MATRIX_MACARON_SECRET_KEY" "$(fqdn_rand_string 64 'macaroon-secret"' ${INSTANCE_KEY})"
       configurable_env_var "DEPLOYMENT_MATRIX_FORM_SECRET" "$(fqdn_rand_string 32 'form-secret' ${INSTANCE_KEY})"
 
-      # Clamav
       configurable_env_var "DEPLOYMENT_CLAMAV_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLAMAV_IMAGE" "clamav/clamav"
       configurable_env_var "DEPLOYMENT_CLAMAV_IMAGE_VERSION" "1.5.1"
-      
-      # AI-Ollama
+
       configurable_env_var "DEPLOYMENT_AI_ENABLED" false
       configurable_env_var "DEPLOYMENT_AI_IMAGE" "ollama/ollama"
       configurable_env_var "DEPLOYMENT_AI_IMAGE_VERSION" "0.32.1"
@@ -378,12 +280,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_FRONTAIL_ENABLED" false
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE" "hbenali/frontail"
       configurable_env_var "DEPLOYMENT_FRONTAIL_IMAGE_VERSION" "2.37"
-
-      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_ENABLED" false
-      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_IMAGE" "mongo-express"
-      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_IMAGE_VERSION" "1-20-alpine3.19"
-      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_READONLY" true
-      configurable_env_var "DEPLOYMENT_MONGO_EXPRESS_ADMIN" true
 
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
@@ -406,8 +302,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_JITSI_JVB_XMX" 1g
       configurable_env_var "DEPLOYMENT_JITSI_IMAGE" "exoplatform/jitsi"
       configurable_env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION" "2026.3.0"
-
-      # Jitsi secrets and passwords
       configurable_env_var "DEPLOYMENT_JITSI_EXO_JWT_SECRET" "$(fqdn_rand_string 32 'exo-jwt' ${INSTANCE_KEY})"
       configurable_env_var "DEPLOYMENT_JITSI_JIBRI_RECORDER_PASSWORD" "$(fqdn_rand_string 32 'jibri-recorder' ${INSTANCE_KEY})"
       configurable_env_var "DEPLOYMENT_JITSI_JIBRI_XMPP_PASSWORD" "$(fqdn_rand_string 32 'jibri-xmpp' ${INSTANCE_KEY})"
@@ -415,8 +309,6 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_JITSI_JICOFO_COMPONENT_SECRET" "$(fqdn_rand_string 32 'jicofo-component' ${INSTANCE_KEY})"
       configurable_env_var "DEPLOYMENT_JITSI_JVB_AUTH_PASSWORD" "$(fqdn_rand_string 32 'jvb-auth' ${INSTANCE_KEY})"
       configurable_env_var "DEPLOYMENT_JITSI_JWT_APP_SECRET" "$(fqdn_rand_string 32 'jwt-app' ${INSTANCE_KEY})"
-
-      configurable_env_var "DEPLOYMENT_PG_UPGRADE_IMAGE" "tianon/postgres-upgrade"
 
       configurable_env_var "DEPLOYMENT_SFTP_ENABLED" false
       configurable_env_var "DEPLOYMENT_SFTP_IMAGE" "atmoz/sftp"
@@ -432,21 +324,16 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CALDAV_DB_ENCRYPTION_KEY" ""
 
       configurable_env_var "DEPLOYMENT_DEBUG_ENABLED" false
-      # By default the JDWP port is not exposed : it is reachable through the (authenticated) instance vhost at /debug-ws
-      configurable_env_var "DEPLOYMENT_DEBUG_EXPOSE_PORT" false
       configurable_env_var "DEPLOYMENT_DEBUGPROXY_IMAGE" "ghcr.io/vi/websocat"
       configurable_env_var "DEPLOYMENT_DEBUGPROXY_IMAGE_VERSION" "v1.14.1"
       configurable_env_var "DEPLOYMENT_DEV_ENABLED" false
       configurable_env_var "DEPLOYMENT_CONTINUOUS_ENABLED" false
 
+      # Renders the Jinja templates (when neither jinjanate nor j2 is installed on the host)
       configurable_env_var "DEPLOYMENT_J2CLI_IMAGE" "exoplatform/j2cli"
       configurable_env_var "DEPLOYMENT_J2CLI_VERSION" "2.0.0"
 
-      configurable_env_var "DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS" ""
-      
-      configurable_env_var "DEPLOYMENT_ES7_MIGRATION_ENABLED" false
       configurable_env_var "DEPLOYMENT_GZIP_ENABLED" false
-      configurable_env_var "DEPLOYMENT_LOGBACK_LOGGERS" ""
       configurable_env_var "DEPLOYMENT_UPLOAD_MAX_FILE_SIZE" "200"
       configurable_env_var "DEPLOYMENT_STAGING_ENABLED" false
       configurable_env_var "DEPLOYMENT_SELFSIGNEDCERTS_HOSTS" ""
@@ -462,8 +349,6 @@ initialize_product_settings() {
       env_var "DEPLOYMENT_CERTBOT_CONFIG_FOLDER" "/etc/letsencrypt"
       env_var "DEPLOYMENT_CERTBOT_WEBROOT_PATH" "/srv/wwwcertbot"
 
-      configurable_env_var "DEPLOYMENT_TOMCAT_UNPACK_WARS" true
-    
       configurable_env_var "DS_FILENAME" "${PRODUCT_NAME}-${PRODUCT_BRANCH}"
       configurable_env_var "DS_TARGET_SERVER" ""
 
@@ -479,138 +364,66 @@ initialize_product_settings() {
       configurable_env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${APACHE_SSL_CERTIFICATE_KEY_FILE}"
       configurable_env_var "INSTANCE_DOMAIN" "" # Default one
 
-      configurable_env_var "DEPLOYMENT_CMIS_IMAGE" "exoplatform/cmis-server"
-      configurable_env_var "DEPLOYMENT_CMIS_IMAGE_VERSION" "1.0"
-      configurable_env_var "DEPLOYMENT_CMIS_USERS_PASSWORD" ""
-      
-      # exo-cloud-drive can be used for gdrive, box, dropbox integration without the need for a cmis server.
-      configurable_env_var "DEPLOYMENT_CMISSERVER_ENABLED" false
-
-      if [[ "$DEPLOYMENT_ADDONS" =~ "exo-cloud-drive" ]] && "$DEPLOYMENT_CMISSERVER_ENABLED" ; then
-        echo_info "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED and exo-cloud-drive is installed: CMIS server will be deployed for CMIS integration."
-      elif ! [[ "$DEPLOYMENT_ADDONS" =~ "exo-cloud-drive" ]] && "$DEPLOYMENT_CMISSERVER_ENABLED" ; then
-        echo_warn "DEPLOYMENT_CMISSERVER_ENABLED is $DEPLOYMENT_CMISSERVER_ENABLED and exo-cloud-drive not installed:  No CMIS server will be deployed. Forcing DEPLOYMENT_CMISSERVER_ENABLED to false"
-        configurable_env_var "DEPLOYMENT_CMISSERVER_ENABLED" false
-      fi
-
       configurable_env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_HTTPSONLY_ENABLED" false
       configurable_env_var "DEPLOYMENT_APACHE_WEBSOCKET_ENABLED" true
 
-      configurable_env_var "DEPLOYMENT_CHAT_ENABLED" false
-      configurable_env_var "DEPLOYMENT_CHAT_EMBEDDED" true
-      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_HOSTNAME" "localhost"
-      configurable_env_var "DEPLOYMENT_CHAT_SERVER_IMAGE" "exoplatform/chat-server"
-      configurable_env_var "DEPLOYMENT_CHAT_SERVER_VERSION" "latest"
-      if ${DEPLOYMENT_CHAT_EMBEDDED}; then
-        configurable_env_var "DEPLOYMENT_CHAT_MONGODB_TYPE" "HOST"
-        configurable_env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "27017"
-      else
-        # For standalone we force docker mongodb
-        configurable_env_var "DEPLOYMENT_CHAT_MONGODB_TYPE" "DOCKER"
-      fi
-      configurable_env_var "DEPLOYMENT_CHAT_MONGODB_IMAGE" "mongo"      
-
-      configurable_env_var "DEPLOYMENT_SKIP_ACCOUNT_SETUP" false
-      configurable_env_var "DEPLOYMENT_DEPLOYMENT_SKIP_REGISTER" false
-
       configurable_env_var "DEPLOYMENT_LABELS" ""
 
       # Push notifications configuration
-      # Enabled by default for
-      #   - trial and enterprise editions
-      #   - if the exo-push-notifications addon is present on the deployed addons
+      # Enabled by default for the enterprise edition and if the exo-push-notifications addon is present on the deployed addons
       if [[ "$DEPLOYMENT_ADDONS" =~ "exo-push-notifications" ]]; then
         env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED" true
       fi
       configurable_env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE" ""
 
+      # The image of the product: they are set by the script
       env_var "ARTIFACT_GROUPID" ""
       env_var "ARTIFACT_ARTIFACTID" ""
       env_var "ARTIFACT_TIMESTAMP" ""
-      env_var "ARTIFACT_CLASSIFIER" ""
-      env_var "ARTIFACT_PACKAGING" "zip"
-
-      if ${DEPLOYMENT_STAGING_ENABLED}; then
-        env_var ARTIFACT_REPO_GROUP "staging"
-      else
-        env_var ARTIFACT_REPO_GROUP "public"
-      fi
-
-      # They are set by the script
       env_var "ARTIFACT_DATE" ""
-      env_var "ARTIFACT_REPO_URL" ""
       env_var "ARTIFACT_DL_URL" ""
+      env_var "DEPLOYMENT_IMAGE" ""
       env_var "DEPLOYMENT_DATE" ""
       env_var "DEPLOYMENT_DIR" ""
       env_var "DEPLOYMENT_LOG_URL" ""
       env_var "DEPLOYMENT_LIVE_LOG_URL" ""
       env_var "DEPLOYMENT_LOG_PATH" ""
-      env_var "DEPLOYMENT_JMX_URL" ""
-      env_var "DEPLOYMENT_PID_FILE" ""
+      env_var "DEPLOYMENT_CERTBOT_DOMAIN" ""
       env_var "DEPLOYMENT_LDAP_LINK" ""
       env_var "DEPLOYMENT_IFRAMELY_LINK" ""
       env_var "DEPLOYMENT_SFTP_LINK" ""
 
-
       # Classifier to group together projects in the UI
-      env_var PLF_BRANCH "UNKNOWN" # 3.0.x, 3.5.x, 4.0.x
+      env_var PLF_BRANCH "UNKNOWN"
 
       # More user friendly description
       env_var "PRODUCT_DESCRIPTION" "${PRODUCT_NAME}"
 
-      # Datasets remote location
-      env_var "DATASET_DATA_VALUES_ARCHIVE"    ""
-      env_var "DATASET_DATA_INDEX_ARCHIVE"     ""
-      env_var "DATASET_DB_ARCHIVE"             ""
-
-      # To reuse patches between products
-      env_var "TOMCAT_SETENV_SCRIPT_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "PORTS_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "JMX_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "DB_SERVER_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "DB_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "EMAIL_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "JOD_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "LDAP_GATEIN_PATCH_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
-      env_var "STANDALONE_PRODUCT_NAME" "${PRODUCT_NAME}"
-
-      # Only eXo Platform / Meeds 7.0 and later are supported (Tomcat 10 bundles)
+      # Only eXo Platform / Meeds 7.0 and later are supported
       if ! [[ "${PRODUCT_VERSION}" =~ ^([7-9]|[1-9][0-9])\.[0-9]+ ]]; then
         echo_error "Product version \"${PRODUCT_VERSION}\" is not supported: only 7.0 and later are."
         print_usage
         exit 1
       fi
-      # Validate product and load artifact details
-      # Be careful, this id should be no longer than 10 (because of mysql user name limit)
+      # The docker image and the prefix of the environment variables of the image, by product.
+      # Be careful, the product name should be no longer than 10 (because of the database user name limit)
       case "${PRODUCT_NAME}" in
         meeds)
           env_var PRODUCT_DESCRIPTION "Meeds.io"
-          env_var ARTIFACT_GROUPID "io.meeds.distribution"
-          env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var DEPLOYMENT_ENV_PREFIX "MEEDS"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON "false"
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "Platform CE"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var DEPLOYMENT_ENV_PREFIX "EXO"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
-          env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
         ;;
         plfent)
           env_var PRODUCT_DESCRIPTION "Platform EE"
-          if ${DEPLOYMENT_STAGING_ENABLED}; then
-            env_var ARTIFACT_REPO_GROUP "staging"
-          else
-            env_var ARTIFACT_REPO_GROUP "private"
-          fi
-          env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
-          env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
+          env_var DEPLOYMENT_ENV_PREFIX "EXO"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
+          env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED" true
         ;;
         *)
           echo_error "Invalid product \"${PRODUCT_NAME}\": only meeds, plfcom and plfent are supported."
@@ -618,6 +431,7 @@ initialize_product_settings() {
           exit 1
         ;;
       esac
+      configurable_env_var "DEPLOYMENT_IMAGE_REPO" "$(image_repo_of_product ${PRODUCT_NAME})"
 
       if [ -z "${INSTANCE_ID}" ]; then
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION}"
@@ -625,59 +439,50 @@ initialize_product_settings() {
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
       fi
 
-      # Elasticsearch is always an external (docker) server since 6.2 / Meeds 1.2
-      configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
-      if ${DEPLOYMENT_ES_EMBEDDED}; then
-        echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
-        exit 1
-      fi
-
-      # Versions of the docker images and of the jdbc driver add-ons, by product version
-      env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
+      # Versions of the images of the instance (search, database), of the jdbc driver add-ons and of the companions, by minor version
+      # of the product. Add the block of the next minor version here when it is released.
       env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
       env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17"
       configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
       configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
-      if [[ "${PRODUCT_VERSION}" =~ ^(7.0) ]]; then
-        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
-        env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
-        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.3"
-        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
-        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.0"
-        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-9457"
-        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "8.2.2"
-      elif [[ "${PRODUCT_VERSION}" =~ ^(7.1) ]]; then
-        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
-        env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
-        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.7"
-        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
-        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.1"
-        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10431"
-        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.1.0"
-      elif [[ "${PRODUCT_VERSION}" =~ ^(7.2) ]]; then
-        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
-        env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
-        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9"
-        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0"
-        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3"
-        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10888"
-        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0"
-      elif [[ "${PRODUCT_VERSION}" =~ ^(7.3) ]]; then
-        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.4.5"
-        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11"
-        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.3.0"
-        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.4"
-        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-11146-2"
-        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0"
-      else
-        echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
-        exit 1
-      fi
-
-      if [ "${PRODUCT_NAME}" = "plfent" ]; then
-        env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED" true
-      fi
-      env_var "DEPLOYMENT_APPSRV_VERSION" "10.0" # Tomcat 10 for every 7.x bundle
+      case "${PRODUCT_BRANCH}" in
+        7.0.x)
+          configurable_env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
+          env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.3"
+          env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
+          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.0"
+          configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-9457"
+          configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "8.2.2"
+        ;;
+        7.1.x)
+          configurable_env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
+          env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.7"
+          env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
+          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.1"
+          configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10431"
+          configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.1.0"
+        ;;
+        7.2.x)
+          configurable_env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
+          env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9"
+          env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0"
+          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3"
+          configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10888"
+          configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0"
+        ;;
+        7.3.x)
+          configurable_env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.4.5"
+          env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11"
+          env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.3.0"
+          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.4"
+          configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-11146-2"
+          configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0"
+        ;;
+        *)
+          echo_error "Product version \"${PRODUCT_VERSION}\" (${PRODUCT_BRANCH}) not yet managed"
+          exit 1
+        ;;
+      esac
 
       # Keycloak SAML SP naming (7.2+): use gatein.sso.sp.* / gatein.sso.picketlink.* instead of gatein.sso.idp.*
       if [[ "${PRODUCT_VERSION}" =~ ^(7\.[2-9]|[89]\.|[1-9][0-9]\.) ]]; then
@@ -687,7 +492,7 @@ initialize_product_settings() {
       fi
 
       ## Global configuration checks
-      if ${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED:-} && [ -z "${DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE}" ]; then
+      if [ "${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED:-false}" = "true" ] && [ -z "${DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE}" ]; then
         echo_warn "Push notification are enabled but the firebase configuration file is not specified (\"DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE\" property)"
       fi
 
@@ -701,505 +506,11 @@ initialize_product_settings() {
       exit 1
     ;;
   esac
-
-   do_get_plf_settings
-   do_get_cmis_settings
-   do_get_onlyoffice_settings
-   do_get_ldap_settings
-   do_get_iframely_settings
-   do_get_mailpit_settings
-   do_get_matrix_settings
-   do_get_clamav_settings
-   do_get_ai_settings
-   do_get_frontail_settings
-   do_get_debugproxy_settings
-   do_get_mongo_express_settings
-   do_get_keycloak_settings
-   do_get_cloudbeaver_settings
-   do_get_lam_settings
-   do_get_jitsi_settings
-   do_get_sftp_settings
-   do_get_caldav_settings
-   do_get_database_settings
-   do_get_es_settings
-   do_get_chat_settings
-   do_get_certbot_settings
 }
 
 #
-# Function that downloads the app server from nexus
+# The descriptor of the instance (conf/adt/<instance key>.<host>): read by the other actions and by the front-end
 #
-do_download_server() {
-  validate_env_var "DL_DIR"
-  validate_env_var "PRODUCT_NAME"
-  validate_env_var "PRODUCT_VERSION"
-  validate_env_var "ARTIFACT_REPO_GROUP"
-  validate_env_var "ARTIFACT_GROUPID"
-  validate_env_var "ARTIFACT_ARTIFACTID"
-  validate_env_var "ARTIFACT_PACKAGING"
-  validate_env_var "ARTIFACT_CLASSIFIER"
-
-  if ! ${ADT_OFFLINE}; then
-    # Downloads the product from Nexus
-    do_download_maven_artifact  \
-   "${REPOSITORY_SERVER_BASE_URL}/${ARTIFACT_REPO_GROUP}" "${REPOSITORY_USERNAME}" "${REPOSITORY_PASSWORD}"  \
-   "${ARTIFACT_GROUPID}" "${ARTIFACT_ARTIFACTID}" "${PRODUCT_VERSION}" "${ARTIFACT_PACKAGING}" "${ARTIFACT_CLASSIFIER}"  \
-   "${DL_DIR}" "${PRODUCT_NAME}" "PRODUCT"
-  else
-    echo_warn "ADT is offline and won't try to download the server !"
-  fi
-  do_load_artifact_descriptor "${DL_DIR}" "${PRODUCT_NAME}" "${PRODUCT_VERSION}"
-  env_var ARTIFACT_TIMESTAMP ${PRODUCT_ARTIFACT_TIMESTAMP}
-  env_var ARTIFACT_DATE ${PRODUCT_ARTIFACT_DATE}
-  env_var ARTIFACT_REPO_URL ${PRODUCT_ARTIFACT_URL}
-  env_var ARTIFACT_LOCAL_PATH ${PRODUCT_ARTIFACT_LOCAL_PATH}
-  env_var ARTIFACT_DL_URL $(do_build_url "${ACCEPTANCE_SCHEME}" "${ACCEPTANCE_HOST}" "${ACCEPTANCE_PORT}" "/downloads/${PRODUCT_NAME}-${ARTIFACT_TIMESTAMP}.${ARTIFACT_PACKAGING}")
-  echo_info "Remove downloads older than 15 days ..."
-  find ${DL_DIR} -type f -mtime +15 -exec rm {} \;
-  echo_info "Remove broken symlinks ..."
-  find -L ${DL_DIR} -type l -exec rm {} \;
-  echo_info "Remove empty directories ..."
-  find ${DL_DIR} -depth -empty -delete
-}
-
-do_download_dataset() {
-  validate_env_var "DS_DIR"
-  validate_env_var "PRODUCT_NAME"
-  validate_env_var "PRODUCT_BRANCH"
-  validate_env_var "INSTANCE_DESCRIPTION"
-  echo_info "Updating local dataset for ${INSTANCE_DESCRIPTION} ${PRODUCT_BRANCH} from the storage server ..."
-  if [ ! -z "${DATASET_DATA_VALUES_ARCHIVE}" ] && [ ! -z "${DATASET_DATA_INDEX_ARCHIVE}" ] && [ ! -z "${DATASET_DB_ARCHIVE}" ]; then
-    mkdir -p ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}
-    if rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP "${DATASET_DB_ARCHIVE%.tar.*}.tar.zst" ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.zst 2>/dev/null; then
-      :
-    else
-      display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DB_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/db.tar.bz2
-    fi
-    if rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP "${DATASET_DATA_INDEX_ARCHIVE%.tar.*}.tar.zst" ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.zst 2>/dev/null; then
-      :
-    else
-      display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_INDEX_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/index.tar.bz2
-    fi
-    if rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP "${DATASET_DATA_VALUES_ARCHIVE%.tar.*}.tar.zst" ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.zst 2>/dev/null; then
-      :
-    else
-      display_time rsync --ipv4 -e ssh --stats --temp-dir=${TMP_DIR} -aLP ${DATASET_DATA_VALUES_ARCHIVE} ${DS_DIR}/${PRODUCT_NAME}-${PRODUCT_BRANCH}/values.tar.bz2
-    fi
-  else
-    echo_error "Datasets not configured"
-    exit 1
-  fi
-  echo_info "Done"
-}
-
-do_dump_dataset(){
-  # System dependent settings
-  if ${LINUX}; then
-    env_var "TAR_COMPRESS_PRG" "--use-compress-prog=zstd"
-    env_var "NICE_CMD" "nice -n 20 ionice -c2 -n7"
-  else
-    env_var "TAR_COMPRESS_PRG" ""
-    env_var "NICE_CMD" "nice -n 20"
-  fi
-
-  if [ "${DS_FILENAME}" = "${PRODUCT_NAME}-${PRODUCT_BRANCH}" ]; then
-    echo_warn "Dataset file name is set with default name behaviour, It is strictly recommended to define DS_FILENAME parameter containing only file name prefix (no extension)!"
-  fi
-
-  local _ds_old=""
-  if [ -f ${DS_DIR}/${DS_FILENAME}.tar.zst ]; then
-    echo_warn "A dataset ${DS_DIR}/${DS_FILENAME}.tar.zst already exists! You have 10 seconds to cancel this build to save this file. Otherwise, it is going to be removed!"
-    sleep 10
-    rm ${DS_DIR}/${DS_FILENAME}.tar.zst
-    echo_info "File ${DS_DIR}/${DS_FILENAME}.tar.zst is removed!"
-  fi
-  if [ -f ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
-    echo_warn "Removing legacy ${DS_DIR}/${DS_FILENAME}.tar.bz2 (replaced by .tar.zst)..."
-    rm ${DS_DIR}/${DS_FILENAME}.tar.bz2
-  fi
-
-  local _dumpdir="${TMP_DIR}/dump-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
-  [ -d ${_dumpdir} ] && sudo rm -rf ${_dumpdir}
-  mkdir -p ${_dumpdir}/exo
-  cp -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/* ${_dumpdir}/exo
-  if ${DEPLOYMENT_CHAT_ENABLED}; then
-    do_dump_chat_mongo_dataset "${_dumpdir}"
-  fi
-  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    do_dump_keycloak_dataset "${_dumpdir}"
-  fi
-  if ${DEPLOYMENT_MATRIX_ENABLED}; then
-    do_dump_matrix_dataset "${_dumpdir}"
-  fi
-  mkdir -p ${_dumpdir}/codec
-  if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
-    echo_info "Backing up codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
-    echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt | awk '{print $1}')"
-    cp -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ${_dumpdir}/codec
-    echo_info "Done."
-  fi
-  
-
-  do_dump_database_dataset "${_dumpdir}"
-
-  do_dump_es_dataset "${_dumpdir}"
-  echo_info "Generating dataset ..."
-
-  local _bakcupExt=""
-  if ${DEPLOYMENT_CHAT_ENABLED}; then
-    _bakcupExt="${_bakcupExt} chat.dump chat.name"
-  fi 
-  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    _bakcupExt="${_bakcupExt} keycloak"
-  fi 
-  if ${DEPLOYMENT_MATRIX_ENABLED}; then
-    _bakcupExt="${_bakcupExt} matrix_${INSTANCE_KEY}"
-  fi
-  _bakcupExt="$(echo ${_bakcupExt} | xargs -r)"
-  display_time ${NICE_CMD} tar ${TAR_COMPRESS_PRG} --directory "${_dumpdir}" -cf ${DS_DIR}/${DS_FILENAME}.tar.zst exo search backup.sql codec ${_bakcupExt}
-  echo_info "Done."
-  echo_info "Dataset ${DS_DIR}/${DS_FILENAME}.tar.zst has been successfuly created!"
-  sudo rm -rf "${_dumpdir}"
-  if [ ! -z "${DS_TARGET_SERVER:-}" ]; then
-    echo_info "DS_TARGET_SERVER is specified to ${DS_TARGET_SERVER}. Starting transfer..."
-    rsync -Pav -e "ssh -o StrictHostKeyChecking=no" ${DS_DIR}/${DS_FILENAME}.tar.zst ${DS_TARGET_SERVER}:${DS_DIR}/${DS_FILENAME}.tar.zst
-    echo_info "Transfer done."
-  fi
-
-}
-
-do_restore_dataset(){
-  # System dependent settings
-  if ${LINUX}; then
-    env_var "TAR_COMPRESS_PRG" "--use-compress-prog=zstd"
-    env_var "NICE_CMD" "nice -n 20 ionice -c2 -n7"
-  else
-    env_var "TAR_COMPRESS_PRG" ""
-    env_var "NICE_CMD" "nice -n 20"
-  fi
-
-  local _ds_file=""
-  if [ -e "${DS_DIR}/${DS_FILENAME}.tar.zst" ]; then
-    _ds_file="${DS_DIR}/${DS_FILENAME}.tar.zst"
-  elif [ -e "${DS_DIR}/${DS_FILENAME}.tar.bz2" ]; then
-    _ds_file="${DS_DIR}/${DS_FILENAME}.tar.bz2"
-    env_var "TAR_COMPRESS_PRG" "--use-compress-prog=pbzip2"
-  else
-    echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.zst (or .tar.bz2) does not exist!"
-    exit 1
-  fi
-
-  do_drop_data
-
-  mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
-  echo_info "Loading dataset ..."
-  display_time ${NICE_CMD} tar ${TAR_COMPRESS_PRG} --directory ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore -xf ${_ds_file}
-  mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/exo/* ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/
-  if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ]; then
-    echo_info "Restoring codec file ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ..."
-    echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt | awk '{print $1}')"
-    mkdir -p ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-    mv ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore/codec/codeckey.txt ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-    echo_info "Done."
-  fi
-  echo_info "Done"
-
-  if ${DEPLOYMENT_CHAT_ENABLED}; then
-    do_restore_chat_mongo_dataset
-  fi
-
-  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    do_restore_keycloak_dataset
-  fi
-
-  do_restore_database_dataset
-
-  do_restore_es_dataset
-
-  if ${DEPLOYMENT_AI_ENABLED}; then
-    do_restore_ai_rag_data
-  fi
-
-  if ${DEPLOYMENT_MATRIX_ENABLED}; then
-    do_restore_matrix_dataset || 
-    (do_reset_matrix_plf_database && do_reset_matrix_data) ||
-    echo_warn "Failed to restore or reset matrix data"
-  fi
-
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/_restore
-}
-
-do_init_empty_data(){
-  echo_info "Deleting all existing data for ${INSTANCE_DESCRIPTION} ..."
-  if ${DEPLOYMENT_DATABASE_ENABLED}; then
-    do_drop_database
-    do_create_database
-  fi
-
-  if ${DEPLOYMENT_JITSI_ENABLED}; then
-    do_drop_jitsi_data
-    do_create_jitsi
-  fi
-
-  if ${DEPLOYMENT_LDAP_ENABLED}; then
-    do_drop_ldap_data
-    do_create_ldap
-  fi
-  if ${DEPLOYMENT_IFRAMELY_ENABLED}; then
-    do_drop_iframely_data
-    do_create_iframely
-  fi
-  if ${DEPLOYMENT_MATRIX_ENABLED}; then
-    do_drop_matrix_data
-    do_create_matrix
-  fi
-  if ${DEPLOYMENT_CLAMAV_ENABLED}; then
-    do_drop_clamav_data
-    do_create_clamav
-  fi
-  if ${DEPLOYMENT_AI_ENABLED}; then
-    do_drop_ai_data
-    do_create_ai
-  fi
-  do_init_empty_chat_database
-
-  do_drop_es_data
-  do_drop_data
-  do_drop_mailpit_data
-  do_drop_frontail_data
-  do_drop_debugproxy_data
-  do_drop_keycloak_data
-  do_drop_lam_data
-  do_drop_caldav_data
-
-  do_create_data
-  do_create_es
-  do_create_mailpit
-  do_create_keycloak
-  do_create_caldav
-  echo_info "Done"
-}
-
-#
-# Drops all data used by the instance.
-#
-do_drop_data() {
-  echo_info "Drops instance indexes ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/index/
-  echo_info "Done."
-  echo_info "Drops instance values ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}/jcr/values/
-  echo_info "Done."
-  echo_info "Drops instance codec folder ..."
-  rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/
-  echo_info "Done."
-}
-
-#
-# Function that unpacks the app server archive
-#
-do_unpack_server() {
-  rm -rf ${TMP_DIR}/${INSTANCE_KEY}
-  echo_info "Unpacking server ..."
-  mkdir -p ${TMP_DIR}/${INSTANCE_KEY}
-  set +e
-  case ${ARTIFACT_PACKAGING} in
-    zip)
-      unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${INSTANCE_KEY}
-      if [ "$?" -ne "0" ]; then
-        # If unpack fails we try to redownload the archive
-        echo_warn "unpack of the server failed. We will try to download it a second time."
-        rm ${ARTIFACT_LOCAL_PATH}
-        do_download_server
-        unzip -q ${ARTIFACT_LOCAL_PATH} -d ${TMP_DIR}/${INSTANCE_KEY}
-        if [ "$?" -ne "0" ]; then
-          echo_error "Unable to unpack the server."
-          exit 1
-        fi
-      fi
-    ;;
-    tar.gz)
-      cd ${TMP_DIR}/${INSTANCE_KEY}
-      tar -xzf ${ARTIFACT_LOCAL_PATH}
-      if [ "$?" -ne "0" ]; then
-        # If unpack fails we try to redownload the archive
-        echo_warn "unpack of the server failed. We will try to download it a second time."
-        rm ${ARTIFACT_LOCAL_PATH}
-        do_download_server
-        tar -xzf ${ARTIFACT_LOCAL_PATH}
-        if [ "$?" -ne "0" ]; then
-          echo_error "Unable to unpack the server."
-          exit 1
-        fi
-      fi
-      cd -
-    ;;
-    *)
-      echo_error "Invalid packaging \"${ARTIFACT_PACKAGING}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-  set -e
-  DEPLOYMENT_PID_FILE=${SRV_DIR}/${INSTANCE_KEY}.pid
-  mkdir -p ${SRV_DIR}
-  echo_info "Deleting existing server ..."
-  local _kc_log_dir=$(find ${SRV_DIR}/${INSTANCE_KEY} -maxdepth 4 -name keycloak -type d -path "*/logs/keycloak" 2>/dev/null | head -1)
-  if [ -n "${_kc_log_dir}" ] && [ -d "${_kc_log_dir}" ]; then
-    ${DOCKER_CMD} run --rm -v ${_kc_log_dir}:/opt/keycloak/data/log alpine \
-    sh -c "rm -rf /opt/keycloak/data/log/*"
-  fi
-  local _kc_theme_dir=$(find ${SRV_DIR}/${INSTANCE_KEY} -maxdepth 4 -name keycloak -type d -path "*/themes/keycloak" 2>/dev/null | head -1)
-  if [ -n "${_kc_theme_dir}" ] && [ -d "${_kc_theme_dir}" ]; then
-    ${DOCKER_CMD} run --rm -v ${_kc_theme_dir}:/mnt/themes alpine \
-    sh -c "rm -rf /mnt/themes/*"
-  fi
-  rm -rf ${SRV_DIR}/${INSTANCE_KEY}
-  echo_info "Done"
-  cp -rf ${TMP_DIR}/${INSTANCE_KEY} ${SRV_DIR}/${INSTANCE_KEY}
-  rm -rf ${TMP_DIR}/${INSTANCE_KEY}
-
-  # We search the server directory
-  pushd `find ${SRV_DIR}/${INSTANCE_KEY} -maxdepth 4 -mindepth 1 -name bin -type d`/.. > /dev/null
-  DEPLOYMENT_DIR=`pwd -P`
-  popd > /dev/null
-
-  case ${DEPLOYMENT_APPSRV_TYPE} in
-    tomcat)
-      DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOG_FILE}
-    ;;
-    *)
-      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-  echo_info "Server unpacked"
-}
-
-#
-# Creates all data directories used by the instance.
-#
-do_create_data() {
-  echo_info "Creates instance indexes directory ..."
-  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/index/
-  echo_info "Done."
-  echo_info "Creates instance values directory ..."
-  mkdir -p ${DEPLOYMENT_DIR}/gatein/data/jcr/values/
-  echo_info "Done."
-  echo_info "Creates instance codec directory ..."
-  mkdir -p ${DEPLOYMENT_DIR}${DEPLOYMENT_CODEC_DIR}
-  echo_info "Done."
-}
-
-do_configure_apache() {
-  echo_info "Configure and update AWStats ..."
-  mkdir -p ${AWSTATS_CONF_DIR}
-  # Regenerates stats for this Vhosts
-  export DOMAIN=${DEPLOYMENT_EXT_HOST}
-  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.j2 ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
-  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
-  unset DOMAIN
-  # Regenerates stats for root vhosts
-  export DOMAIN=${ACCEPTANCE_HOST}
-  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.j2 ${AWSTATS_CONF_DIR}/awstats.${ACCEPTANCE_HOST}.conf
-  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
-  unset DOMAIN
-  echo_info "Done."
-
-  # Auto extract domain name
-  if [ ! -z "${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" ] && [ -z "${INSTANCE_DOMAIN:-}" ]; then
-    env_var "INSTANCE_DOMAIN" "$(echo ${DEPLOYMENT_APACHE_VHOST_ALIAS} | cut -d'.' -f2,3)"
-  fi
-  
-  # Selct Certificate according to the domain name
-  case ${INSTANCE_DOMAIN:-} in
-    exoplatform.org)
-      if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" = "true" ]; then 
-        echo_error "Certbot is not available for exoplatform.org domain name!"
-        exit 1
-      fi
-    ;;
-    meeds.io)
-      # MEEDSIO_XXXXX vars must be set on Jenkins SLAVE or loaded as global envs
-      env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${MEEDSIO_SSL_CERTIFICATE_FILE}"
-      env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${MEEDSIO_SSL_CERTIFICATE_KEY_FILE}"
-    ;;
-    *)
-      if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" = "true" ]; then 
-        if [ "${DEPLOYMENT_APACHE_HTTPS_ENABLED:-false}" = "true" ] || [ "${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false}" = "true" ]; then
-          do_generate_certbot_certificate
-        else 
-          echo_error "HTTPS must be enabled when enabling certbot!"
-          exit 1
-        fi
-      else 
-        echo_error "${INSTANCE_DOMAIN:-} domain isn't supported!"
-        exit 1
-      fi
-    ;;
-  esac
-
-  echo_info "Creating Apache Virtual Host ..."
-  mkdir -p ${APACHE_CONF_DIR}
-
-  # The parts the virtual hosts share (also rendered for the front-end by "init")
-  for _include in compression tls; do
-    evaluate_file_content ${ETC_DIR}/apache2/includes/${_include}.include.j2 ${APACHE_CONF_DIR}/includes/${_include}.include
-  done
-  # Features (chat, websocket, onlyoffice, keycloak, ...) are enabled/disabled with conditions inside the template
-  evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.j2 ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-
-  if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then 
-    env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" true
-  fi
-
-  case ${DEPLOYMENT_APACHE_SECURITY} in
-    public | private) ;;
-    *)
-      echo_error "Invalid apache security type \"${DEPLOYMENT_APACHE_SECURITY}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-  if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
-    if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" != "true" ] && ! ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ]); then
-      echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"
-      print_usage
-      exit 1
-    fi
-    if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
-      echo_n_info "Deploying Apache instance configuration for HTTPS only..."
-    else
-      echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
-    fi
-  else
-    echo_n_info "Deploying Apache instance configuration for HTTP only..."
-  fi
-  # Security, HTTPS and the rules of each feature are handled with conditions inside the template
-  evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-  # holds the LDAP bind password: Apache reads its configuration as root
-  chmod 600 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-  echo "OK."
-  DEPLOYMENT_LOG_URL=${DEPLOYMENT_URL}/logs/${DEPLOYMENT_SERVER_LOG_FILE}
-  echo_info "Done."
-  echo_info "Rotate Apache logs ..."
-
-  rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
-  evaluate_file_content ${ETC_DIR}/logrotate.d/instance.j2 ${TMP_DIR}/logrotate-${INSTANCE_KEY}
-  do_logrotate "${TMP_DIR}/logrotate-${INSTANCE_KEY}" ${ADT_DEV_MODE}
-  rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
-
-  rm -f ${TMP_DIR}/logrotate-acceptance
-  evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.j2 ${TMP_DIR}/logrotate-acceptance
-  do_logrotate "${TMP_DIR}/logrotate-acceptance" ${ADT_DEV_MODE}
-  rm -f ${TMP_DIR}/logrotate-acceptance
-
-  do_reload_apache ${ADT_DEV_MODE}
-
-  echo_info "Done."
-}
-
 do_create_deployment_descriptor() {
   echo_info "Creating deployment descriptor ..."
   mkdir -p ${ADT_CONF_DIR}
@@ -1218,165 +529,98 @@ do_load_deployment_descriptor() {
 }
 
 #
-# Function that deploys (Download+configure) the app server
+# Companion services (onlyoffice, jitsi, matrix...) that the compose project doesn't provide yet
 #
-do_deploy() {
-  configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
-  configurable_env_var "DEPLOYMENT_APACHE_VHOST_ALIAS" ""
-  configurable_env_var "DEPLOYMENT_DB_TYPE" "HSQLDB"
-  configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "2g"
-  configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
-  configurable_env_var "DEPLOYMENT_JVM_PERMSIZE_MAX" "256m"
-  configurable_env_var "DEPLOYMENT_LDAP_URL" ""
-  configurable_env_var "DEPLOYMENT_LDAP_ADMIN_DN" ""
-  configurable_env_var "DEPLOYMENT_LDAP_ADMIN_PWD" ""
-  configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
-  configurable_env_var "DEPLOYMENT_UMASK_VALUE" "0002"
-  configurable_env_var "DEPLOYMENT_SMTP_PORT" "25"  
+do_check_supported_features() {
+  local _feature _var
+  for _feature in ONLYOFFICE_DOCUMENTSERVER LDAP IFRAMELY MAILPIT MATRIX CLAMAV AI FRONTAIL KEYCLOAK CLOUDBEAVER LAM JITSI SFTP CALDAV DEBUG; do
+    _var="DEPLOYMENT_${_feature}_ENABLED"
+    if [ "${!_var:-false}" = "true" ]; then
+      echo_error "${_var}=true: this companion service is not available yet in the docker compose deployments."
+      exit 1
+    fi
+  done
+}
 
-  # Check DEPLOYMENT_PORT_PREFIX if it is inside the ephermal (client) ports range (specified by net.ipv4.ip_local_port_range)
-  if [ -z "$(sysctl net.ipv4.ip_local_port_range)" ]; then 
-    echo_warn "net.ipv4.ip_local_port_range isn't specified. See below comments in source code for more info."
-    # We need to adjust net.ipv4.ip_local_port_range (with root)
-    # $> sysctl -w net.ipv4.ip_local_port_range=min_value max_value
+#
+# The database of the instance: a container of the project (MYSQL, MARIADB, POSTGRES) or the HSQLDB of the application.
+# The names of the former docker deployments are accepted (DOCKER_MYSQL...).
+#
+do_get_database_settings() {
+  case "${DEPLOYMENT_DB_TYPE}" in
+    HSQLDB)
+      env_var DEPLOYMENT_DB_TYPE "HSQLDB"
+      env_var DEPLOYMENT_DB_ENV_TYPE "hsqldb"
+      env_var DEPLOYMENT_DATABASE_ENABLED false
+      return
+    ;;
+    MYSQL | DOCKER_MYSQL)
+      env_var DEPLOYMENT_DB_TYPE "MYSQL"
+      env_var DEPLOYMENT_DB_ENV_TYPE "mysql"
+      env_var DEPLOYMENT_DATABASE_PORT "3306"
+      configurable_env_var "DEPLOYMENT_DATABASE_VERSION" "${DEPLOYMENT_MYSQL_DEFAULT_VERSION}"
+    ;;
+    MARIADB | DOCKER_MARIADB)
+      env_var DEPLOYMENT_DB_TYPE "MARIADB"
+      env_var DEPLOYMENT_DB_ENV_TYPE "mysql"
+      env_var DEPLOYMENT_DATABASE_PORT "3306"
+      validate_env_var "DEPLOYMENT_DATABASE_VERSION"
+    ;;
+    POSTGRES | DOCKER_POSTGRES)
+      env_var DEPLOYMENT_DB_TYPE "POSTGRES"
+      env_var DEPLOYMENT_DB_ENV_TYPE "pgsql"
+      env_var DEPLOYMENT_DATABASE_PORT "5432"
+      configurable_env_var "DEPLOYMENT_DATABASE_VERSION" "${DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION}"
+    ;;
+    *)
+      echo_error "Database type ${DEPLOYMENT_DB_TYPE} not supported (HSQLDB, MYSQL, MARIADB or POSTGRES)"
+      exit 1
+    ;;
+  esac
+  env_var DEPLOYMENT_DATABASE_ENABLED true
+  # Build a database name and a user without dot, minus ... (the user uses the branch because limited in length)
+  env_var DEPLOYMENT_DATABASE_NAME "${INSTANCE_KEY}"
+  env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//./_}"
+  env_var DEPLOYMENT_DATABASE_NAME "${DEPLOYMENT_DATABASE_NAME//-/_}"
+  if [ -z "${INSTANCE_TOKEN:-}" ]; then
+    env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${PRODUCT_BRANCH}"
   else
-    local _epthermal_ports_min=$(sysctl net.ipv4.ip_local_port_range | awk '{print $3}')
-    local _epthermal_ports_max=$(sysctl net.ipv4.ip_local_port_range | awk '{print $4}')
-    local _deployment_ports_min="${DEPLOYMENT_PORT_PREFIX}00"
-    if [[ "${_deployment_ports_min}" -ge "${_epthermal_ports_min}" && "${_deployment_ports_min}" -lt "${_epthermal_ports_max}" ]]; then 
-      echo_warn "Port ${DEPLOYMENT_PORT_PREFIX}XX is inside the server ephermal ports range (${_epthermal_ports_min} - ${_epthermal_ports_max})"
-      echo_warn "This increases the risk of deployment failures. DEPLOYMENT_PORT_PREFIX or ip_local_port_range needs to be reviewed!"
-    else 
-      echo_info "Port ${DEPLOYMENT_PORT_PREFIX}XX is outside the server ephermal ports range (${_epthermal_ports_min} - ${_epthermal_ports_max})."
-    fi
+    env_var DEPLOYMENT_DATABASE_USER "${PRODUCT_NAME}_${INSTANCE_TOKEN:0:8}"
   fi
+  env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//./_}"
+  env_var DEPLOYMENT_DATABASE_USER "${DEPLOYMENT_DATABASE_USER//-/_}"
+}
 
-  if ${DEPLOYMENT_CHAT_ENABLED}; then
-    if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then 
-        if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-chat-client.* ]]; then
-          echo_error "Chat server standalone is configured, the exo-chat-client addons must be specified on the addon list."
-          exit 1
-        fi
-    fi
+#
+# Warn when the ports of the instance are in the range of the ephemeral (client) ports of the server
+#
+do_check_port_prefix() {
+  if [ -z "$(sysctl net.ipv4.ip_local_port_range 2>/dev/null)" ]; then
+    echo_warn "net.ipv4.ip_local_port_range isn't specified. We cannot check DEPLOYMENT_PORT_PREFIX."
+    return 0
   fi
-
-  if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID)$ ]]; then 
-        echo_error "Keycloak deployment mode should be SAML or OPENID."
-        exit 1
-    fi
-    if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ] && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
-      echo_error "Keycloak deployment with saml2 mode is enabled, the exo-saml addon must be specified on the addon list."
-      exit 1
-    fi
-  fi  
-
-  if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
-    if [[ ! "${PRODUCT_VERSION}" =~ .*-(M(BL|LT)|GA)$ ]]; then
-      echo_error "Continuous deployment is enabled and product version must ends with -MLT, -MBL or -GA (e.g. 7.2.0-MLT, 7.2.Z-MLT, 7.2.Z-meed-MLT or 7.2.Z-GA)!"
-      exit 1
-    fi
+  local _min _max _first="${DEPLOYMENT_PORT_PREFIX}00"
+  _min=$(sysctl net.ipv4.ip_local_port_range | awk '{print $3}')
+  _max=$(sysctl net.ipv4.ip_local_port_range | awk '{print $4}')
+  if [[ "${_first}" -ge "${_min}" && "${_first}" -lt "${_max}" ]]; then
+    echo_warn "Port ${DEPLOYMENT_PORT_PREFIX}XX is inside the server ephermal ports range (${_min} - ${_max})"
+    echo_warn "This increases the risk of deployment failures. DEPLOYMENT_PORT_PREFIX or ip_local_port_range needs to be reviewed!"
+  else
+    echo_info "Port ${DEPLOYMENT_PORT_PREFIX}XX is outside the server ephermal ports range (${_min} - ${_max})."
   fi
+}
 
-  # Generic Ports
+#
+# The name, the port and the URL of the instance, and what the application must know about the proxies in front of it
+#
+do_get_deployment_urls() {
+  # The only published port of the instance: its nginx (Apache forwards the virtual host to it)
   env_var "DEPLOYMENT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}01"
-  env_var "DEPLOYMENT_AJP_PORT" "${DEPLOYMENT_PORT_PREFIX}02"
-
-  # JMX ports
-  env_var "DEPLOYMENT_RMI_REG_PORT" "${DEPLOYMENT_PORT_PREFIX}03"
-  env_var "DEPLOYMENT_RMI_SRV_PORT" "${DEPLOYMENT_PORT_PREFIX}04"
-
-  # JOD ports
-  #env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}05,${DEPLOYMENT_PORT_PREFIX}06,${DEPLOYMENT_PORT_PREFIX}07"
-  env_var "DEPLOYMENT_JOD_CONVERTER_PORTS" "${DEPLOYMENT_PORT_PREFIX}05"
-
-  # CRaSH ports
-  env_var "DEPLOYMENT_CRASH_TELNET_PORT" "${DEPLOYMENT_PORT_PREFIX}08"
-  env_var "DEPLOYMENT_CRASH_SSH_PORT" "${DEPLOYMENT_PORT_PREFIX}09"
-
-  # Elasticsearch (ES) ports
-  env_var "DEPLOYMENT_ES_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}22"
-
-  # Elasticsearch (ES) old ports for migration
-  env_var "DEPLOYMENT_ES_OLD_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}21"
-
-  # ONLYOFFICE  port
-  env_var "DEPLOYMENT_ONLYOFFICE_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}23"
-
-  # LDAP  port
-  env_var "DEPLOYMENT_LDAP_PORT" "${DEPLOYMENT_PORT_PREFIX}89"
-
-  # IFRAMELY  port
-  env_var "DEPLOYMENT_IFRAMELY_PORT" "${DEPLOYMENT_PORT_PREFIX}76"
-
-  # Mailpit  port
-  env_var "DEPLOYMENT_MAILPIT_SMTP_PORT" "${DEPLOYMENT_PORT_PREFIX}95"
-  env_var "DEPLOYMENT_MAILPIT_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}97"
-
-  # Frontail port
-  env_var "DEPLOYMENT_FRONTAIL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}36"
-
-  # Mongo Express port
-  env_var "DEPLOYMENT_MONGO_EXPRESS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}94"
-
-  # Keycloak  port
-  env_var "DEPLOYMENT_KEYCLOAK_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}98"
-
-  # Cloudbeaver  port
-  env_var "DEPLOYMENT_CLOUDBEAVER_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}96"
-
-  # LAM port
-  env_var "DEPLOYMENT_LAM_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}80"
-
-  # Jitsi  port
-  env_var "DEPLOYMENT_JITSI_CALL_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}81"
-  env_var "DEPLOYMENT_JITSI_WEB_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}82"
-  env_var "DEPLOYMENT_JITSI_WEB_HTTPS_PORT" "${DEPLOYMENT_PORT_PREFIX}83"
-  env_var "DEPLOYMENT_JITSI_JVB_PORT" "${DEPLOYMENT_PORT_PREFIX}84"
-  env_var "DEPLOYMENT_JITSI_JVB_COLIBRI_PORT" "${DEPLOYMENT_PORT_PREFIX}86"
-  env_var "DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_PORT" "${DEPLOYMENT_PORT_PREFIX}87"
-
-  # Matrix port
-  env_var "DEPLOYMENT_MATRIX_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}47"
-  
-  # Clamav port
-  env_var "DEPLOYMENT_CLAMAV_PORT" "${DEPLOYMENT_PORT_PREFIX}33"
-  
-  # AI port
-  env_var "DEPLOYMENT_AI_PORT" "${DEPLOYMENT_PORT_PREFIX}34"
-
-  # SFTP port
-  env_var "DEPLOYMENT_SFTP_PORT" "${DEPLOYMENT_PORT_PREFIX}99"
-  
-  # Remote debug port (JDWP)
-  env_var "DEPLOYMENT_DEBUG_PORT" "${DEPLOYMENT_PORT_PREFIX}26"
-  # Remote debug WebSocket adapter port (loopback only, reached through Apache)
-  env_var "DEPLOYMENT_DEBUG_WS_PORT" "${DEPLOYMENT_PORT_PREFIX}27"
-  # JDWP bind address : loopback unless the legacy exposed mode is requested
-  if ${DEPLOYMENT_DEBUG_EXPOSE_PORT}; then
-    env_var "DEPLOYMENT_DEBUG_BIND_ADDRESS" "*"
-  else
-    env_var "DEPLOYMENT_DEBUG_BIND_ADDRESS" "127.0.0.1"
-  fi
-
-  # CMIS server  port
-  env_var "DEPLOYMENT_CMIS_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}24"
-
-  # CalDAV server port
-  env_var "DEPLOYMENT_CALDAV_HTTP_PORT" "${DEPLOYMENT_PORT_PREFIX}28"
-
-  if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} == "DOCKER" ]; then
-    env_var "DEPLOYMENT_CHAT_MONGODB_PORT" "${DEPLOYMENT_PORT_PREFIX}17"
-  fi
-
-  if ! ${DEPLOYMENT_CHAT_EMBEDDED}; then
-    configurable_env_var "DEPLOYMENT_CHAT_SERVER_PORT" "${DEPLOYMENT_PORT_PREFIX}25"
-  fi
 
   if ${ADT_DEV_MODE}; then
     env_var "DEPLOYMENT_EXT_HOST" "localhost"
     env_var "DEPLOYMENT_EXT_PORT" "${DEPLOYMENT_HTTP_PORT}"
-  else 
+  else
     if [ -z "${INSTANCE_TOKEN:-}" ]; then
       env_var "DEPLOYMENT_EXT_HOST" "${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
     else
@@ -1385,175 +629,206 @@ do_deploy() {
       else
         env_var "DEPLOYMENT_EXT_HOST" "${PRODUCT_NAME}-${DEPLOYMENT_PORT_PREFIX}-${INSTANCE_ID}.${ACCEPTANCE_HOST}"
       fi
-    fi  
+    fi
     env_var "DEPLOYMENT_EXT_PORT" "80"
+  fi
+  # HTTPS only implies HTTPS
+  if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
+    env_var "DEPLOYMENT_APACHE_HTTPS_ENABLED" true
   fi
   DEPLOYMENT_URL_SCHEME="http"
   ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED} && DEPLOYMENT_URL_SCHEME="https"
-     
-  if [ -z ${DEPLOYMENT_APACHE_VHOST_ALIAS} ]; then
-    env_var "DEPLOYMENT_URL" $(do_build_url "${DEPLOYMENT_URL_SCHEME}" "${DEPLOYMENT_EXT_HOST}" "${DEPLOYMENT_EXT_PORT}" "")
-    env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_EXT_HOST}"
+
+  local _vhost="${DEPLOYMENT_EXT_HOST}"
+  [ -n "${DEPLOYMENT_APACHE_VHOST_ALIAS}" ] && _vhost="${DEPLOYMENT_APACHE_VHOST_ALIAS}"
+  env_var "DEPLOYMENT_URL" $(do_build_url "${DEPLOYMENT_URL_SCHEME}" "${_vhost}" "${DEPLOYMENT_EXT_PORT}" "")
+
+  # The application builds its URLs from the host and the scheme of the proxy in front of it (https as soon as HTTPS is enabled)
+  env_var "DEPLOYMENT_PROXY_VHOST" "${_vhost}"
+  if ${DEPLOYMENT_APACHE_HTTPS_ENABLED} && ! ${ADT_DEV_MODE}; then
+    env_var "DEPLOYMENT_PROXY_SSL" "true"
+    env_var "DEPLOYMENT_PROXY_PORT" "443"
+    # nginx serves the same certificate as Apache
+    env_var "DEPLOYMENT_NGINX_TLS" "true"
   else
-    env_var "DEPLOYMENT_URL" $(do_build_url "${DEPLOYMENT_URL_SCHEME}" "${DEPLOYMENT_APACHE_VHOST_ALIAS}" "${DEPLOYMENT_EXT_PORT}" "")
-    env_var "DEPLOYMENT_CMIS_HOST" "${DEPLOYMENT_APACHE_VHOST_ALIAS}"
+    env_var "DEPLOYMENT_PROXY_SSL" "false"
+    env_var "DEPLOYMENT_PROXY_PORT" "${DEPLOYMENT_EXT_PORT}"
+    env_var "DEPLOYMENT_NGINX_TLS" "false"
   fi
-  
-  if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ]; then
-    if [ -z "${USER_DIRECTORY_BASE_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_DN}" ] || [ -z "${USER_DIRECTORY_ADMIN_PASSWORD}" ]; then
-      echo_error "Directory Base DN: ${USER_DIRECTORY_BASE_DN} , ADMIN DN: ${USER_DIRECTORY_ADMIN_PASSWORD} (or/end) password: ${USER_DIRECTORY_ADMIN_PASSWORD} not set"      
-      exit 1
-    fi 
-    DEPLOYMENT_LDAP_LINK="ldap://${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_LDAP_PORT}"   
-  fi
+  env_var "DEPLOYMENT_LOG_URL" "${DEPLOYMENT_URL}/logs/platform.log"
+}
 
-  if [ "${DEPLOYMENT_IFRAMELY_ENABLED}" == "true" ]; then
-    DEPLOYMENT_IFRAMELY_LINK="${DEPLOYMENT_URL}/oembed"
-  fi
+#
+# The docker image to deploy: the tag of a snapshot or a release, or the build chosen in the registry for -MLT / -MBL / -GA
+#
+do_resolve_image() {
+  local _tag
+  _tag=$(resolve_image_tag "${DEPLOYMENT_IMAGE_REPO}" "${PRODUCT_VERSION}")
+  env_var "DEPLOYMENT_IMAGE" "${DEPLOYMENT_IMAGE_REPO}:${_tag}"
+  env_var "ARTIFACT_GROUPID" "${DEPLOYMENT_IMAGE_REPO%%/*}"
+  env_var "ARTIFACT_ARTIFACTID" "${DEPLOYMENT_IMAGE_REPO#*/}"
+  env_var "ARTIFACT_TIMESTAMP" "${_tag}"
+  env_var "ARTIFACT_DL_URL" "https://hub.docker.com/r/${DEPLOYMENT_IMAGE_REPO}/tags?name=${_tag}"
+  echo_info "Image ${DEPLOYMENT_IMAGE}"
+}
 
-  if ${DEPLOYMENT_SFTP_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-lecko.* ]]; then
-      echo_error "SFTP deployment is enabled, the exo-lecko addon must be specified on the addon list."
-      exit 1
-    fi
-    DEPLOYMENT_SFTP_LINK="sftp://root:password@${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_SFTP_PORT}//upload"   
-  fi
+#
+# The jdbc driver of the database is an add-on of the product
+#
+do_add_jdbc_driver_addon() {
+  [ "${DEPLOYMENT_DATABASE_ENABLED}" = "true" ] || return 0
+  local _vendor="exo" _driver _version
+  [ "${PRODUCT_NAME}" = "meeds" ] && _vendor="meeds"
+  case "${DEPLOYMENT_DB_TYPE}" in
+    MYSQL | MARIADB) _driver="mysql";      _version="${DEPLOYMENT_MYSQL_ADDON_VERSION}" ;;
+    POSTGRES)        _driver="postgresql"; _version="${DEPLOYMENT_POSTGRESQL_ADDON_VERSION}" ;;
+  esac
+  local _addon="${_vendor}-jdbc-driver-${_driver}:${_version}"
+  echo_info "Using ${_addon} addon as jdbc driver"
+  env_var "DEPLOYMENT_ADDONS" "${DEPLOYMENT_ADDONS:+${DEPLOYMENT_ADDONS},}${_addon}"
+}
 
-  if ${DEPLOYMENT_CALDAV_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-caldav-integration.* ]]; then
-      echo_error "CalDAV deployment is enabled, the exo-caldav-integration addon must be specified on the addon list."
-      exit 1
-    fi
+#
+# The certificate of the virtual host (Apache and nginx share it): the one of the domain, or a Certbot one
+#
+do_resolve_instance_certificate() {
+  # Auto extract domain name
+  if [ ! -z "${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" ] && [ -z "${INSTANCE_DOMAIN:-}" ]; then
+    env_var "INSTANCE_DOMAIN" "$(echo ${DEPLOYMENT_APACHE_VHOST_ALIAS} | cut -d'.' -f2,3)"
   fi
+  env_var "DEPLOYMENT_CERTBOT_DOMAIN" "$(getdomainfromUrl ${DEPLOYMENT_URL})"
 
-  if [ ! -z "${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS:-}" ]; then 
-    if [[ ! "${DEPLOYMENT_CHAT_INTERMEDIATE_MONGODB_UPGRADE_VERSIONS}" =~  ^([1-9]\.[0-9] ?)+$ ]]; then 
-      echo_error "Invalid intermediate mongo upgrade version!. Should contain only a list of major version eg 6.0 6.1 ..."
-      exit 1
-    fi
-    if [ ${DEPLOYMENT_CHAT_MONGODB_TYPE} != "DOCKER" ]; then 
-      echo_error "Intermediate Mongo Upgrade is only supported for Docker mongo type!"
-      exit 1
-    fi
-  fi      
-
-  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
-
-  if [ "${DEPLOYMENT_MAILPIT_ENABLED}" == "true" ]; then
-    env_var "DEPLOYMENT_SMTP_PORT" "${DEPLOYMENT_MAILPIT_SMTP_PORT}"
-    env_var "EXO_EMAIL_SMTP_STARTTLS_ENABLE" true
-    env_var "EXO_EMAIL_SMTP_AUTH" true
-  fi
-
-  do_download_server
- 
-  if [ "${DEPLOYMENT_MODE}" == "RESTORE_DATASET" ] && [ ! -e ${DS_DIR}/${DS_FILENAME}.tar.zst ] && [ ! -e ${DS_DIR}/${DS_FILENAME}.tar.bz2 ]; then
-     echo_error "Dataset ${DS_DIR}/${DS_FILENAME}.tar.zst (or .tar.bz2) does not exist! Abort!"
-     exit 1
-  fi
-    
-  if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
-    # Stop the server
-    do_stop
-  fi
-  if [ "${DEPLOYMENT_MODE}" == "KEEP_DATA" ] || [ "${DEPLOYMENT_MODE}" == "DUMP_DATASET" ] ; then
-    echo_info "Archiving existing data ${INSTANCE_DESCRIPTION} ..."
-    _tmpdir="${TMP_DIR}/archive-data.${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
-    mkdir -p "${_tmpdir}"
-    echo_info "Using temporary directory ${_tmpdir}"
-    if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
-      echo_warn "This instance wasn't deployed before. Nothing to keep."
-      mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
-      do_create_database
-      do_create_chat_database
-      do_create_es
-      do_create_onlyoffice
-      do_create_cmis
-      do_create_mailpit
-      do_create_keycloak
-      do_create_jitsi
-      do_create_caldav
-    else
-      # Use a subshell to not expose settings loaded from the deployment descriptor
-      (
-      # Hack to keep the previous deployment directory in case of deployment failure
-      local BCK_DEPLOYMENT_DIR=${DEPLOYMENT_DIR:-}
-      local BCK_DEPLOYMENT_DATA_DIR=${DEPLOYMENT_DATA_DIR:-}
-      local BCK_DEPLOYMENT_CODEC_DIR=${DEPLOYMENT_CODEC_DIR:-}
-      # The server have been already deployed.
-      # We load its settings from the configuration
-      do_load_deployment_descriptor
-      # if the job was failed during the deployment, we need to use current build variables instead of the broken deployment descriptor's variables
-      if [ -z "${DEPLOYMENT_DIR:-}" ] || [ -z "${DEPLOYMENT_DATA_DIR:-}" ] || [ -z "${DEPLOYMENT_CODEC_DIR:-}" ]; then
-        echo_warn "The deployment descriptor is invalid, likely due to a previous failed build. We will proceed by using the directory from current build."
-        DEPLOYMENT_DIR=${BCK_DEPLOYMENT_DIR}
-        DEPLOYMENT_DATA_DIR=${BCK_DEPLOYMENT_DATA_DIR}
-        DEPLOYMENT_CODEC_DIR=${BCK_DEPLOYMENT_CODEC_DIR}
+  # Selct Certificate according to the domain name
+  case ${INSTANCE_DOMAIN:-} in
+    exoplatform.org)
+      if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" = "true" ]; then
+        echo_error "Certbot is not available for exoplatform.org domain name!"
+        exit 1
       fi
-      if [ -d "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" ] && [ "$(find "${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}" -mindepth 1 -print -quit 2>/dev/null)" ]; then
-        if [ -d "${_tmpdir}" ] && [ "$(find "${_tmpdir}" -mindepth 1 -print -quit 2>/dev/null)" ]; then
-          echo_warn "Previous archive directory ${_tmpdir} exists from a failed deployment. Skipping overwrite to preserve data."
+    ;;
+    meeds.io)
+      # MEEDSIO_XXXXX vars must be set on Jenkins SLAVE or loaded as global envs
+      env_var "INSTANCE_SSL_CERTIFICATE_FILE" "${MEEDSIO_SSL_CERTIFICATE_FILE}"
+      env_var "INSTANCE_SSL_CERTIFICATE_KEY_FILE"  "${MEEDSIO_SSL_CERTIFICATE_KEY_FILE}"
+    ;;
+    *)
+      if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" = "true" ]; then
+        if [ "${DEPLOYMENT_APACHE_HTTPS_ENABLED:-false}" = "true" ] || [ "${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false}" = "true" ]; then
+          do_generate_certbot_certificate
         else
-          mkdir -p ${_tmpdir}
-          echo_info "Copying data safely to temporary directory..."
-          cp -a ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR} ${_tmpdir}/
-          if [ -d ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ]; then
-            if [ -f ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt ]; then
-              echo_info "Codeckey md5sum: $(md5sum ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}/codeckey.txt | awk '{print $1}')"
-            fi
-            cp -a ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR} ${_tmpdir}/
-          else
-            echo_warn "No codec directory found."
-            mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
-          fi
-          echo_info "Data archived in ${_tmpdir}. Original data preserved until deployment completes."
+          echo_error "HTTPS must be enabled when enabling certbot!"
+          exit 1
         fi
       else
-        mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-        mkdir -p ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR})
-        do_create_database
-        do_create_chat_database
-        do_create_es
-        do_create_onlyoffice
-        do_create_cmis
-        do_create_mailpit
-        do_create_keycloak
-        do_create_jitsi
-        do_create_caldav
+        echo_error "${INSTANCE_DOMAIN:-} domain isn't supported!"
+        exit 1
       fi
-      )
-    fi
-    echo_info "Done."
+    ;;
+  esac
+  if [ "${DEPLOYMENT_CERTBOT_ENABLED:-false}" != "true" ] && ! ([ -f "${INSTANCE_SSL_CERTIFICATE_FILE}" ] && [ -f "${INSTANCE_SSL_CERTIFICATE_KEY_FILE}" ]); then
+    echo_error "Deploying instance with HTTPS scheme but one of \${INSTANCE_SSL_CERTIFICATE_FILE} (\"${INSTANCE_SSL_CERTIFICATE_FILE}\"),\${INSTANCE_SSL_CERTIFICATE_KEY_FILE} (\"${INSTANCE_SSL_CERTIFICATE_KEY_FILE}\") is invalid"
+    print_usage
+    exit 1
   fi
+}
 
-  do_unpack_server
+#
+# The Apache virtual host of the instance: it terminates the TLS, authenticates and forwards to the nginx of the instance
+#
+do_configure_apache() {
+  echo_info "Configure and update AWStats ..."
+  mkdir -p ${AWSTATS_CONF_DIR}
+  # Regenerates stats for this Vhosts
+  export DOMAIN=${DEPLOYMENT_EXT_HOST}
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.j2 ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
+  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
+  unset DOMAIN
+  # Regenerates stats for root vhosts
+  export DOMAIN=${ACCEPTANCE_HOST}
+  evaluate_file_content ${ETC_DIR}/awstats/awstats.conf.j2 ${AWSTATS_CONF_DIR}/awstats.${ACCEPTANCE_HOST}.conf
+  [ -e ${ADT_DATA}/var/log/apache2/${DOMAIN}-access.log ] && do_generate_awstats ${DOMAIN} ${ADT_DEV_MODE}
+  unset DOMAIN
+  echo_info "Done."
 
-  # Initialize database before configuratation
-  # before with docker the datase must be started before to retreive the port number
+  echo_info "Creating Apache Virtual Host ..."
+  mkdir -p ${APACHE_CONF_DIR}
+
+  # The parts the virtual hosts share (also rendered for the front-end by "init")
+  for _include in compression tls; do
+    evaluate_file_content ${ETC_DIR}/apache2/includes/${_include}.include.j2 ${APACHE_CONF_DIR}/includes/${_include}.include
+  done
+  evaluate_file_content ${ETC_DIR}/apache2/includes/instance.include.j2 ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+
+  case ${DEPLOYMENT_APACHE_SECURITY} in
+    public | private) ;;
+    *)
+      echo_error "Invalid apache security type \"${DEPLOYMENT_APACHE_SECURITY}\""
+      print_usage
+      exit 1
+    ;;
+  esac
+  if ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
+    if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED}; then
+      echo_n_info "Deploying Apache instance configuration for HTTPS only..."
+    else
+      echo_n_info "Deploying Apache instance configuration for HTTP and HTTPS..."
+    fi
+  else
+    echo_n_info "Deploying Apache instance configuration for HTTP only..."
+  fi
+  # Security, HTTPS and the protection of each feature are handled with conditions inside the template
+  evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  # holds the LDAP bind password: Apache reads its configuration as root
+  chmod 600 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  echo "OK."
+  echo_info "Done."
+  echo_info "Rotate Apache logs ..."
+
+  rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
+  evaluate_file_content ${ETC_DIR}/logrotate.d/instance.j2 ${TMP_DIR}/logrotate-${INSTANCE_KEY}
+  do_logrotate "${TMP_DIR}/logrotate-${INSTANCE_KEY}" ${ADT_DEV_MODE}
+  rm -f ${TMP_DIR}/logrotate-${INSTANCE_KEY}
+
+  rm -f ${TMP_DIR}/logrotate-acceptance
+  evaluate_file_content ${ETC_DIR}/logrotate.d/frontend.j2 ${TMP_DIR}/logrotate-acceptance
+  do_logrotate "${TMP_DIR}/logrotate-acceptance" ${ADT_DEV_MODE}
+  rm -f ${TMP_DIR}/logrotate-acceptance
+
+  do_reload_apache ${ADT_DEV_MODE}
+
+  echo_info "Done."
+}
+
+#
+# Remove the directory of an instance. The containers write in the bind mounted logs with their own uid: what the user cannot
+# remove is removed by a throwaway container.
+#
+do_remove_instance_dir() {
+  [ -d "${DEPLOYMENT_DIR}" ] || return 0
+  if ! rm -rf "${DEPLOYMENT_DIR}" 2>/dev/null; then
+    ${DOCKER_CMD} run --rm --volume "${DEPLOYMENT_DIR}:/instance" "${DEPLOYMENT_HELPER_IMAGE:-alpine:3}" sh -c 'rm -rf /instance/* /instance/.[!.]*'
+    rm -rf "${DEPLOYMENT_DIR}"
+  fi
+}
+
+#
+# Function that deploys (pulls the images, configures) the instance
+#
+do_deploy() {
+  configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
+  configurable_env_var "DEPLOYMENT_APACHE_VHOST_ALIAS" ""
+  configurable_env_var "DEPLOYMENT_DB_TYPE" "HSQLDB"
+  configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "2g"
+  configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"
+  configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
+
+  do_check_port_prefix
+  do_check_supported_features
   case "${DEPLOYMENT_MODE}" in
-    NO_DATA)
-      do_init_empty_data
-    ;;
-    KEEP_DATA)
-      echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} ..."
-      rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-      echo_info "Done."
-    ;;
-    RESTORE_DATASET)
-      do_restore_dataset
-    ;;
-    DUMP_DATASET)
-      echo_info "Restoring previous data ${INSTANCE_DESCRIPTION} to be prepared for dataset dumping..."
-      rm -rf ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      mkdir -p $(dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR})
-      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}
-      cp -a ${_tmpdir}/$(basename ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}) ${DEPLOYMENT_DIR}/${DEPLOYMENT_CODEC_DIR}
-      echo_info "Done."
-      do_dump_dataset
+    NO_DATA | KEEP_DATA) ;;
+    RESTORE_DATASET | DUMP_DATASET)
+      echo_error "DEPLOYMENT_MODE=${DEPLOYMENT_MODE}: the datasets are not available yet in the docker compose deployments."
+      exit 1
     ;;
     *)
       echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
@@ -1561,32 +836,45 @@ do_deploy() {
       exit 1
     ;;
   esac
-
-  case ${DEPLOYMENT_APPSRV_TYPE} in
-    tomcat)
-      do_get_tomcat_settings
-      do_configure_tomcat_server
-    ;;
-    *)
-      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
-      print_usage
+  if ${DEPLOYMENT_CONTINUOUS_ENABLED:-false}; then
+    if [[ ! "${PRODUCT_VERSION}" =~ .*-(M(BL|LT)|GA)$ ]]; then
+      echo_error "Continuous deployment is enabled and product version must ends with -MLT, -MBL or -GA (e.g. 7.2.0-MLT, 7.2.Z-MLT or 7.2.Z-GA)!"
       exit 1
-    ;;
-  esac
-  # Hack 
-  do_configure_chat
+    fi
+  fi
+  if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ] && ! grep -q '^DEPLOYMENT_COMPOSE_PROJECT=' "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}"; then
+    echo_error "${INSTANCE_KEY} was deployed by the previous version of ADT (no docker compose). Undeploy it with that version first."
+    exit 1
+  fi
+
+  do_get_database_settings
+  do_get_deployment_urls
+  do_get_compose_settings
+  do_add_jdbc_driver_addon
+  do_resolve_image
+  if [ "${DEPLOYMENT_NGINX_TLS}" = "true" ] || ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
+    do_resolve_instance_certificate
+  fi
+  do_check_docker_network_capacity
+
+  echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
+
+  if [ "${DEPLOYMENT_MODE}" = "NO_DATA" ] && [ -e "${DEPLOYMENT_COMPOSE_FILE}" ]; then
+    echo_info "Deleting all existing data for ${INSTANCE_DESCRIPTION} ..."
+    do_compose_down true
+  fi
+  do_prepare_compose_dirs
+  do_render_compose_files
+  do_compose_pull
+  env_var "ARTIFACT_DATE" "$(do_get_image_build_date "${DEPLOYMENT_IMAGE}")"
+  do_compose_up
   do_configure_apache
   do_create_deployment_descriptor
-  if [ -n "${_tmpdir:-}" ] && [ -d "${_tmpdir}" ]; then
-    echo_info "Cleaning up temporary archive directory ${_tmpdir} ..."
-    rm -rf ${_tmpdir}
-    echo_info "Done."
-  fi
   echo_info "Server deployed"
 }
 
 #
-# Function that starts the app server
+# Function that starts the instance
 #
 do_start() {
   # Use a subshell to not expose settings loaded from the deployment descriptor
@@ -1595,255 +883,52 @@ do_start() {
   # We load its settings from the configuration
   do_load_deployment_descriptor
   echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
-  chmod 755 ${DEPLOYMENT_DIR}/bin/*.sh
-  mkdir -p $(dirname ${DEPLOYMENT_LOG_PATH})
-  cd `dirname ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}`
-
-  # We need to backup existing logs if they already exist
-  backup_file $(dirname ${DEPLOYMENT_LOG_PATH}) "${DEPLOYMENT_SERVER_LOG_FILE}"
-
-  do_start_onlyoffice
-  do_start_ldap
-  do_start_iframely
-  do_start_mailpit
-  do_start_matrix
-  do_start_clamav
-  do_start_ai
-  do_start_frontail
-  do_start_debugproxy
-  do_start_keycloak
-  do_start_jitsi
-  do_start_sftp
-  do_start_cmis
-  do_start_caldav
-  do_start_database
-  do_start_cloudbeaver
-  do_start_lam
-  do_start_es
-  do_start_chat_server
-  do_start_mongo_express
-
-  if ${DEPLOYMENT_DEBUG_ENABLED:-false} && ${DEPLOYMENT_DEBUG_EXPOSE_PORT}; then
-    echo_warn "Debug port ${DEPLOYMENT_DEBUG_PORT} is exposed WITHOUT authentication (DEPLOYMENT_DEBUG_EXPOSE_PORT=true)"
-    do_ufw_open_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
-  fi
-
-  if ${DEPLOYMENT_LAM_ENABLED:-false} ; then
-    do_ufw_open_port ${DEPLOYMENT_LAM_HTTP_PORT} "LDAP Account Manager HTTP Port" ${ADT_DEV_MODE}
-  fi
-
-  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then
-    DEPLOYMENT_LIVE_LOG_URL=${DEPLOYMENT_URL}/livelogs
-  fi
-
-  # We need this variable for the setenv
-  export DEPLOYMENT_CHAT_SERVER_PORT
-
-  # We need this variable for the setenv
-  export DEPLOYMENT_ONLYOFFICE_HTTP_PORT
-  export DEPLOYMENT_CMIS_HTTP_PORT
-
-  case ${DEPLOYMENT_APPSRV_TYPE} in
-    tomcat)
-      END_STARTUP_MSG="Server startup in"
-      CATALINA_OPTS=""
-
-      if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
-        export CATALINA_HOME=${DEPLOYMENT_DIR}
-        export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-        # JVM
-        CATALINA_OPTS="${CATALINA_OPTS} -XX:+HeapDumpOnOutOfMemoryError"
-        CATALINA_OPTS="${CATALINA_OPTS} -XX:HeapDumpPath="$(dirname ${DEPLOYMENT_LOG_PATH})
-        # JMX
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote=true"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.ssl=false"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.password.file=${DEPLOYMENT_DIR}/conf/jmxremote.password"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcom.sun.management.jmxremote.access.file=${DEPLOYMENT_DIR}/conf/jmxremote.access"
-        CATALINA_OPTS="${CATALINA_OPTS} -Djava.rmi.server.hostname=${DEPLOYMENT_EXT_HOST}"
-        # Email
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.domain.url=${DEPLOYMENT_URL}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.from=noreply+acceptance@exoplatform.com"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.username="
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.password="
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.host=localhost"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.port=25"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.starttls.enable=false"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.auth=false"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.port="
-        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.email.smtp.socketFactory.class="
-        # JOD Server
-        CATALINA_OPTS="${CATALINA_OPTS} -Dwcm.jodconverter.portnumbers=${DEPLOYMENT_JOD_CONVERTER_PORTS}"
-        # CRaSH
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.telnet.port=${DEPLOYMENT_CRASH_TELNET_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dcrash.ssh.port=${DEPLOYMENT_CRASH_SSH_PORT}"
-        # Elasticsearch
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.http.port=${DEPLOYMENT_ES_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.index.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Dexo.es.search.server.url=http://127.0.0.1:${DEPLOYMENT_ES_HTTP_PORT}"
-        CATALINA_OPTS="${CATALINA_OPTS} -Des.path.data==${DEPLOYMENT_DIR}/${DEPLOYMENT_DATA_DIR}"
-
-        export CATALINA_OPTS
-        export EXO_PROFILES="${EXO_PROFILES}"
-      fi
-      # Additional settings
-      export CATALINA_OPTS="${CATALINA_OPTS} ${DEPLOYMENT_OPTS}"
-      # Startup the server
-      ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
-    ;;
-    *)
-      echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
-      print_usage
-      exit 1
-    ;;
-  esac
-
-
-  # Wait for logs availability
-  while [ true ];
-  do
-    if [ -e "${DEPLOYMENT_LOG_PATH}" ]; then
-      break
-    fi
-    sleep 1
-  done
-  # Display logs
-  tail -f "${DEPLOYMENT_LOG_PATH}" &
-  local _tailPID=$!
-  # Check for the end of startup
-  set +e
-  while [ true ];
-  do
-    if grep -q "${END_STARTUP_MSG}" "${DEPLOYMENT_LOG_PATH}"; then
-      kill ${_tailPID}
-      wait ${_tailPID} 2> /dev/null
-      break
-    fi
-    sleep 1
-  done
-  set -e
-  cd -
+  do_compose_up
   echo_info "Server started"
-  echo_info "URL  : ${DEPLOYMENT_URL}"
-  echo_info "Logs : ${DEPLOYMENT_LOG_URL}"
-  if ${DEPLOYMENT_FRONTAIL_ENABLED:-false}; then 
-    echo_info "Live logs : ${DEPLOYMENT_LIVE_LOG_URL}"
-  fi
-  echo_info "JMX  :"
-  echo_info " - URL              : ${DEPLOYMENT_JMX_URL}"
-  echo_info " - Read only access : acceptanceMonitor/${DEPLOYMENT_JMX_READONLY_PASSWORD}"
-  echo_info " - Write access     : acceptanceControl/${DEPLOYMENT_JMX_READWRITE_PASSWORD}"
-  if [ ! -z "${DEPLOYMENT_MATRIX_ENABLED}" ]; then
-    echo_info "Matrix : ${DEPLOYMENT_MATRIX_ADMIN_USERNAME}/${DEPLOYMENT_MATRIX_ADMIN_PASSWORD}"
-  fi
-  if [ ! -z "${DEPLOYMENT_CALDAV_ENABLED:-}" ] && ${DEPLOYMENT_CALDAV_ENABLED}; then
-    echo_info "CalDAV :"
-    echo_info " - Admin  : admin/${DEPLOYMENT_CALDAV_ADMIN_PASSWORD}"
-    echo_info " - User   : ${DEPLOYMENT_CALDAV_CALENDAR_USERNAME}/${DEPLOYMENT_CALDAV_CALENDAR_PASSWORD}"
-  fi
-  if [ ! -z "${DEPLOYMENT_LDAP_LINK}" ]; then
-    echo_info "LDAP URL  : ${DEPLOYMENT_LDAP_LINK}"
-  fi
-  if [ ! -z "${DEPLOYMENT_IFRAMELY_LINK}" ]; then
-    echo_info "IFRAMELY URL  : ${DEPLOYMENT_IFRAMELY_LINK}"
-  fi
-  if ${DEPLOYMENT_DEBUG_ENABLED:-false} ; then
-    if ${DEPLOYMENT_DEBUG_EXPOSE_PORT}; then
-      echo_info "DEBUG : ${DEPLOYMENT_EXT_HOST}:${DEPLOYMENT_DEBUG_PORT} (exposed, no authentication)"
-    else
-      echo_info "DEBUG : ${DEPLOYMENT_URL}/debug-ws (LDAP authentication)"
-      echo_info " - Hint : the debug port is not exposed. Click the debug badge (stethoscope) of this instance on $(do_build_url "${ACCEPTANCE_SCHEME}" "${ACCEPTANCE_HOST}" "${ACCEPTANCE_PORT}" "/") to get the commands to attach your IDE"
-      echo_info "          (websocat + adt-debug.sh bridge with your LDAP login, then attach the debugger to localhost:5005)"
-    fi
-  fi
-  if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
-    echo_info "DEV Mode is enabled."
-  fi
   )
 }
 
 #
-# Function that stops the app server
+# Function that stops the instance
 #
 do_stop() {
-  if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
-    echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
-    echo_warn "The product cannot be stopped"
-    exit 0
-  else
-    # Use a subshell to not expose settings loaded from the deployment descriptor
-    (
-    # The server is supposed to be already deployed.
-    # We load its settings from the configuration
-    do_load_deployment_descriptor
-    if [ -n "${DEPLOYMENT_DIR}" ] && [ -e "${DEPLOYMENT_DIR}" ]; then
-      echo_info "Stopping server ${INSTANCE_DESCRIPTION} ... "
-
-      if [ -e ${DEPLOYMENT_PID_FILE} ]; then
-        # Testing if pid file is valid
-        set +e
-        ps $(cat ${DEPLOYMENT_PID_FILE}) > /dev/null
-        if [ $? -ne 0 ]; then
-          echo_warn "PID file detected but process is not running, removing it..."
-          rm ${DEPLOYMENT_PID_FILE}
-        fi
-        set -e
-      fi
-
-      case ${DEPLOYMENT_APPSRV_TYPE} in
-        tomcat)
-          if [ ! -f "${DEPLOYMENT_DIR}/bin/setenv-local.sh" ]; then
-            export CATALINA_HOME=${DEPLOYMENT_DIR}
-            export CATALINA_PID=${DEPLOYMENT_PID_FILE}
-          fi
-          if ([ "${ACTION}" = "undeploy" ] || [ "${DEPLOYMENT_MODE}" = "NO_DATA" ] || [ "${DEPLOYMENT_MODE}" = "RESTORE_DATASET" ]) && [ -s "${DEPLOYMENT_PID_FILE}" ] && pgrep -fl catalina | grep -q "$(cat ${DEPLOYMENT_PID_FILE})" 2>/dev/null; then 
-            pid="$(cat ${DEPLOYMENT_PID_FILE})"
-            kill -9 ${pid}
-            rm ${DEPLOYMENT_PID_FILE}
-          else  
-            ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
-          fi  
-        ;;
-        *)
-          echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
-          print_usage
-          exit 1
-        ;;
-      esac
-      echo_info "Server stopped."
-      do_stop_ldap
-      do_stop_iframely
-      do_stop_mailpit
-      do_stop_matrix
-      do_stop_clamav
-      do_stop_ai
-      do_stop_frontail
-      do_stop_debugproxy
-      do_stop_lam
-      do_stop_mongo_express
-      do_stop_keycloak
-      do_stop_cloudbeaver
-      do_stop_jitsi
-      do_stop_sftp
-      do_stop_onlyoffice
-      do_stop_cmis
-      do_stop_caldav
-      do_stop_database
-      do_stop_es
-      do_stop_chat_server
-    else
-      echo_warn "No server directory to stop it"
-    fi
-    )
-  fi
-  
-  # Stop Jodconverter Process
-  set +e
-  [ ! -z "${DEPLOYMENT_JOD_CONVERTER_PORTS:-}" ] && lsof -n -i :${DEPLOYMENT_JOD_CONVERTER_PORTS} | grep LISTEN | awk '{print $2}' | xargs --no-run-if-empty kill 
-  set -e 
+  # Use a subshell to not expose settings loaded from the deployment descriptor
+  (
+  do_load_deployment_descriptor
+  echo_info "Stopping server ${INSTANCE_DESCRIPTION} ..."
+  do_compose_stop
+  echo_info "Server stopped."
+  )
 }
 
 #
-# Function that undeploys (delete) the app server
+# Function that restarts the instance: it keeps its data (DEPLOYMENT_MODE=KEEP_DATA) or starts again from scratch (NO_DATA)
+#
+do_restart() {
+  (
+  do_load_deployment_descriptor
+  case "${DEPLOYMENT_MODE}" in
+    NO_DATA)
+      echo_info "Deleting all existing data for ${INSTANCE_DESCRIPTION} ..."
+      do_compose_down true
+    ;;
+    KEEP_DATA)
+      do_compose_stop
+    ;;
+    *)
+      echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\" (NO_DATA or KEEP_DATA; the datasets are not available yet)"
+      print_usage
+      exit 1
+    ;;
+  esac
+  echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
+  do_compose_up
+  echo_info "Server restarted"
+  )
+}
+
+#
+# Function that undeploys the instance: its containers, network, volumes, files and virtual host
 #
 do_undeploy() {
   if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
@@ -1856,30 +941,11 @@ do_undeploy() {
     # The server is supposed to be already deployed.
     # We load its settings from the configuration
     do_load_deployment_descriptor
-    # Stop the server
-    do_stop
-    if ${DEPLOYMENT_DATABASE_ENABLED}; then
-      do_drop_database
-    fi
-    do_drop_onlyoffice_data
-    do_drop_ldap_data
-    do_drop_iframely_data
-    do_drop_mailpit_data
-    do_drop_matrix_data
-    do_drop_clamav_data
-    do_drop_ai_data
-    do_drop_frontail_data
-    do_drop_debugproxy_data
-    do_drop_keycloak_data
-    do_drop_lam_data
-    do_drop_cloudbeaver_data
-    do_drop_jitsi_data
-    do_drop_sftp_data
-    do_drop_cmis_data
-    do_drop_caldav_data
-    do_drop_chat
-    do_drop_es_data
     echo_info "Undeploying server ${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} ..."
+    if [ -e "${DEPLOYMENT_COMPOSE_FILE}" ]; then
+      do_compose_down true
+    fi
+    do_remove_instance_dir
     # Delete Awstat config
     rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
     # Delete the vhost
@@ -1887,28 +953,8 @@ do_undeploy() {
     rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
     # Reload Apache to deactivate the config
     do_reload_apache ${ADT_DEV_MODE}
-    # Delete the server
-    rm -rf ${SRV_DIR}/${INSTANCE_KEY}
-    # Close firewall ports
-    do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
-    do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}
-    do_ufw_close_port ${DEPLOYMENT_CRASH_SSH_PORT} "CRaSH SSH" ${ADT_DEV_MODE}
-    # Close debug port
-    [ ! -z "${DEPLOYMENT_DEBUG_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_DEBUG_PORT} "Debug Port" ${ADT_DEV_MODE}
-    [ ! -z "${DEPLOYMENT_LAM_HTTP_PORT:-}" ] && do_ufw_close_port ${DEPLOYMENT_LAM_HTTP_PORT} "LDAP Account Manager HTTP Port" ${ADT_DEV_MODE}
-    if ${DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED} ; then
-      # close firewall port for Onlyoffice documentserver only if addon was deployed
-      do_ufw_close_port ${DEPLOYMENT_ONLYOFFICE_HTTP_PORT} "OnlyOffice Documentserver HTTP" ${ADT_DEV_MODE}
-    fi
-    if [ "${DEPLOYMENT_LDAP_ENABLED}" == "true" ] && [ "${USER_DIRECTORY}" == "LDAP" ]; then
-      # Close firewall port for LDAPS
-      do_ufw_close_port ${DEPLOYMENT_LDAP_PORT} "Ldap Port" ${ADT_DEV_MODE}
-    fi
-    if [ "${DEPLOYMENT_SFTP_ENABLED}" == "true" ]; then
-      do_ufw_close_port ${DEPLOYMENT_SFTP_PORT} "Sftp Port" ${ADT_DEV_MODE}
-    fi
 
-    if [ "${DEPLOYMENT_CERTBOT_ENABLED}" == "true" ] && [ "${DEPLOYMENT_CERTBOT_UNDEPLOY_CERT_REMOVAL:-true}" == "true" ]; then 
+    if [ "${DEPLOYMENT_CERTBOT_ENABLED}" == "true" ] && [ "${DEPLOYMENT_CERTBOT_UNDEPLOY_CERT_REMOVAL:-true}" == "true" ]; then
       do_unregister_certbot_certificate
     fi
 
@@ -1923,34 +969,27 @@ do_undeploy() {
 # Function that lists all deployed servers
 #
 do_list() {
+  initialize_docker_settings
   if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
     TXT_GREEN=$(tput -Txterm-256color setaf 2)
     TXT_RED=$(tput -Txterm-256color setaf 1)
-    TXT_CYAN=$(tput -Txterm-256color setaf 6)
-    TXT_YELLOW=$(tput -Txterm-256color setaf 3)
     TXT_RESET=$(tput -Txterm-256color sgr0) # Text reset.
+    local _line="%-40s %-25s %-25s %-10s %-10s %-10s %-10s\n"
     echo_info "Deployed servers : "
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "=========="
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "Product" "Version" "Bundle" "Database" "Prefix" "HTTP_P" "AJP_P" "JMX_REG_P" "JMX_SRV_P" "CRASH_SSH" "RUNNING"
-    printf "%-40s %-25s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s %-10s\n" "========================================" "=========================" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "==========" "=========="
+    printf "${_line}" "========================================" "=========================" "=========================" "==========" "==========" "==========" "=========="
+    printf "${_line}" "Product" "Version" "Instance" "Database" "Prefix" "HTTP_P" "RUNNING"
+    printf "${_line}" "========================================" "=========================" "=========================" "==========" "==========" "==========" "=========="
     for f in ${ADT_CONF_DIR}/*
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
       source ${f}
-      if [ -f ${DEPLOYMENT_PID_FILE} ]; then
-        set +e
-        kill -0 `cat ${DEPLOYMENT_PID_FILE}` > /dev/null 2>&1
-        if [ $? -eq 0 ]; then
-          STATUS="${TXT_GREEN}true${TXT_RESET}"
-        else
-          STATUS="${TXT_RED}false${TXT_RESET}"
-        fi
-        set -e
+      if instance_is_running "${INSTANCE_KEY}"; then
+        STATUS="${TXT_GREEN}true${TXT_RESET}"
       else
         STATUS="${TXT_RED}false${TXT_RESET}"
       fi
-      printf "%-40s %-25s %-25s %-10s %-10s %10s %10s %10s %10s %10s %10s %-10s\n" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${INSTANCE_ID}" "${DEPLOYMENT_APPSRV_TYPE}" "${DEPLOYMENT_DB_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${DEPLOYMENT_AJP_PORT}" "${DEPLOYMENT_RMI_REG_PORT}" "${DEPLOYMENT_RMI_SRV_PORT}" "${DEPLOYMENT_CRASH_SSH_PORT}" "$STATUS"
+      printf "${_line}" "${PRODUCT_DESCRIPTION}" "${PRODUCT_VERSION}" "${INSTANCE_ID}" "${DEPLOYMENT_DB_TYPE}" "${DEPLOYMENT_PORT_PREFIX}XX" "${DEPLOYMENT_HTTP_PORT}" "${STATUS}"
       )
     done
   else
@@ -1959,82 +998,28 @@ do_list() {
 }
 
 #
-# Function that starts all deployed servers
+# Functions that act on every deployed server
 #
-do_start_all() {
+do_foreach_instance() {
+  local _action=$1 _label=$2 _f
+  initialize_docker_settings
   if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
-    echo_info "Starting all servers ..."
-    for f in ${ADT_CONF_DIR}/*
+    echo_info "${_label} all servers ..."
+    for _f in ${ADT_CONF_DIR}/*
     do
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
-      source ${f}
-      do_start
+      source ${_f}
+      ${_action}
       )
     done
-    echo_info "All servers started"
+    echo_info "All servers done"
   else
     echo_info "No server deployed."
   fi
 }
 
-#
-# Function that restarts all deployed servers
-#
-do_restart_all() {
-  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
-    echo_info "Restarting all servers ..."
-    for f in ${ADT_CONF_DIR}/*
-    do
-      # Use a subshell to not expose settings loaded from the deployment descriptor
-      (
-      source ${f}
-      do_stop
-      do_start
-      )
-    done
-    echo_info "All servers restarted"
-  else
-    echo_info "No server deployed."
-  fi
-}
-
-#
-# Function that stops all deployed servers
-#
-do_stop_all() {
-  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
-    echo_info "Stopping all servers ..."
-    for f in ${ADT_CONF_DIR}/*
-    do
-      # Use a subshell to not expose settings loaded from the deployment descriptor
-      (
-      source ${f}
-      do_stop
-      )
-    done
-    echo_info "All servers stopped"
-  else
-    echo_info "No server deployed."
-  fi
-}
-
-#
-# Function that undeploys all deployed servers
-#
-do_undeploy_all() {
-  if [ "$(${CMD_LS} -A ${ADT_CONF_DIR})" ]; then
-    echo_info "Undeploying all servers ..."
-    for f in ${ADT_CONF_DIR}/*
-    do
-      # Use a subshell to not expose settings loaded from the deployment descriptor
-      (
-      source ${f}
-      do_undeploy
-      )
-    done
-    echo_info "All servers undeployed"
-  else
-    echo_info "No server deployed."
-  fi
-}
+do_start_all()     { do_foreach_instance do_start    "Starting"; }
+do_stop_all()      { do_foreach_instance do_stop     "Stopping"; }
+do_restart_all()   { do_foreach_instance do_restart  "Restarting"; }
+do_undeploy_all()  { do_foreach_instance do_undeploy "Undeploying"; }

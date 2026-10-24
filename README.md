@@ -2,22 +2,28 @@
 
 A set of Bash scripts, templates and a Go front-end (`adt-web`) that deploy eXo products
 (eXo Platform and Meeds 7.0 and later) as throw-away instances for testing, demos and
-acceptance. Each instance gets its own ports, database, Apache vhost and,
-optionally, a set of companion services running in Docker.
+acceptance. Each instance is a Docker Compose project on its own network, made of the
+product image, its database, Elasticsearch and an nginx reverse proxy, behind an Apache
+virtual host.
 
 ## What it does
 
-- **Deploy** a product bundle from the eXo Maven repository (release, snapshot,
-  or a rolling `-MLT` / `-MBL` / `-GA` version), configure it and start it.
-- **Databases**: HSQLDB, host MySQL, or Docker MySQL, MariaDB, PostgreSQL,
-  Oracle and SQL Server.
-- **Companion services**, enabled per instance with `DEPLOYMENT_*_ENABLED`:
-  Elasticsearch, Chat (with MongoDB), CMIS, Jitsi, Keycloak, OnlyOffice, CalDAV
-  (Baïkal), Matrix, Mailpit, ClamAV, CloudBeaver, LDAP Account Manager (LAM),
-  Frontail (live logs), Iframely, AI, SFTP and Certbot (automatic TLS).
-- **Reverse proxy**: one Apache vhost per instance, with LDAP authentication,
-  optional HTTPS, per-instance Awstats and logrotate.
-- **Remote debug** (JDWP) behind the authenticated vhost, with no exposed port.
+- **Deploy** the Docker image of a product: `meedsio/meeds`, `exoplatform/exo-community`
+  or `exoplatform/exo-enterprise`. The version is the tag of the image: a release
+  (`7.2.2`), a snapshot (`7.3.x-SNAPSHOT`), or a build chosen in the registry with a
+  rolling `-MLT` / `-MBL` / `-GA` version (see `_functions_registry.sh`).
+- **Databases**: HSQLDB (in the application), or a MySQL, MariaDB or PostgreSQL container.
+  The versions of the database, Elasticsearch and jdbc drivers follow the minor version of the product
+  (7.0, 7.1, 7.2, 7.3), see `initialize_product_settings` in `_functions.sh`.
+- **Isolation**: one network per instance, named after the instance key (`plfent-7.3.0-M16`), as are its
+  containers (`<key>_exo`, `_db`, `_search`, `_web`) and volumes. The only published port is the one of
+  its nginx, on `127.0.0.1:<DEPLOYMENT_PORT_PREFIX>01`. The data live in docker volumes.
+- **Reverse proxies**: nginx (per instance) owns the locations, the security headers, the compression and
+  the logs. Apache (one vhost per instance) terminates the TLS, authenticates with LDAP and forwards to
+  that nginx; with HTTPS enabled both serve the same certificate, from the domain or from Certbot.
+- **Companion services** (Jitsi, Keycloak, OnlyOffice, CalDAV, Matrix, Mailpit, ClamAV, CloudBeaver, LAM,
+  Frontail, Iframely, AI, SFTP, remote debug) are being moved into the compose project: enabling one is
+  refused for now.
 - **Web front-end** (`web/`, Go): dashboard of instances across acceptance
   servers, features, Crowdin health, sales and company pages, instance
   editing and a `/debug` section for admins (health, config, caches, sessions,
@@ -27,20 +33,23 @@ optionally, a set of companion services running in Docker.
 
 Mandatory:
 
-- Bash, `curl`, `rsync`, `git`, `unzip`
-- A JDK in the `PATH` that matches the product version you deploy
-- Docker, used for databases and companion services, and for the `j2` template
-  renderer when it is not installed on the host
+- Bash, `curl`, `jq`, `rsync`, `git`
+- Docker with the compose plugin (v2), used for every instance and for the `j2` template
+  renderer when it is not installed on the host. The user running ADT must be allowed to use it (`docker` group);
+  it does not need to be root: the data live in docker volumes and nothing is `chown`ed.
+- Room for the instances: about 2.5 GB of RAM for a small one (application 1 GB heap, Elasticsearch, database)
 
 Optional:
 
 - Apache 2.4 to authenticate and proxy the front-end and to reverse-proxy the instances
-  (not needed with `ADT_DEV_MODE=true`)
+  (not needed with `ADT_DEV_MODE=true`, where nginx is published directly without TLS)
 - Go 1.26 **or** Docker, to build the front-end (`./adt.sh build-web`); the hosts need no Go toolchain
   because the build falls back to a `golang` container
-- A local MySQL (`~/.my.cnf`) to use `DEPLOYMENT_DB_TYPE=MYSQL`
 - UFW, which opens and closes the ports an instance needs
 - Awstats, for usage statistics
+
+Docker gives every network a subnet from its address pools: with the default ones about 30 instances fit on a
+host (`adt.sh deploy` checks it and tells how to widen the pools in `/etc/docker/daemon.json`).
 
 ## Quick start
 
@@ -57,7 +66,7 @@ Settings can also live in `$HOME/.adtrc` or `/etc/default/adt`.
 ```sh
 export PRODUCT_NAME=plfcom PRODUCT_VERSION=7.2.0-MLT   # product and version
 
-./adt.sh deploy      # download and configure
+./adt.sh deploy      # pull the images and configure
 ./adt.sh start       # start the instance
 ./adt.sh restart
 ./adt.sh stop
@@ -70,11 +79,11 @@ Deploy several copies of the same product and version by setting `INSTANCE_ID`.
 as options instead, use `adt-dev.sh`:
 
 ```sh
-./adt-dev.sh deploy -n plfcom -v 7.2.0-MLT -p 200 -d DOCKER_POSTGRES:16
+./adt-dev.sh deploy -n plfcom -v 7.2.0-MLT -p 200 -d POSTGRES:17
 ```
 
 Other actions: `start-all`, `stop-all`, `restart-all`, `undeploy-all`,
-`download-dataset`, `init`, `update-repos`, `build-web`, `deploy-web` and `web-server`.
+`init`, `update-repos`, `build-web`, `deploy-web` and `web-server`.
 
 ### Try the front-end locally
 
@@ -117,7 +126,7 @@ try a change) or `off`.
 ## Configuration
 
 Every setting is an environment variable. The complete, current list (global
-settings, products, database, mail, LDAP, Chat, Elasticsearch, Certbot…) is
+settings, products, database, Elasticsearch, Certbot…) is
 printed by:
 
 ```sh
@@ -136,31 +145,22 @@ The most useful ones:
 | `ACCEPTANCE_SERVERS` | Base URLs of every acceptance server, this one included. List live servers only: a page that merges the servers waits for an entry that does not answer |
 | `ADT_ADMIN_USERS` | Comma-separated logins of the dashboard administrators: only they get the control that changes the base branch of a feature branch on `/features` (Apache also limits `POST /editFeatureBase` to the LDAP admin group). Empty: nobody, in development mode everybody |
 | `PRODUCT_NAME` | `meeds`, `plfcom` or `plfent` (versions 7.0 and later) |
-| `PRODUCT_VERSION` | Release, `-SNAPSHOT`, or `-MLT` / `-MBL` / `-GA` (with optional `Z` wildcard, e.g. `7.2.Z-GA`) |
+| `PRODUCT_VERSION` | The tag of the image: a release, `-SNAPSHOT`, or `-MLT` / `-MBL` / `-GA` resolved in the registry (with optional `Z` wildcard, e.g. `7.2.Z-GA`) |
 | `INSTANCE_ID` | Distinguishes several deployments of the same product and version |
-| `DEPLOYMENT_DB_TYPE` | `HSQLDB`, `MYSQL`, `DOCKER_MYSQL`, `DOCKER_POSTGRES`, `DOCKER_MARIADB`, `DOCKER_ORACLE`, `DOCKER_SQLSERVER` |
-| `DEPLOYMENT_MODE` | `NO_DATA`, `KEEP_DATA`, `RESTORE_DATASET` or `DUMP_DATASET` |
-| `DEPLOYMENT_ADDONS` | Add-ons installed with the eXo add-ons manager |
+| `DEPLOYMENT_DB_TYPE` | `HSQLDB`, `MYSQL`, `MARIADB` or `POSTGRES` (the former `DOCKER_*` names are accepted) |
+| `DEPLOYMENT_MODE` | `NO_DATA` (default for deploy) or `KEEP_DATA` (default for restart); the datasets (`RESTORE_DATASET`, `DUMP_DATASET`) are being ported |
+| `DEPLOYMENT_ADDONS` | Add-ons installed by the add-ons manager of the image |
+| `DEPLOYMENT_PORT_PREFIX` | Port slot of the instance: its nginx listens on `127.0.0.1:<prefix>01` |
 | `DEPLOYMENT_APACHE_SECURITY` | `private` (LDAP login) or `public` |
-| `DEPLOYMENT_APACHE_HTTPS_ENABLED` | Add an HTTPS vhost |
+| `DEPLOYMENT_APACHE_HTTPS_ENABLED` | Add an HTTPS vhost; nginx then serves the same certificate |
 | `LDAP_ACCEPTANCE_*` | LDAP bind and admin group used by the front-end |
 
 ## Remote debug of an instance
 
-The JDWP port has no authentication or encryption, so it is **not** exposed.
-With `DEPLOYMENT_DEBUG_ENABLED=true` it listens on the server loopback only and
-is reachable through `https://<instance-host>/debug-ws`, protected by the
-vhost LDAP authentication. A small `websocat` container
-(`<instance>_debugproxy`, see `_functions_debugproxy.sh`) adapts WebSocket to
-JDWP.
-
-Developers do not need this repository. The front-end shows the setup steps
-(websocat, IntelliJ, Eclipse, troubleshooting) in a dialog opened from the
-instance's debug badge, and serves the helper script on `/adt-debug.sh`.
-
-`DEPLOYMENT_DEBUG_EXPOSE_PORT=true` exposes JDWP on all interfaces and in the
-firewall, **without any authentication**: anyone who can reach it can run code
-in the instance. Avoid it.
+The remote debug (JDWP behind the authenticated vhost, through a WebSocket adapter) is one of the companion
+services that are being moved into the compose project, `DEPLOYMENT_DEBUG_ENABLED=true` is refused for now.
+The JDWP port itself is never published: the debug will only be reachable through nginx at `/debug-ws`, protected by
+the LDAP authentication of the vhost.
 
 ## Architecture
 
@@ -170,28 +170,29 @@ in the instance. Avoid it.
 flowchart LR
   user([Developer / QA])
   subgraph host[Acceptance server]
-    apache["Apache 2.4<br/>LDAP auth, TLS, vhost per instance"]
+    apache["Apache 2.4<br/>TLS, LDAP auth, vhost per instance"]
     fe["adt-web (Go)<br/>web/"]
     cli["adt.sh<br/>_functions*.sh + etc/ templates"]
-    subgraph inst[Instance: product-version]
-      app["Tomcat<br/>eXo Platform / Meeds"]
-      db[("Database")]
-      side["Companion services<br/>(Docker)"]
+    subgraph inst["Instance <key>: compose project and network"]
+      web["nginx<br/>locations, headers, logs<br/>127.0.0.1:PREFIX01"]
+      app["eXo Platform / Meeds<br/>product image"]
+      db[("MySQL / MariaDB / PostgreSQL<br/>or HSQLDB in the app")]
+      es[("Elasticsearch")]
     end
   end
-  repo[("eXo Maven repository")]
+  reg[("Docker registry")]
   ldap[("LDAP")]
 
   user -->|HTTPS| apache
   apache -->|dashboard| fe
-  apache -->|ProxyPass| app
-  apache -->|ProxyPass| side
+  apache -->|"proxy (same certificate)"| web
   apache -.->|authenticates| ldap
-  cli -->|downloads bundle| repo
-  cli -->|deploy / start / stop| inst
-  cli -->|renders vhost and config| apache
+  web --> app
   app --> db
-  app --> side
+  app --> es
+  cli -->|resolves tags, pulls images| reg
+  cli -->|"docker compose up / stop / down"| inst
+  cli -->|renders vhost and compose project| apache
 ```
 
 ### Deploying an instance
@@ -200,43 +201,20 @@ flowchart LR
 sequenceDiagram
   actor Op as Operator
   participant ADT as adt.sh
-  participant Repo as Maven repository
+  participant Reg as Docker registry
   participant Tpl as etc/ templates (j2)
   participant Docker
   participant Apache
 
   Op->>ADT: deploy (PRODUCT_NAME, PRODUCT_VERSION)
-  ADT->>Repo: resolve version, download bundle
-  ADT->>ADT: unpack, allocate ports (DEPLOYMENT_PORT_PREFIX)
-  ADT->>Docker: start database and enabled services
-  ADT->>Tpl: render Tomcat config, Apache vhost, logrotate
+  ADT->>Reg: -MLT / -MBL / -GA: list the tags and choose the build
+  ADT->>Tpl: render docker-compose.yml and nginx.conf
+  ADT->>Docker: compose pull, compose up --wait (db, search, app, nginx healthy)
+  ADT->>Tpl: render the Apache vhost, logrotate, descriptor
   ADT->>Apache: install vhost, reload
-  Op->>ADT: start
-  ADT->>ADT: start the application server
   ADT-->>Op: instance URL
-```
-
-### Companion services of an instance
-
-```mermaid
-flowchart TB
-  apache[Apache vhost]
-  app["eXo Platform"]
-  apache --> app
-
-  app --> db[("HSQLDB / MySQL / MariaDB<br/>PostgreSQL / Oracle / SQL Server")]
-  app --> es[Elasticsearch]
-  app --> chat[Chat server] --> mongo[(MongoDB)]
-  app --> jitsi[Jitsi]
-  app --> oo[OnlyOffice]
-  app --> kc[Keycloak]
-  app --> cmis[CMIS server]
-  app --> clam[ClamAV]
-  app --> matrix[Matrix]
-  app --> ai[AI]
-
-  apache --> tools["Admin tools:<br/>Mailpit, CloudBeaver, LAM,<br/>Frontail, Baikal CalDAV"]
-  apache -->|"/debug-ws (LDAP-protected)"| dbg["debugproxy (websocat)"] -->|loopback JDWP| app
+  Op->>ADT: start / stop / restart / undeploy
+  ADT->>Docker: compose up / stop / down -v
 ```
 
 ### Front-end and multi-server aggregation
@@ -257,10 +235,11 @@ flowchart LR
 | Path | Content |
 | --- | --- |
 | `adt.sh`, `adt-dev.sh` | Entry points |
-| `_functions*.sh` | Core logic, one file per area (`_functions_tomcat.sh`, `_functions_database.sh`, `_functions_keycloak.sh`…) |
-| `etc/` | Jinja2 templates: Apache, Tomcat, Keycloak, Matrix, OnlyOffice, logrotate… |
+| `_functions*.sh` | Core logic, one file per area (`_functions_compose.sh`, `_functions_registry.sh`, `_functions_apache.sh`…) |
+| `etc/` | Jinja2 templates: compose project and nginx (`etc/compose/`), Apache, instance descriptor, logrotate… |
 | `web/` | The Go front-end `adt-web`: pages, `/rest/*` API, static files |
-| `integration-tests.sh` | Integration tests |
+| `tests/` | Tests of the tag resolution and of the compose templates (`tests/registry_test.sh`, `tests/compose_templates_test.sh`) |
+| `integration-tests.sh` | Deploys instances for real |
 
 ## Contributing
 

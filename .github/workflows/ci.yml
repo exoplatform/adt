@@ -113,6 +113,22 @@ jobs:
           sys.exit(bad)
           PY
 
+  tests:
+    name: Tests of the shell code and of the compose templates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Jinja2
+        run: sudo apt-get install -y -qq python3-jinja2
+      - name: Resolution of the docker image tags
+        run: tests/registry_test.sh
+      - name: Compose project templates (docker compose config, nginx -t)
+        run: tests/compose_templates_test.sh
+
   apache:
     name: Apache configuration test (Ubuntu 26.04)
     runs-on: ubuntu-latest
@@ -177,21 +193,25 @@ jobs:
           echo "== front-end (https): ok"
 
           # instance vhosts: every optional feature on, every feature off, and HTTPS only
-          FEATURES=(MATRIX CALDAV MAILPIT FRONTAIL CLOUDBEAVER ONLYOFFICE_DOCUMENTSERVER LAM JITSI MONGO_EXPRESS KEYCLOAK ES CMISSERVER IFRAMELY DEBUG)
+          FEATURES=(MATRIX CALDAV MAILPIT FRONTAIL CLOUDBEAVER ONLYOFFICE_DOCUMENTSERVER LAM JITSI KEYCLOAK ES IFRAMELY DEBUG)
           instance() { # name security https httpsonly on|off product
             local n=$1 host=$1.ci.test v=() f
             for f in "${FEATURES[@]}"; do v+=("DEPLOYMENT_${f}_ENABLED=$([ "$5" = on ] && echo true || echo false)"); done
+            # nginx of the instance terminates TLS with the same certificate as soon as HTTPS is enabled
+            local tls=$([ "$3" = true ] && echo true || echo false)
             R $E/includes/instance.include.j2 $ADT_DATA/conf/apache/includes/$host.include "${COMMON[@]}" "${v[@]}" PRODUCT_NAME=$6 \
               DEPLOYMENT_EXT_HOST=$host DEPLOYMENT_DIR=$ADT_DATA/servers/$n DEPLOYMENT_CERTBOT_WEBROOT_PATH=/srv/wwwcertbot \
-              DEPLOYMENT_APACHE_WEBSOCKET_ENABLED=$([ "$5" = on ] && echo true || echo false) DEPLOYMENT_CHAT_EMBEDDED=false
+              DEPLOYMENT_HTTP_PORT=$((8001 + RANDOM % 900)) DEPLOYMENT_NGINX_TLS=$tls \
+              DEPLOYMENT_APACHE_WEBSOCKET_ENABLED=$([ "$5" = on ] && echo true || echo false)
             R $E/sites-available/instance.j2 $ADT_DATA/conf/apache/sites-available/$host "${COMMON[@]}" "${LDAP[@]}" "${v[@]}" \
               DEPLOYMENT_EXT_HOST=$host DEPLOYMENT_APACHE_VHOST_ALIAS=alias-$n.ci.test DEPLOYMENT_APACHE_SECURITY=$2 \
-              DEPLOYMENT_APACHE_HTTPS_ENABLED=$3 DEPLOYMENT_APACHE_HTTPSONLY_ENABLED=$4 DEPLOYMENT_CHAT_EMBEDDED=false \
+              DEPLOYMENT_APACHE_HTTPS_ENABLED=$3 DEPLOYMENT_APACHE_HTTPSONLY_ENABLED=$4 DEPLOYMENT_NGINX_TLS=$tls \
               INSTANCE_SSL_CERTIFICATE_FILE=/tmp/ci.crt INSTANCE_SSL_CERTIFICATE_KEY_FILE=/tmp/ci.key
           }
           instance all-on private false false on meeds
           instance all-off public false false off plf
           instance https-only private true true on plf
+          instance https-public public true false on plf
           apache2ctl configtest
-          echo "== instance vhosts (3 scenarios): ok"
+          echo "== instance vhosts (4 scenarios): ok"
           SCRIPT
