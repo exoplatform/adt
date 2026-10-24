@@ -863,6 +863,14 @@ table th.col-left,   table td.col-left   { text-align: left; }
   color: var(--text-primary);
   border-color: var(--border-active);
 }
+/* Checked state of toggle buttons (scope, needs rebase/backport, view switch) */
+.btn-outline-secondary.active,
+.btn-outline-secondary[aria-pressed="true"] {
+  background: var(--accent-soft);
+  color: var(--text-primary);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
 
 .btn-sm {
   padding: 0.3rem 0.65rem;
