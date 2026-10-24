@@ -1,0 +1,5 @@
+{% if DEPLOYMENT_AI_ENABLED == "true" %}
+{% set _ = app_opts.append("-Dmeeds.ai.ollama.url=http://ollama:11434") %}
+{% set _ = app_opts.append("-Dmeeds.ai.mcp.base-url=http://127.0.0.1:8080") %}
+{% set _ = app_depends.append("ollama") %}
+{% endif %}

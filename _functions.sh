@@ -25,6 +25,7 @@ source "${SCRIPT_DIR}/_functions_awstats.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_registry.sh"
 source "${SCRIPT_DIR}/_functions_compose.sh"
+source "${SCRIPT_DIR}/_functions_companions.sh"
 source "${SCRIPT_DIR}/_functions_certbot.sh"
 
 # #################################################################################
@@ -529,20 +530,6 @@ do_load_deployment_descriptor() {
 }
 
 #
-# Companion services (onlyoffice, jitsi, matrix...) that the compose project doesn't provide yet
-#
-do_check_supported_features() {
-  local _feature _var
-  for _feature in ONLYOFFICE_DOCUMENTSERVER LDAP IFRAMELY MAILPIT MATRIX CLAMAV AI FRONTAIL KEYCLOAK CLOUDBEAVER LAM JITSI SFTP CALDAV DEBUG; do
-    _var="DEPLOYMENT_${_feature}_ENABLED"
-    if [ "${!_var:-false}" = "true" ]; then
-      echo_error "${_var}=true: this companion service is not available yet in the docker compose deployments."
-      exit 1
-    fi
-  done
-}
-
-#
 # The database of the instance: a container of the project (MYSQL, MARIADB, POSTGRES) or the HSQLDB of the application.
 # The names of the former docker deployments are accepted (DOCKER_MYSQL...).
 #
@@ -849,8 +836,10 @@ do_deploy() {
 
   do_get_database_settings
   do_get_deployment_urls
+  do_get_companion_settings
   do_get_compose_settings
   do_add_jdbc_driver_addon
+  do_check_companions
   do_resolve_image
   if [ "${DEPLOYMENT_NGINX_TLS}" = "true" ] || ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
     do_resolve_instance_certificate
@@ -864,10 +853,13 @@ do_deploy() {
     do_compose_down true
   fi
   do_prepare_compose_dirs
+  do_render_companion_files
   do_render_compose_files
   do_compose_pull
   env_var "ARTIFACT_DATE" "$(do_get_image_build_date "${DEPLOYMENT_IMAGE}")"
   do_compose_up
+  do_provision_companions
+  do_companion_firewall open
   do_configure_apache
   do_create_deployment_descriptor
   echo_info "Server deployed"
@@ -923,6 +915,7 @@ do_restart() {
   esac
   echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
   do_compose_up
+  do_provision_companions
   echo_info "Server restarted"
   )
 }
@@ -946,6 +939,7 @@ do_undeploy() {
       do_compose_down true
     fi
     do_remove_instance_dir
+    do_companion_firewall close
     # Delete Awstat config
     rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
     # Delete the vhost

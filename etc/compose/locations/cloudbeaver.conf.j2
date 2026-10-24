@@ -1,0 +1,16 @@
+{% if DEPLOYMENT_CLOUDBEAVER_ENABLED == "true" %}
+    # CloudBeaver: the database of the instance (the authentication of this URI is done by Apache)
+    location = /cloudbeaver {
+      return 301 /cloudbeaver/;
+    }
+    location /cloudbeaver/ {
+      set $upstream_cloudbeaver http://cloudbeaver:8978;
+      proxy_pass $upstream_cloudbeaver;
+      proxy_http_version 1.1;
+      proxy_set_header Host $http_host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+      add_header Cache-Control "max-age=63072000, public" always;
+    }
+
+{% endif %}

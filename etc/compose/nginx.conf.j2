@@ -90,6 +90,9 @@ http {
 {% endif %}
     server_name _;
 
+    # The redirections of nginx (/mailpit -> /mailpit/...) are relative: the client knows the host, the port and the scheme it used
+    absolute_redirect off;
+
     # Uploads: the limit of the application (MB) plus the multipart overhead
     client_max_body_size {{ (DEPLOYMENT_UPLOAD_MAX_FILE_SIZE | int) + 1 }}m;
 
@@ -145,6 +148,12 @@ http {
       proxy_set_header Host $host;
     }
 
+{% include "locations/mailpit.conf.j2" %}
+{% include "locations/iframely.conf.j2" %}
+{% include "locations/lam.conf.j2" %}
+{% include "locations/cloudbeaver.conf.j2" %}
+{% include "locations/caldav.conf.j2" %}
+{% include "locations/frontail.conf.j2" %}
     location / {
       set $upstream_app http://exo:8080;
       proxy_pass $upstream_app;

@@ -1,0 +1,29 @@
+{% if DEPLOYMENT_LDAP_ENABLED == "true" and USER_DIRECTORY == "LDAP" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("ldap_conf") %}
+{% set _ = top_volumes.append("ldap_data") %}
+  ldap:
+    image: {{ y(DEPLOYMENT_LDAP_IMAGE ~ ":" ~ DEPLOYMENT_LDAP_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_ldap") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "ldap"
+    environment:
+      SLAPD_PASSWORD: "exo"
+      SLAPD_DOMAIN: "exoplatform.com"
+    volumes:
+      - ldap_conf:/etc/ldap
+      - ldap_data:/var/lib/ldap
+{% if DEPLOYMENT_LDAP_PREPOPULATE_DIR %}
+      # the entries loaded when the directory is created
+      - {{ y(DEPLOYMENT_LDAP_PREPOPULATE_DIR ~ ":/etc/ldap.dist/prepopulate:ro") }}
+{% endif %}
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/389"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    logging: *logging
+
+{% endif %}
