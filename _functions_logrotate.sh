@@ -50,7 +50,7 @@ do_logrotate(){
     if [ -e /usr/sbin/logrotate ]; then
       echo_info "Rotate logs using configuration ${_config_file} ..."
       secure_logrotate_config ${_config_file}
-      sudo /usr/sbin/logrotate -s ${_config_file}.status -f ${_config_file}
+      sudo /usr/sbin/logrotate -s ${_config_file}.status -f ${_config_file} || echo_warn "logrotate failed for ${_config_file}, the deployment goes on"
       echo_info "Done."
     else
       echo_error "It is impossible to rotate logs using configuration ${_config_file}. Did you install logrotate ?"
