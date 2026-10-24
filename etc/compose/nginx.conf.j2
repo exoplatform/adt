@@ -72,6 +72,8 @@ http {
   server {
 {% if tls %}
     listen 443 ssl default_server;
+    # the containers of the instance call it on the public name with the scheme of DEPLOYMENT_URL (this port is not published)
+    listen 80;
     http2 on;
 {% if DEPLOYMENT_CERTBOT_ENABLED == "true" %}
     ssl_certificate     /etc/letsencrypt/live/{{ DEPLOYMENT_CERTBOT_DOMAIN }}/fullchain.pem;
@@ -89,6 +91,20 @@ http {
     listen 80 default_server;
 {% endif %}
     server_name _;
+
+    # What every proxied location sends to its service: the host the client used, who it is, the scheme Apache tells, and the
+    # websocket upgrade when there is one. A location only adds what is specific to it.
+    proxy_http_version 1.1;
+    proxy_set_header Host              $http_host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Host  $http_host;
+    proxy_set_header X-Forwarded-Proto $the_scheme;
+    proxy_set_header Upgrade           $http_upgrade;
+    proxy_set_header Connection        $connection_upgrade;
+    proxy_request_buffering off;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
 
     # The redirections of nginx (/mailpit -> /mailpit/...) are relative: the client knows the host, the port and the scheme it used
     absolute_redirect off;
@@ -144,8 +160,6 @@ http {
       set $upstream_search http://search:9200;
       rewrite ^/elasticsearch/?(.*)$ /$1 break;
       proxy_pass $upstream_search;
-      proxy_http_version 1.1;
-      proxy_set_header Host $host;
     }
 
 {% include "locations/mailpit.conf.j2" %}
@@ -154,20 +168,14 @@ http {
 {% include "locations/cloudbeaver.conf.j2" %}
 {% include "locations/caldav.conf.j2" %}
 {% include "locations/frontail.conf.j2" %}
+{% include "locations/onlyoffice.conf.j2" %}
+{% include "locations/matrix.conf.j2" %}
+{% include "locations/keycloak.conf.j2" %}
+{% include "locations/jitsi.conf.j2" %}
+{% include "locations/debug.conf.j2" %}
     location / {
       set $upstream_app http://exo:8080;
       proxy_pass $upstream_app;
-      proxy_http_version 1.1;
-      proxy_set_header Host              $http_host;
-      proxy_set_header X-Real-IP         $remote_addr;
-      proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
-      proxy_set_header X-Forwarded-Host  $http_host;
-      proxy_set_header X-Forwarded-Proto $the_scheme;
-      proxy_set_header Upgrade           $http_upgrade;
-      proxy_set_header Connection        $connection_upgrade;
-      proxy_request_buffering off;
-      proxy_read_timeout 300s;
-      proxy_send_timeout 300s;
     }
   }
 }

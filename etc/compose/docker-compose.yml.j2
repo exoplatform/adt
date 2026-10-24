@@ -5,6 +5,7 @@
     each is only active when DEPLOYMENT_<SERVICE>_ENABLED is true.
     An integration file adds to the collectors below, which feed the application service:
       app_opts     JVM options (JAVA_OPTS)       app_env      environment variables
+      app_props    properties of exo.properties (exo.properties.j2 renders them, adt.sh puts the file in the application container)
       app_volumes  volumes of the application    app_depends  services that must be healthy before it starts
     A service file adds the named volumes it uses to top_volumes. -#}
 {% from "macros.j2" import y -%}
@@ -19,15 +20,8 @@
 {% set app_volumes = [] -%}
 {% set app_depends = [] -%}
 {% set top_volumes = [] -%}
-{% set _integrations %}
-{% include "integrations/mailpit.j2" %}
-{% include "integrations/iframely.j2" %}
-{% include "integrations/ai.j2" %}
-{% include "integrations/sftp.j2" %}
-{% include "integrations/ldap.j2" %}
-{% include "integrations/clamav.j2" %}
-{% include "integrations/caldav.j2" %}
-{% endset -%}
+{% set app_props = {} -%}
+{% set _integrations %}{% include "integrations/all.j2" %}{% endset -%}
 # Rendered by ADT from etc/compose/docker-compose.yml.j2: do not edit, the next deploy overwrites it.
 name: {{ DEPLOYMENT_COMPOSE_PROJECT }}
 
@@ -49,11 +43,26 @@ services:
       adt.nginx: "true"
     ports:
       - "127.0.0.1:{{ DEPLOYMENT_HTTP_PORT }}:{{ "443" if tls else "80" }}"
+{% if DEPLOYMENT_EXT_HOST != "localhost" %}
+    # The containers of the instance (the document server calling the application back, the application calling Keycloak or Matrix...)
+    # reach the public names of the instance through nginx, without going out and back in through the server
+    networks:
+      default:
+        aliases:
+          - {{ y(DEPLOYMENT_EXT_HOST) }}
+{% if DEPLOYMENT_APACHE_VHOST_ALIAS %}
+          - {{ y(DEPLOYMENT_APACHE_VHOST_ALIAS) }}
+{% endif %}
+{% endif %}
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
       - ./logs/nginx:/var/log/nginx
       - ./logs/app:/var/log/app:ro
       - {{ y(ADT_DATA ~ "/web/static:/srv/static:ro") }}
+{% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+      # the discovery files only (the directory of the Matrix server holds its secrets)
+      - ./matrix-wellknown:/srv/matrix:ro
+{% endif %}
 {% if tls and DEPLOYMENT_CERTBOT_ENABLED == "true" %}
       # certbot renews the certificate in this tree: mount the directory, a file bind mount would keep the old inode
       - {{ y(DEPLOYMENT_CERTBOT_CONFIG_FOLDER ~ ":/etc/letsencrypt:ro") }}
@@ -76,6 +85,8 @@ services:
       adt.instance: {{ y(INSTANCE_KEY) }}
       adt.host: {{ y(ACCEPTANCE_HOST) }}
       adt.role: "app"
+      # exo.properties is copied in the container by adt.sh: its checksum makes compose recreate the container when it changes
+      adt.properties: {{ y(DEPLOYMENT_PROPERTIES_SHA) }}
     environment:
       {{ P }}_PROXY_VHOST: {{ y(DEPLOYMENT_PROXY_VHOST) }}
       {{ P }}_PROXY_PORT: {{ y(DEPLOYMENT_PROXY_PORT) }}
@@ -132,6 +143,9 @@ services:
 {% for volume in app_volumes %}
       - {{ y(volume) }}
 {% endfor %}
+{% if DEPLOYMENT_LICENSE_MOUNT %}
+      - {{ y(DEPLOYMENT_LICENSE_MOUNT ~ ":/etc/exo/license.xml:ro") }}
+{% endif %}
     depends_on:
       search:
         condition: service_healthy
@@ -252,6 +266,11 @@ services:
 {% include "services/clamav.yml.j2" %}
 {% include "services/caldav.yml.j2" %}
 {% include "services/frontail.yml.j2" %}
+{% include "services/onlyoffice.yml.j2" %}
+{% include "services/matrix.yml.j2" %}
+{% include "services/keycloak.yml.j2" %}
+{% include "services/jitsi.yml.j2" %}
+{% include "services/debug.yml.j2" %}
 
 # Everything docker creates is named after the instance key, so that many instances of the same products stay readable on a host
 volumes:

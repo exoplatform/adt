@@ -15,8 +15,6 @@
     location /baikal {
       set $upstream_baikal http://baikal:80;
       proxy_pass $upstream_baikal;
-      proxy_http_version 1.1;
-      proxy_set_header Host $http_host;
     }
 
 {% endif %}
