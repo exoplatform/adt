@@ -1,0 +1,230 @@
+{#- The docker compose project of an instance, rendered by adt.sh (deploy) in ${SRV_DIR}/<instance key>/docker-compose.yml.
+    Every string goes through y(): it is quoted for YAML and "$" is escaped for docker compose.
+    Switches (all "true"/"false" strings): DEPLOYMENT_NGINX_TLS, DEPLOYMENT_GZIP_ENABLED, DEPLOYMENT_CERTBOT_ENABLED.
+    Companion services (onlyoffice, jitsi, matrix...) are blocks of this file, included when DEPLOYMENT_<SERVICE>_ENABLED is true. -#}
+{% macro y(v) %}{{ v | replace('$', '$$') | tojson }}{% endmacro -%}
+{% set P = DEPLOYMENT_ENV_PREFIX -%}
+{% set app = DEPLOYMENT_ENV_PREFIX | lower -%}
+{% set tls = DEPLOYMENT_NGINX_TLS == "true" -%}
+{% set db = DEPLOYMENT_DB_TYPE != "HSQLDB" -%}
+{% set db_user = DEPLOYMENT_DATABASE_USER -%}
+{% set db_root_password = DEPLOYMENT_DATABASE_NAME ~ "@root" -%}
+# Rendered by ADT from etc/compose/docker-compose.yml.j2: do not edit, the next deploy overwrites it.
+name: {{ DEPLOYMENT_COMPOSE_PROJECT }}
+
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "50m"
+    max-file: "3"
+
+services:
+  # Reverse proxy of the instance: the only published port, reached by the Apache virtual host
+  web:
+    image: {{ y(DEPLOYMENT_NGINX_IMAGE ~ ":" ~ DEPLOYMENT_NGINX_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_web") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.host: {{ y(ACCEPTANCE_HOST) }}
+      adt.role: "proxy"
+      adt.nginx: "true"
+    ports:
+      - "127.0.0.1:{{ DEPLOYMENT_HTTP_PORT }}:{{ "443" if tls else "80" }}"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./logs/nginx:/var/log/nginx
+      - ./logs/app:/var/log/app:ro
+      - {{ y(ADT_DATA ~ "/web/static:/srv/static:ro") }}
+{% if tls and DEPLOYMENT_CERTBOT_ENABLED == "true" %}
+      # certbot renews the certificate in this tree: mount the directory, a file bind mount would keep the old inode
+      - {{ y(DEPLOYMENT_CERTBOT_CONFIG_FOLDER ~ ":/etc/letsencrypt:ro") }}
+{% elif tls %}
+      - {{ y(INSTANCE_SSL_CERTIFICATE_FILE ~ ":/etc/nginx/certs/fullchain.pem:ro") }}
+      - {{ y(INSTANCE_SSL_CERTIFICATE_KEY_FILE ~ ":/etc/nginx/certs/privkey.pem:ro") }}
+{% endif %}
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8081/nginx-health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 5s
+    logging: *logging
+
+  exo:
+    image: {{ y(DEPLOYMENT_IMAGE) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_exo") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.host: {{ y(ACCEPTANCE_HOST) }}
+      adt.role: "app"
+    environment:
+      {{ P }}_PROXY_VHOST: {{ y(DEPLOYMENT_PROXY_VHOST) }}
+      {{ P }}_PROXY_PORT: {{ y(DEPLOYMENT_PROXY_PORT) }}
+      {{ P }}_PROXY_SSL: {{ y(DEPLOYMENT_PROXY_SSL) }}
+      {{ P }}_JVM_SIZE_MIN: {{ y(DEPLOYMENT_JVM_SIZE_MIN) }}
+      {{ P }}_JVM_SIZE_MAX: {{ y(DEPLOYMENT_JVM_SIZE_MAX) }}
+      {{ P }}_JVM_LOG_GC_ENABLED: "true"
+      {{ P }}_UPLOAD_MAX_FILE_SIZE: {{ y(DEPLOYMENT_UPLOAD_MAX_FILE_SIZE) }}
+      {{ P }}_GZIP_ENABLED: {{ y(DEPLOYMENT_GZIP_ENABLED) }}
+      {{ P }}_JMX_ENABLED: "false"
+      {{ P }}_ADDONS_LIST: {{ y(DEPLOYMENT_ADDONS) }}
+{% if DEPLOYMENT_ADDONS_TOREMOVE %}
+      {{ P }}_ADDONS_REMOVE_LIST: {{ y(DEPLOYMENT_ADDONS_TOREMOVE) }}
+{% endif %}
+{% if DEPLOYMENT_ADDONS_CATALOG %}
+      {{ P }}_ADDONS_CATALOG_URL: {{ y(DEPLOYMENT_ADDONS_CATALOG) }}
+{% endif %}
+{% if DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE %}
+      {{ P }}_ADDONS_CONFLICT_MODE: {{ y(DEPLOYMENT_ADDONS_MANAGER_CONFLICT_MODE) }}
+{% endif %}
+{% if DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE %}
+      {{ P }}_ADDONS_NOCOMPAT_MODE: {{ y(DEPLOYMENT_ADDONS_MANAGER_NOCOMPAT_MODE) }}
+{% endif %}
+{% if DEPLOYMENT_PATCHES %}
+      {{ P }}_PATCHES_LIST: {{ y(DEPLOYMENT_PATCHES) }}
+      {{ P }}_PATCHES_CATALOG_URL: {{ y(DEPLOYMENT_PATCHES_CATALOG) }}
+{% endif %}
+{% if DEPLOYMENT_SELFSIGNEDCERTS_HOSTS %}
+      {{ P }}_SELFSIGNEDCERTS_HOSTS: {{ y(DEPLOYMENT_SELFSIGNEDCERTS_HOSTS) }}
+{% endif %}
+{% if DEPLOYMENT_OPTS %}
+      JAVA_OPTS: {{ y(DEPLOYMENT_OPTS) }}
+{% endif %}
+      {{ P }}_DB_TYPE: {{ y(DEPLOYMENT_DB_ENV_TYPE) }}
+{% if db %}
+      {{ P }}_DB_HOST: "db"
+      {{ P }}_DB_PORT: {{ y(DEPLOYMENT_DATABASE_PORT) }}
+      {{ P }}_DB_NAME: {{ y(DEPLOYMENT_DATABASE_NAME) }}
+      {{ P }}_DB_USER: {{ y(db_user) }}
+      {{ P }}_DB_PASSWORD: {{ y(db_user) }}
+{% endif %}
+      {{ P }}_ES_SCHEME: "http"
+      {{ P }}_ES_HOST: "search"
+      {{ P }}_ES_PORT: "9200"
+      {{ P }}_ES_INDEX_REPLICA_NB: "0"
+    volumes:
+      - exo_data:/srv/{{ app }}
+      - exo_codec:/etc/{{ app }}/codec
+      - ./logs/app:/var/log/{{ app }}
+    depends_on:
+      search:
+        condition: service_healthy
+{% if db %}
+      db:
+        condition: service_healthy
+{% endif %}
+    # the image has its own HEALTHCHECK (curl on 8080): only the timings are tuned, the startup of an instance takes minutes
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent --output /dev/null http://localhost:8080/ || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+    logging: *logging
+
+{% if db and DEPLOYMENT_DB_TYPE == "MYSQL" %}
+  db:
+    image: {{ y("mysql:" ~ DEPLOYMENT_DATABASE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_db") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "db"
+    environment:
+      MYSQL_ROOT_PASSWORD: {{ y(db_root_password) }}
+      MYSQL_DATABASE: {{ y(DEPLOYMENT_DATABASE_NAME) }}
+      MYSQL_USER: {{ y(db_user) }}
+      MYSQL_PASSWORD: {{ y(db_user) }}
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", {{ y("mysqladmin -h localhost -u " ~ db_user ~ " -p" ~ db_user ~ " ping --silent") }}]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    logging: *logging
+
+{% elif db and DEPLOYMENT_DB_TYPE == "MARIADB" %}
+  db:
+    image: {{ y("mariadb:" ~ DEPLOYMENT_DATABASE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_db") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "db"
+    environment:
+      MARIADB_ROOT_PASSWORD: {{ y(db_root_password) }}
+      MARIADB_DATABASE: {{ y(DEPLOYMENT_DATABASE_NAME) }}
+      MARIADB_USER: {{ y(db_user) }}
+      MARIADB_PASSWORD: {{ y(db_user) }}
+    volumes:
+      - db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "healthcheck.sh --connect --innodb_initialized"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    logging: *logging
+
+{% elif db and DEPLOYMENT_DB_TYPE == "POSTGRES" %}
+  db:
+    image: {{ y("postgres:" ~ DEPLOYMENT_DATABASE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_db") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "db"
+    environment:
+      POSTGRES_DB: {{ y(DEPLOYMENT_DATABASE_NAME) }}
+      POSTGRES_USER: {{ y(db_user) }}
+      POSTGRES_PASSWORD: {{ y(db_user) }}
+    volumes:
+      # PostgreSQL 18 images keep the version directories under /var/lib/postgresql
+      - db:{{ "/var/lib/postgresql" if (DEPLOYMENT_DATABASE_VERSION.split(".")[0] | int) >= 18 else "/var/lib/postgresql/data" }}
+    healthcheck:
+      test: ["CMD-SHELL", {{ y("pg_isready -U " ~ db_user ~ " -d " ~ DEPLOYMENT_DATABASE_NAME) }}]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+    logging: *logging
+
+{% endif %}
+  search:
+    image: {{ y(DEPLOYMENT_ES_IMAGE ~ ":" ~ DEPLOYMENT_ES_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_search") }}
+    hostname: "search"
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "search"
+    environment:
+      ES_JAVA_OPTS: {{ y("-Xms" ~ DEPLOYMENT_ES_HEAP ~ " -Xmx" ~ DEPLOYMENT_ES_HEAP) }}
+      node.name: {{ y(INSTANCE_KEY) }}
+      cluster.name: {{ y(INSTANCE_KEY) }}
+      cluster.initial_master_nodes: {{ y(INSTANCE_KEY) }}
+      xpack.security.enabled: "false"
+    volumes:
+      - search:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://localhost:9200/_cluster/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+    logging: *logging
+
+# Everything docker creates is named after the instance key, so that many instances of the same products stay readable on a host
+volumes:
+  exo_data:
+    name: {{ y(INSTANCE_KEY ~ "_exo_data") }}
+  exo_codec:
+    name: {{ y(INSTANCE_KEY ~ "_exo_codec") }}
+{% if db %}
+  db:
+    name: {{ y(INSTANCE_KEY ~ "_db") }}
+{% endif %}
+  search:
+    name: {{ y(INSTANCE_KEY ~ "_search") }}
+
+networks:
+  default:
+    name: {{ y(INSTANCE_KEY) }}
