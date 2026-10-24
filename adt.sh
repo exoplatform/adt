@@ -216,7 +216,7 @@ case "${ACTION}" in
     do_deploy
   ;;
   download-dataset)
-    echo_error "download-dataset is not available yet in the docker compose deployments."
+    echo_error "download-dataset is gone: it fetched the datasets of products that are no longer supported. Datasets are written by DEPLOYMENT_MODE=DUMP_DATASET, or copied to ${DS_DIR}."
     exit 1
   ;;
   start)

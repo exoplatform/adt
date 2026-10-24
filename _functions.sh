@@ -26,6 +26,7 @@ source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_registry.sh"
 source "${SCRIPT_DIR}/_functions_compose.sh"
 source "${SCRIPT_DIR}/_functions_companions.sh"
+source "${SCRIPT_DIR}/_functions_dataset.sh"
 source "${SCRIPT_DIR}/_functions_certbot.sh"
 
 # #################################################################################
@@ -128,9 +129,13 @@ Environment Variables
   DEPLOYMENT_LICENSE_FILE           : The license of plfent, mounted read-only as /etc/exo/license.xml (default: \${ADT_DATA}/conf/license.xml, none when it does not exist)
   DEPLOYMENT_ADDONS_TOREMOVE        : Comma separated list of add-ons to remove
   DEPLOYMENT_ADDONS_CATALOG         : URL of an add-ons catalog (default: the one of the image)
+  DEPLOYMENT_PROPERTIES             : Properties to add to the exo.properties of the instance, key=value lines separated by a newline or a written \n (default: none)
+  DEPLOYMENT_PROPERTIES_FILE        : A properties file added to the exo.properties of the instance (default: none)
   DEPLOYMENT_PATCHES                : Comma separated list of patches to install
   DEPLOYMENT_UPLOAD_MAX_FILE_SIZE   : Configure the max size for file upload (in MB, default: 200)
   DEPLOYMENT_GZIP_ENABLED           : Compression done by the application server itself (default: false, nginx compresses)
+  DEPLOYMENT_PULL_POLICY            : always (default: the tags of a snapshot move) or missing (keep the images that are on the server)
+  DEPLOYMENT_FOLLOW_LOGS            : Print the log of the application container while the instance starts: the installation of the add-ons and the startup of the server (default: true)
   DEPLOYMENT_START_TIMEOUT          : Seconds to wait for the instance to be healthy at start (default: 1800)
 
   DEPLOYMENT_DOCKER_HOST            : The docker host to use to deploy containers (default: unix://)
@@ -140,7 +145,9 @@ Environment Variables
   DEPLOYMENT_DB_TYPE                : Which database do you want to use for your deployment ? (default: HSQLDB; values : HSQLDB | MYSQL | MARIADB | POSTGRES; DOCKER_MYSQL, DOCKER_MARIADB and DOCKER_POSTGRES are accepted too)
   DEPLOYMENT_DATABASE_VERSION       : Which database version do you want to use for your deployment ? (default: the one of the product version, required for MariaDB)
 
-  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept)
+  DEPLOYMENT_MODE                   : How data are processed during a restart or deployment (default: KEEP_DATA for restart, NO_DATA for deploy; values : NO_DATA - All existing data are removed | KEEP_DATA - Existing data are kept | RESTORE_DATASET - The data are replaced by the dataset DS_DIR/DS_FILENAME.tar.zst | DUMP_DATASET - The data are kept and written in the dataset)
+  DS_FILENAME                       : The name (without extension) of the dataset in ${DS_DIR} (default: <PRODUCT_NAME>-<minor version>.x, CURRENT for the instance key)
+  DS_TARGET_SERVER                  : A server (ssh) the dataset is copied to after DUMP_DATASET (default: none)
 
   DEPLOYMENT_ES_IMAGE_VERSION       : Which version of the Elasticsearch image to use (default: the one of the product version)
   DEPLOYMENT_ES_HEAP                : Size of Elasticsearch heap (default: 512m)
@@ -218,6 +225,9 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_ADDONS_TOREMOVE" ""
       # Additional JVM settings (JAVA_OPTS of the image)
       configurable_env_var "DEPLOYMENT_OPTS" ""
+      # Properties added to the exo.properties of the instance (what the generated one does not say)
+      configurable_env_var "DEPLOYMENT_PROPERTIES" ""
+      configurable_env_var "DEPLOYMENT_PROPERTIES_FILE" ""
       env_var "DEPLOYMENT_DATABASE_ENABLED" true
       env_var "DEPLOYMENT_DATABASE_NAME" ""
       env_var "DEPLOYMENT_DATABASE_USER" ""
@@ -814,11 +824,7 @@ do_deploy() {
 
   do_check_port_prefix
   case "${DEPLOYMENT_MODE}" in
-    NO_DATA | KEEP_DATA) ;;
-    RESTORE_DATASET | DUMP_DATASET)
-      echo_error "DEPLOYMENT_MODE=${DEPLOYMENT_MODE}: the datasets are not available yet in the docker compose deployments."
-      exit 1
-    ;;
+    NO_DATA | KEEP_DATA | RESTORE_DATASET | DUMP_DATASET) ;;
     *)
       echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
       print_usage
@@ -832,7 +838,7 @@ do_deploy() {
     fi
   fi
   if [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ] && ! grep -q '^DEPLOYMENT_COMPOSE_PROJECT=' "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}"; then
-    echo_error "${INSTANCE_KEY} was deployed by the previous version of ADT (no docker compose). Undeploy it with that version first."
+    echo_error "${INSTANCE_KEY} was deployed by the previous version of ADT (no docker compose). Dump its data with that version (DEPLOYMENT_MODE=DUMP_DATASET), undeploy it with it, then deploy it here with DEPLOYMENT_MODE=RESTORE_DATASET (see the README)."
     exit 1
   fi
 
@@ -852,16 +858,28 @@ do_deploy() {
 
   echo_info "Deploying server ${INSTANCE_DESCRIPTION} ..."
 
-  if [ "${DEPLOYMENT_MODE}" = "NO_DATA" ] && [ -e "${DEPLOYMENT_COMPOSE_FILE}" ]; then
+  do_prepare_compose_dirs
+  do_render_companion_files
+  # the images are pulled before anything is stopped: the instance that is replaced is down for the time of its restart only
+  # (the compose file of the instance is rewritten here, the names of everything docker holds are the ones of the instance key)
+  do_render_compose_files
+  do_compose_pull
+  if { [ "${DEPLOYMENT_MODE}" = "NO_DATA" ] || [ "${DEPLOYMENT_MODE}" = "RESTORE_DATASET" ]; } \
+     && { [ -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ] || [ -n "$(${DOCKER_CMD} ps --all --quiet --filter "label=adt.instance=${INSTANCE_KEY}")" ]; }; then
     echo_info "Deleting all existing data for ${INSTANCE_DESCRIPTION} ..."
     do_compose_down true
   fi
-  do_prepare_compose_dirs
-  do_render_companion_files
-  do_render_compose_files
-  do_compose_pull
   env_var "ARTIFACT_DATE" "$(do_get_image_build_date "${DEPLOYMENT_IMAGE}")"
+  if [ "${DEPLOYMENT_MODE}" = "RESTORE_DATASET" ]; then
+    # the volumes have to exist, empty, to receive the dataset before anything starts
+    do_compose up --no-start --remove-orphans
+    do_restore_dataset
+  fi
   do_start_instance
+  if [ "${DEPLOYMENT_MODE}" = "DUMP_DATASET" ]; then
+    do_dump_dataset
+    do_start_instance
+  fi
   do_companion_firewall open
   do_configure_apache
   do_create_deployment_descriptor
@@ -910,8 +928,17 @@ do_restart() {
     KEEP_DATA)
       do_compose_stop
     ;;
+    RESTORE_DATASET)
+      echo_info "Deleting all existing data for ${INSTANCE_DESCRIPTION} ..."
+      do_compose_down true
+      do_compose up --no-start --remove-orphans
+      do_restore_dataset
+    ;;
+    DUMP_DATASET)
+      do_dump_dataset
+    ;;
     *)
-      echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\" (NO_DATA or KEEP_DATA; the datasets are not available yet)"
+      echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\" (NO_DATA, KEEP_DATA, RESTORE_DATASET or DUMP_DATASET)"
       print_usage
       exit 1
     ;;
@@ -1017,6 +1044,7 @@ do_foreach_instance() {
       # Use a subshell to not expose settings loaded from the deployment descriptor
       (
       source ${_f}
+      DEPLOYMENT_FOLLOW_LOGS=${DEPLOYMENT_FOLLOW_LOGS:-false}
       ${_action}
       )
     done
