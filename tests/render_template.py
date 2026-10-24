@@ -3,12 +3,15 @@
 
 usage: render_template.py TEMPLATE OUTPUT NAME=value [NAME=value ...]
 """
+import os
 import sys
 import jinja2
 
 template, output, *pairs = sys.argv[1:]
 values = dict(p.split("=", 1) for p in pairs)
-env = jinja2.Environment(undefined=jinja2.StrictUndefined, keep_trailing_newline=True)
+# like the renderer of ADT, the templates it includes are looked up in the directory of the template
+env = jinja2.Environment(loader=jinja2.FileSystemLoader(os.path.dirname(os.path.abspath(template))),
+                         undefined=jinja2.StrictUndefined, keep_trailing_newline=True)
 with open(template) as f:
     text = f.read()
 try:
