@@ -42,24 +42,12 @@ func BuildTableTitleDev(branch string) string {
 	// the branch is a descriptor value (also the key of a peer's answer): it is escaped where it is printed
 	b := phpx.Esc(branch)
 	switch branch {
-	case "1.0.x", "1.1.x", "1.2.x", "1.3.x", "1.4.x", "1.5.x":
-		return "Platform " + b + " based builds (Meeds)"
-	case "4.0.x", "4.1.x", "4.2.x", "4.3.x", "4.4.x", "5.0.x", "5.1.x", "5.2.x", "5.3.x",
-		"6.0.x", "6.1.x", "6.2.x", "6.3.x", "6.4.x", "6.5.x", "7.0.x", "7.1.x":
-		return "Platform " + b + " based builds (Maintenance)"
+	case "7.0.x", "7.1.x":
+		return "Platform or Meeds " + b + " based builds (Maintenance)"
 	case "7.2.x":
 		return "Platform or Meeds " + b + " based builds (Maintenance)"
 	case "7.3.x":
 		return "Platform or Meeds " + b + " based builds (R&D) - next product release (no date yet)"
-	case "5.x":
-		return "Platform " + b + " based builds (R&D) - perhaps next features ;-)"
-	case "4.0.x Demo", "4.1.x Demo", "4.2.x Demo", "4.3.x Demo", "4.4.x Demo",
-		"5.0.x Demo", "5.1.x Demo", "5.2.x Demo", "5.3.x Demo":
-		return "Platform " + b + "s"
-	case "COMPANY":
-		return "Company internal projects"
-	case "CODEFEST":
-		return "eXo Codefest"
 	case "UNKNOWN":
 		return "Unclassified projects"
 	}

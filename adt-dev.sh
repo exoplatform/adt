@@ -43,19 +43,10 @@ Action
   =================
 
   -n PRODUCT_NAME           : The product you want to manage. Possible values are :
-    gatein         GateIn Community edition                - Apache Tomcat bundle
-    exogtn         GateIn eXo edition                      - Apache Tomcat bundle
-    plf            eXo Platform Standard Edition           - Apache Tomcat bundle
+    meeds          Meeds.io                                - Apache Tomcat bundle
     plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
-    plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
-    plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
-    plfsales       eXo Platform Enterprise Edition         - Apache Tomcat bundle for Sales
-    plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
-    plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
-    addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
-    compint        eXo Company Intranet                    - Apache Tomcat bundle
-    community      eXo Community Website                   - Apache Tomcat bundle
-    docs           eXo Platform Documentations Website     - Apache Tomcat bundle
+    plfent         eXo Platform Enterprise Edition         - Apache Tomcat bundle
+  Only versions 7.0 and later are supported.
 
   -v PRODUCT_VERSION        : The version of the product. Can be either a release (X.Y.Z), a snapshot (X.Y.Z-SNAPSHOT), or a continuous deployment using -MLT (latest) / -MBL (before latest) / -GA (latest GA release only, no milestone/RC/CP/build suffix) with optional Z wildcard for the minor version (e.g. 7.2.0-MLT, 7.2.Z-MLT, 7.2.Z-meed-MLT or 7.2.Z-GA)
 
