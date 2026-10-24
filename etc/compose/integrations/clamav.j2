@@ -1,7 +1,6 @@
 {% if DEPLOYMENT_CLAMAV_ENABLED == "true" %}
 {# clamav scans the data of the application and writes what it finds in a report, which the application reads and empties #}
-{% set _ = app_opts.append("-Dexo.malwareDetection.connector.clamav.report.path=/clamav/report/clamav-report.txt") %}
-{% set _ = app_opts.append("-Dexo.malwareDetection.connector.clamav.isDefault=true") %}
+{% set _ = app_props.update({"exo.malwareDetection.connector.clamav.report.path": "/clamav/report/clamav-report.txt"}) %}
+{% set _ = app_props.update({"exo.malwareDetection.connector.clamav.isDefault": "true"}) %}
 {% set _ = app_volumes.append("clamav_report:/clamav/report") %}
-{% set _ = app_depends.append("clamav") %}
 {% endif %}

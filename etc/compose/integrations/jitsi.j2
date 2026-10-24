@@ -1,0 +1,12 @@
+{% if DEPLOYMENT_JITSI_ENABLED == "true" %}
+{# web conferencing with the Jitsi of the instance: the application talks to the call application inside the project network #}
+{% set _ = app_props.update({"webconferencing.jitsi.external.secret": DEPLOYMENT_JITSI_EXO_JWT_SECRET}) %}
+{% set _ = app_props.update({"webconferencing.jitsi.internal.secret": DEPLOYMENT_JITSI_JWT_APP_SECRET}) %}
+{% set _ = app_props.update({"webconferencing.jitsi.url": "http://jitsi-call:80"}) %}
+{% set _ = app_props.update({"webconferencing.webrtc.active": "true"}) %}
+{% set _ = app_props.update({"webconferencing.webrtc.default.stun.enabled": "true"}) %}
+{% set _ = app_props.update({"webconferencing.webrtc.exo.stun.enabled": "true"}) %}
+{% set _ = app_props.update({"webconferencing.webrtc.exo.turn.enabled": "true"}) %}
+{% set _ = app_props.update({"webconferencing.webrtc.exo.turn.username": "acceptance"}) %}
+{% set _ = app_props.update({"webconferencing.webrtc.exo.turn.credential": "acc3pt@nce"}) %}
+{% endif %}

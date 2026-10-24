@@ -125,6 +125,7 @@ Environment Variables
   DEPLOYMENT_JVM_SIZE_MIN           : Minimum heap memory size (default: 512m)
   DEPLOYMENT_OPTS                   : Additional JVM parameters (JAVA_OPTS of the image) (default: none)
   DEPLOYMENT_ADDONS                 : Comma separated list of add-ons to install (EXO_ADDONS_LIST / MEEDS_ADDONS_LIST). The jdbc driver of the database is added.
+  DEPLOYMENT_LICENSE_FILE           : The license of plfent, mounted read-only as /etc/exo/license.xml (default: \${ADT_DATA}/conf/license.xml, none when it does not exist)
   DEPLOYMENT_ADDONS_TOREMOVE        : Comma separated list of add-ons to remove
   DEPLOYMENT_ADDONS_CATALOG         : URL of an add-ons catalog (default: the one of the image)
   DEPLOYMENT_PATCHES                : Comma separated list of patches to install
@@ -147,6 +148,7 @@ Environment Variables
   DEPLOYMENT_CERTBOT_ENABLED                : Enable Certbot integration for automatic SSL certificate issuance and renewal
   DEPLOYMENT_CERTBOT_CERT_EXPIRE_PERIOD     : Certificate renewal threshold in seconds (e.g., 2592000 = 30 days before expiry)
   DEPLOYMENT_CERTBOT_ACME_SERVER            : ACME server URL used for certificate issuance (e.g., Let\'s Encrypt endpoint)
+  DEPLOYMENT_CERTBOT_EMAIL                  : Contact e-mail of the ACME account (default: certificates@exoplatform.com)
   DEPLOYMENT_CERTBOT_EAB_KID                : External Account Binding Key ID for ACME registration (leave empty if not required)
   DEPLOYMENT_CERTBOT_EAB_HMAC_KEY           : External Account Binding HMAC key for ACME (leave empty if not required)
   DEPLOYMENT_CERTBOT_FORCE_RENEWAL          : Force renewal of certificate even if not close to expiry
@@ -342,6 +344,7 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_CERTBOT_ENABLED" false
       configurable_env_var "DEPLOYMENT_CERTBOT_CERT_EXPIRE_PERIOD" "2592000" # 30 days
       configurable_env_var "DEPLOYMENT_CERTBOT_ACME_SERVER" "https://acme-v02.api.letsencrypt.org/directory"
+      configurable_env_var "DEPLOYMENT_CERTBOT_EMAIL" "certificates@exoplatform.com"
       configurable_env_var "DEPLOYMENT_CERTBOT_EAB_KID" ""
       configurable_env_var "DEPLOYMENT_CERTBOT_EAB_HMAC_KEY" ""
       configurable_env_var "DEPLOYMENT_CERTBOT_FORCE_RENEWAL" false
@@ -810,7 +813,6 @@ do_deploy() {
   configurable_env_var "DEPLOYMENT_PORT_PREFIX" "80"
 
   do_check_port_prefix
-  do_check_supported_features
   case "${DEPLOYMENT_MODE}" in
     NO_DATA | KEEP_DATA) ;;
     RESTORE_DATASET | DUMP_DATASET)
@@ -838,9 +840,11 @@ do_deploy() {
   do_get_deployment_urls
   do_get_companion_settings
   do_get_compose_settings
+  do_get_license_settings
   do_add_jdbc_driver_addon
   do_check_companions
   do_resolve_image
+  do_get_certbot_settings
   if [ "${DEPLOYMENT_NGINX_TLS}" = "true" ] || ${DEPLOYMENT_APACHE_HTTPS_ENABLED}; then
     do_resolve_instance_certificate
   fi
@@ -857,8 +861,7 @@ do_deploy() {
   do_render_compose_files
   do_compose_pull
   env_var "ARTIFACT_DATE" "$(do_get_image_build_date "${DEPLOYMENT_IMAGE}")"
-  do_compose_up
-  do_provision_companions
+  do_start_instance
   do_companion_firewall open
   do_configure_apache
   do_create_deployment_descriptor
@@ -875,7 +878,7 @@ do_start() {
   # We load its settings from the configuration
   do_load_deployment_descriptor
   echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
-  do_compose_up
+  do_start_instance
   echo_info "Server started"
   )
 }
@@ -914,8 +917,7 @@ do_restart() {
     ;;
   esac
   echo_info "Starting server ${INSTANCE_DESCRIPTION} ..."
-  do_compose_up
-  do_provision_companions
+  do_start_instance
   echo_info "Server restarted"
   )
 }
@@ -925,6 +927,17 @@ do_restart() {
 #
 do_undeploy() {
   if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
+    # a deployment that failed after its containers were created has a compose project but no descriptor yet
+    if [ -e "${SRV_DIR}/${INSTANCE_KEY}/docker-compose.yml" ]; then
+      echo_warn "${INSTANCE_KEY} has no descriptor: its deployment did not complete. Removing its compose project."
+      (
+      do_get_compose_settings
+      do_compose_down true
+      do_remove_instance_dir
+      )
+      echo_info "Server undeployed"
+      exit 0
+    fi
     echo_warn "${PRODUCT_NAME} ${PRODUCT_VERSION} isn't deployed !"
     echo_warn "The product cannot be undeployed"
     exit 0

@@ -1,0 +1,160 @@
+{% if DEPLOYMENT_JITSI_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{# The images of 7.3 and later are the rootless ones (ghcr.io/jitsi, the web one listens on 8000). The domains the XMPP services
+   use are names of the project network. #}
+{% set rootless = DEPLOYMENT_JITSI_ROOTLESS == "true" %}
+{% set repo = "ghcr.io/jitsi" if rootless else "jitsi" %}
+{% set net = DEPLOYMENT_JITSI_NETWORK_NAME %}
+{% set tag = DEPLOYMENT_JITSI_IMAGE_VERSION %}
+{% set web_port = "8000" if rootless else "80" %}
+  jitsi-call:
+    image: {{ y(DEPLOYMENT_JITSI_IMAGE ~ ":" ~ DEPLOYMENT_JITSI_CALL_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_jitsi_call") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "jitsi"
+    env_file: ./jitsi/jitsi.env
+    mem_limit: {{ y(DEPLOYMENT_JITSI_MEM_LIMIT) }}
+    logging: *logging
+
+  jitsi-prosody:
+    image: {{ y(repo ~ "/prosody:" ~ tag) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_jitsi_prosody") }}
+    hostname: "jitsi-prosody"
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "jitsi"
+    env_file: ./jitsi/jitsi.env
+    networks:
+      default:
+        aliases:
+          - {{ y("xmpp." ~ net) }}
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 /bin/bash -c '</dev/tcp/jitsi-prosody/5222' && timeout 2 /bin/bash -c '</dev/tcp/jitsi-prosody/5280' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+    logging: *logging
+
+  jitsi-jicofo:
+    image: {{ y(repo ~ "/jicofo:" ~ tag) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_jitsi_jicofo") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "jitsi"
+    env_file: ./jitsi/jitsi.env
+    environment:
+      JICOFO_MAX_MEMORY: {{ y(DEPLOYMENT_JITSI_JICOFO_XMX) }}
+    depends_on:
+      jitsi-prosody:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null http://127.0.0.1:8888/about/health?list_jvb=true || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+    logging: *logging
+
+  jitsi-jvb:
+    image: {{ y(repo ~ "/jvb:" ~ tag) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_jitsi_jvb") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "jitsi"
+    env_file: ./jitsi/jitsi.env
+    environment:
+      VIDEOBRIDGE_MAX_MEMORY: {{ y(DEPLOYMENT_JITSI_JVB_XMX) }}
+    # the media of the calls go straight to this port of the server: it is not an HTTP service
+    ports:
+      - "{{ DEPLOYMENT_JITSI_JVB_PORT }}:{{ DEPLOYMENT_JITSI_JVB_PORT }}/udp"
+    networks:
+      default:
+        aliases:
+          - {{ y("jvb." ~ net) }}
+    depends_on:
+      jitsi-prosody:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://127.0.0.1:8080/about/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+    logging: *logging
+
+  jitsi-jibri:
+    image: {{ y(repo ~ "/jibri:" ~ tag) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_jitsi_jibri") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "jitsi"
+    env_file: ./jitsi/jitsi.env
+    mem_limit: {{ y(DEPLOYMENT_JITSI_MEM_LIMIT) }}
+    shm_size: 2gb
+    cap_add:
+      - SYS_ADMIN
+      - NET_BIND_SERVICE
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ./jitsi/jibri.conf:/etc/jitsi/jibri/jibri.conf:ro
+      - ./jitsi/finalize.sh:/tmp/finalize.sh:ro
+    depends_on:
+      jitsi-prosody:
+        condition: service_healthy
+      jitsi-jicofo:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://127.0.0.1:2222/jibri/api/v1.0/health | jq -e '.status.health.healthStatus == \"HEALTHY\"' || exit 1"]
+      interval: 15s
+      timeout: 15s
+      retries: 30
+      start_period: 30s
+    logging: *logging
+
+  jitsi-web:
+    image: {{ y("exoplatform/jitsi-web:" ~ tag) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_jitsi_web") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "jitsi"
+    env_file: ./jitsi/jitsi.env
+{% if rootless %}
+    tmpfs:
+      - /config
+{% endif %}
+    networks:
+      default:
+        aliases:
+          - {{ y(net) }}
+    depends_on:
+      jitsi-prosody:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO /dev/null 127.0.0.1:{{ web_port }} || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+    logging: *logging
+
+  jitsi-excalidraw:
+    image: {{ y("jitsi/excalidraw-backend:" ~ DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_jitsi_excalidraw_backend") }}
+    hostname: "jitsi-excalidraw-backend"
+    init: true
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "jitsi"
+    healthcheck:
+      # the image has no wget or curl, only node
+      test: ["CMD", "node", "-e", "require('http').get('http://127.0.0.1:80', r => process.exit(r.statusCode < 500 ? 0 : 1)).on('error', () => process.exit(1))"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 10s
+    logging: *logging
+
+{% endif %}

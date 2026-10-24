@@ -34,6 +34,13 @@
 {% if private %}
     Include {{ APACHE_CONF_DIR }}/includes/{{ DEPLOYMENT_EXT_HOST }}.include
 
+{% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+    # The discovery files of Matrix are public (nginx answers, with the headers)
+    <ProxyMatch "^.*/\.well-known/matrix/.*$">
+        Require all granted
+    </ProxyMatch>
+
+{% endif %}
     # No security for gadgets
     <ProxyMatch "^.*/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)/.*$">
         Require all granted
@@ -45,16 +52,10 @@
     </Proxy>
 {% else %}
 {{ protected("^/logs/.*") }}
-{%- if ssl and DEPLOYMENT_MATRIX_ENABLED == "true" %}
+{%- if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+    # The discovery files of Matrix are public (nginx answers, with the headers)
     <LocationMatch "^/.well-known/matrix/.*">
-        Options None
-        AllowOverride None
         Require all granted
-        Header set Content-Type application/json
-        Header always set Access-Control-Allow-Origin "https://app.element.io"
-        Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
-        Header always set Access-Control-Allow-Headers "Origin, Content-Type, Accept"
-        Header always set Access-Control-Max-Age "1728000"
     </LocationMatch>
 {% endif %}
 {%- if DEPLOYMENT_ES_ENABLED == "true" %}
@@ -66,7 +67,7 @@
 {%- if DEPLOYMENT_FRONTAIL_ENABLED == "true" %}
 {{ protected("^/livelogs.*") }}
 {%- endif %}
-{%- if DEPLOYMENT_DEBUG_ENABLED == "true" and DEPLOYMENT_DEBUG_EXPOSE_PORT != "true" %}
+{%- if DEPLOYMENT_DEBUG_ENABLED == "true" %}
 {{ protected("^/debug-ws.*") }}
 {%- endif %}
 {%- if DEPLOYMENT_CLOUDBEAVER_ENABLED == "true" %}

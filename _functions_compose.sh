@@ -91,10 +91,12 @@ do_prepare_compose_dirs() {
 # Render the files of the compose project
 do_render_compose_files() {
   echo_info "Rendering the compose project in ${DEPLOYMENT_DIR} ..."
+  evaluate_file_content "${ETC_DIR}/compose/exo.properties.j2" "${DEPLOYMENT_DIR}/exo.properties"
+  env_var DEPLOYMENT_PROPERTIES_SHA "$(sha256sum "${DEPLOYMENT_DIR}/exo.properties" | cut -d' ' -f1)"
   evaluate_file_content "${ETC_DIR}/compose/docker-compose.yml.j2" "${DEPLOYMENT_COMPOSE_FILE}"
   evaluate_file_content "${ETC_DIR}/compose/nginx.conf.j2" "${DEPLOYMENT_DIR}/nginx.conf"
-  # the compose file holds the passwords of the instance
-  chmod 600 "${DEPLOYMENT_COMPOSE_FILE}"
+  # the compose file and the properties hold the passwords of the instance
+  chmod 600 "${DEPLOYMENT_COMPOSE_FILE}" "${DEPLOYMENT_DIR}/exo.properties"
   chmod 644 "${DEPLOYMENT_DIR}/nginx.conf"
   do_compose config --quiet
   echo_info "Done."
@@ -119,11 +121,46 @@ do_get_image_build_date() {
   date -u -d "${_created}" "+%Y%m%d.%H%M%S" 2>/dev/null || true
 }
 
-# Create/update the containers and wait for the instance to be healthy
+# The exo.properties of the instance (what the integrations of its services tell the application, secrets included) goes in the
+# application container, owned by the application user (uid 999 in the images) and readable by it only. A bind mount would have to
+# be readable by any uid, and the user of ADT is not root to give it away.
+do_install_app_properties() {
+  grep -q '^[^#].*=' "${DEPLOYMENT_DIR}/exo.properties" || return 0
+  local _app
+  _app=$(tr '[:upper:]' '[:lower:]' <<< "${DEPLOYMENT_ENV_PREFIX}")
+  tar --owner=999 --group=999 --numeric-owner --mode=0400 --directory "${DEPLOYMENT_DIR}" --create --file - exo.properties \
+    | ${DOCKER_CMD} cp - "${INSTANCE_KEY}_exo:/etc/${_app}/"
+}
+
+# Create/update the containers, give the application its properties, and wait for the instance to be healthy
 do_compose_up() {
   echo_info "Starting the containers of ${INSTANCE_DESCRIPTION} ..."
+  do_compose up --no-start --remove-orphans
+  do_install_app_properties
   do_compose up --detach --remove-orphans --wait --wait-timeout "${DEPLOYMENT_START_TIMEOUT:-1800}"
+  # nginx.conf is a bind mounted file: compose does not notice when it changed
+  ${DOCKER_CMD} exec "${INSTANCE_KEY}_web" nginx -s reload > /dev/null 2>&1 || true
   echo_info "Done."
+}
+
+# The license of the enterprise edition: a read-only file mounted where the application looks for it. Without it the instance
+# starts without a license.
+do_get_license_settings() {
+  env_var DEPLOYMENT_LICENSE_MOUNT ""
+  [ "${PRODUCT_NAME}" = "plfent" ] || return 0
+  local _default="${CONF_DIR}/license.xml"
+  configurable_env_var "DEPLOYMENT_LICENSE_FILE" "${_default}"
+  if [ -f "${DEPLOYMENT_LICENSE_FILE}" ]; then
+    env_var DEPLOYMENT_LICENSE_MOUNT "${DEPLOYMENT_LICENSE_FILE}"
+    if [ "$(( 8#$(stat -c %a "${DEPLOYMENT_LICENSE_FILE}") & 4 ))" -eq 0 ]; then
+      echo_warn "The license ${DEPLOYMENT_LICENSE_FILE} is not readable by others: the application runs as another user (chmod 644)"
+    fi
+  elif [ "${DEPLOYMENT_LICENSE_FILE}" != "${_default}" ]; then
+    echo_error "DEPLOYMENT_LICENSE_FILE (${DEPLOYMENT_LICENSE_FILE}) doesn't exist"
+    exit 1
+  else
+    echo_warn "No license for ${INSTANCE_KEY}: put it in ${_default} or set DEPLOYMENT_LICENSE_FILE"
+  fi
 }
 
 do_compose_stop() {

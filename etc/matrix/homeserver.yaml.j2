@@ -71,7 +71,7 @@ enable_registration_without_verification: false
 enable_3pid_changes: true
 
 email:
-  smtp_host: smtpserver
+  smtp_host: {{ "mailpit" if DEPLOYMENT_MAILPIT_ENABLED == "true" else "localhost" }}
   smtp_port: 1025
   force_tls: false
   require_transport_security: false

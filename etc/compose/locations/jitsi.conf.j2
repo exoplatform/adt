@@ -1,0 +1,44 @@
+{% if DEPLOYMENT_JITSI_ENABLED == "true" %}
+{% set web = "http://jitsi-web:8000" if DEPLOYMENT_JITSI_ROOTLESS == "true" else "http://jitsi-web:80" %}
+    # Jitsi: the call application, the web application and its static files, the websockets of the XMPP server, the video bridge and
+    # the whiteboard
+    location = /jitsiweb {
+      return 301 /jitsiweb/;
+    }
+    location /jitsicall {
+      set $upstream_jitsi_call http://jitsi-call:80;
+      rewrite ^/jitsicall/?(.*)$ /$1 break;
+      proxy_pass $upstream_jitsi_call;
+    }
+{% if (jitsi_major_version | int) < 11 %}
+    # before stable-11146 the video bridge serves its websocket on its own port; since then the web application proxies it itself
+    location /jitsiweb/colibri-ws/ {
+      set $upstream_jitsi_jvb http://jitsi-jvb:9090;
+      rewrite ^/jitsiweb/(colibri-ws/.*)$ /$1 break;
+      proxy_pass $upstream_jitsi_jvb;
+    }
+{% endif %}
+    location /jitsiweb/ {
+      set $upstream_jitsi_web {{ web }};
+      rewrite ^/jitsiweb/(.*)$ /$1 break;
+      proxy_pass $upstream_jitsi_web;
+    }
+    location ~ ^/(css|libs|images|sounds|lang)/ {
+      set $upstream_jitsi_web {{ web }};
+      proxy_pass $upstream_jitsi_web;
+    }
+    location = /http-bind {
+      set $upstream_jitsi_web {{ web }};
+      proxy_pass $upstream_jitsi_web;
+    }
+    location /whiteboard/ {
+      set $upstream_jitsi_excalidraw http://jitsi-excalidraw:80;
+      rewrite ^/whiteboard/(.*)$ /$1 break;
+      proxy_pass $upstream_jitsi_excalidraw;
+    }
+    location /socket.io/ {
+      set $upstream_jitsi_excalidraw http://jitsi-excalidraw:80;
+      proxy_pass $upstream_jitsi_excalidraw;
+    }
+
+{% endif %}

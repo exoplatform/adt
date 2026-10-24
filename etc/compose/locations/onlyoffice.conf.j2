@@ -1,0 +1,21 @@
+{% if DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED == "true" %}
+    # OnlyOffice document server: the paths it serves (the versioned ones, e.g. /8.2.0-3189256175a3b908c32679c0287836ed/..., its
+    # applications, the editing websockets)
+    location ~ ^/v?[0-9]+\.[0-9]+\.[0-9]+[.|-].+/.* {
+      set $upstream_onlyoffice http://onlyoffice;
+      proxy_pass $upstream_onlyoffice;
+    }
+    location ~ ^/(OfficeWeb|printfile|cache|web-apps|coauthoring|downloadfile|converter|doc)(/|$) {
+      set $upstream_onlyoffice http://onlyoffice;
+      proxy_pass $upstream_onlyoffice;
+    }
+    location ~ /websocket$ {
+      set $upstream_onlyoffice http://onlyoffice;
+      proxy_pass $upstream_onlyoffice;
+    }
+    location = /oohealthcheck {
+      set $upstream_onlyoffice http://onlyoffice;
+      proxy_pass $upstream_onlyoffice/healthcheck;
+    }
+
+{% endif %}

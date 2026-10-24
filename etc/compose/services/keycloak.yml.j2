@@ -1,0 +1,38 @@
+{% if DEPLOYMENT_KEYCLOAK_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("keycloak_data") %}
+{% set https_only = DEPLOYMENT_APACHE_HTTPSONLY_ENABLED == "true" %}
+  keycloak:
+    image: {{ y(DEPLOYMENT_KEYCLOAK_IMAGE ~ ":" ~ DEPLOYMENT_KEYCLOAK_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_keycloak") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "keycloak"
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: "bootstrap_admin"
+      KC_BOOTSTRAP_ADMIN_PASSWORD: "b00tstrap_p@ssw0rd"
+      PROXY_ADDRESS_FORWARDING: {{ y("true" if https_only else "false") }}
+      KC_HTTP_RELATIVE_PATH: "/auth"
+    command:
+      - "start-dev"
+      - "--log=console,file"
+      - "--db-username=sa"
+      - "--db-password=password"
+      - "--spi-login-theme-default=exo"
+{% if https_only %}
+      - "--proxy-headers=xforwarded"
+      - "--hostname-strict=false"
+{% endif %}
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+      - ./logs/keycloak:/opt/keycloak/data/log
+      - ./keycloak/themes:/opt/keycloak/themes:ro
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 /bin/bash -c '</dev/tcp/localhost/8080' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    logging: *logging
+
+{% endif %}

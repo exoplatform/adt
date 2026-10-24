@@ -20,11 +20,21 @@ virtual host.
   its nginx, on `127.0.0.1:<DEPLOYMENT_PORT_PREFIX>01`. The data live in docker volumes.
 - **Reverse proxies**: nginx (per instance) owns the locations, the security headers, the compression and
   the logs. Apache (one vhost per instance) terminates the TLS, authenticates with LDAP and forwards to
-  that nginx; with HTTPS enabled both serve the same certificate, from the domain or from Certbot.
+  that nginx; with HTTPS enabled both serve the same certificate, from the domain or from Certbot (a deploy hook reloads the nginx
+  of the instance when Certbot renews it).
+- **The application's configuration** is generated: what its services tell it (the URLs and secrets of OnlyOffice, Matrix,
+  Jitsi, LDAP, Keycloak/SAML...) goes in an `exo.properties` rendered from the integrations of the enabled services. adt.sh copies
+  it in the application container, owned by the application user and readable by it only (it holds secrets, and the user of ADT is
+  not root, so a bind mount would have to be world readable). The compose project and the file are recreated together when it changes.
+  `DEPLOYMENT_OPTS` stays the way to add JVM options.
+- **Names inside the network**: the nginx of an instance answers to its public names (host and `DEPLOYMENT_APACHE_VHOST_ALIAS`) for
+  the other containers, so the document server, Keycloak or Matrix are reached through the same proxy as the visitors.
+- **License** (`plfent`): `${ADT_DATA}/conf/license.xml`, or `DEPLOYMENT_LICENSE_FILE`, is mounted read-only as `/etc/exo/license.xml`.
 - **Companion services**, each a block of the compose project (`etc/compose/services/`, `integrations/` and
-  `locations/`) that exists only when `DEPLOYMENT_<SERVICE>_ENABLED=true`, started healthy before the application when it
-  needs them: Mailpit, Frontail, Iframely, AI (Ollama), SFTP, LDAP and LAM, CloudBeaver, ClamAV and CalDAV (Baïkal).
-  Jitsi, Keycloak, OnlyOffice, Matrix and the remote debug are being moved: enabling one is refused for now.
+  `locations/`) that exists only when `DEPLOYMENT_<SERVICE>_ENABLED=true`: Mailpit, Frontail, Iframely, AI (Ollama), SFTP, LDAP and
+  LAM, CloudBeaver, ClamAV, CalDAV (Baïkal), OnlyOffice (started by the `exo-onlyoffice` add-on), Matrix, Keycloak (SAML or
+  OpenID, provisioned before the application starts), Jitsi and the remote debug. A service the application needs when it starts
+  is waited for (`depends_on` with `service_healthy`).
 - **Web front-end** (`web/`, Go): dashboard of instances across acceptance
   servers, features, Crowdin health, sales and company pages, instance
   editing and a `/debug` section for admins (health, config, caches, sessions,
@@ -158,10 +168,12 @@ The most useful ones:
 
 ## Remote debug of an instance
 
-The remote debug (JDWP behind the authenticated vhost, through a WebSocket adapter) is one of the companion
-services that are being moved into the compose project, `DEPLOYMENT_DEBUG_ENABLED=true` is refused for now.
-The JDWP port itself is never published: the debug will only be reachable through nginx at `/debug-ws`, protected by
-the LDAP authentication of the vhost.
+With `DEPLOYMENT_DEBUG_ENABLED=true` the JVM listens (JDWP) on port 8000 **inside the instance's network only**: it is never
+published. A small `websocat` container (`<instance>_debugproxy`) adapts WebSocket to JDWP, and nginx exposes it at
+`https://<instance-host>/debug-ws`, protected by the LDAP authentication of the Apache vhost.
+
+Developers do not need this repository. The front-end shows the setup steps (websocat, IntelliJ, Eclipse, troubleshooting) in a
+dialog opened from the instance's debug badge, and serves the helper script on `/adt-debug.sh`.
 
 ## Architecture
 
