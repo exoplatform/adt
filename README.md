@@ -1,7 +1,7 @@
 # ADT – Acceptance Deployment Tool
 
 A set of Bash scripts, templates and a Go front-end (`adt-web`) that deploy eXo products
-(eXo Platform, Meeds, GateIn…) as throw-away instances for testing, demos and
+(eXo Platform and Meeds 7.0 and later) as throw-away instances for testing, demos and
 acceptance. Each instance gets its own ports, database, Apache vhost and,
 optionally, a set of companion services running in Docker.
 
@@ -135,7 +135,7 @@ The most useful ones:
 | `ACCEPTANCE_HOST` | Name of this server (its Apache virtual host); the front-end publishes it for the other servers |
 | `ACCEPTANCE_SERVERS` | Base URLs of every acceptance server, this one included. List live servers only: a page that merges the servers waits for an entry that does not answer |
 | `ADT_ADMIN_USERS` | Comma-separated logins of the dashboard administrators: only they get the control that changes the base branch of a feature branch on `/features` (Apache also limits `POST /editFeatureBase` to the LDAP admin group). Empty: nobody, in development mode everybody |
-| `PRODUCT_NAME` | `plf`, `plfcom`, `plfent`, `plfenteap`, `plftrial`, `plfdemo`, `meeds`, `gatein`, `exogtn`, `addonchat`, `compint`, `community`, `docs` |
+| `PRODUCT_NAME` | `meeds`, `plfcom` or `plfent` (versions 7.0 and later) |
 | `PRODUCT_VERSION` | Release, `-SNAPSHOT`, or `-MLT` / `-MBL` / `-GA` (with optional `Z` wildcard, e.g. `7.2.Z-GA`) |
 | `INSTANCE_ID` | Distinguishes several deployments of the same product and version |
 | `DEPLOYMENT_DB_TYPE` | `HSQLDB`, `MYSQL`, `DOCKER_MYSQL`, `DOCKER_POSTGRES`, `DOCKER_MARIADB`, `DOCKER_ORACLE`, `DOCKER_SQLSERVER` |
@@ -174,7 +174,7 @@ flowchart LR
     fe["adt-web (Go)<br/>web/"]
     cli["adt.sh<br/>_functions*.sh + etc/ templates"]
     subgraph inst[Instance: product-version]
-      app["Tomcat / JBoss EAP<br/>eXo Platform"]
+      app["Tomcat<br/>eXo Platform / Meeds"]
       db[("Database")]
       side["Companion services<br/>(Docker)"]
     end
@@ -258,7 +258,7 @@ flowchart LR
 | --- | --- |
 | `adt.sh`, `adt-dev.sh` | Entry points |
 | `_functions*.sh` | Core logic, one file per area (`_functions_tomcat.sh`, `_functions_database.sh`, `_functions_keycloak.sh`…) |
-| `etc/` | Jinja2 templates: Apache, Tomcat, JBoss EAP, Keycloak, Matrix, OnlyOffice, logrotate… |
+| `etc/` | Jinja2 templates: Apache, Tomcat, Keycloak, Matrix, OnlyOffice, logrotate… |
 | `web/` | The Go front-end `adt-web`: pages, `/rest/*` API, static files |
 | `integration-tests.sh` | Integration tests |
 

@@ -25,7 +25,6 @@ source "${SCRIPT_DIR}/_functions_logrotate.sh"
 source "${SCRIPT_DIR}/_functions_awstats.sh"
 source "${SCRIPT_DIR}/_functions_plf.sh"
 source "${SCRIPT_DIR}/_functions_tomcat.sh"
-source "${SCRIPT_DIR}/_functions_jbosseap.sh"
 source "${SCRIPT_DIR}/_functions_docker.sh"
 source "${SCRIPT_DIR}/_functions_database.sh"
 source "${SCRIPT_DIR}/_functions_es.sh"
@@ -130,19 +129,10 @@ Environment Variables
   =================
 
   PRODUCT_NAME                      : The product you want to manage. Possible values are :
-    gatein         GateIn Community edition                - Apache Tomcat bundle
-    exogtn         GateIn eXo edition                      - Apache Tomcat bundle
-    plf            eXo Platform Standard Edition           - Apache Tomcat bundle
-    plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
     meeds          Meeds.io                                - Apache Tomcat bundle
-    plfent         eXo Platform Express/Enterprise Edition - Apache Tomcat bundle
-    plfenteap      eXo Platform Express/Enterprise Edition - JBoss EAP bundle
-    plftrial       eXo Platform Trial Edition              - Apache Tomcat bundle
-    plfdemo        eXo Platform Demo Edition               - Apache Tomcat bundle
-    addonchat      eXo Platform + eXo Addon Chat           - Apache Tomcat bundle
-    compint        eXo Company Intranet                    - Apache Tomcat bundle
-    community      eXo Community Website                   - Apache Tomcat bundle
-    docs           eXo Platform Documentations Website     - Apache Tomcat bundle
+    plfcom         eXo Platform Community Edition          - Apache Tomcat bundle
+    plfent         eXo Platform Enterprise Edition         - Apache Tomcat bundle
+  Only versions 7.0 and later are supported.
 
   PRODUCT_VERSION                   : The version of the product. Can be either a release (X.Y.Z), a snapshot (X.Y.Z-SNAPSHOT), or a continuous deployment using -MLT (latest) / -MBL (before latest) / -GA (latest GA release only, no milestone/RC/CP/build suffix) with optional Z wildcard for the minor version (e.g. 7.2.0-MLT, 7.2.Z-MLT, 7.2.Z-meed-MLT or 7.2.Z-GA)
   INSTANCE_ID                       : The id of the instance. Use this property to deploy several time the same PRODUCT_NAME and PRODUCT_VERSION couple (default: none)
@@ -586,122 +576,15 @@ initialize_product_settings() {
       env_var "SET_ENV_PRODUCT_NAME" "${PRODUCT_NAME}"
       env_var "STANDALONE_PRODUCT_NAME" "${PRODUCT_NAME}"
 
+      # Only eXo Platform / Meeds 7.0 and later are supported (Tomcat 10 bundles)
+      if ! [[ "${PRODUCT_VERSION}" =~ ^([7-9]|[1-9][0-9])\.[0-9]+ ]]; then
+        echo_error "Product version \"${PRODUCT_VERSION}\" is not supported: only 7.0 and later are."
+        print_usage
+        exit 1
+      fi
       # Validate product and load artifact details
       # Be careful, this id should be no longer than 10 (because of mysql user name limit)
       case "${PRODUCT_NAME}" in
-        gatein)
-          env_var PRODUCT_DESCRIPTION "GateIn Community edition"
-          case "${PRODUCT_BRANCH}" in
-            "3.0.x" | "3.1.x" | "3.2.x" | "3.3.x" | "3.4.x")
-              env_var ARTIFACT_GROUPID "org.exoplatform.portal"
-              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.pkg.tc6"
-              env_var ARTIFACT_CLASSIFIER "bundle"
-              env_var DEPLOYMENT_APPSRV_VERSION "6.0.35"
-            ;;
-            "4.0.x")
-              env_var ARTIFACT_GROUPID "org.gatein.portal"
-              env_var ARTIFACT_ARTIFACTID "portal.packaging"
-              env_var ARTIFACT_CLASSIFIER "tomcat-distrib"
-              env_var ARTIFACT_PACKAGING "tar.gz"
-              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-              env_var DEPLOYMENT_DATABASE_ENABLED false
-            ;;
-            *)
-            # 3.5.x and +
-              env_var ARTIFACT_GROUPID "org.gatein.portal"
-              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var ARTIFACT_CLASSIFIER "bundle"
-            ;;
-          esac
-          case "${PRODUCT_BRANCH}" in
-            "3.5.x")
-              env_var PLF_BRANCH "4.1.x"
-            ;;
-            "3.6.x"|"3.7.x")
-              env_var PLF_BRANCH "4.3.x"
-            ;;
-            "3.8.x"|"4.0.x")
-              env_var PLF_BRANCH "4.x"
-            ;;
-          esac
-        ;;
-        exogtn)
-          env_var PRODUCT_DESCRIPTION "GateIn eXo edition"
-          case "${PRODUCT_BRANCH}" in
-            "3.2.x")
-              env_var PLF_BRANCH "3.5.x"
-              env_var ARTIFACT_GROUPID "org.exoplatform.portal"
-              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.assembly"
-              env_var ARTIFACT_CLASSIFIER "tomcat"
-            ;;
-            "3.5.x")
-              # for PLF 4.0.x and 4.1.x
-              env_var PLF_BRANCH "4.0.x"
-              env_var ARTIFACT_GROUPID "org.gatein.portal"
-              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var ARTIFACT_CLASSIFIER "bundle"
-            ;;
-            "3.7.x")
-              env_var PLF_BRANCH "4.x"
-              env_var ARTIFACT_GROUPID "org.gatein.portal"
-              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var ARTIFACT_CLASSIFIER "bundle"
-            ;;
-            "4.2.x")
-              env_var PLF_BRANCH "4.2.x"
-              env_var ARTIFACT_GROUPID "org.gatein.portal"
-              env_var ARTIFACT_ARTIFACTID "exo.portal.packaging.tomcat.tomcat7"
-              env_var ARTIFACT_CLASSIFIER "bundle"
-            ;;
-            *)
-              echo_error "Product 'exogtn' not supported for versions != 3.2.x / 3.5.x / 3.7.x / 4.2.x Please create a SWF to modify acceptance."
-              print_usage
-              exit 1
-            ;;
-          esac
-        ;;
-        plf)
-          env_var PRODUCT_DESCRIPTION "Platform SE"
-          env_var ARTIFACT_GROUPID "org.exoplatform.platform"
-          case "${PRODUCT_BRANCH}" in
-            "3.0.x")
-              env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.assembly"
-              env_var ARTIFACT_CLASSIFIER "tomcat"
-            ;;
-            "3.5.x")
-              env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.tomcat"
-              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-            ;;
-            *)
-              # 4.0.x and +
-              echo_error "Product 'plf' not supported for versions > 3.x. Please use plfcom or plfent."
-              print_usage
-              exit 1
-            ;;
-          esac
-          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-        ;;
-        plftrial)
-          case "${PRODUCT_BRANCH}" in
-            "3.5.x")
-              env_var PRODUCT_DESCRIPTION "Platform TE"
-              env_var ARTIFACT_GROUPID "org.exoplatform.platform"
-              env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.trial"
-              env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-              env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
-              env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
-              env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
-              env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
-              env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-            ;;
-            *)
-              # 4.0.x and +
-              echo_error "Product 'plftrial' not supported for versions > 3.x. Please use plfcom or plfent."
-              print_usage
-              exit 1
-            ;;
-          esac
-        ;;
         meeds)
           env_var PRODUCT_DESCRIPTION "Meeds.io"
           env_var ARTIFACT_GROUPID "io.meeds.distribution"
@@ -709,57 +592,15 @@ initialize_product_settings() {
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
           env_var DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON "false"
-          if [[ "${PRODUCT_VERSION}" =~ ^(1.0|1.1|1.2) ]]; then
-            env_var DEPLOYMENT_APPSRV_VERSION "8.5"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(1.3|1.4|1.5) ]]; then
-            env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(7.0|7.1|7.2|7.3) ]]; then
-            env_var "DEPLOYMENT_APPSRV_VERSION" "10.0"
-          else 
-            echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
-            exit 1
-          fi
         ;;
         plfcom)
           env_var PRODUCT_DESCRIPTION "Platform CE"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          case "${PRODUCT_BRANCH}" in
-            "3.5.x")
-              env_var ARTIFACT_GROUPID "org.exoplatform.platform"
-              env_var ARTIFACT_ARTIFACTID "exo.platform.packaging.community"
-              env_var PORTS_SERVER_PATCH_PRODUCT_NAME "plf"
-              env_var JMX_SERVER_PATCH_PRODUCT_NAME "plf"
-              env_var DB_SERVER_PATCH_PRODUCT_NAME "plf"
-              env_var DB_GATEIN_PATCH_PRODUCT_NAME "plf"
-              env_var DEPLOYMENT_APPSRV_VERSION "6.0.35"
-            ;;
-            *)
-            # 4.0.x and +
-              env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
-              env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
-              env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-            ;;
-          esac
-        ;;
-        codefest)
-          env_var PRODUCT_DESCRIPTION "Platform CE"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PLF_BRANCH "CODEFEST"
           env_var ARTIFACT_GROUPID "org.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-community-tomcat-standalone"
         ;;
-        plfdemo)
-          env_var PRODUCT_DESCRIPTION "Platform 4.0 EE Public Demo"
-          env_var ARTIFACT_REPO_GROUP "private"
-          env_var ARTIFACT_GROUPID "com.exoplatform.demo"
-          env_var ARTIFACT_ARTIFACTID "demo-login-enterprise-tomcat-standalone"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
-          env_var DEPLOYMENT_EXTENSIONS "acme,cmis,crash,ide,wai"
-          env_var DEPLOYMENT_SKIP_ACCOUNT_SETUP true
-        ;;
-        plfent|plfentdemo)
+        plfent)
           env_var PRODUCT_DESCRIPTION "Platform EE"
           if ${DEPLOYMENT_STAGING_ENABLED}; then
             env_var ARTIFACT_REPO_GROUP "staging"
@@ -769,159 +610,10 @@ initialize_product_settings() {
           env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
           env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
           env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          if [ "${PRODUCT_NAME}" = "plfentdemo" ]; then
-            env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
-          else
-            env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          fi
-        ;;
-        plfenteap)
-          env_var PRODUCT_DESCRIPTION "Platform EE"
-          env_var ARTIFACT_REPO_GROUP "private"
-          env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
-          env_var ARTIFACT_ARTIFACTID "plf-enterprise-jbosseap-standalone"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/standalone.sh"
-          env_var DEPLOYMENT_APPSRV_TYPE "jbosseap"
-          env_var DEPLOYMENT_SERVER_LOG_FILE "server.log"
           env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-        ;;
-        # ID should be no longer than 10 (plfenttrial is too long)
-        plfentrial)
-          # Platform EE + chat, remote-edit, site-template, task, video
-          env_var PRODUCT_DESCRIPTION "Platform EE Trial"
-          env_var ARTIFACT_REPO_GROUP "private"
-          env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
-          env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
-          env_var ARTIFACT_CLASSIFIER "trial"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var DEPLOYMENT_CHAT_ENABLED true
-        ;;
-        plfsales)
-          env_var ARTIFACT_REPO_GROUP "private"
-          env_var ARTIFACT_GROUPID "com.exoplatform.platform.distributions"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PLF_BRANCH "${PRODUCT_BRANCH}"
-          env_var DEPLOYMENT_SKIP_REGISTER true
-          case "${PRODUCT_BRANCH}" in
-            "4.4.x")
-              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
-              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
-              env_var ARTIFACT_CLASSIFIER "trial"
-              env_var DEPLOYMENT_CHAT_ENABLED true
-            ;;
-            "5.0.x")
-              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
-              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
-              env_var ARTIFACT_CLASSIFIER "trial"
-              env_var DEPLOYMENT_CHAT_ENABLED true
-            ;;
-            "5.1.x")
-              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
-              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
-              env_var ARTIFACT_CLASSIFIER "trial"
-              env_var DEPLOYMENT_CHAT_ENABLED true
-            ;;
-            "5.2.x")
-              env_var PRODUCT_DESCRIPTION "Platform EE Trial"
-              env_var ARTIFACT_ARTIFACTID "plf-enterprise-trial-tomcat-standalone"
-              env_var DEPLOYMENT_CHAT_ENABLED true
-            ;;
-            *)
-              # 5.3.x and +
-              env_var PRODUCT_DESCRIPTION "Platform EE"
-              env_var ARTIFACT_ARTIFACTID "plf-enterprise-tomcat-standalone"
-            ;;
-          esac
-        ;;
-        addonchat)
-          env_var PRODUCT_DESCRIPTION "Platform 4.0 EE + Chat eXo Addon"
-          env_var ARTIFACT_REPO_GROUP "private"
-          env_var ARTIFACT_GROUPID "com.exoplatform.addons.chat.distribution"
-          env_var ARTIFACT_ARTIFACTID "plf-enterprise-chat-tomcat-standalone"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var PLF_BRANCH "${PRODUCT_BRANCH} Demo"
-          env_var DEPLOYMENT_EXTENSIONS "crash,ide,chat"
-          env_var DEPLOYMENT_CHAT_ENABLED true
-        ;;
-        compint)
-          env_var PRODUCT_DESCRIPTION           "eXo Company Intranet"
-          env_var ARTIFACT_REPO_GROUP           "cp"
-          env_var ARTIFACT_GROUPID              "com.exoplatform.intranet"
-          # 4.0.x and +
-          env_var ARTIFACT_ARTIFACTID           "company-intranet-package"
-          env_var PLF_BRANCH                    "COMPANY"
-          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
-          env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
-          env_var DEPLOYMENT_DB_TYPE      "MYSQL"
-          env_var DEPLOYMENT_JVM_SIZE_MAX       "3g"
-          env_var DEPLOYMENT_JVM_SIZE_MIN       "2g"
-          env_var DEPLOYMENT_JVM_PERMSIZE_MAX   "512m"
-          # Datasets remote location
-          env_var DATASET_DATA_VALUES_ARCHIVE    "bckintranet@backup.exoplatform.org:/home/bckintranet/intranet-data-values-latest.tar.bz2"
-          env_var DATASET_DATA_INDEX_ARCHIVE     "bckintranet@backup.exoplatform.org:/home/bckintranet/intranet-data-index-latest.tar.bz2"
-          env_var DATASET_DB_ARCHIVE             "bckintranet@backup.exoplatform.org:/home/bckintranet/intranet-db-latest.tar.bz2"
-        ;;
-        community)
-          env_var PRODUCT_DESCRIPTION           "eXo Community Website"
-          env_var ARTIFACT_REPO_GROUP           "cp"
-          env_var ARTIFACT_GROUPID              "org.exoplatform.community"
-          # 4.0.x and +
-          env_var ARTIFACT_ARTIFACTID           "exo-community-package"
-          env_var PLF_BRANCH                    "COMPANY"
-          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
-          env_var DEPLOYMENT_EXTENSIONS         "crash,ide,chat,newrelic"
-          env_var DEPLOYMENT_DB_TYPE      "MYSQL"
-          # Datasets remote location
-          env_var DATASET_DATA_VALUES_ARCHIVE   "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-data-values-latest.tar.bz2"
-          env_var DATASET_DATA_INDEX_ARCHIVE    "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-data-index-latest.tar.bz2"
-          env_var DATASET_DB_ARCHIVE            "bckcommunity@backup.exoplatform.org:/home/bckcommunity_pro05/community-db-latest.tar.bz2"
-        ;;
-        buypage)
-          env_var PRODUCT_DESCRIPTION           "eXo Buy Page"
-          env_var PLF_BRANCH                    "COMPANY"
-          env_var ARTIFACT_REPO_GROUP           "private"
-          env_var ARTIFACT_GROUPID              "com.exoplatform.buypage"
-          env_var ARTIFACT_ARTIFACTID           "buy-page-package"
-          env_var ARTIFACT_CLASSIFIER           "tomcat"
-          env_var DEPLOYMENT_SERVER_SCRIPT      "bin/catalina.sh"
-          env_var DEPLOYMENT_DATABASE_ENABLED   false
-        ;;
-        docs)
-          env_var ARTIFACT_REPO_GROUP "private"
-          env_var PRODUCT_DESCRIPTION "eXo Platform Documentations Website"
-          env_var ARTIFACT_GROUPID "com.exoplatform.platform.documentation"
-          env_var DEPLOYMENT_SERVER_SCRIPT "bin/catalina.sh"
-          env_var DEPLOYMENT_DATABASE_ENABLED false
-          case "${PRODUCT_BRANCH}" in
-            "3.5.x")
-              env_var PLF_BRANCH "3.5.x"
-              env_var ARTIFACT_ARTIFACTID "platform-documentation-website-packaging"
-            ;;
-            "4.0.x")
-              env_var PLF_BRANCH "4.0.x"
-              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
-            ;;
-            "4.1.x")
-              env_var PLF_BRANCH "4.1.x"
-              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
-            ;;
-            "4.2.x")
-              env_var PLF_BRANCH "4.2.x"
-              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
-            ;;
-            "4.3.x")
-              env_var PLF_BRANCH "4.3.x"
-              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
-            ;;
-            *)
-              env_var PLF_BRANCH "4.x"
-              env_var ARTIFACT_ARTIFACTID "platform-documentation-packaging"
-            ;;
-          esac
         ;;
         *)
-          echo_error "Invalid product \"${PRODUCT_NAME}\""
+          echo_error "Invalid product \"${PRODUCT_NAME}\": only meeds, plfcom and plfent are supported."
           print_usage
           exit 1
         ;;
@@ -933,431 +625,59 @@ initialize_product_settings() {
         env_var "INSTANCE_DESCRIPTION" "${PRODUCT_DESCRIPTION} ${PRODUCT_VERSION} (${INSTANCE_ID})"
       fi
 
-      # Elasticsearch Embedded default, Starting from PLF 6.2 / Meeds 1.2 ES Embedded is removed
-        if [[ "${PRODUCT_VERSION}" =~ ^(6.2|6.3|6.4|6.5|1.2|1.3|1.4|1.5|7.0|7.1|7.2|7.3) ]]; then
-          configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
-          if ${DEPLOYMENT_ES_EMBEDDED}; then 
-            echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
-            exit 1
-          fi
-        else 
-          configurable_env_var "DEPLOYMENT_ES_EMBEDDED" true
+      # Elasticsearch is always an external (docker) server since 6.2 / Meeds 1.2
+      configurable_env_var "DEPLOYMENT_ES_EMBEDDED" false
+      if ${DEPLOYMENT_ES_EMBEDDED}; then
+        echo_error "Product version \"${PRODUCT_VERSION}\" does not support Elasticsearch embedded mode!"
+        exit 1
       fi
-      
-      if [[ "${PRODUCT_NAME}" =~ ^(meeds) ]]; then
-        # specific configuration for meeds deployments
-        # - Database drivers
-        # - Default version for each supported database type
-        if [[ "${PRODUCT_VERSION}" =~ ^(7.3) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.4.5"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.3.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.4" # Default version of the jdbc postgresql driver addon to use
-        elif [[ "${PRODUCT_VERSION}" =~ ^(7.2) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3" # Default version of the jdbc postgresql driver addon to use
-        elif [[ "${PRODUCT_VERSION}" =~ ^(7.1) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.7" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.1" # Default version of the jdbc postgresql driver addon to use
-        elif [[ "${PRODUCT_VERSION}" =~ ^(7.0) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.3" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.0" # Default version of the jdbc postgresql driver addon to use
-        elif [[ "${PRODUCT_VERSION}" =~ ^(1.5) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.32" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.4" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.3.0" # Default version of the jdbc postgresql driver addon to use
-        elif [[ "${PRODUCT_VERSION}" =~ ^(1.4) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.31" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.4" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.3.0" # Default version of the jdbc postgresql driver addon to use
-        elif [[ "${PRODUCT_VERSION}" =~ ^(1.3) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.3.3"
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.28"
-        elif [[ "${PRODUCT_VERSION}" =~ ^(1.2) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.21"
-        elif [[ "${PRODUCT_VERSION}" =~ ^(1.1) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.18"
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.28"
-        elif [[ "${PRODUCT_VERSION}" =~ ^(1.0) ]]; then
-              env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.10"
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "8.0.28"
-        else 
-              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
-              exit 1
-        fi
+
+      # Versions of the docker images and of the jdbc driver add-ons, by product version
+      env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
+      env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
+      env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17"
+      configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
+      configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
+      if [[ "${PRODUCT_VERSION}" =~ ^(7.0) ]]; then
+        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
+        env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
+        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.3"
+        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
+        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.0"
+        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-9457"
+        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "8.2.2"
+      elif [[ "${PRODUCT_VERSION}" =~ ^(7.1) ]]; then
+        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
+        env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
+        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.7"
+        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
+        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.1"
+        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10431"
+        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.1.0"
+      elif [[ "${PRODUCT_VERSION}" =~ ^(7.2) ]]; then
+        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
+        env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
+        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9"
+        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0"
+        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3"
+        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10888"
+        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0"
+      elif [[ "${PRODUCT_VERSION}" =~ ^(7.3) ]]; then
+        env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.4.5"
+        env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11"
+        env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.3.0"
+        env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.4"
+        configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-11146-2"
+        configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0"
+      else
+        echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
+        exit 1
       fi
-      
-      if [[ "${PRODUCT_NAME}" =~ ^(plf) ]]; then
-        # specific configuration for plf deployments
-        # - Database drivers
-        # - DEPLOYMENT_APPSRV_VERSION for JBoss & Tomcat
-        # - Default version for each supported database type
-        if [[ "${PRODUCT_BRANCH}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2|6.3|6.4|6.5|7.0|7.1|7.2|7.3) ]]; then
-          env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "true"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft.sqlserver"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "mssql-jdbc"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "public"
 
-          # Oracle driver is the same for 5.0 / 5.1 / 5.2
-          env_var "DEPLOYMENT_ORACLE_ADDON_VERSION" "1.1.0" # Default version of the oracle jdbc driver addon to use
-          env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.2.0.1"
-
-          # for differences between 5.0 / 5.1 / 5.2 / 5.3 (tomcat and jboss)
-          if [[ "${PRODUCT_VERSION}" =~ ^(5.0) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.1.0"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.4"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.1.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.44" #Default version used to download additional mysql driver
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.1.0" # Default version of the jdbc postgresql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.1.4" #Default version used to download additional postgresql driver
-              env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.1.0" # Default version of the sqlserver jdbc driver addon to use
-              env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.2.2.jre8"
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "9.6" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR2_plf" # Default version of the oracle server to use
-              env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2014express" # Default version of the sqlserver server to use
-
-          elif [[ "${PRODUCT_VERSION}" =~ ^(5.1) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.0"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "3.6"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.2.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.46" #Default version used to download additional mysql driver
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.2.0" # Default version of the jdbc postgresql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.2" #Default version used to download additional postgresql driver
-              env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.2.0" # Default version of the sqlserver jdbc driver addon to use
-              env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.4.0.jre8"
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "10" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR2_plf" # Default version of the oracle server to use
-              env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2017-CU2" # Default version of the sqlserver server to use
-
-          elif [[ "${PRODUCT_VERSION}" =~ ^(5.2) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.1"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.3.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.47" #Default version used to download additional mysql driver
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.3.0" # Default version of the jdbc postgresql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "42.2.5" #Default version used to download additional postgresql driver
-              env_var "DEPLOYMENT_SQLSERVER_ADDON_VERSION" "1.2.0" # Default version of the sqlserver jdbc driver addon to use
-              env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "6.4.0.jre8"
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "10" # Default version of the postgresql server to use
-              env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR2_plf" # Default version of the oracle server to use
-              env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2017-CU2" # Default version of the sqlserver server to use
-
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.3.0.243" # Default version for Only Office docker image to use
-
-          elif [[ "${PRODUCT_VERSION}" =~ ^(5.3) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "1.4.1" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.3.0" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.7" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "10" # Default version of the postgresql server to use
-          
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
-          elif [[ "${PRODUCT_VERSION}" =~ ^(7.0) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.0" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.3" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-9457"
-
-              
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "8.2.2" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(7.1) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.14.3"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.1" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.7" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10431"
-
-
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.1.0" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(7.2) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "8.18.8"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.9" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10888"
-
-
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(7.3) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "9.4.5"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.3.0" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.4" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.4.11" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "17" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-11146-2"
-
-
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.5) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.1.0"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "6.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.5" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.4.1" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.33" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "15" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-8719"
-
-              
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.5" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.4) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.4" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.3.0" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.31" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-8044-1"
-              
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.2" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.3_latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.3) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.3"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.4"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.3" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.2.0" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "14" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-7001"
-              
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "7.0" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.2_latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.2) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "2.0.2"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.2"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.1.0" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-7001"
-
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.3" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.1_latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.1) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.1.0" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "13" # Default version of the postgresql server to use
-              configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-7001"
-
-              # TO DO Once onlyoffice/documentserver-ie:6.1 is released, switch to that image and use a fixed version
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "6.1" # Default version for Only Office docker image to use
-              configurable_env_var "DEPLOYMENT_JITSI_CALL_IMAGE_VERSION" "1.0_latest"
-          elif [[ "${PRODUCT_VERSION}" =~ ^(6.0) ]]; then
-              env_var "DEPLOYMENT_ES_IMAGE" "exoplatform/elasticsearch"
-              env_var "DEPLOYMENT_ES_IMAGE_VERSION" "1.2.3"
-              env_var "DEPLOYMENT_CHAT_MONGODB_VERSION" "4.0"
-
-              env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.0.1" # Default version of the mysql driver addon to use
-              env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.0.0" # Default version of the jdbc postgresql driver addon to use
-
-              env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "8.0.28" # Default version of the mysql server to use
-              env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "11" # Default version of the postgresql server to use
-
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE" "onlyoffice/documentserver-ie"
-              configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "5.4.2.46" # Default version for Only Office docker image to use
-          else 
-              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed"
-              exit 1
-          fi
-            
-          # For configuration differences between community and enterprise editions
-          if [[ "${PRODUCT_NAME}" =~ ^(plfent|plfentrial|plfsales)$ ]]; then
-            echo "set"
-            env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED" true
-            echo "${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED}"
-          fi
-
-          # For configuration differences between tomcat and jboss
-          if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
-            if [[ "${PRODUCT_VERSION}" =~ ^(5.0|5.1|5.2|5.3|6.0|6.1|6.2) ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "8.5"
-            elif [[ "${PRODUCT_VERSION}" =~ ^(6.3|6.4|6.5) ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "9.0"
-            elif [[ "${PRODUCT_VERSION}" =~ ^(7.0|7.1|7.2|7.3) ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "10.0"
-            else 
-              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (Tomcat version)"
-              exit 1
-            fi
-          elif [[ "${PRODUCT_NAME}" =~ ^(plfenteap)$ ]]; then
-            env_var "MYSQL_DB_DRIVER_OVERRIDE" "mysql-connector-java-${DEPLOYMENT_MYSQL_DRIVER_VERSION}.jar_com.mysql.jdbc.Driver_5_1"
-
-            if [[ "${PRODUCT_VERSION}" =~ ^(5.0) ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
-            elif [[ "${PRODUCT_VERSION}" =~ ^(5.1|5.2) ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "7.1"
-            else 
-              echo_error "Product version \"${PRODUCT_VERSION}\" not yet managed (JBoss EAP version)"
-              exit 1
-            fi
-          else 
-            echo_error "Invalid product name \"${PRODUCT_NAME}\""
-            exit 1
-          fi
-        elif [[ "${PRODUCT_BRANCH}" =~ ^4 ]]; then
-          env_var "DEPLOYMENT_FORCE_JDBC_DRIVER_ADDON" "false"
-          env_var "DEPLOYMENT_MYSQL_DRIVER_VERSION" "5.1.25" #Default version used to download additional mysql driver
-          env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "1.0.0" # Default version of the jdbc postgresql driver addon to use
-          env_var "DEPLOYMENT_POSTGRESQL_DRIVER_VERSION" "9.4.1208" #Default version used to download additional postgresql driver
-          env_var "DEPLOYMENT_ORACLE_DRIVER_VERSION" "12.1.0.1"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_GROUPID" "com.microsoft"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_ARTIFACTID" "sqljdbc"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_REPO" "private"
-          env_var "DEPLOYMENT_SQLSERVER_DRIVER_VERSION" "4.0.2206.100"
-          env_var "DEPLOYMENT_ES_IMAGE_VERSION" "0.5.0"
-
-          env_var "DEPLOYMENT_MYSQL_DEFAULT_VERSION" "5.6" # Default version of the mysql server to use
-          env_var "DEPLOYMENT_POSTGRESQL_DEFAULT_VERSION" "9.4" # Default version of the postgresql server to use
-          env_var "DEPLOYMENT_ORACLE_DEFAULT_VERSION" "12cR1_plf" # Default version of the oracle server to use
-          env_var "DEPLOYMENT_SQLSERVER_DEFAULT_VERSION" "2014express" # Default version of the sqlserver server to use
-
-          if [[ "${PRODUCT_BRANCH}" =~ ^4.4. ]]; then
-            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
-            elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "6.4"
-            fi
-          elif [[ "${PRODUCT_BRANCH}" =~ ^(4.[123].) ]]; then
-            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfentrial|plfsales)$ ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
-            elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "6.2"
-            fi
-          elif [[ "${PRODUCT_BRANCH}" =~ ^(4.0.) ]]; then
-            if [[ "${PRODUCT_NAME}" =~ ^(plfcom|plfent|plfsales)$ ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "7.0"
-            elif [[ "${PRODUCT_NAME}" =~ ^plfenteap$ ]]; then
-              env_var "DEPLOYMENT_APPSRV_VERSION" "6.1"
-            fi
-          fi
-        else 
-          echo_error "Invalid plf version \"${PRODUCT_BRANCH}\""
-          exit 1
-        fi
+      if [ "${PRODUCT_NAME}" = "plfent" ]; then
+        env_var "DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED" true
       fi
+      env_var "DEPLOYMENT_APPSRV_VERSION" "10.0" # Tomcat 10 for every 7.x bundle
 
       # Keycloak SAML SP naming (7.2+): use gatein.sso.sp.* / gatein.sso.picketlink.* instead of gatein.sso.idp.*
       if [[ "${PRODUCT_VERSION}" =~ ^(7\.[2-9]|[89]\.|[1-9][0-9]\.) ]]; then
@@ -1747,9 +1067,6 @@ do_unpack_server() {
   case ${DEPLOYMENT_APPSRV_TYPE} in
     tomcat)
       DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/logs/${DEPLOYMENT_SERVER_LOG_FILE}
-    ;;
-    jbosseap)
-      DEPLOYMENT_LOG_PATH=${DEPLOYMENT_DIR}/standalone/log/${DEPLOYMENT_SERVER_LOG_FILE}
     ;;
     *)
       echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
@@ -2250,10 +1567,6 @@ do_deploy() {
       do_get_tomcat_settings
       do_configure_tomcat_server
     ;;
-    jbosseap)
-      do_get_jboss_settings
-      do_configure_jbosseap_server
-    ;;
     *)
       echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
       print_usage
@@ -2377,25 +1690,6 @@ do_start() {
       # Startup the server
       ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} start
     ;;
-    jbosseap)
-      case ${DEPLOYMENT_APPSRV_VERSION:0:1} in
-        6)
-          END_STARTUP_MSG="JBAS01587[45]"
-        ;;
-        7)
-          END_STARTUP_MSG="WFLYSRV0025"
-        ;;
-        *)
-          echo_error "Invalid JBoss EAP server version \"${DEPLOYMENT_APPSRV_VERSION}\""
-          print_usage
-          exit 1
-        ;;
-      esac
-      # Additional settings
-      export JAVA_OPTS="${DEPLOYMENT_OPTS}"
-      # Startup the server
-      ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT}  > /dev/null 2>&1 &
-    ;;
     *)
       echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""
       print_usage
@@ -2508,55 +1802,6 @@ do_stop() {
           else  
             ${DEPLOYMENT_DIR}/${DEPLOYMENT_SERVER_SCRIPT} stop 60 -force > /dev/null 2>&1 || true
           fi  
-        ;;
-        jbosseap)
-          case ${DEPLOYMENT_APPSRV_VERSION:0:1} in
-            6)
-              ${DEPLOYMENT_DIR}/bin/jboss-cli.sh --controller=localhost:${DEPLOYMENT_MGT_NATIVE_PORT} --connect command=:shutdown > /dev/null 2>&1 || true
-            ;;
-            7)
-              ${DEPLOYMENT_DIR}/bin/jboss-cli.sh --controller=localhost:${DEPLOYMENT_MGT_HTTP_PORT} --connect --command=shutdown > /dev/null 2>&1 || true
-
-              if [ ${DEPLOYMENT_APPSRV_VERSION:2:3} -ge 1 ]; then
-                echo_warn "Jboss 7.1 or greater detected, ensuring the shutdown was correct (see ACC-97)..."
-                if [ -e ${DEPLOYMENT_PID_FILE} ]; then
-                  pid="$(cat ${DEPLOYMENT_PID_FILE})"
-                  echo_info "The process pid [${pid}] was found in [${DEPLOYMENT_PID_FILE}] file."
-                  set +e
-                  ps ${pid}  > /dev/null
-                  if [ $? -eq 0 ]; then
-                    echo_warn "The process [${pid}] is still present, waiting 30s before killing it...."
-                    sleep 30
-                    # test if the stop was done in the interval
-                    ps ${pid} > /dev/null
-                    if [ $? -eq 0 ]; then
-                      echo_warn "The process [${pid}] is still present :"
-                      ps ${pid}
-                      echo_warn "... Killing [${pid}] process ..."
-                      kill -9 ${pid}
-                    else
-                      echo_info "The process [${pid}] was gone in the interval"
-                    fi
-                  fi
-                  set -e
-                else
-                  echo_info "Process not found (DEPLOYMENT_PID_FILE variable not set)."
-                fi
-              fi
-            ;;
-            *)
-              echo_error "Invalid JBoss EAP server version \"${DEPLOYMENT_APPSRV_VERSION}\""
-              print_usage
-              exit 1
-            ;;
-          esac
-          echo_n_info "Waiting for shutdown "
-          while [ -e ${DEPLOYMENT_PID_FILE} ];
-          do
-            sleep 5
-            echo -n "."
-          done
-          echo " OK."
         ;;
         *)
           echo_error "Invalid application server type \"${DEPLOYMENT_APPSRV_TYPE}\""

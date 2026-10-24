@@ -37,69 +37,14 @@ function test-adt() {
   ./adt.sh stop
 }
 
-test-adt clouddash 1.0.0-SNAPSHOT     408
+test-adt meeds  7.3.x-SNAPSHOT 408
+test-adt plfcom 7.3.x-SNAPSHOT 400
 
-./adt.sh list
-./adt.sh web-server &
-open -g http://${ACCEPTANCE_HOST}:${ACCEPTANCE_PORT}
-fg
-
-exit
-
-
-if [ -z "${REPOSITORY_USERNAME+xxx}" -o -z "${REPOSITORY_PASSWORD+xxx}"  ]; then
-  echo_warn "Credentials not set !!!"
-  echo_warn "You cannot test private distributions"
-  echo_warn "Create a file ~/.adtrc"
-  echo_warn "Put it in these 2 lines :"
-  echo_warn "REPOSITORY_USERNAME=xxxxx"
-  echo_warn "REPOSITORY_PASSWORD=yyyyy"
-  echo_warn "Where xxxxx/yyyyy are your LDAP credentials"
+if [ -n "${REPOSITORY_USERNAME:-}" ] && [ -n "${REPOSITORY_PASSWORD:-}" ]; then
+  # Private distribution: needs credentials (REPOSITORY_USERNAME / REPOSITORY_PASSWORD in ~/.adtrc)
+  test-adt plfent 7.3.x-SNAPSHOT 402
 else
-  # PLF Enterprise Edition - Tomcat
-  test-adt plfent    4.0.0             402
-  test-adt plfent    4.0.x-SNAPSHOT    403
-
-  # PLF Enterprise Edition - JBossEAP
-  test-adt plfenteap 4.0.x-SNAPSHOT    404
+  echo_warn "REPOSITORY_USERNAME / REPOSITORY_PASSWORD not set: plfent is not tested"
 fi
 
-# PLF Community Edition - Tomcat
-test-adt plfcom    4.0.0             400
-test-adt plfcom    4.0.x-SNAPSHOT    401
-
-
-# PLF Documentations - Tomcat
-test-adt docs      4.0.x-SNAPSHOT    405
-
-# PLF Standard Edition - Tomcat
-test-adt plf       3.0.9             310
-test-adt plf       3.0.10            310
-test-adt plf       3.0.11-SNAPSHOT   311
-
-#TBD test-adt plf       3.5.0-GA          350
-#KO(PermGen error) test-adt plf       3.5.1             351
-test-adt plf       3.5.2             352
-test-adt plf       3.5.3             353
-test-adt plf       3.5.4             354
-test-adt plf       3.5.5             355
-test-adt plf       3.5.6             356
-test-adt plf       3.5.7-SNAPSHOT    357
-
-# Gatein - eXo Edition - Tomcat
-#TBD test-adt exogtn   3.2.0-PLF          320
-#TBD test-adt exogtn   3.2.1-PLF          321
-#TBD test-adt exogtn   3.2.2-PLF          322
-#TBD test-adt exogtn   3.2.3-PLF          323
-#TBD test-adt exogtn   3.2.4-PLF          324
-#TBD test-adt exogtn   3.2.5-PLF          325
-#TBD test-adt exogtn   3.2.6-PLF          326
-test-adt exogtn   3.2.7-PLF          327
-test-adt exogtn   3.2.8-PLF-SNAPSHOT 328
-
 ./adt.sh list
-
-./adt.sh web-server &
-open -g http://${ACCEPTANCE_HOST}:${ACCEPTANCE_PORT}
-fg
-
