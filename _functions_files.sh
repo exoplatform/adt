@@ -59,43 +59,55 @@ find_file() {
 #  - the j2cli docker image
 #
 j2() {
-  # "command" bypasses this function and runs the binary (avoids an infinite recursion)
-  if type -P jinjanate &>/dev/null; then
-    command jinjanate --quiet "$@"
-    return
-  fi
-  if type -P j2 &>/dev/null; then
-    command j2 "$@"
-    return
-  fi
   local _template="${!#}"
   local _options=("${@:1:$#-1}")
   local _dir
   _dir="$(cd "$(dirname "${_template}")" && pwd)"
+  # The templates include each other ({% include "services/x.yml.j2" %}, {% from "macros.j2" import y %}): the renderer finds them
+  # relative to its working directory, which is the directory of the template
+  # "command" bypasses this function and runs the binary (avoids an infinite recursion)
+  if type -P jinjanate &>/dev/null; then
+    (cd "${_dir}" && command jinjanate --quiet ${_options[@]+"${_options[@]}"} "$(basename "${_template}")")
+    return
+  fi
+  if type -P j2 &>/dev/null; then
+    (cd "${_dir}" && command j2 ${_options[@]+"${_options[@]}"} "$(basename "${_template}")")
+    return
+  fi
   local _envfile
   _envfile=$(mktemp)
   # --env-file doesn't support multi-lines values, keep only NAME=value lines
   # and don't override the container environment with the host specific ones (PATH, HOME, ...)
   env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' | grep -vE '^(PATH|HOME|HOSTNAME|PWD|OLDPWD|SHLVL|_|TERM)=' > "${_envfile}" || true
   local _rc=0
-  ${DOCKER_CMD} run --rm --env-file "${_envfile}" -v "${_dir}":"${_dir}":ro \
+  ${DOCKER_CMD} run --rm --env-file "${_envfile}" -v "${_dir}":"${_dir}":ro -w "${_dir}" \
     ${DEPLOYMENT_J2CLI_IMAGE}:${DEPLOYMENT_J2CLI_VERSION} \
-    ${_options[@]+"${_options[@]}"} "${_dir}/$(basename "${_template}")" || _rc=$?
+    ${_options[@]+"${_options[@]}"} "$(basename "${_template}")" || _rc=$?
   rm -f "${_envfile}"
   return ${_rc}
 }
 
 #
 # Export every shell variable referenced in the {{ }} / {% %} tags of the Jinja2 template $1
-# (j2 only sees the exported variables, this avoids to maintain a list of export before each call)
+# and of the templates it includes (j2 only sees the exported variables, this avoids to maintain a list of export before each call)
 #
 export_template_vars() {
-  local _name
-  for _name in $(grep -oE '\{\{[^}]*\}\}|\{%[^%]*%\}' "$1" | grep -oE '[A-Za-z_][A-Za-z0-9_]*' | sort -u); do
-    # -v is true for any set variable (global or local of the callers), even when it is not exported yet
-    if [[ -v "${_name}" ]]; then
-      export "${_name}"
-    fi
+  local _name _file _seen=" " _todo=("$1") _next _inc
+  while [ ${#_todo[@]} -gt 0 ]; do
+    _file="${_todo[0]}"
+    _todo=("${_todo[@]:1}")
+    [[ "${_seen}" == *" ${_file} "* ]] && continue
+    _seen+="${_file} "
+    for _name in $(grep -oE '\{\{[^}]*\}\}|\{%[^%]*%\}' "${_file}" | grep -oE '[A-Za-z_][A-Za-z0-9_]*' | sort -u); do
+      # -v is true for any set variable (global or local of the callers), even when it is not exported yet
+      if [[ -v "${_name}" ]]; then
+        export "${_name}"
+      fi
+    done
+    # the templates it includes or imports (paths are relative to the directory of the template being rendered)
+    for _inc in $(grep -oE '\{%-?[[:space:]]*(include|import|from)[[:space:]]+"[^"]+"' "${_file}" | grep -oE '"[^"]+"' | tr -d '"'); do
+      [ -f "$(dirname "$1")/${_inc}" ] && _todo+=("$(dirname "$1")/${_inc}")
+    done
   done
 }
 
