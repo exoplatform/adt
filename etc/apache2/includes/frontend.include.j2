@@ -214,6 +214,10 @@
     <Location /images/>
         Require all granted
     </Location>
+    # What browsers ask for at the root on their own (a JSON answer, a raw log or a listing has no <link rel=icon>)
+    <LocationMatch "^/(favicon\.ico|apple-touch-icon(-precomposed)?\.png)$">
+        Require all granted
+    </LocationMatch>
     # The sign-in page runs its own two scripts before anyone is signed in; the other scripts stay behind the login
     <LocationMatch "^/js/login(_theme)?\.js$">
         Require all granted

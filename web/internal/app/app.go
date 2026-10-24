@@ -46,6 +46,14 @@ func HandleFunc(pattern string, f func(*App, http.ResponseWriter, *http.Request)
 // New builds the App.
 func New(cfg config.Config) *App { return &App{Cfg: cfg, Instances: instances.NewStore(cfg)} }
 
+// rootIcons are the files browsers request at the root of the site on their own (the pages of the dashboard link
+// /images/..., but a JSON answer, a raw log or a directory listing does not): the same icons, under those names.
+var rootIcons = map[string]string{
+	"favicon.ico":                      "images/favicon.ico",
+	"apple-touch-icon.png":             "images/apple-touch-icon.png",
+	"apple-touch-icon-precomposed.png": "images/apple-touch-icon.png",
+}
+
 // Handler returns the HTTP handler: identity middleware, registered pages, then static files.
 func (a *App) Handler() http.Handler {
 	mux := http.NewServeMux()
@@ -71,6 +79,11 @@ func (a *App) Handler() http.Handler {
 	mux.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		// Unknown paths get the static 404 page; directories are never listed.
 		p := strings.TrimPrefix(r.URL.Path, "/")
+		if to, ok := rootIcons[p]; ok { // browsers ask for these at the root of any page that does not link its icons
+			p = to
+			r = r.Clone(r.Context())
+			r.URL.Path = "/" + to
+		}
 		isFile := false
 		if f, err := files.Open(p); err == nil {
 			if st, err := f.Stat(); err == nil && !st.IsDir() {
