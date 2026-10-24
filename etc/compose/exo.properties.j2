@@ -1,0 +1,18 @@
+{#- The exo.properties of an instance, rendered by adt.sh (deploy) in ${SRV_DIR}/<instance key>/exo.properties.
+    The integrations of the enabled companion services fill app_props (integrations/*.j2, the same files the compose project includes).
+    adt.sh copies the file in the application container, owned by the application user and readable by it only: it holds secrets.
+    The properties the SAML valve reads when it starts (gatein.sso.*) are JVM options instead (JAVA_OPTS). -#}
+{% from "macros.j2" import prop -%}
+{% set P = DEPLOYMENT_ENV_PREFIX -%}
+{% set app = DEPLOYMENT_ENV_PREFIX | lower -%}
+{% set app_opts = [] -%}
+{% set app_env = {} -%}
+{% set app_volumes = [] -%}
+{% set app_depends = [] -%}
+{% set top_volumes = [] -%}
+{% set app_props = {} -%}
+{% set _integrations %}{% include "integrations/all.j2" %}{% endset -%}
+# Rendered by ADT from etc/compose/exo.properties.j2: do not edit, the next deploy overwrites it.
+{% for name, value in app_props.items() -%}
+{{ name }}={{ prop(value) }}
+{% endfor -%}

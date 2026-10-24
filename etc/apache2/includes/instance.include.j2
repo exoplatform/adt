@@ -38,6 +38,24 @@
         Require all granted
     </Directory>
 
+{% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+    # Only the two discovery files are public, served by Apache itself (no LDAP in front of them, and no <ProxyMatch>: it is tested
+    # against the URL sent to the backend). The directory only holds these two files; the rest of what Matrix needs is mounted
+    # from elsewhere, and "Require all denied" keeps it that way whatever the security mode of the instance.
+    Alias /.well-known/matrix/ "{{ DEPLOYMENT_DIR }}/matrix-wellknown/"
+    <Directory "{{ DEPLOYMENT_DIR }}/matrix-wellknown/">
+        Options MultiViews
+        AllowOverride None
+        Require all denied
+        <Files "client">
+            Require all granted
+        </Files>
+        <Files "server">
+            Require all granted
+        </Files>
+    </Directory>
+
+{% endif %}
     # Serve Certbot challenge files directly
     Alias /.well-known/acme-challenge/ {{ DEPLOYMENT_CERTBOT_WEBROOT_PATH }}/.well-known/acme-challenge/
     <Directory "{{ DEPLOYMENT_CERTBOT_WEBROOT_PATH }}/.well-known/acme-challenge/">
@@ -60,6 +78,9 @@
     ProxyPass               /images/apple-touch-icon.png !
     ProxyPass               /images/logo.svg     !
     ProxyPass               /.well-known/acme-challenge/  !
+{% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+    ProxyPass               /.well-known/matrix/  !
+{% endif %}
 {% if nginx_tls %}
 
     # The nginx of the instance serves the same certificate as this virtual host: the hop stays on the loopback of the server
@@ -69,7 +90,7 @@
     SSLProxyCheckPeerCN     off
 {% endif %}
 
-{% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" %}
+{% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" or DEPLOYMENT_JITSI_ENABLED == "true" or DEPLOYMENT_DEBUG_ENABLED == "true" %}
     <IfModule mod_proxy_wstunnel.c>
         RewriteEngine on
         RewriteCond %{HTTP:Upgrade} websocket [NC]

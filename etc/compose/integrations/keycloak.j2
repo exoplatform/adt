@@ -1,0 +1,48 @@
+{% if DEPLOYMENT_KEYCLOAK_ENABLED == "true" %}
+{# single sign-on with the Keycloak of the instance, which is provisioned before the application starts (adt.sh): its client for
+   the application, and for SAML the keystore it generates, mounted in the application. Like the client deployments of eXo, even the
+   properties of the SAML valve are in exo.properties. #}
+{# Keycloak matches the URLs case sensitively #}
+{% set kc_url = DEPLOYMENT_URL | lower %}
+{% if DEPLOYMENT_KEYCLOAK_MODE == "SAML" %}
+{% set saml_dir = "/opt/" ~ app ~ "/gatein/conf/saml2" %}
+{% set _ = app_props.update({"gatein.sso.enabled": "true"}) %}
+{% set _ = app_props.update({"gatein.sso.saml.sp.enabled": "true"}) %}
+{% set _ = app_props.update({"gatein.sso.callback.enabled": "true"}) %}
+{% set _ = app_props.update({"gatein.sso.login.module.enabled": "true"}) %}
+{% set _ = app_props.update({"gatein.sso.login.module.class": "org.gatein.sso.agent.login.SAML2IntegrationLoginModule"}) %}
+{% set _ = app_props.update({"gatein.sso.valve.enabled": "true"}) %}
+{% set _ = app_props.update({"gatein.sso.valve.class": "org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"}) %}
+{% set _ = app_props.update({"gatein.sso.filter.login.sso.url": "/portal/dologin"}) %}
+{% set _ = app_props.update({"gatein.sso.filter.initiatelogin.enabled": "false"}) %}
+{% set _ = app_props.update({"gatein.sso.filter.logout.enabled": "true"}) %}
+{% set _ = app_props.update({"gatein.sso.filter.logout.class": "org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter"}) %}
+{% set _ = app_props.update({"gatein.sso.sp.url": kc_url ~ "/portal/dologin"}) %}
+{% set _ = app_props.update({"gatein.sso.filter.logout.url": kc_url ~ "/portal/dologin?GLO=true"}) %}
+{% set _ = app_props.update({"gatein.sso.idp.host": (kc_url | replace("https://", "") | replace("http://", "")).split("/")[0].split(":")[0]}) %}
+{% set _ = app_props.update({"gatein.sso.idp.url": kc_url ~ "/auth/realms/master/protocol/saml"}) %}
+{% set _ = app_props.update({"gatein.sso.idp.url.logout": kc_url ~ "/auth/realms/master/protocol/saml"}) %}
+{% set _ = app_props.update({"gatein.sso.idp.alias": "master"}) %}
+{% if DEPLOYMENT_SAML_SP_NAMING == "true" %}
+{# the keystore generated from the keys of Keycloak #}
+{% set _ = app_props.update({"gatein.sso.sp.alias": "exo-sp"}) %}
+{% set _ = app_props.update({"gatein.sso.sp.signingkeypass": "store123"}) %}
+{% set _ = app_props.update({"gatein.sso.picketlink.keystorepass": "store123"}) %}
+{% set _ = app_props.update({"gatein.sso.picketlink.keystore": "/etc/saml2/keystore.jks"}) %}
+{% set _ = app_volumes.append("./keycloak/saml2:/etc/saml2:ro") %}
+{% else %}
+{# the test keystore of the add-on #}
+{% set _ = app_props.update({"gatein.sso.idp.signingkeypass": "test123"}) %}
+{% set _ = app_props.update({"gatein.sso.idp.keystorepass": "store123"}) %}
+{% set _ = app_props.update({"gatein.sso.picketlink.keystore": saml_dir ~ "/jbid_test_keystore.jks"}) %}
+{% endif %}
+{% set _ = app_props.update({"gatein.sso.saml.config.file": saml_dir ~ "/picketlink-sp.xml"}) %}
+{% else %}
+{% set _ = app_props.update({"exo.oauth.openid.clientId": "exooidc"}) %}
+{% set _ = app_props.update({"exo.oauth.openid.clientSecret": DEPLOYMENT_KEYCLOAK_OIDC_SECRET}) %}
+{% set _ = app_props.update({"exo.oauth.openid.redirectURL": kc_url ~ "/portal/openidAuth"}) %}
+{% set _ = app_props.update({"exo.oauth.openid.wellKnownConfigurationUrl": kc_url ~ "/auth/realms/master/.well-known/openid-configuration"}) %}
+{% set _ = app_props.update({"exo.oauth.openid.enabled": "true"}) %}
+{% endif %}
+{% set _ = app_depends.append("keycloak") %}
+{% endif %}

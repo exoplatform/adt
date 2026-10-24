@@ -1,0 +1,8 @@
+{% if DEPLOYMENT_KEYCLOAK_ENABLED == "true" %}
+    # Keycloak
+    location /auth {
+      set $upstream_keycloak http://keycloak:8080;
+      proxy_pass $upstream_keycloak;
+    }
+
+{% endif %}
