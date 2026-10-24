@@ -92,17 +92,22 @@ served on `http://localhost:8080` with a fake identity (`ADT_DEV_USER`, `ADT_DEV
 vhost (the environment of the user running it, `/etc/default/adt`, `~/.adtrc`):
 
 1. builds `${ADT_WEB_BIN}` (default `${ADT_DATA}/bin/adt-web`) from `web/`, with the local Go when it is
-   recent enough, otherwise in a `golang` container; nothing is rebuilt when the sources did not change;
+   recent enough, otherwise in a `golang` container pinned by digest (`ADT_WEB_GO_IMAGE` overrides it; bump
+   the digest in `_functions_web.sh` with the Go patch releases); nothing is rebuilt when the sources did not
+   change;
 2. renders the service environment file `${ADT_WEB_ENV_FILE}` from `etc/adt-web/adt-web.env.j2`
-   (`ACCEPTANCE_SERVERS`, the socket, ...);
+   (`ACCEPTANCE_HOST`, `ACCEPTANCE_SERVERS`, the socket, `ADT_WEB_CSP`...);
 3. restarts the `${ADT_WEB_SERVICE}` systemd service (`sudo service adt-web restart`) when the binary or
    that file changed, and waits until it answers on `${ADT_WEB_SOCKET}`;
 4. reloads Apache, whose vhost (`etc/apache2/includes/frontend.include.j2`) keeps doing the LDAP login and
    hands the verified identity to `adt-web` through request headers over that unix socket.
 
 The systemd unit and the sudo rule are provisioned outside this repository. `adt.sh build-web` and
-`adt.sh deploy-web` run the steps on their own. Servers still running the PHP front-end and servers running
-`adt-web` can coexist: they exchange the same `/rest/*.php` JSON.
+`adt.sh deploy-web` run the steps on their own.
+
+Each server serves its own instances (`/rest/local-instances`) and the dashboard merges the answers of every
+server of `ACCEPTANCE_SERVERS`. The pages show the host the visitor used; what a server publishes (instance
+links, the host the edit forms post to) is built from its own `ACCEPTANCE_HOST`, never from the `Host` header.
 
 The pages carry no inline script or event handler: the scripts are the files of `web/static/js`, and the pages are
 served with a Content-Security-Policy that only allows scripts from the dashboard itself and the CDNs it uses.
@@ -127,6 +132,8 @@ The most useful ones:
 | `ADT_DEV_MODE` | Local mode without Apache, Awstats or UFW |
 | `ADT_OFFLINE` | Use local resources only |
 | `ADT_SESSION_PASSPHRASE` | Secret that encrypts the front-end login cookie (required) |
+| `ACCEPTANCE_HOST` | Name of this server (its Apache virtual host); the front-end publishes it for the other servers |
+| `ACCEPTANCE_SERVERS` | Base URLs of every acceptance server, this one included. List live servers only: a page that merges the servers waits for an entry that does not answer |
 | `PRODUCT_NAME` | `plf`, `plfcom`, `plfent`, `plfenteap`, `plftrial`, `plfdemo`, `meeds`, `gatein`, `exogtn`, `addonchat`, `compint`, `community`, `docs` |
 | `PRODUCT_VERSION` | Release, `-SNAPSHOT`, or `-MLT` / `-MBL` / `-GA` (with optional `Z` wildcard, e.g. `7.2.Z-GA`) |
 | `INSTANCE_ID` | Distinguishes several deployments of the same product and version |
@@ -236,8 +243,8 @@ flowchart TB
 ```mermaid
 flowchart LR
   browser([Browser]) --> A["Server A front-end"]
-  A -->|rest/local-instances.php| ca[(Local instance and feature conf)]
-  A -->|"rest/all-instances.php<br/>(parallel fetch)"| B["Server B front-end"]
+  A -->|rest/local-instances| ca[(Local instance and feature conf)]
+  A -->|"rest/local-instances<br/>(parallel fetch)"| B["Server B front-end"]
   A --> C["Server C front-end"]
   B --> cb[(Its own conf)]
   C --> cc[(Its own conf)]
@@ -252,7 +259,6 @@ flowchart LR
 | `_functions*.sh` | Core logic, one file per area (`_functions_tomcat.sh`, `_functions_database.sh`, `_functions_keycloak.sh`…) |
 | `etc/` | Jinja2 templates: Apache, Tomcat, JBoss EAP, Keycloak, Matrix, OnlyOffice, logrotate… |
 | `web/` | The Go front-end `adt-web`: pages, `/rest/*` API, static files |
-| `dev/login-test/` | Docker Compose stack (OpenLDAP + Apache) to try the front-end login locally |
 | `integration-tests.sh` | Integration tests |
 
 ## Contributing
