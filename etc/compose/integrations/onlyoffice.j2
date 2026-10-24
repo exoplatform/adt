@@ -1,0 +1,10 @@
+{% if DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED == "true" %}
+{# the document server is reached through the public host of the instance: the same proxies serve it #}
+{% set oo_scheme = "https" if DEPLOYMENT_APACHE_HTTPS_ENABLED == "true" else "http" %}
+{% set oo_host = DEPLOYMENT_APACHE_VHOST_ALIAS if DEPLOYMENT_APACHE_VHOST_ALIAS else DEPLOYMENT_EXT_HOST %}
+{% set _ = app_props.update({"onlyoffice.documentserver.host": oo_host}) %}
+{% set _ = app_props.update({"onlyoffice.documentserver.schema": oo_scheme}) %}
+{% set _ = app_props.update({"onlyoffice.documentserver.allowedhosts": "localhost," ~ INSTANCE_KEY ~ "." ~ ACCEPTANCE_HOST ~ "," ~ DEPLOYMENT_APACHE_VHOST_ALIAS ~ "," ~ DEPLOYMENT_EXT_HOST}) %}
+{% set _ = app_props.update({"onlyoffice.documentserver.accessOnly": "false"}) %}
+{% set _ = app_props.update({"onlyoffice.documentserver.secret": DEPLOYMENT_ONLYOFFICE_SECRET}) %}
+{% endif %}

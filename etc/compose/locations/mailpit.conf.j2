@@ -6,10 +6,6 @@
     location /mailpit/ {
       set $upstream_mailpit http://mailpit:8025;
       proxy_pass $upstream_mailpit;
-      proxy_http_version 1.1;
-      proxy_set_header Host $http_host;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $connection_upgrade;
     }
 
 {% endif %}

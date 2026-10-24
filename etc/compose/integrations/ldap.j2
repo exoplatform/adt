@@ -1,18 +1,17 @@
 {% if DEPLOYMENT_LDAP_ENABLED == "true" %}
 {# the directory of the instance: its own OpenLDAP container (USER_DIRECTORY=LDAP) or an external server #}
 {% set ldap_url = "ldap://ldap:389" if USER_DIRECTORY == "LDAP" else "ldap://" ~ DEPLOYMENT_AD_HOST ~ ":" ~ DEPLOYMENT_AD_PORT %}
-{% set _ = app_opts.append("-Dexo.ldap.type=ldap") %}
-{% set _ = app_opts.append("-Dexo.ldap.url=" ~ ldap_url) %}
+{% set _ = app_props.update({"exo.ldap.type": "ldap", "exo.ldap.url": ldap_url}) %}
 {% if USER_DIRECTORY_ADMIN_DN %}
-{% set _ = app_opts.append('-Dexo.ldap.admin.dn="' ~ USER_DIRECTORY_ADMIN_DN ~ '"') %}
+{% set _ = app_props.update({"exo.ldap.admin.dn": USER_DIRECTORY_ADMIN_DN}) %}
 {% endif %}
 {% if USER_DIRECTORY_ADMIN_PASSWORD %}
-{% set _ = app_opts.append('-Dexo.ldap.admin.password="' ~ USER_DIRECTORY_ADMIN_PASSWORD ~ '"') %}
+{% set _ = app_props.update({"exo.ldap.admin.password": USER_DIRECTORY_ADMIN_PASSWORD}) %}
 {% endif %}
 {% if USER_DIRECTORY_BASE_DN %}
-{% set _ = app_opts.append('-Dexo.ldap.users.base.dn="ou=People,o=portal,o=gatein,' ~ USER_DIRECTORY_BASE_DN ~ '"') %}
+{% set _ = app_props.update({"exo.ldap.users.base.dn": "ou=People,o=portal,o=gatein," ~ USER_DIRECTORY_BASE_DN}) %}
 {% endif %}
-{% set _ = app_opts.append('-Dexo.ldap.groups.base.dn="' ~ GROUP_DIRECTORY_BASE_DN ~ '"') %}
+{% set _ = app_props.update({"exo.ldap.groups.base.dn": GROUP_DIRECTORY_BASE_DN}) %}
 {% if USER_DIRECTORY == "LDAP" %}
 {% set _ = app_depends.append("ldap") %}
 {% endif %}

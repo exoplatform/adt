@@ -65,7 +65,7 @@
     SSLProxyCheckPeerCN     off
 {% endif %}
 
-{% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" %}
+{% if DEPLOYMENT_APACHE_WEBSOCKET_ENABLED == "true" or DEPLOYMENT_JITSI_ENABLED == "true" or DEPLOYMENT_DEBUG_ENABLED == "true" %}
     <IfModule mod_proxy_wstunnel.c>
         RewriteEngine on
         RewriteCond %{HTTP:Upgrade} websocket [NC]

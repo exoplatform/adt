@@ -1,0 +1,32 @@
+{% if DEPLOYMENT_ONLYOFFICE_DOCUMENTSERVER_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("onlyoffice_logs") %}
+{% set _ = top_volumes.append("onlyoffice_data") %}
+{% set _ = top_volumes.append("onlyoffice_lib") %}
+{% set _ = top_volumes.append("onlyoffice_db") %}
+  onlyoffice:
+    image: {{ y(DEPLOYMENT_ONLYOFFICE_IMAGE ~ ":" ~ DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_onlyoffice") }}
+    hostname: "onlyoffice"
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "onlyoffice"
+    environment:
+      JWT_ENABLED: "true"
+      JWT_SECRET: {{ y(DEPLOYMENT_ONLYOFFICE_SECRET) }}
+      SECURE_LINK_SECRET: {{ y(DEPLOYMENT_ONLYOFFICE_LINK_SECRET) }}
+      ALLOW_PRIVATE_IP_ADDRESS: "true"
+    volumes:
+      - onlyoffice_logs:/var/log/onlyoffice
+      - onlyoffice_data:/var/www/onlyoffice/Data
+      - onlyoffice_lib:/var/lib/onlyoffice
+      - onlyoffice_db:/var/lib/postgresql
+    healthcheck:
+      test: ["CMD-SHELL", "curl --silent --fail http://localhost/healthcheck || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 20
+      start_period: 90s
+    logging: *logging
+
+{% endif %}
