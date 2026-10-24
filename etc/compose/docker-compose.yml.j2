@@ -1,14 +1,33 @@
 {#- The docker compose project of an instance, rendered by adt.sh (deploy) in ${SRV_DIR}/<instance key>/docker-compose.yml.
-    Every string goes through y(): it is quoted for YAML and "$" is escaped for docker compose.
-    Switches (all "true"/"false" strings): DEPLOYMENT_NGINX_TLS, DEPLOYMENT_GZIP_ENABLED, DEPLOYMENT_CERTBOT_ENABLED.
-    Companion services (onlyoffice, jitsi, matrix...) are blocks of this file, included when DEPLOYMENT_<SERVICE>_ENABLED is true. -#}
-{% macro y(v) %}{{ v | replace('$', '$$') | tojson }}{% endmacro -%}
+    Every string goes through y() (macros.j2): it is quoted for YAML and "$" is escaped for docker compose.
+    Core services: web (nginx), exo (the product), db, search. Every companion service is one file of services/ (its compose
+    service), one of integrations/ (what the application must know to use it) and one of locations/ (its nginx locations):
+    each is only active when DEPLOYMENT_<SERVICE>_ENABLED is true.
+    An integration file adds to the collectors below, which feed the application service:
+      app_opts     JVM options (JAVA_OPTS)       app_env      environment variables
+      app_volumes  volumes of the application    app_depends  services that must be healthy before it starts
+    A service file adds the named volumes it uses to top_volumes. -#}
+{% from "macros.j2" import y -%}
 {% set P = DEPLOYMENT_ENV_PREFIX -%}
 {% set app = DEPLOYMENT_ENV_PREFIX | lower -%}
 {% set tls = DEPLOYMENT_NGINX_TLS == "true" -%}
 {% set db = DEPLOYMENT_DB_TYPE != "HSQLDB" -%}
 {% set db_user = DEPLOYMENT_DATABASE_USER -%}
 {% set db_root_password = DEPLOYMENT_DATABASE_NAME ~ "@root" -%}
+{% set app_opts = [] -%}
+{% set app_env = {} -%}
+{% set app_volumes = [] -%}
+{% set app_depends = [] -%}
+{% set top_volumes = [] -%}
+{% set _integrations %}
+{% include "integrations/mailpit.j2" %}
+{% include "integrations/iframely.j2" %}
+{% include "integrations/ai.j2" %}
+{% include "integrations/sftp.j2" %}
+{% include "integrations/ldap.j2" %}
+{% include "integrations/clamav.j2" %}
+{% include "integrations/caldav.j2" %}
+{% endset -%}
 # Rendered by ADT from etc/compose/docker-compose.yml.j2: do not edit, the next deploy overwrites it.
 name: {{ DEPLOYMENT_COMPOSE_PROJECT }}
 
@@ -87,9 +106,13 @@ services:
 {% if DEPLOYMENT_SELFSIGNEDCERTS_HOSTS %}
       {{ P }}_SELFSIGNEDCERTS_HOSTS: {{ y(DEPLOYMENT_SELFSIGNEDCERTS_HOSTS) }}
 {% endif %}
-{% if DEPLOYMENT_OPTS %}
-      JAVA_OPTS: {{ y(DEPLOYMENT_OPTS) }}
+{% set java_opts = ([DEPLOYMENT_OPTS] if DEPLOYMENT_OPTS else []) + app_opts %}
+{% if java_opts %}
+      JAVA_OPTS: {{ y(java_opts | join(" ")) }}
 {% endif %}
+{% for name, value in app_env.items() %}
+      {{ name }}: {{ y(value) }}
+{% endfor %}
       {{ P }}_DB_TYPE: {{ y(DEPLOYMENT_DB_ENV_TYPE) }}
 {% if db %}
       {{ P }}_DB_HOST: "db"
@@ -106,6 +129,9 @@ services:
       - exo_data:/srv/{{ app }}
       - exo_codec:/etc/{{ app }}/codec
       - ./logs/app:/var/log/{{ app }}
+{% for volume in app_volumes %}
+      - {{ y(volume) }}
+{% endfor %}
     depends_on:
       search:
         condition: service_healthy
@@ -113,6 +139,10 @@ services:
       db:
         condition: service_healthy
 {% endif %}
+{% for service in app_depends %}
+      {{ service }}:
+        condition: service_healthy
+{% endfor %}
     # the image has its own HEALTHCHECK (curl on 8080): only the timings are tuned, the startup of an instance takes minutes
     healthcheck:
       test: ["CMD-SHELL", "curl --fail --silent --output /dev/null http://localhost:8080/ || exit 1"]
@@ -212,6 +242,17 @@ services:
       start_period: 30s
     logging: *logging
 
+{% include "services/mailpit.yml.j2" %}
+{% include "services/iframely.yml.j2" %}
+{% include "services/ai.yml.j2" %}
+{% include "services/sftp.yml.j2" %}
+{% include "services/ldap.yml.j2" %}
+{% include "services/lam.yml.j2" %}
+{% include "services/cloudbeaver.yml.j2" %}
+{% include "services/clamav.yml.j2" %}
+{% include "services/caldav.yml.j2" %}
+{% include "services/frontail.yml.j2" %}
+
 # Everything docker creates is named after the instance key, so that many instances of the same products stay readable on a host
 volumes:
   exo_data:
@@ -224,6 +265,10 @@ volumes:
 {% endif %}
   search:
     name: {{ y(INSTANCE_KEY ~ "_search") }}
+{% for volume in top_volumes %}
+  {{ volume }}:
+    name: {{ y(INSTANCE_KEY ~ "_" ~ volume) }}
+{% endfor %}
 
 networks:
   default:

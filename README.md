@@ -21,9 +21,10 @@ virtual host.
 - **Reverse proxies**: nginx (per instance) owns the locations, the security headers, the compression and
   the logs. Apache (one vhost per instance) terminates the TLS, authenticates with LDAP and forwards to
   that nginx; with HTTPS enabled both serve the same certificate, from the domain or from Certbot.
-- **Companion services** (Jitsi, Keycloak, OnlyOffice, CalDAV, Matrix, Mailpit, ClamAV, CloudBeaver, LAM,
-  Frontail, Iframely, AI, SFTP, remote debug) are being moved into the compose project: enabling one is
-  refused for now.
+- **Companion services**, each a block of the compose project (`etc/compose/services/`, `integrations/` and
+  `locations/`) that exists only when `DEPLOYMENT_<SERVICE>_ENABLED=true`, started healthy before the application when it
+  needs them: Mailpit, Frontail, Iframely, AI (Ollama), SFTP, LDAP and LAM, CloudBeaver, ClamAV and CalDAV (Baïkal).
+  Jitsi, Keycloak, OnlyOffice, Matrix and the remote debug are being moved: enabling one is refused for now.
 - **Web front-end** (`web/`, Go): dashboard of instances across acceptance
   servers, features, Crowdin health, sales and company pages, instance
   editing and a `/debug` section for admins (health, config, caches, sessions,

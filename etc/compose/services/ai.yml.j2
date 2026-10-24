@@ -1,0 +1,26 @@
+{% if DEPLOYMENT_AI_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("ollama") %}
+  ollama:
+    image: {{ y(DEPLOYMENT_AI_IMAGE ~ ":" ~ DEPLOYMENT_AI_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_ollama") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "ollama"
+    environment:
+      OLLAMA_NUM_PARALLEL: {{ y(DEPLOYMENT_AI_OLLAMA_NUM_PARALLEL) }}
+      OLLAMA_HOST: "0.0.0.0"
+      OLLAMA_KEEP_ALIVE: {{ y(DEPLOYMENT_AI_OLLAMA_KEEP_ALIVE) }}
+    mem_limit: {{ y(DEPLOYMENT_AI_OLLAMA_MEM_LIMIT) }}
+    cpus: {{ y(DEPLOYMENT_AI_OLLAMA_CPU_LIMIT) }}
+    volumes:
+      - ollama:/root/.ollama
+    healthcheck:
+      test: ["CMD-SHELL", "ollama --version && ollama ps || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+    logging: *logging
+
+{% endif %}

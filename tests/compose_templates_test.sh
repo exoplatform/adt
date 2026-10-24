@@ -31,6 +31,26 @@ render() {
     DEPLOYMENT_DB_TYPE=MYSQL DEPLOYMENT_DB_ENV_TYPE=mysql DEPLOYMENT_DATABASE_PORT=3306 DEPLOYMENT_DATABASE_NAME=plfent_7_3_0_M16
     DEPLOYMENT_DATABASE_USER=plfent_7_3_x DEPLOYMENT_DATABASE_VERSION=8.4.11
     DEPLOYMENT_ES_IMAGE=elasticsearch DEPLOYMENT_ES_IMAGE_VERSION=9.4.5 DEPLOYMENT_ES_HEAP=512m
+    DEPLOYMENT_URL=https://plfent-7.3.0-M16.a.test ETC_DIR=/srv/adt/etc
+    # companion services, all off by default
+    DEPLOYMENT_MAILPIT_ENABLED=false DEPLOYMENT_MAILPIT_IMAGE=axllent/mailpit DEPLOYMENT_MAILPIT_IMAGE_VERSION=v1.31.6
+    DEPLOYMENT_IFRAMELY_ENABLED=false DEPLOYMENT_IFRAMELY_IMAGE=jolt/iframely DEPLOYMENT_IFRAMELY_IMAGE_VERSION=v2.3.0
+    DEPLOYMENT_AI_ENABLED=false DEPLOYMENT_AI_IMAGE=ollama/ollama DEPLOYMENT_AI_IMAGE_VERSION=0.32.1 DEPLOYMENT_AI_OLLAMA_MEM_LIMIT=8g
+    DEPLOYMENT_AI_OLLAMA_CPU_LIMIT=4 DEPLOYMENT_AI_OLLAMA_NUM_PARALLEL=4 DEPLOYMENT_AI_OLLAMA_KEEP_ALIVE=5m
+    DEPLOYMENT_SFTP_ENABLED=false DEPLOYMENT_SFTP_IMAGE=atmoz/sftp DEPLOYMENT_SFTP_IMAGE_VERSION=latest DEPLOYMENT_SFTP_PORT=40199
+    DEPLOYMENT_LDAP_ENABLED=false DEPLOYMENT_LDAP_IMAGE=dinkel/openldap DEPLOYMENT_LDAP_IMAGE_VERSION=2.4.44 USER_DIRECTORY=LDAP
+    DEPLOYMENT_AD_HOST=localhost DEPLOYMENT_AD_PORT=389 DEPLOYMENT_LDAP_PREPOPULATE_DIR=
+    USER_DIRECTORY_BASE_DN=dc=exoplatform,dc=com GROUP_DIRECTORY_BASE_DN= USER_DIRECTORY_ADMIN_DN=cn=admin,dc=exoplatform,dc=com
+    USER_DIRECTORY_ADMIN_PASSWORD=exo
+    DEPLOYMENT_LAM_ENABLED=false DEPLOYMENT_LAM_IMAGE=ghcr.io/ldapaccountmanager/lam DEPLOYMENT_LAM_IMAGE_VERSION=stable
+    DEPLOYMENT_CLOUDBEAVER_ENABLED=false DEPLOYMENT_CLOUDBEAVER_IMAGE=exoplatform/cloudbeaver DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION=26.2.3-0
+    DEPLOYMENT_CLOUDBEAVER_AI_CHAT_DISABLED=true DEPLOYMENT_CLOUDBEAVER_LDAP_HOST=ldap2.exoplatform.org DEPLOYMENT_CLOUDBEAVER_LDAP_PORT=636
+    DEPLOYMENT_CLOUDBEAVER_LDAP_SSL=true DEPLOYMENT_CLOUDBEAVER_LDAP_BASE_DN=dc=exoplatform,dc=org DEPLOYMENT_CLOUDBEAVER_LDAP_LOGIN_ATTR=cn
+    DEPLOYMENT_CLOUDBEAVER_LDAP_ADMIN_GROUP=cn=admins DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_USER=cn=bind DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_PASSWORD='p$ss'
+    DEPLOYMENT_CLAMAV_ENABLED=false DEPLOYMENT_CLAMAV_IMAGE=clamav/clamav DEPLOYMENT_CLAMAV_IMAGE_VERSION=1.5.1
+    DEPLOYMENT_MATRIX_ENABLED=false
+    DEPLOYMENT_CALDAV_ENABLED=false DEPLOYMENT_CALDAV_IMAGE=ckulka/baikal DEPLOYMENT_CALDAV_IMAGE_VERSION=nginx-php8.2
+    DEPLOYMENT_FRONTAIL_ENABLED=false DEPLOYMENT_FRONTAIL_IMAGE=hbenali/frontail DEPLOYMENT_FRONTAIL_IMAGE_VERSION=2.37
   )
   python3 "${SCRIPT_DIR}/tests/render_template.py" "${SCRIPT_DIR}/etc/compose/docker-compose.yml.j2" "${dir}/docker-compose.yml" "${vars[@]}" "$@"
   python3 "${SCRIPT_DIR}/tests/render_template.py" "${SCRIPT_DIR}/etc/compose/nginx.conf.j2" "${dir}/nginx.conf" "${vars[@]}" "$@"
@@ -61,8 +81,39 @@ check "TLS only, static certificate"   tlsonly  DEPLOYMENT_NGINX_TLS=true DEPLOY
 check "TLS, certbot certificate"       certbot  DEPLOYMENT_NGINX_TLS=true DEPLOYMENT_CERTBOT_ENABLED=true DEPLOYMENT_PROXY_SSL=true DEPLOYMENT_PROXY_PORT=443
 check "options with quotes and dollar" options  DEPLOYMENT_OPTS='-Dfoo="$bar" -Dx=1' DEPLOYMENT_ADDONS_CATALOG=https://x.test/catalog.json DEPLOYMENT_PATCHES=p1:1 DEPLOYMENT_PATCHES_CATALOG=https://x.test/p.json DEPLOYMENT_ADDONS_TOREMOVE=exo-a
 
+# every companion service alone, then all together (TLS, PostgreSQL), each with its nginx locations
+check "mailpit"      c-mailpit      DEPLOYMENT_MAILPIT_ENABLED=true
+check "iframely"     c-iframely     DEPLOYMENT_IFRAMELY_ENABLED=true
+check "ai (ollama)"  c-ai           DEPLOYMENT_AI_ENABLED=true
+check "sftp"         c-sftp         DEPLOYMENT_SFTP_ENABLED=true
+check "ldap"         c-ldap         DEPLOYMENT_LDAP_ENABLED=true
+check "ldap (external server)" c-ldapext DEPLOYMENT_LDAP_ENABLED=true USER_DIRECTORY=MSAD
+check "ldap + lam"   c-lam          DEPLOYMENT_LDAP_ENABLED=true DEPLOYMENT_LAM_ENABLED=true
+check "cloudbeaver"  c-cloudbeaver  DEPLOYMENT_CLOUDBEAVER_ENABLED=true
+check "clamav"       c-clamav       DEPLOYMENT_CLAMAV_ENABLED=true
+check "caldav"       c-caldav       DEPLOYMENT_CALDAV_ENABLED=true
+check "frontail"     c-frontail     DEPLOYMENT_FRONTAIL_ENABLED=true
+check "all of them, TLS, PostgreSQL" c-all DEPLOYMENT_NGINX_TLS=true DEPLOYMENT_PROXY_SSL=true DEPLOYMENT_PROXY_PORT=443 \
+  DEPLOYMENT_DB_TYPE=POSTGRES DEPLOYMENT_DB_ENV_TYPE=pgsql DEPLOYMENT_DATABASE_PORT=5432 DEPLOYMENT_DATABASE_VERSION=17 \
+  DEPLOYMENT_MAILPIT_ENABLED=true DEPLOYMENT_IFRAMELY_ENABLED=true DEPLOYMENT_AI_ENABLED=true DEPLOYMENT_SFTP_ENABLED=true \
+  DEPLOYMENT_LDAP_ENABLED=true DEPLOYMENT_LAM_ENABLED=true DEPLOYMENT_CLOUDBEAVER_ENABLED=true DEPLOYMENT_CLAMAV_ENABLED=true \
+  DEPLOYMENT_CALDAV_ENABLED=true DEPLOYMENT_FRONTAIL_ENABLED=true
+
 grep -q 'JAVA_OPTS: "-Dfoo=\\"\$\$bar\\" -Dx=1"' "${WORK}/options/docker-compose.yml" && echo "ok   a dollar in a value is escaped for compose" || { echo "FAIL dollar escaping"; failures=$((failures+1)); }
 grep -q 'container_name: "plfent-7.3.0-M16_exo"' "${WORK}/mysql/docker-compose.yml" && echo "ok   containers are named after the instance key" || { echo "FAIL container names"; failures=$((failures+1)); }
+# what a companion adds to the application and what it needs before it starts
+c=${WORK}/c-all/docker-compose.yml
+for opt in "-Dio.meeds.iframely.url=https://plfent-7.3.0-M16.a.test/oembed" "-Dmeeds.ai.ollama.url=http://ollama:11434" "-Dexo.addons.lecko.SftpHost=sftp" \
+           "-Dexo.ldap.url=ldap://ldap:389" "-Dexo.malwareDetection.connector.clamav.isDefault=true" "-Dexo.agenda.caldav.connector.enabled=true"; do
+  grep -qF -- "${opt}" "${c}" && echo "ok   the application gets ${opt%%=*}" || { echo "FAIL missing ${opt}"; failures=$((failures+1)); }
+done
+for svc in mailpit iframely ollama sftp ldap lam cloudbeaver clamav baikal frontail; do
+  grep -q "^  ${svc}:" "${c}" && echo "ok   service ${svc}" || { echo "FAIL service ${svc} missing"; failures=$((failures+1)); }
+done
+grep -q 'EXO_MAIL_SMTP_HOST: "mailpit"' "${c}" && echo "ok   mail goes to mailpit" || { echo "FAIL mail host"; failures=$((failures+1)); }
+grep -q 'clamav_report:/clamav/report' "${c}" && echo "ok   the application reads the clamav report" || { echo "FAIL clamav report"; failures=$((failures+1)); }
+! grep -q '^  mailpit:' "${WORK}/mysql/docker-compose.yml" && ! grep -q 'location.*mailpit' "${WORK}/mysql/nginx.conf" && echo "ok   no companion when none is enabled" || { echo "FAIL a companion is present"; failures=$((failures+1)); }
+grep -q 'location /lam/' "${WORK}/c-all/nginx.conf" && grep -q 'location /baikal' "${WORK}/c-all/nginx.conf" && echo "ok   nginx locations of the companions" || { echo "FAIL locations"; failures=$((failures+1)); }
 ! grep -q 'db:' "${WORK}/hsqldb/docker-compose.yml" && echo "ok   hsqldb has no database container" || { echo "FAIL hsqldb has a db"; failures=$((failures+1)); }
 grep -qx '      - db:/var/lib/postgresql' "${WORK}/pg18/docker-compose.yml" && grep -qx '      - db:/var/lib/postgresql/data' "${WORK}/pg17/docker-compose.yml" && echo "ok   postgres 18 keeps its data one level up" || { echo "FAIL postgres volume paths"; failures=$((failures+1)); }
 

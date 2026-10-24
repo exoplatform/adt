@@ -1,0 +1,3 @@
+{#- Shared by the compose project (docker-compose.yml.j2) and its included files.
+    y(v): a string quoted for YAML, with "$" escaped for docker compose. -#}
+{% macro y(v) %}{{ v | replace('$', '$$') | tojson }}{% endmacro %}

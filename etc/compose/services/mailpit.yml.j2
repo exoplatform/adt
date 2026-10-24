@@ -1,0 +1,24 @@
+{% if DEPLOYMENT_MAILPIT_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("mailpit") %}
+  mailpit:
+    image: {{ y(DEPLOYMENT_MAILPIT_IMAGE ~ ":" ~ DEPLOYMENT_MAILPIT_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_mailpit") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "mailpit"
+    environment:
+      MP_WEBROOT: "/mailpit"
+      MP_MAX_MESSAGES: "5000"
+      MP_DATABASE: "/data/mailpit.db"
+    volumes:
+      - mailpit:/data
+    healthcheck:
+      test: ["CMD-SHELL", "printf 'EHLO healthcheck\n' | nc 127.0.0.1 1025 | grep -qE '^220.*Mailpit ESMTP' || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 5s
+    logging: *logging
+
+{% endif %}

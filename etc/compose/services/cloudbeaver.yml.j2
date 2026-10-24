@@ -1,0 +1,30 @@
+{% if DEPLOYMENT_CLOUDBEAVER_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+  cloudbeaver:
+    image: {{ y(DEPLOYMENT_CLOUDBEAVER_IMAGE ~ ":" ~ DEPLOYMENT_CLOUDBEAVER_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_cloudbeaver") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "cloudbeaver"
+    environment:
+      CLOUDBEAVER_ROOT_URI: "/cloudbeaver"
+      CLOUDBEAVER_AI_CHAT_DISABLED: {{ y(DEPLOYMENT_CLOUDBEAVER_AI_CHAT_DISABLED) }}
+      CB_SERVER_NAME: {{ y("eXo Acceptance - " ~ INSTANCE_KEY) }}
+      CLOUDBEAVER_APP_GRANT_CONNECTIONS_ACCESS_TO_ANONYMOUS_TEAM: "true"
+      CLOUDBEAVER_LDAP_HOST: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_HOST) }}
+      CLOUDBEAVER_LDAP_PORT: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_PORT) }}
+      CLOUDBEAVER_LDAP_BASE_DN: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_BASE_DN) }}
+      CLOUDBEAVER_LDAP_BIND_USER: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_USER) }}
+      CLOUDBEAVER_LDAP_BIND_PASSWORD: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_BIND_PASSWORD) }}
+      CLOUDBEAVER_LDAP_LOGIN_ATTR: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_LOGIN_ATTR) }}
+      CLOUDBEAVER_LDAP_IDENTIFIER_ATTR: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_LOGIN_ATTR) }}
+      CLOUDBEAVER_LDAP_ENABLE_SSL: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_SSL) }}
+      CLOUDBEAVER_LDAP_ADMIN_GROUP: {{ y(DEPLOYMENT_CLOUDBEAVER_LDAP_ADMIN_GROUP) }}
+    volumes:
+      - ./cloudbeaver/data-sources.json:/opt/cloudbeaver/workspace/GlobalConfiguration/.dbeaver/data-sources.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    logging: *logging
+
+{% endif %}

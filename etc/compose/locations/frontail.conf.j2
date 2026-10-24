@@ -1,0 +1,15 @@
+{% if DEPLOYMENT_FRONTAIL_ENABLED == "true" %}
+    # Frontail: the live log of the application (the authentication of this URI is done by Apache)
+    location = /livelogs {
+      return 301 /livelogs/;
+    }
+    location /livelogs {
+      set $upstream_frontail http://frontail:9001;
+      proxy_pass $upstream_frontail;
+      proxy_http_version 1.1;
+      proxy_set_header Host $http_host;
+      proxy_set_header Upgrade $http_upgrade;
+      proxy_set_header Connection $connection_upgrade;
+    }
+
+{% endif %}

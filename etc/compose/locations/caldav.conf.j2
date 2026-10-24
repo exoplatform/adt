@@ -1,0 +1,22 @@
+{% if DEPLOYMENT_CALDAV_ENABLED == "true" %}
+    # Baikal CalDAV / CardDAV (the container strips the /baikal prefix itself)
+    location = /.well-known/caldav {
+      return 302 /baikal/dav.php;
+    }
+    location = /.well-known/carddav {
+      return 302 /baikal/dav.php;
+    }
+    location = /baikal {
+      return 302 /baikal/;
+    }
+    location = /baikal/admin {
+      return 302 /baikal/admin/;
+    }
+    location /baikal {
+      set $upstream_baikal http://baikal:80;
+      proxy_pass $upstream_baikal;
+      proxy_http_version 1.1;
+      proxy_set_header Host $http_host;
+    }
+
+{% endif %}

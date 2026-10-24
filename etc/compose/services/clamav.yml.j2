@@ -1,0 +1,31 @@
+{% if DEPLOYMENT_CLAMAV_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("clamav_report") %}
+{% set _ = top_volumes.append("clamav_logs") %}
+  clamav:
+    image: {{ y(DEPLOYMENT_CLAMAV_IMAGE ~ ":" ~ DEPLOYMENT_CLAMAV_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_clamav") }}
+    hostname: "clamav"
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "clamav"
+    entrypoint: ["/usr/local/bin/clamav-entrypoint.sh"]
+    volumes:
+      # what it scans: the files and the jcr values of the application
+      - exo_data:/scan:ro
+      - clamav_report:/report
+      - clamav_logs:/var/log/clamav
+      - ./clamav/clamd.conf:/etc/clamav/clamd.conf:ro
+      - ./clamav/clamav-entrypoint.sh:/usr/local/bin/clamav-entrypoint.sh:ro
+{% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+      - matrix_data:/scan/synapse:ro
+{% endif %}
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z 127.0.0.1 3310"]
+      interval: 30s
+      timeout: 30s
+      retries: 5
+      start_period: 60s
+    logging: *logging
+
+{% endif %}
