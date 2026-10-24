@@ -1,0 +1,10 @@
+{% if DEPLOYMENT_SFTP_ENABLED == "true" %}
+{% set _ = app_opts.append("-Dexo.addons.lecko.job.enabled=true") %}
+{% set _ = app_opts.append("-Dexo.addons.lecko.out.name=acceptance_lecko") %}
+{% set _ = app_opts.append("-Dexo.addons.lecko.SftpHost=sftp") %}
+{% set _ = app_opts.append("-Dexo.addons.lecko.SftPortNumber=22") %}
+{% set _ = app_opts.append("-Dexo.addons.lecko.SftpUser=root") %}
+{% set _ = app_opts.append("-Dexo.addons.lecko.SftpPassword=password") %}
+{% set _ = app_opts.append("-Dexo.addons.lecko.SftpRemotePath=/upload") %}
+{% set _ = app_depends.append("sftp") %}
+{% endif %}
