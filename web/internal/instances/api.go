@@ -27,10 +27,10 @@ var (
 	portRe     = regexp.MustCompile(`^[0-9]{1,5}$`)
 )
 
-// OriginFromRequest derives the Origin of a request. The Host header is the visitor's: it ends up in links of the
-// pages and in the lists other servers merge, and those are cached, so a Host that is not one of the
-// ACCEPTANCE_SERVERS (outside the development mode) is not used: the origin of the first of them is.
-func OriginFromRequest(r *http.Request, cfg config.Config) Origin {
+// OriginFromRequest derives the Origin of a request: the host the visitor used (an alias such as the generic
+// acceptance name included), as it is shown on the pages. Only its syntax is checked: it is the visitor's, so
+// nothing that is published or cached for other people is built from it (see Store.Canonical).
+func OriginFromRequest(r *http.Request) Origin {
 	scheme := "http"
 	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
 		scheme = "https"
@@ -42,24 +42,51 @@ func OriginFromRequest(r *http.Request, cfg config.Config) Origin {
 	if !hostNameRe.MatchString(host) || !portRe.MatchString(port) {
 		host, port = "localhost", map[string]string{"http": "80", "https": "443"}[scheme]
 	}
-	own := Origin{Scheme: scheme, Host: host, Port: port}
-	if cfg.DevMode || len(cfg.Servers) == 0 {
-		return own
+	return Origin{Scheme: scheme, Host: host, Port: port}
+}
+
+// Canonical is the origin this server publishes and caches: the instance links (logs, statistics), the
+// ACCEPTANCE_HOST that the other servers post the edit forms to, the name of the server in the statistics. It is
+// the server's own ACCEPTANCE_HOST (the name of its virtual host), never the Host header of whoever asked: a visitor
+// who sent another one would otherwise have it cached and merged into the lists of the other servers. The scheme and
+// the port come from this server's entry of ACCEPTANCE_SERVERS. Without ACCEPTANCE_HOST (not configured), the visitor's
+// host is used when it is one of the ACCEPTANCE_SERVERS, else the first of them. In development mode: the request.
+func (s *Store) Canonical(o Origin) Origin {
+	if s.cfg.DevMode {
+		return o
 	}
-	for _, s := range cfg.Servers {
-		if u, err := url.Parse(s); err == nil && strings.EqualFold(u.Hostname(), host) {
-			return own
+	defaultPort := func(scheme string) string { return map[string]string{"http": "80", "https": "443"}[scheme] }
+	want := s.cfg.AcceptanceHost
+	if want == "" {
+		for _, server := range s.cfg.Servers {
+			if u, err := url.Parse(server); err == nil && strings.EqualFold(u.Hostname(), o.Host) {
+				return o
+			}
+		}
+		if len(s.cfg.Servers) > 0 {
+			want = hostOf(s.cfg.Servers[0])
+		}
+		if want == "" {
+			return o
 		}
 	}
-	u, err := url.Parse(cfg.Servers[0])
-	if err != nil || u.Hostname() == "" {
-		return own
+	for _, server := range s.cfg.Servers {
+		if u, err := url.Parse(server); err == nil && strings.EqualFold(u.Hostname(), want) {
+			c := Origin{Scheme: u.Scheme, Host: u.Hostname(), Port: u.Port()}
+			if c.Port == "" {
+				c.Port = defaultPort(c.Scheme)
+			}
+			return c
+		}
 	}
-	o := Origin{Scheme: u.Scheme, Host: u.Hostname(), Port: u.Port()}
-	if o.Port == "" {
-		o.Port = map[string]string{"http": "80", "https": "443"}[u.Scheme]
+	return Origin{Scheme: o.Scheme, Host: want, Port: defaultPort(o.Scheme)}
+}
+
+func hostOf(server string) string {
+	if u, err := url.Parse(server); err == nil {
+		return u.Hostname()
 	}
-	return o
+	return ""
 }
 
 // Store gives access to the instances of this server (Local) and of all the acceptance servers (Global),

@@ -16,7 +16,7 @@ var (
 // LocalFor computes this server's statistics for the request (host = SERVER_NAME, instances = the
 // local acceptance instances).
 func LocalFor(a *app.App, r *http.Request) *Local {
-	o := instances.OriginFromRequest(r, a.Cfg)
+	o := a.Instances.Canonical(instances.OriginFromRequest(r)) // the name of this server, not the visitor's Host
 	var all []instances.Instance
 	if b := a.Instances.Local(o); b != nil {
 		for _, k := range b.Keys() {

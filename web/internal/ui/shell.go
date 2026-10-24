@@ -43,7 +43,7 @@ type Ctx struct {
 func NewCtx(w http.ResponseWriter, r *http.Request, cfg config.Config) *Ctx {
 	return &Ctx{
 		W: w, R: r, Cfg: cfg,
-		Origin:   instances.OriginFromRequest(r, cfg),
+		Origin:   instances.OriginFromRequest(r),
 		Identity: auth.From(r),
 		Sessions: sessions.For(cfg.DataDir),
 		Audit:    audit.For(cfg.DataDir),

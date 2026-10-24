@@ -28,6 +28,8 @@ type Config struct {
 	SocketGroup string
 	// CSP is ADT_WEB_CSP: "enforce" (default), "report-only" or "off", the Content-Security-Policy of the pages.
 	CSP string
+	// AcceptanceHost is ACCEPTANCE_HOST, the name of this server (its Apache virtual host).
+	AcceptanceHost string
 	// DevUser, DevName, DevMail fake the identity Apache would provide, in DevMode only.
 	DevUser, DevName, DevMail string
 }
@@ -54,6 +56,7 @@ func FromEnv() Config {
 	c := Config{
 		DataDir:            os.Getenv("ADT_DATA"),
 		DevMode:            truthy(os.Getenv("ADT_DEV_MODE")),
+		AcceptanceHost:     strings.TrimSpace(os.Getenv("ACCEPTANCE_HOST")),
 		ApacheVersion:      os.Getenv("ADT_APACHE_VERSION"),
 		ApacheVersionMinor: os.Getenv("ADT_APACHE_VERSION_MINOR"),
 		StaticDir:          os.Getenv("ADT_STATIC_DIR"),

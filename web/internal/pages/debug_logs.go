@@ -58,8 +58,10 @@ func debugLogs(a *app.App, w http.ResponseWriter, r *http.Request) {
 	file := dbgQuery(r, "file")
 	if _, ok := files[file]; !ok {
 		file = ""
-		if _, ok := files[c.Origin.Host+"-error.log"]; ok {
-			file = c.Origin.Host + "-error.log"
+		// the logs are named after the virtual host (ACCEPTANCE_HOST), not after the host the administrator typed
+		own := a.Instances.Canonical(c.Origin).Host
+		if _, ok := files[own+"-error.log"]; ok {
+			file = own + "-error.log"
 		} else if len(names) > 0 {
 			file = names[0]
 		}

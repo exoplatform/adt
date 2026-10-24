@@ -23,6 +23,7 @@ var (
 // Local returns the descriptors of conf/adt/*, enriched, grouped by PLF_BRANCH.
 // The result is shared (cached): callers must not modify it.
 func (s *Store) Local(o Origin) *Branches {
+	o = s.Canonical(o) // what is cached and published must not depend on who asked
 	if !s.cfg.DevMode {
 		if b := s.cachedBranches("local_instances"); b != nil {
 			return b

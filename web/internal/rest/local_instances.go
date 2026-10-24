@@ -13,7 +13,7 @@ import (
 func init() {
 	for _, p := range []string{"/rest/local-instances.php", "/rest/local-instances"} {
 		app.HandleFunc("GET "+p, func(a *app.App, w http.ResponseWriter, r *http.Request) {
-			o := instances.OriginFromRequest(r, a.Cfg)
+			o := instances.OriginFromRequest(r)
 			if checkInstanceCaches(a, w, r) {
 				return
 			}
