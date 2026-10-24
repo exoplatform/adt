@@ -21,7 +21,7 @@ var ErrNotAuthorized = errors.New("not authorized to read this file")
 
 // instanceNames and apacheNames are the file names each type may show (isAuthorizedToReadFile).
 var (
-	instanceNames = []string{"platform.log", "server.log", "catalina.out"}
+	instanceNames = []string{"platform.log"}
 	apacheNames   = []string{"access.log", "error.log"}
 )
 
