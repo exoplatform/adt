@@ -6,6 +6,7 @@ import (
 
 	"github.com/exoplatform/adt/web/internal/app"
 	"github.com/exoplatform/adt/web/internal/cache"
+	"github.com/exoplatform/adt/web/internal/confedit"
 	"github.com/exoplatform/adt/web/internal/instances"
 	"github.com/exoplatform/adt/web/internal/ui"
 )
@@ -17,13 +18,14 @@ import (
 //
 // A request the browser marks as cross-site is refused, since a page on another site could otherwise make a
 // signed-in visitor force a refetch from every acceptance server. The redirect is path-only and drops the
-// parameter whatever its value.
+// parameter whatever its value. The redirect that follows an edit posted to another acceptance server comes back from
+// that server, so the browser marks it same-site: it is let in when its Referer is one of the form servers.
 func instancePageCheckCaches(a *app.App, c *ui.Ctx) bool {
 	q := c.R.URL.Query()
 	if _, ok := q["clearCaches"]; !ok {
 		return false
 	}
-	if crossSite(c.R) {
+	if crossSite(c.R) && !confedit.RefererIn(c.R, a.Cfg.FormServers()) {
 		http.Error(c.W, "Forbidden", http.StatusForbidden)
 		return true
 	}

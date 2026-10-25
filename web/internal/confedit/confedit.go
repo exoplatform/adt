@@ -114,6 +114,25 @@ func SameOrigin(r *http.Request, servers []string) bool {
 	return false
 }
 
+// RefererIn reports whether the Referer of r is a page of one of the servers (or of this server). Unlike an Origin,
+// a Referer is sent on the GET that follows a redirect, the only signal a page has that the visitor was bounced back
+// by an acceptance server after an edit; a site can hide its Referer but not forge that of a server's page.
+func RefererIn(r *http.Request, servers []string) bool {
+	u, err := url.Parse(r.Header.Get("Referer"))
+	if err != nil || u.Host == "" || (u.Scheme != "http" && u.Scheme != "https") {
+		return false
+	}
+	if sameHost(u.Host, r.Host) {
+		return true
+	}
+	for _, s := range servers {
+		if su, err := url.Parse(s); err == nil && su.Host != "" && sameHost(su.Host, u.Host) {
+			return true
+		}
+	}
+	return false
+}
+
 // SanitizeLocalRedirect keeps only a local absolute path, refusing
 // the forms browsers treat as protocol-relative ("/\host") and control characters.
 func SanitizeLocalRedirect(u string) string {

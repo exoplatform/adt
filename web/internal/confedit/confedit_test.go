@@ -4,8 +4,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/exoplatform/adt/web/internal/config"
 	"github.com/exoplatform/adt/web/internal/confedit"
+	"github.com/exoplatform/adt/web/internal/config"
 )
 
 // The edit forms of acceptance12..15 are rendered by the primary front-end, which those servers do not list in
@@ -29,5 +29,28 @@ func TestFormServersAcceptThePrimaryFrontEnd(t *testing.T) {
 	}
 	if got := confedit.ResolveFrom(from, "acceptance13.exoplatform.org", cfg.Servers); got != "/" {
 		t.Errorf("without the primary front-end ResolveFrom = %q, want /", got)
+	}
+}
+
+// The GET that follows an edit bounces back from the acceptance server that owns the instance: same-site for the
+// browser, so the clearCaches of the page is let in by its Referer.
+func TestRefererIn(t *testing.T) {
+	servers := config.Config{Servers: []string{"https://acceptance13.exoplatform.org"}}.FormServers()
+	get := func(ref string) bool {
+		r := httptest.NewRequest("GET", "https://acceptance.exoplatform.org/sales?clearCaches=true", nil)
+		if ref != "" {
+			r.Header.Set("Referer", ref)
+		}
+		return confedit.RefererIn(r, servers)
+	}
+	for _, ref := range []string{"https://acceptance13.exoplatform.org/", config.PrimaryFrontEnd + "/sales"} {
+		if !get(ref) {
+			t.Errorf("Referer %q refused", ref)
+		}
+	}
+	for _, ref := range []string{"", "https://evil.example.org/", "https://wiki.exoplatform.org/", "javascript:1"} {
+		if get(ref) {
+			t.Errorf("Referer %q accepted", ref)
+		}
 	}
 }
