@@ -36,7 +36,7 @@ func (a *App) policy(scriptHashes ...string) string {
 	script = append(script, scriptHashes...)
 	form := []string{"'self'"}
 	seen := map[string]bool{}
-	for _, s := range a.Cfg.Servers {
+	for _, s := range a.Cfg.FormServers() {
 		if u, err := url.Parse(s); err == nil && u.Host != "" && !seen[u.Scheme+"://"+u.Host] {
 			seen[u.Scheme+"://"+u.Host] = true
 			form = append(form, u.Scheme+"://"+u.Host)

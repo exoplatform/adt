@@ -34,6 +34,16 @@ type Config struct {
 	DevUser, DevName, DevMail string
 }
 
+// PrimaryFrontEnd is the public dashboard, whose pages hold the edit forms of every acceptance server. It is not in
+// ACCEPTANCE_SERVERS of the servers it aggregates (they list only themselves), yet their forms are posted from it.
+const PrimaryFrontEnd = "https://acceptance.exoplatform.org"
+
+// FormServers are the servers a page may come from, or send a visitor back to, when it posts an edit form: every
+// ACCEPTANCE_SERVERS entry and the primary front-end. Not for the lists that are aggregated.
+func (c Config) FormServers() []string {
+	return append(append([]string(nil), c.Servers...), PrimaryFrontEnd)
+}
+
 // truthy is true for 1, true, yes and on (any case): "0", "no" or "False" must not switch the development mode, which
 // fakes an identity, on.
 func truthy(v string) bool {

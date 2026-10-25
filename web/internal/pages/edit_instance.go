@@ -57,5 +57,5 @@ func editInstance(a *app.App, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cache.Default.Clear()
-	redirect(w, confedit.WithClearCaches(confedit.ResolveFrom(get("from"), r.Host, a.Cfg.Servers)))
+	redirect(w, confedit.WithClearCaches(confedit.ResolveFrom(get("from"), r.Host, a.Cfg.FormServers())))
 }

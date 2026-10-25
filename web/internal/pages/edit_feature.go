@@ -47,7 +47,7 @@ func editGuard(a *app.App, w http.ResponseWriter, r *http.Request) (form map[str
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return nil, false
 	}
-	if !confedit.SameOrigin(r, a.Cfg.Servers) {
+	if !confedit.SameOrigin(r, a.Cfg.FormServers()) {
 		http.Error(w, "Forbidden", http.StatusForbidden)
 		return nil, false
 	}
@@ -64,7 +64,7 @@ func editGuard(a *app.App, w http.ResponseWriter, r *http.Request) (form map[str
 // edit itself went with the lost POST. Nothing is changed: the visitor is sent back to that page, now signed in
 // on both servers, to submit the form again. The target must be this server or one of the acceptance servers.
 func comeBack(a *app.App, w http.ResponseWriter, r *http.Request) {
-	redirect(w, confedit.ResolveFrom(r.URL.Query().Get("from"), r.Host, a.Cfg.Servers))
+	redirect(w, confedit.ResolveFrom(r.URL.Query().Get("from"), r.Host, a.Cfg.FormServers()))
 }
 
 func editFeature(a *app.App, w http.ResponseWriter, r *http.Request) {
@@ -123,5 +123,5 @@ func editFeature(a *app.App, w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	cache.Default.Clear()
-	redirect(w, confedit.WithClearCaches(confedit.ResolveFrom(get("from"), r.Host, a.Cfg.Servers)))
+	redirect(w, confedit.WithClearCaches(confedit.ResolveFrom(get("from"), r.Host, a.Cfg.FormServers())))
 }
