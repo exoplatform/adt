@@ -30,6 +30,9 @@ type Config struct {
 	CSP string
 	// AcceptanceHost is ACCEPTANCE_HOST, the name of this server (its Apache virtual host).
 	AcceptanceHost string
+	// AdminUsers is ADT_ADMIN_USERS: the logins (lower case) allowed to change the base branch of a feature branch.
+	// Apache restricts the endpoint to the LDAP admin group as well; this list is what lets the page hide the control.
+	AdminUsers []string
 	// DevUser, DevName, DevMail fake the identity Apache would provide, in DevMode only.
 	DevUser, DevName, DevMail string
 }
@@ -42,6 +45,21 @@ const PrimaryFrontEnd = "https://acceptance.exoplatform.org"
 // ACCEPTANCE_SERVERS entry and the primary front-end. Not for the lists that are aggregated.
 func (c Config) FormServers() []string {
 	return append(append([]string(nil), c.Servers...), PrimaryFrontEnd)
+}
+
+// IsAdmin tells whether the login is one of ADT_ADMIN_USERS. In development mode, where no Apache signs anybody
+// in, everybody is.
+func (c Config) IsAdmin(user string) bool {
+	if c.DevMode {
+		return true
+	}
+	user = strings.ToLower(strings.TrimSpace(user))
+	for _, a := range c.AdminUsers {
+		if user != "" && a == user {
+			return true
+		}
+	}
+	return false
 }
 
 // truthy is true for 1, true, yes and on (any case): "0", "no" or "False" must not switch the development mode, which
@@ -77,6 +95,11 @@ func FromEnv() Config {
 		DevUser:            env("ADT_DEV_USER", "dev"),
 		DevName:            env("ADT_DEV_NAME", "Dev User"),
 		DevMail:            env("ADT_DEV_MAIL", "dev@example.org"),
+	}
+	for _, u := range strings.Split(os.Getenv("ADT_ADMIN_USERS"), ",") {
+		if u = strings.ToLower(strings.TrimSpace(u)); u != "" {
+			c.AdminUsers = append(c.AdminUsers, u)
+		}
 	}
 	for _, s := range strings.Split(os.Getenv("ACCEPTANCE_SERVERS"), ",") {
 		if s = strings.TrimSpace(s); s != "" {

@@ -135,10 +135,12 @@ func cached(key string, build func() []BranchGroup) []BranchGroup {
 	return branchLists.Get(key, branchTTL, build)
 }
 
-// FeatureBranches lists the origin/feature/* branches of the projects.
+// FeatureBranches lists the origin/feature/* branches of the projects, each compared with its base branch
+// (FeatureBase).
 func FeatureBranches(dataDir string, projects []string) []BranchGroup {
-	return cached("features\x00"+dataDir+"\x00"+strings.Join(projects, "\x00"), func() []BranchGroup {
-		return buildFeatureBranches(dataDir, projects)
+	bases := FeatureBases(dataDir)
+	return cached("features\x00"+dataDir+"\x00"+strings.Join(projects, "\x00")+"\x00"+basesCacheKey(bases), func() []BranchGroup {
+		return buildFeatureBranches(dataDir, projects, bases)
 	})
 }
 
@@ -168,7 +170,7 @@ func countBranches(tasks []*branchTask, ref string) {
 // buildFeatureBranches lists the branches of every project in parallel, then walks the projects in order (the
 // GitHub org/repo of a previous match survives a remote that does not match), then counts the commits of all the
 // branches in parallel. The result is the same, in the same order, as doing it all one after the other.
-func buildFeatureBranches(dataDir string, projects []string) []BranchGroup {
+func buildFeatureBranches(dataDir string, projects []string, bases map[string]string) []BranchGroup {
 	type listing struct {
 		r        *Repository
 		branches []string
@@ -199,7 +201,10 @@ func buildFeatureBranches(dataDir string, projects []string) []BranchGroup {
 			if m := githubSSH.FindStringSubmatch(lists[i].url); m != nil {
 				org, repo = m[1], m[2]
 			}
-			base := BaseBranchToCompareWith(org, repo, "feature/"+branch)
+			base := FeatureBase(bases, branch)
+			if base != DefaultBaseBranch && !lists[i].r.RefExists("origin/"+base) {
+				base = DefaultBaseBranch // this project has no such branch
+			}
 			if !ValidRef(base) {
 				continue
 			}

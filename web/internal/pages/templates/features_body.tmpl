@@ -75,6 +75,17 @@
                                             <code>{{ esc .Name }}</code>
                                         </h5>
                                         <div class="feature-actions ms-auto">
+{{ if .BaseEditable }}                                        <details class="feature-base">
+                                            <summary class="small text-muted" style="list-style:none;cursor:pointer" rel="tooltip" title="Compared with {{ esc .Base }}: click to change the base branch">{{ if .BaseCustom }}base <code class="text-warning">{{ esc .Base }}</code> {{ end }}<i class="fas fa-pen ms-1" aria-hidden="true"></i><span class="visually-hidden">Edit the base branch of {{ esc .Name }}</span></summary>
+                                            <form method="POST" action="/editFeatureBase" class="d-flex align-items-center gap-1 mt-1">
+                                                <input type="hidden" name="from" value="{{ esc .From }}">
+                                                <input type="hidden" name="name" value="{{ esc .Name }}">
+                                                <input type="text" name="base" value="{{ esc .Base }}" placeholder="develop" spellcheck="false" aria-label="Base branch of {{ esc .Name }}" class="form-control form-control-sm" style="width:9rem">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Save the base branch (empty: develop)"><i class="fas fa-check" aria-hidden="true"></i></button>
+                                            </form>
+                                        </details>
+{{ else }}{{ if .BaseCustom }}<span class="small text-muted">base <code class="text-warning">{{ esc .Base }}</code></span>{{ end }}
+{{ end }}
                                         <a href="{{ .CiRebase }}" target="_blank"
                                            class="btn btn-sm btn-outline-primary" rel="tooltip" title="Rebase this feature branch">
                                                 <i class="fas fa-sync-alt" aria-hidden="true"></i> Rebase
@@ -110,7 +121,17 @@
                                             <th scope="col" class="features-matrix__project">Project</th>
 {{ range .Cards }}                                            <th scope="col" data-feature="{{ esc .Name }}">
                                                 <code>{{ esc .Name }}</code>
-                                                <div class="features-matrix__rebase">
+{{ if .BaseEditable }}                                                <details class="feature-base">
+                                            <summary class="small text-muted" style="list-style:none;cursor:pointer" rel="tooltip" title="Compared with {{ esc .Base }}: click to change the base branch">{{ if .BaseCustom }}base <code class="text-warning">{{ esc .Base }}</code> {{ end }}<i class="fas fa-pen ms-1" aria-hidden="true"></i><span class="visually-hidden">Edit the base branch of {{ esc .Name }}</span></summary>
+                                            <form method="POST" action="/editFeatureBase" class="d-flex align-items-center gap-1 mt-1">
+                                                <input type="hidden" name="from" value="{{ esc .From }}">
+                                                <input type="hidden" name="name" value="{{ esc .Name }}">
+                                                <input type="text" name="base" value="{{ esc .Base }}" placeholder="develop" spellcheck="false" aria-label="Base branch of {{ esc .Name }}" class="form-control form-control-sm" style="width:9rem">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Save the base branch (empty: develop)"><i class="fas fa-check" aria-hidden="true"></i></button>
+                                            </form>
+                                        </details>
+{{ else }}{{ if .BaseCustom }}<span class="small text-muted">base <code class="text-warning">{{ esc .Base }}</code></span>{{ end }}
+{{ end }}                                                <div class="features-matrix__rebase">
                                                     <a href="{{ .CiRebase }}" target="_blank" rel="tooltip" title="Rebase this feature branch"><i class="fas fa-sync-alt"></i></a>
                                                     {{ .CiDot }}
                                                 </div>
@@ -162,6 +183,19 @@
                                                 </a>
                                                 <code class="small">{{ esc .Name }}</code>
                                             </div>
+                                            <div class="mt-2">
+{{ if .BaseEditable }}
+                                        <details class="feature-base">
+                                            <summary class="small text-muted" style="list-style:none;cursor:pointer" rel="tooltip" title="Compared with {{ esc .Base }}: click to change the base branch">{{ if .BaseCustom }}base <code class="text-warning">{{ esc .Base }}</code> {{ end }}<i class="fas fa-pen ms-1" aria-hidden="true"></i><span class="visually-hidden">Edit the base branch of {{ esc .Name }}</span></summary>
+                                            <form method="POST" action="/editFeatureBase" class="d-flex align-items-center gap-1 mt-1">
+                                                <input type="hidden" name="from" value="{{ esc .From }}">
+                                                <input type="hidden" name="name" value="{{ esc .Name }}">
+                                                <input type="text" name="base" value="{{ esc .Base }}" placeholder="develop" spellcheck="false" aria-label="Base branch of {{ esc .Name }}" class="form-control form-control-sm" style="width:9rem">
+                                                <button type="submit" class="btn btn-sm btn-outline-secondary" title="Save the base branch (empty: develop)"><i class="fas fa-check" aria-hidden="true"></i></button>
+                                            </form>
+                                        </details>
+{{ else }}{{ if .BaseCustom }}                                        <span class="small text-muted">base <code class="text-warning">{{ esc .Base }}</code></span>
+{{ end }}{{ end }}                                            </div>
                                             <div class="mt-2">
                                                 <span class="badge bg-info me-2">{{ .Count }} project(s)</span>
 {{ if .Count }}                                                    <small class="text-muted">

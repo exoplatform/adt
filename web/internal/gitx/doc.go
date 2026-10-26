@@ -15,7 +15,10 @@
 //	func ModuleCiPrefix(item string) string            // "" when the module has no prefix
 //	func GitDirectoriesList(dir string) ([]string, error) // entries containing ".git" at index > 0
 //	func DirectoryList(dir string) ([]string, error)       // all entries except "." and ".."
-//	func BaseBranchToCompareWith(org, repo, branch string) string // always "develop"
+//	func BaseBranchToCompareWith(org, repo, branch string) string // always "develop" (translation branches)
+//	func FeatureBases(dataDir string) map[string]string  // conf/feature-bases/<key>.base, by FeatureBaseKey
+//	func FeatureBase(bases map[string]string, name string) string // "develop" unless set
+//	func KnownBaseBranch(dataDir string, projects []string, base string) bool
 //
 // Names and validation:
 //

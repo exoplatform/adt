@@ -8,6 +8,7 @@ import (
 	"unicode/utf16"
 
 	"github.com/exoplatform/adt/web/internal/app"
+	"github.com/exoplatform/adt/web/internal/auth"
 	"github.com/exoplatform/adt/web/internal/cache"
 	"github.com/exoplatform/adt/web/internal/gitx"
 	"github.com/exoplatform/adt/web/internal/phpx"
@@ -103,6 +104,7 @@ func featuresPage(a *app.App, w http.ResponseWriter, r *http.Request) {
 		projects[i] = p.Name
 	}
 	feats := gitx.FeatureBranches(a.Cfg.DataDir, projects)
+	bases := gitx.FeatureBases(a.Cfg.DataDir)
 	acceptance := featuresAcceptanceBranches(a, r, c)
 	inAcceptance := func(n string) bool {
 		for _, b := range acceptance {
@@ -158,6 +160,10 @@ func featuresPage(a *app.App, w http.ResponseWriter, r *http.Request) {
 		return gitx.ModuleCiPrefix(project) + phpx.RawURLEncode(project) + "-" + phpx.RawURLEncode(f)
 	}
 	pageURL := c.CurrentPageURL()
+	// baseOf and editable: the base branch of a feature branch, and whether the visitor can set it
+	baseOf := func(f string) string { return gitx.FeatureBase(bases, f) }
+	admin := a.Cfg.IsAdmin(auth.From(r).User)
+	editable := func(f string) bool { return admin && gitx.FeatureBaseKey(f) != "" }
 
 	data := featuresView{Filters: len(accepted) > 0 || len(other) > 0, Empty: len(accepted) == 0 && len(other) == 0}
 	for _, g := range []featuresGroup{{"Deployed", accepted}, {"Other", other}} {
@@ -177,7 +183,7 @@ func featuresPage(a *app.App, w http.ResponseWriter, r *http.Request) {
 			fp := byProject(f)
 			maps[i] = fp
 			card := featuresCard{Slug: slug(f.Name), Name: f.Name, Attrs: filterAttrs(f), Href: pageURL + "#feature-" + slug(f.Name),
-				CiRebase: ciRebase(f.Name), CiDot: ciDotRebase(f.Name)}
+				CiRebase: ciRebase(f.Name), CiDot: ciDotRebase(f.Name), Base: baseOf(f.Name), BaseCustom: baseOf(f.Name) != gitx.DefaultBaseBranch, BaseEditable: editable(f.Name), From: pageURL}
 			for _, project := range projects {
 				if p, ok := fp[project]; ok {
 					card.Chips = append(card.Chips, featuresChip{Search: searchKey(project), Label: names[project], Behind: p.BehindCommits,
@@ -207,7 +213,8 @@ func featuresPage(a *app.App, w http.ResponseWriter, r *http.Request) {
 	}
 	for _, f := range other {
 		n := len(f.Projects)
-		o := featuresOther{Slug: slug(f.Name), Name: f.Name, Attrs: filterAttrs(f), Href: pageURL + "#feature-" + slug(f.Name), Count: n}
+		o := featuresOther{Slug: slug(f.Name), Name: f.Name, Attrs: filterAttrs(f), Href: pageURL + "#feature-" + slug(f.Name), Count: n,
+			Base: baseOf(f.Name), BaseCustom: baseOf(f.Name) != gitx.DefaultBaseBranch, BaseEditable: editable(f.Name), From: pageURL}
 		var first []string
 		for i, p := range f.Projects {
 			if i < 3 {
@@ -266,6 +273,8 @@ type featuresDeployed struct {
 
 type featuresCard struct {
 	Slug, Name, Attrs, Href, CiRebase, CiDot string
+	Base, From                               string
+	BaseEditable, BaseCustom                 bool
 	Chips                                    []featuresChip
 }
 
@@ -290,6 +299,8 @@ type featuresCell struct {
 
 type featuresOther struct {
 	Slug, Name, Attrs, Href, First, More string
+	Base, From                           string
+	BaseEditable, BaseCustom             bool
 	Count, Rest                          int
 	Badges                               []string
 }

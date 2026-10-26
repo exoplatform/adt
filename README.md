@@ -134,6 +134,7 @@ The most useful ones:
 | `ADT_SESSION_PASSPHRASE` | Secret that encrypts the front-end login cookie (required) |
 | `ACCEPTANCE_HOST` | Name of this server (its Apache virtual host); the front-end publishes it for the other servers |
 | `ACCEPTANCE_SERVERS` | Base URLs of every acceptance server, this one included. List live servers only: a page that merges the servers waits for an entry that does not answer |
+| `ADT_ADMIN_USERS` | Comma-separated logins of the dashboard administrators: only they get the control that changes the base branch of a feature branch on `/features` (Apache also limits `POST /editFeatureBase` to the LDAP admin group). Empty: nobody, in development mode everybody |
 | `PRODUCT_NAME` | `plf`, `plfcom`, `plfent`, `plfenteap`, `plftrial`, `plfdemo`, `meeds`, `gatein`, `exogtn`, `addonchat`, `compint`, `community`, `docs` |
 | `PRODUCT_VERSION` | Release, `-SNAPSHOT`, or `-MLT` / `-MBL` / `-GA` (with optional `Z` wildcard, e.g. `7.2.Z-GA`) |
 | `INSTANCE_ID` | Distinguishes several deployments of the same product and version |

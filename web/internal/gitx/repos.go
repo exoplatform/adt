@@ -244,5 +244,5 @@ func DirectoryList(dir string) ([]string, error) {
 	return res, nil
 }
 
-// BaseBranchToCompareWith returns the branch to compare with: always "develop".
-func BaseBranchToCompareWith(org, repo, branch string) string { return "develop" }
+// BaseBranchToCompareWith returns the branch to compare with: always "develop" (the translation branches).
+func BaseBranchToCompareWith(org, repo, branch string) string { return DefaultBaseBranch }

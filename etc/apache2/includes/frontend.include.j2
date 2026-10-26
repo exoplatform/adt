@@ -123,10 +123,11 @@
             </RequireAll>
     </Location>
 
-    # Debug pages (/debug and /debug-*): members of the LDAP group LDAP_ACCEPTANCE_APACHE2_ADMIN_DN only.
+    # Debug pages (/debug and /debug-*) and the base branch of the feature branches (POST /editFeatureBase):
+    # members of the LDAP group LDAP_ACCEPTANCE_APACHE2_ADMIN_DN only.
     # AuthMerging is Off by default, so this Require replaces the exo-employees one above
     # mod_authnz_ldap does not inherit AuthLDAPURL from <Location />: repeat the auth settings.
-    <LocationMatch "^/debug[^/]*$">
+    <LocationMatch "^/(debug[^/]*|editFeatureBase)$">
             SessionEnv On
             AuthName "eXo Employees only"
             AuthType form

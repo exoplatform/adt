@@ -113,6 +113,7 @@ Environment Variables
   ADT_WEB_SERVICE                   : The systemd service "init" restarts when adt-web or its environment changed (default: adt-web)
   ADT_WEB_ENV_FILE                  : The environment file "init" writes for that service (default: \${ADT_DATA}/conf/adt-web.env)
   ADT_WEB_CSP                       : The Content-Security-Policy of the adt-web pages: enforce, report-only (the browser only logs what it would block) or off (default: enforce)
+  ADT_ADMIN_USERS                   : Comma-separated logins of the dashboard administrators, who can change the base branch of a feature branch (default: none)
   ADT_WEB_GO_IMAGE                  : The image used to build adt-web when no suitable Go is installed (default: a pinned golang:<go version>-alpine image, by digest)
   APACHE_SSL_CERTIFICATE_FILE       : Apache SSLCertificateFile for HTTPS setup (PEM bundle including certificate chain)
   APACHE_SSL_CERTIFICATE_KEY_FILE   : Apache SSLCertificateKeyFile for HTTPS setup
