@@ -54,7 +54,7 @@
                             <div class="w-100">
                                 <div class="d-flex align-items-center flex-wrap card-header__title">
                                     <i class="fas fa-check-circle text-success me-2"></i>
-                                    <h5 class="mb-0">Feature Branches deployed on acceptance</h5>
+                                    <h2 class="mb-0 h5">Feature Branches deployed on acceptance</h2>
                                     <span class="badge bg-success ms-2 features-count" data-total="{{ len .Cards }}">{{ len .Cards }}</span>
                                 </div>
                                 <small class="text-muted d-block mt-1">Status compared to each project code base branch</small>
@@ -68,12 +68,12 @@
 
                                     <!-- Feature Header -->
                                     <div class="feature-title">
-                                        <a href="{{ esc .Href }}" class="text-warning">
+                                        <a href="{{ esc .Href }}" class="text-warning" aria-label="Link to {{ esc .Name }}">
                                             <i class="fas fa-bookmark" aria-hidden="true"></i>
                                         </a>
-                                        <h5 class="feature-branch-link">
+                                        <h3 class="feature-branch-link h5">
                                             <code>{{ esc .Name }}</code>
-                                        </h5>
+                                        </h3>
                                         <div class="feature-actions ms-auto">
 {{ if .BaseEditable }}                                        <details class="feature-base">
                                             <summary class="feature-base__toggle" title="Compared with {{ esc .Base }}: click to change the base branch">{{ if .BaseCustom }}base <code class="text-warning">{{ esc .Base }}</code> {{ end }}<i class="fas fa-pen ms-1" aria-hidden="true"></i><span class="visually-hidden">Edit the base branch of {{ esc .Name }}</span></summary>
@@ -169,7 +169,7 @@
                             <div class="w-100">
                                 <div class="d-flex align-items-center flex-wrap card-header__title">
                                     <i class="fas fa-exclamation-triangle text-warning me-2"></i>
-                                    <h5 class="mb-0">Other branches</h5>
+                                    <h2 class="mb-0 h5">Other branches</h2>
                                     <span class="badge bg-warning ms-2 features-count" data-total="{{ len . }}">{{ len . }}</span>
                                 </div>
                                 <small class="text-danger d-block mt-1">
@@ -184,7 +184,7 @@
                                     <div class="feature-card card h-100">
                                         <div class="card-body">
                                             <div class="feature-title">
-                                                <a href="{{ esc .Href }}" class="text-warning">
+                                                <a href="{{ esc .Href }}" class="text-warning" aria-label="Link to {{ esc .Name }}">
                                                     <i class="fas fa-bookmark" aria-hidden="true"></i>
                                                 </a>
                                                 <code class="small">{{ esc .Name }}</code>

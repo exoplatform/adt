@@ -1308,7 +1308,8 @@ a[name] {
   gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
-.feature-title h5 {
+.feature-title h5,
+.feature-title h3 {
   margin: 0;
   font-weight: 700;
   min-width: 0;
@@ -2732,11 +2733,17 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
 .features-matrix th .feature-base { display: block; margin-top: 0.25rem; text-align: center; }
 .features-matrix th .feature-base__form { position: static; width: auto; max-width: 14rem; margin: 0.35rem auto 0; box-shadow: none; text-align: left; }
 /* Other-branches cards: the base sits on its own line under the branch name */
-.feature-item .feature-base__form { left: 0; right: auto; }
-/* Phones: the editor opens in the flow, on its own row, instead of floating over a narrow card */
-@media (max-width: 575.98px) {
+.feature-item:not(.feature-card) .feature-base__form { left: 0; right: auto; }
+/* Below desktop width the toggle of a deployed card may sit anywhere in its wrapped row, so the editor opens in the flow, on
+   its own row, instead of floating (a floating panel would run off the screen) */
+@media (max-width: 991.98px) {
   .feature-actions .feature-base[open] { flex: 1 0 100%; text-align: right; }
-  .feature-actions .feature-base__form,
-  .feature-item .feature-base__form { position: static; width: 100%; max-width: none; margin-top: 0.4rem; text-align: left; box-shadow: none; }
+  .feature-actions .feature-base__form { position: static; width: 100%; max-width: none; margin-top: 0.4rem; text-align: left; box-shadow: none; }
+}
+/* Phones: the editor of the other-branches cards is in the flow too, and the chips are tighter */
+@media (max-width: 575.98px) {
+  .feature-item:not(.feature-card) .feature-base__form { position: static; width: 100%; max-width: none; margin-top: 0.4rem; box-shadow: none; }
   .project-chip .project-chip-name { font-size: 0.62rem; letter-spacing: 0; overflow-wrap: anywhere; }
 }
+/* Rebase button: the stock outline-primary blue is 4.2:1 on the dark card (WCAG AA wants 4.5:1) */
+.feature-actions .btn-outline-primary:not(:hover):not(:focus-visible):not(:active) { color: var(--accent-text); border-color: currentColor; }

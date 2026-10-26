@@ -33,7 +33,7 @@ func Alert(kind, message string) string {
 // <html><head> head </head><body> tracker, navigation (no doctype).
 func Open(c *ui.Ctx, title string, autoRefresh bool) {
 	c.W.Header().Set("Content-Type", "text/html; charset=UTF-8")
-	c.WriteString("<html lang=\"en\">\n<head>\n")
+	c.WriteString("<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n")
 	c.Head(title, autoRefresh)
 	c.WriteString("</head>\n<body>\n")
 	c.Tracker("")
