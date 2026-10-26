@@ -65,6 +65,7 @@ var repositories = []Repo{
 	{"external-visio-connector", "Ext Visio Connector"},
 	{"multifactor-authentication", "Multifactor Authentication"},
 	{"documents", "Documents"},
+	{"forms", "Forms"},
 	{"processes", "Processes"},
 	{"automatic-translation", "Automatic Translation"},
 	{"anti-bruteforce", "Anti Brute Force"},
