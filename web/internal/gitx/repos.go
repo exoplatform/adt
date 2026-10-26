@@ -121,6 +121,7 @@ var moduleCiPrefix = map[string]string{
 	"kernel":                     "meeds-",
 	"core":                       "meeds-",
 	"documents":                  "addon-",
+	"forms":                      "addon-",
 	"ws":                         "meeds-",
 	"portlet-container":          "meeds-",
 	"gatein-sso":                 "meeds-",
