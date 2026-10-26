@@ -149,10 +149,12 @@ func ProductHtmlPopover(d instances.Instance) string {
 	})
 }
 
-// deploymentAction is one button of the DeploymentActions group; Href is already escaped.
+// deploymentAction is one button of the DeploymentActions group; Href and Copy are already escaped.
+// A button with a Copy value copies it to the clipboard instead of following a link: used for
+// addresses no application is registered to open (JMX, LDAP, SSH).
 type deploymentAction struct {
-	Href, Title, Icon string
-	Blank             bool
+	Href, Title, Icon, Copy string
+	Blank                   bool
 }
 
 // DeploymentActions renders the button group of an instance.
@@ -164,19 +166,22 @@ func DeploymentActions(d instances.Instance) string {
 	deploymentURL = safe(deploymentURL)
 	var actions []deploymentAction
 	btn := func(href, title string, blank bool, icon string) {
-		actions = append(actions, deploymentAction{href, title, icon, blank})
+		actions = append(actions, deploymentAction{Href: href, Title: title, Icon: icon, Blank: blank})
+	}
+	copyBtn := func(text, title, icon string) {
+		actions = append(actions, deploymentAction{Copy: text, Title: title, Icon: icon})
 	}
 	flag := func(k string) bool { return hasProp(d, k) && d.Truthy(k) }
 	btn(safe(d.Str("DEPLOYMENT_LOG_APPSRV_URL")), "Instance logs", true, "fa-file-alt")
 	btn(safe(d.Str("DEPLOYMENT_LOG_APACHE_URL")), "Apache logs", true, "fa-server")
 	if d.Truthy("DEPLOYMENT_JMX_URL") {
-		btn(safe(d.Str("DEPLOYMENT_JMX_URL")), "JMX monitoring", true, "fa-chart-line")
+		copyBtn(safe(d.Str("DEPLOYMENT_JMX_URL")), "Copy the JMX URL", "fa-chart-line")
 	}
 	if d.Truthy("DEPLOYMENT_LDAP_LINK") {
-		btn(safe(d.Str("DEPLOYMENT_LDAP_LINK")), "LDAP url", true, "fa-address-book")
+		copyBtn(safe(d.Str("DEPLOYMENT_LDAP_LINK")), "Copy the LDAP URL", "fa-address-book")
 	}
 	if flag("DEPLOYMENT_CRASH_ENABLED") {
-		btn("ssh://root@"+safe(d.Str("DEPLOYMENT_EXT_HOST"))+":"+safe(d.Str("DEPLOYMENT_CRASH_SSH_PORT")), "CRaSH SSH Access", false, "fa-terminal")
+		copyBtn("ssh -p "+safe(d.Str("DEPLOYMENT_CRASH_SSH_PORT"))+" root@"+safe(d.Str("DEPLOYMENT_EXT_HOST")), "Copy the CRaSH SSH command", "fa-terminal")
 	}
 	btn(safe(d.Str("DEPLOYMENT_AWSTATS_URL")), "Usage statistics", true, "fa-chart-bar")
 	if flag("DEPLOYMENT_ES_ENABLED") {

@@ -25,7 +25,7 @@
 {{- "" }}{{ if .Info }}<hr><strong>Info:</strong> {{ compSafe .Info }}{{ end }}
 {{- "" }}</div>
 {{- end }}
-{{ define "comp_actions" }}<div class="btn-group btn-group-sm" role="group">{{ range . }}<a href="{{ .Href }}" rel="tooltip" title="{{ .Title }}"{{ if .Blank }} target="_blank"{{ end }} class="btn btn-outline-secondary"><i class="fas {{ .Icon }}"></i></a>{{ end }}</div>{{ end }}
+{{ define "comp_actions" }}<div class="btn-group btn-group-sm" role="group">{{ range . }}{{ if .Copy }}<button type="button" data-copy-text="{{ .Copy }}" rel="tooltip" title="{{ .Title }}" aria-label="{{ .Title }}" class="btn btn-outline-secondary"><i class="fas {{ .Icon }}" aria-hidden="true"></i></button>{{ else }}<a href="{{ .Href }}" rel="tooltip" title="{{ .Title }}"{{ if .Blank }} target="_blank"{{ end }} class="btn btn-outline-secondary"><i class="fas {{ .Icon }}"></i></a>{{ end }}{{ end }}</div>{{ end }}
 {{ define "comp_fb_status" }}<span class="badge {{ .Class }}">{{ esc .State }}</span>{{ end }}
 {{ define "comp_fb_scm" }}<a href="/features#{{ esc .Anchor }}" rel="tooltip" title="SCM Branch used to host this FB development"><i class="fas fa-code-branch"></i>&nbsp;{{ esc .Branch }}</a>{{ end }}
 {{ define "comp_fb_issue" }}<a href="https://community.exoplatform.com/portal/dw/tasks/taskDetail/{{ esc . }}" rel="tooltip" title="Opened issue where to put your feedbacks on this new feature"><i class="fas fa-tasks"></i>&nbsp;{{ esc . }}</a>{{ end }}

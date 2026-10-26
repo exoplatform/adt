@@ -18,17 +18,7 @@
         btn.innerHTML = ok ? '<i class="fas fa-check me-1"></i>Copied' : '<i class="fas fa-xmark me-1"></i>Copy failed';
         setTimeout(function () { btn.innerHTML = '<i class="fas fa-copy me-1"></i>Copy'; }, 1800);
       };
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(false); });
-        return;
-      }
-      var ta = document.createElement('textarea');
-      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      var ok = false;
-      try { ok = document.execCommand('copy'); } catch (e) {}
-      document.body.removeChild(ta);
-      done(ok);
+      copyText(text, done);
     });
   });
 })();

@@ -92,6 +92,22 @@ function importSharedTheme() {
 }
 importSharedTheme();
 
+// ── Copy text to the clipboard; done(ok) tells whether it worked. The async Clipboard API needs a secure
+// context (https or localhost), so instances served over plain http fall back to execCommand ──
+function copyText(text, done) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(function() { done(true); }, function() { done(false); });
+    return;
+  }
+  var ta = document.createElement('textarea');
+  ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+  document.body.appendChild(ta); ta.select();
+  var ok = false;
+  try { ok = document.execCommand('copy'); } catch(e) {}
+  document.body.removeChild(ta);
+  done(ok);
+}
+
 // ── Copy a link that applies the current theme for whoever opens it ──
 function shareTheme(ev) {
   var accent = resolveAccent();
@@ -104,19 +120,8 @@ function shareTheme(ev) {
     label.textContent = ok ? 'Link copied' : 'Copy failed';
     setTimeout(function() { label.textContent = 'Copy theme link'; }, 1800);
   };
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(url).then(function() { done(true); }, function() { done(false); });
-    return;
-  }
-  var ta = document.createElement('textarea');
-  ta.value = url; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
-  document.body.appendChild(ta); ta.select();
-  var ok = false;
-  try { ok = document.execCommand('copy'); } catch(e) {}
-  document.body.removeChild(ta);
-  done(ok);
+  copyText(url, done);
 }
-
 
 // ── Apply accent (no persist) ────────────────────────
 function setAccent(accent) {

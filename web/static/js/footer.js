@@ -6,6 +6,25 @@ document.addEventListener('hide.bs.modal', function(e) {
   if (active && active !== document.body && e.target.contains(active)) active.blur();
 });
 
+// Buttons that copy an address nobody can open (JMX URL, LDAP URL, SSH command): the tooltip confirms the copy
+document.addEventListener('click', function(e) {
+  var btn = e.target.closest && e.target.closest('[data-copy-text]');
+  if (!btn) return;
+  var title = btn.getAttribute('data-bs-original-title') || btn.getAttribute('title') || '';
+  copyText(btn.getAttribute('data-copy-text'), function(ok) {
+    var tip = typeof bootstrap !== 'undefined' && bootstrap.Tooltip.getInstance(btn);
+    if (!tip) return;
+    tip.setContent({ '.tooltip-inner': ok ? 'Copied!' : 'Copy failed' });
+    tip.show();
+    clearTimeout(btn._copyTimer);
+    btn._copyTimer = setTimeout(function() {
+      tip.setContent({ '.tooltip-inner': title });
+      // Without hover or focus (touch, programmatic) nothing else would close it
+      if (!btn.matches(':hover, :focus-visible')) tip.hide();
+    }, 1500);
+  });
+});
+
 document.addEventListener('DOMContentLoaded', function() {
   // Bootstrap comes from a CDN: without it the page still works, only the tooltips and popovers are missing
   if (typeof bootstrap === 'undefined') return;
