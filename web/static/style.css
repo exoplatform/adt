@@ -1315,9 +1315,12 @@ a[name] {
 }
 .feature-actions {
   display: flex;
-  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.35rem 0.5rem;
   align-items: center;
 }
+.feature-actions .btn { white-space: nowrap; }
 .feature-branch-link {
   font-family: var(--font-mono);
   font-size: 0.84rem;
@@ -2684,3 +2687,56 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
 .fa-brands.fa-redhat { font-size: 1.3em; color: #ff5a4d; }
 [data-bs-theme="light"] .fa-brands.fa-java { color: #b45309; }
 [data-bs-theme="light"] .fa-brands.fa-redhat { color: #c4161c; }
+
+/* Base branch of a feature branch: a toggle (pencil, plus the base when it is not develop) that opens a small editor.
+   On the cards the editor floats over the page, so that opening it does not move the card header. */
+.feature-base { position: relative; display: inline-block; }
+.feature-base__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 24px;
+  padding: 0.15rem 0.45rem;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  color: var(--text-muted);
+  white-space: nowrap;
+  cursor: pointer;
+  list-style: none;
+}
+.feature-base__toggle::-webkit-details-marker { display: none; }
+.feature-base__toggle:hover, .feature-base[open] > .feature-base__toggle { color: var(--accent-text); border-color: var(--border-card); }
+.feature-base__toggle:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 1px; }
+.feature-base__toggle .fa-pen { font-size: 0.7rem; }
+.feature-base__toggle code { font-size: 0.75rem; }
+.feature-base__form {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  z-index: 30;
+  width: 15rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0.6rem;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-card);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+}
+.feature-base__label { display: block; margin-bottom: 0.3rem; font-size: 0.7rem; color: var(--text-muted); }
+.feature-base__row { display: flex; gap: 0.4rem; align-items: center; }
+.feature-base__row .form-control { flex: 1 1 auto; min-width: 0; }
+.feature-base__row .btn { flex: 0 0 auto; }
+/* Table view: the column header is centred, and the editor stays in the flow (the table wrapper would clip a popover) */
+.features-matrix th .feature-base { display: block; margin-top: 0.25rem; text-align: center; }
+.features-matrix th .feature-base__form { position: static; width: auto; max-width: 14rem; margin: 0.35rem auto 0; box-shadow: none; text-align: left; }
+/* Other-branches cards: the base sits on its own line under the branch name */
+.feature-item .feature-base__form { left: 0; right: auto; }
+/* Phones: the editor opens in the flow, on its own row, instead of floating over a narrow card */
+@media (max-width: 575.98px) {
+  .feature-actions .feature-base[open] { flex: 1 0 100%; text-align: right; }
+  .feature-actions .feature-base__form,
+  .feature-item .feature-base__form { position: static; width: 100%; max-width: none; margin-top: 0.4rem; text-align: left; box-shadow: none; }
+  .project-chip .project-chip-name { font-size: 0.62rem; letter-spacing: 0; overflow-wrap: anywhere; }
+}
