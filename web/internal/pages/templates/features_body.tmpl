@@ -216,7 +216,12 @@
 {{ range .Badges }}                                                    <span class="badge bg-light text-dark">
                                                         {{ . }}
                                                     </span>
-{{ end }}{{ if .Rest }}                                                    <span class="badge bg-secondary">+{{ .Rest }} more</span>
+{{ end }}{{ if .Rest }}                                                    <details class="feature-more">
+                                                        <summary class="badge bg-secondary" title="Show the other {{ .Rest }} project(s)">+{{ .Rest }} more</summary>
+                                                        <ul class="feature-more__list">
+{{ range .Others }}                                                            <li><span class="feature-more__name">{{ esc .Name }}</span> {{ .Status }}</li>
+{{ end }}                                                        </ul>
+                                                    </details>
 {{ end }}                                            </div>
 {{ end }}                                        </div>
                                     </div>

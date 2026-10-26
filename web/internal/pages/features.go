@@ -222,6 +222,8 @@ func featuresPage(a *app.App, w http.ResponseWriter, r *http.Request) {
 			}
 			if i < 2 {
 				o.Badges = append(o.Badges, status(p))
+			} else {
+				o.Others = append(o.Others, featuresOtherProject{Name: names[p.Project], Status: status(p)})
 			}
 		}
 		o.First = strings.Join(first, ", ")
@@ -303,4 +305,7 @@ type featuresOther struct {
 	BaseEditable, BaseCustom             bool
 	Count, Rest                          int
 	Badges                               []string
+	Others                               []featuresOtherProject // the projects past the first two, listed when "+N more" is opened
 }
+
+type featuresOtherProject struct{ Name, Status string }
