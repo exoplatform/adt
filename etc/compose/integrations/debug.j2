@@ -1,0 +1,4 @@
+{% if DEPLOYMENT_DEBUG_ENABLED == "true" %}
+{# the JVM listens on 8000 inside the project network only: the debugproxy container makes it reachable as a websocket #}
+{% set _ = app_env.update({P ~ "_DEBUG_ENABLED": "true", P ~ "_DEBUG_PORT": "8000"}) %}
+{% endif %}

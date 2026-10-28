@@ -1,0 +1,25 @@
+{% if DEPLOYMENT_CALDAV_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("baikal_config") %}
+{% set _ = top_volumes.append("baikal_specific") %}
+  baikal:
+    image: {{ y(DEPLOYMENT_CALDAV_IMAGE ~ ":" ~ DEPLOYMENT_CALDAV_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_baikal") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "baikal"
+    volumes:
+      - baikal_config:/var/www/baikal/config
+      - baikal_specific:/var/www/baikal/Specific
+      - {{ y(ETC_DIR ~ "/baikal/nginx-prefix.sh:/docker-entrypoint.d/50-baikal-prefix.sh:ro") }}
+      - {{ y(ETC_DIR ~ "/php/php-certfr-2026-ale-014.ini:/etc/php/8.2/fpm/conf.d/zz-certfr-2026-ale-014.ini:ro") }}
+      - {{ y(ETC_DIR ~ "/php/php-certfr-2026-ale-014.ini:/etc/php/8.2/cli/conf.d/zz-certfr-2026-ale-014.ini:ro") }}
+    healthcheck:
+      test: ["CMD-SHELL", "curl --fail --silent --output /dev/null http://localhost:80 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+      start_period: 10s
+    logging: *logging
+
+{% endif %}

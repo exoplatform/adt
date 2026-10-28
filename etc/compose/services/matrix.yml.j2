@@ -1,0 +1,47 @@
+{% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+{% set _ = top_volumes.append("matrix_data") %}
+  # Synapse runs as uid 12000, a fresh volume belongs to root: this one-shot service hands it over
+  matrix_init:
+    image: {{ y(DEPLOYMENT_HELPER_IMAGE) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_matrix_init") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "matrix_init"
+    command: ["chown", "-R", "12000:12000", "/data"]
+    volumes:
+      - matrix_data:/data
+    restart: "no"
+
+  matrix:
+    image: {{ y(DEPLOYMENT_MATRIX_IMAGE ~ ":" ~ DEPLOYMENT_MATRIX_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_matrix") }}
+    hostname: "matrix"
+    user: "12000:12000"
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "matrix"
+    entrypoint: ["/bin/bash", "-c", "/docker-entrypoint-init.d/initialize.sh"]
+    volumes:
+      - matrix_data:/data
+      - ./matrix/homeserver.yaml:/data/homeserver.yaml:ro
+      - ./matrix/matrix.host.signing.key:/data/matrix.host.signing.key:ro
+      - ./matrix/matrix.log.config:/data/matrix.log.config:ro
+      - ./matrix/initialize.sh:/docker-entrypoint-init.d/initialize.sh:ro
+      - ./logs/matrix:/var/log/matrix
+    depends_on:
+      matrix_init:
+        condition: service_completed_successfully
+{% if DEPLOYMENT_MAILPIT_ENABLED == "true" %}
+      mailpit:
+        condition: service_healthy
+{% endif %}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fSs http://localhost:8008/health || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 20
+      start_period: 60s
+    logging: *logging
+
+{% endif %}

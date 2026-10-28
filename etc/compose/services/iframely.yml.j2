@@ -1,0 +1,18 @@
+{% if DEPLOYMENT_IFRAMELY_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+  iframely:
+    image: {{ y(DEPLOYMENT_IFRAMELY_IMAGE ~ ":" ~ DEPLOYMENT_IFRAMELY_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_iframely") }}
+    init: true
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "iframely"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8061 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+    logging: *logging
+
+{% endif %}

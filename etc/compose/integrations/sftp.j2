@@ -1,0 +1,9 @@
+{% if DEPLOYMENT_SFTP_ENABLED == "true" %}
+{% set _ = app_props.update({"exo.addons.lecko.job.enabled": "true"}) %}
+{% set _ = app_props.update({"exo.addons.lecko.out.name": "acceptance_lecko"}) %}
+{% set _ = app_props.update({"exo.addons.lecko.SftpHost": "sftp"}) %}
+{% set _ = app_props.update({"exo.addons.lecko.SftPortNumber": "22"}) %}
+{% set _ = app_props.update({"exo.addons.lecko.SftpUser": "root"}) %}
+{% set _ = app_props.update({"exo.addons.lecko.SftpPassword": "password"}) %}
+{% set _ = app_props.update({"exo.addons.lecko.SftpRemotePath": "/upload"}) %}
+{% endif %}

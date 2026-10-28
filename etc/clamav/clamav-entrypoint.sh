@@ -75,8 +75,8 @@ exec tini -- su -s /bin/sh $USER_NAME -c '
     log "[Incremental Scan] Watching /scan for new/modified files..."
 
     WATCH_DIRS="/scan/files /scan/jcr/values"
-    if [ -d "/scan/synapse/media" ]; then
-      WATCH_DIRS="$WATCH_DIRS /scan/synapse/media"
+    if [ -d "/scan/synapse/media_store" ]; then
+      WATCH_DIRS="$WATCH_DIRS /scan/synapse/media_store"
     fi
 
     # Check if Dir exist

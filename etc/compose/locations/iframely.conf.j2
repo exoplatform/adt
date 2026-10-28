@@ -1,0 +1,8 @@
+{% if DEPLOYMENT_IFRAMELY_ENABLED == "true" %}
+    # Iframely (oEmbed)
+    location /oembed {
+      set $upstream_iframely http://iframely:8061;
+      proxy_pass $upstream_iframely;
+    }
+
+{% endif %}

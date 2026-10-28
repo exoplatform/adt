@@ -1,0 +1,15 @@
+{% if DEPLOYMENT_FRONTAIL_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+  frontail:
+    image: {{ y(DEPLOYMENT_FRONTAIL_IMAGE ~ ":" ~ DEPLOYMENT_FRONTAIL_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_frontail") }}
+    hostname: "frontail"
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "frontail"
+    command: ["--disable-usage-stats", "--url-path", "/livelogs", "/logs/platform.log"]
+    volumes:
+      - ./logs/app:/logs:ro
+    logging: *logging
+
+{% endif %}

@@ -1,0 +1,24 @@
+{% if DEPLOYMENT_LAM_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+  lam:
+    image: {{ y(DEPLOYMENT_LAM_IMAGE ~ ":" ~ DEPLOYMENT_LAM_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_lam") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "lam"
+    environment:
+      LAM_SKIP_PRECONFIGURE: "false"
+      LDAP_SERVER: "ldap://ldap:389"
+      LDAP_BASE: {{ y(USER_DIRECTORY_BASE_DN) }}
+      LDAP_USER: {{ y(USER_DIRECTORY_ADMIN_DN) }}
+      LAM_PASSWORD: {{ y(USER_DIRECTORY_ADMIN_PASSWORD) }}
+      LDAP_USERS_DN: {{ y("ou=People,o=portal,o=gatein," ~ USER_DIRECTORY_BASE_DN) }}
+      LDAP_GROUPS_DN: {{ y("ou=groups," ~ USER_DIRECTORY_BASE_DN) }}
+    volumes:
+      - {{ y(ETC_DIR ~ "/php/php-certfr-2026-ale-014.ini:/etc/php/8.4/apache2/conf.d/zz-certfr-2026-ale-014.ini:ro") }}
+    depends_on:
+      ldap:
+        condition: service_healthy
+    logging: *logging
+
+{% endif %}

@@ -31,7 +31,7 @@ do_generate_awstats(){
   if ! ${_dev_mode}; then
     if [ -e /usr/lib/cgi-bin/awstats.pl ]; then
       echo_info "Generating AWStats data for domain ${_domain} ..."
-      sudo /usr/lib/cgi-bin/awstats.pl -config=${_domain} -update
+      sudo /usr/lib/cgi-bin/awstats.pl -config=${_domain} -update || echo_warn "awstats failed for ${_domain}, the deployment goes on"
       echo_info "Done."
     else
       echo_error "It is impossible to generate AWStats data for domain ${_domain}. Did you install AWStats ?"

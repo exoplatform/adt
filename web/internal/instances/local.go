@@ -1,16 +1,16 @@
 package instances
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
-	"unicode"
 )
 
 const localTTL = 120 * time.Second
@@ -80,6 +80,7 @@ func dirList(dir string) []string {
 
 func (s *Store) loadLocal(o Origin, now time.Time) *Branches {
 	instances := NewBranches()
+	running := runningInstances()
 	confDir := filepath.Join(s.cfg.DataDir, "conf", "adt")
 	for _, vhost := range dirList(confDir) {
 		content, ok := readFileString(filepath.Join(confDir, vhost))
@@ -92,7 +93,7 @@ func (s *Store) loadLocal(o Origin, now time.Time) *Branches {
 			log.Printf("instances: ignoring descriptor %s: %v", vhost, err)
 			continue
 		}
-		inst := s.enrich(Instance(d), o, now)
+		inst := s.enrich(Instance(d), o, now, running)
 		branch := descStr(d, "PLF_BRANCH")
 		if phpEmptyStr(branch) {
 			branch = "UNKNOWN"
@@ -103,7 +104,7 @@ func (s *Store) loadLocal(o Origin, now time.Time) *Branches {
 }
 
 // enrich completes one parsed descriptor.
-func (s *Store) enrich(d Instance, o Origin, now time.Time) Instance {
+func (s *Store) enrich(d Instance, o Origin, now time.Time, running map[string]bool) Instance {
 	str := func(k string) string { return descStr(d, k) }
 
 	// BASE_VERSION / BRANCH_NAME
@@ -178,29 +179,14 @@ func (s *Store) enrich(d Instance, o Origin, now time.Time) Instance {
 	switch {
 	case !d.Truthy("DEPLOYMENT_DATABASE_ENABLED") || phpEmptyStr(dbType):
 		d["DATABASE"] = "none"
-	case dbType == "MYSQL":
-		d["DATABASE"] = "mysql:5.5"
-	case strings.Contains(strings.ToLower(dbType), "docker"):
-		d["DATABASE"] = strings.ReplaceAll(strings.ToLower(dbType), "docker_", "") + ":" + str("DEPLOYMENT_DATABASE_VERSION")
+	default:
+		d["DATABASE"] = strings.ToLower(dbType) + ":" + str("DEPLOYMENT_DATABASE_VERSION")
 	}
 
-	// Chat informations
-	if d.Truthy("DEPLOYMENT_CHAT_ENABLED") {
-		if looseEqStrings(str("DEPLOYMENT_CHAT_MONGODB_TYPE"), "DOCKER") && d.Has("DEPLOYMENT_CHAT_MONGODB_TYPE") {
-			d["CHAT_DB"] = "mongo:" + str("DEPLOYMENT_CHAT_MONGODB_VERSION")
-		} else if d.Has("DEPLOYMENT_CHAT_MONGODB_PORT") && looseEqStrings(str("DEPLOYMENT_CHAT_MONGODB_PORT"), "27017") {
-			d["CHAT_DB"] = "mongo:2.6"
-		} else if d.Has("DEPLOYMENT_CHAT_MONGODB_PORT") && looseEqStrings(str("DEPLOYMENT_CHAT_MONGODB_PORT"), "27018") {
-			d["CHAT_DB"] = "mongo:3.2"
-		}
-	}
-
-	// status
+	// status: the application container of the instance is running
 	d["DEPLOYMENT_STATUS"] = "Down"
-	if pid := str("DEPLOYMENT_PID_FILE"); pid != "" {
-		if c, ok := readFileString(pid); ok && processIsRunning(c) {
-			d["DEPLOYMENT_STATUS"] = "Up"
-		}
+	if running[key] {
+		d["DEPLOYMENT_STATUS"] = "Up"
 	}
 
 	// Deployment Labels / Addons
@@ -284,19 +270,22 @@ func addonsDistrib(product, branch string) string {
 	return distribAddonsDefault
 }
 
-// processIsRunning probes every number of the PID file content with signal 0 (EPERM still means "exists");
-// no shell is involved.
-func processIsRunning(pidFile string) bool {
-	for _, f := range strings.FieldsFunc(pidFile, func(r rune) bool { return r == ',' || unicode.IsSpace(r) }) {
-		n, err := strconv.ParseUint(f, 10, 31)
-		if err != nil || n == 0 {
-			continue
-		}
-		if err := syscall.Kill(int(n), 0); err == nil || err == syscall.EPERM {
-			return true
-		}
+// runningInstances returns the keys of the instances whose application container is running, from one docker call.
+// Without docker (or when it does not answer) no instance is reported running.
+func runningInstances() map[string]bool {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	out, err := exec.CommandContext(ctx, "docker", "ps", "--filter", "label=adt.role=app", "--filter", "status=running",
+		"--format", `{{.Label "adt.instance"}}`).Output()
+	if err != nil {
+		log.Printf("instances: cannot list the running containers: %v", err)
+		return nil
 	}
-	return false
+	running := map[string]bool{}
+	for _, key := range strings.Fields(string(out)) {
+		running[key] = true
+	}
+	return running
 }
 
 // parseDescriptorDate reads a 'Ymd.His' date (UTC). Out-of-range fields roll over.

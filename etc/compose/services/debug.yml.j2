@@ -1,0 +1,25 @@
+{% if DEPLOYMENT_DEBUG_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+  debugproxy:
+    image: {{ y(DEPLOYMENT_DEBUGPROXY_IMAGE ~ ":" ~ DEPLOYMENT_DEBUGPROXY_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_debugproxy") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "debugproxy"
+    # a websocket in front of the JDWP port of the application: reached through nginx (and so Apache and its authentication) only
+    command: ["-E", "--binary", "ws-l:0.0.0.0:8001", "tcp:exo:8000"]
+    user: "65534:65534"
+    read_only: true
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 64m
+    # websocat resolves the application when it starts: it follows the application, which can be recreated
+    depends_on:
+      exo:
+        condition: service_started
+        restart: true
+    logging: *logging
+
+{% endif %}

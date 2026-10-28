@@ -216,8 +216,8 @@ case "${ACTION}" in
     do_deploy
   ;;
   download-dataset)
-    initialize_product_settings
-    do_download_dataset
+    echo_error "download-dataset is gone: it fetched the datasets of products that are no longer supported. Datasets are written by DEPLOYMENT_MODE=DUMP_DATASET, or copied to ${DS_DIR}."
+    exit 1
   ;;
   start)
     initialize_product_settings
@@ -230,27 +230,7 @@ case "${ACTION}" in
   restart)
     configurable_env_var "DEPLOYMENT_MODE" "KEEP_DATA"
     initialize_product_settings
-    do_stop
-    case "${DEPLOYMENT_MODE}" in
-      NO_DATA)
-        do_init_empty_data
-      ;;
-      KEEP_DATA)
-        # We have nothing to touch
-      ;;
-      RESTORE_DATASET)
-        do_restore_dataset
-      ;;
-      DUMP_DATASET)
-        do_dump_dataset
-      ;;
-      *)
-        echo_error "Invalid deployment mode \"${DEPLOYMENT_MODE}\""
-        print_usage
-        exit 1
-      ;;
-    esac
-    do_start
+    do_restart
   ;;
   undeploy)
     initialize_product_settings
