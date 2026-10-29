@@ -353,8 +353,8 @@ initialize_product_settings() {
       configurable_env_var "USER_DIRECTORY_ADMIN_PASSWORD" "exo"
       # Iframely
       configurable_env_var "DEPLOYMENT_IFRAMELY_ENABLED" false
-      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE" "jolt/iframely"
-      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE_VERSION" "v2.3.0"
+      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE" "exoplatform/iframely"
+      configurable_env_var "DEPLOYMENT_IFRAMELY_IMAGE_VERSION" "v2.5.1"
 
       configurable_env_var "DEPLOYMENT_MAILPIT_ENABLED" false
       configurable_env_var "DEPLOYMENT_MAILPIT_IMAGE" "axllent/mailpit"
