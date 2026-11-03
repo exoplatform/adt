@@ -81,6 +81,17 @@ func (c *Cache) Delete(key string) {
 	c.mu.Unlock()
 }
 
+// DeleteMatching removes every key for which match is true.
+func (c *Cache) DeleteMatching(match func(key string) bool) {
+	c.mu.Lock()
+	for k := range c.m {
+		if match(k) {
+			delete(c.m, k)
+		}
+	}
+	c.mu.Unlock()
+}
+
 // Clear drops everything.
 func (c *Cache) Clear() {
 	c.mu.Lock()

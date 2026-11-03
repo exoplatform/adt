@@ -286,6 +286,14 @@ func (s *Store) AcceptanceBranches(ctx context.Context, o Origin) []string {
 // ClearCaches drops every cached value (instances, categories, locks, ...).
 func (s *Store) ClearCaches() { s.Cache.Clear() }
 
+// InvalidateInstances drops every cached list of instances (this server's, every server's, and each category cut
+// out of them, stale copies included), so the next request reads the descriptors again. The lists are cached as a
+// whole, not instance by instance: this is the finest cut. Nothing else is touched (git, crowdin...). It is what a
+// deployment event calls: the page then shows the new deployment at once instead of after the TTL.
+func (s *Store) InvalidateInstances() {
+	s.Cache.DeleteMatching(func(key string) bool { return strings.Contains(key, "_instances") })
+}
+
 // CheckCaches runs on every request: when the query
 // has clearCaches, empty every cache and redirect to the same URL without that parameter. It reports whether
 // the request has been answered (the caller must then stop). The redirect is path-only (a forged Host

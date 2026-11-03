@@ -2269,6 +2269,7 @@ do_deploy() {
     rm -rf ${_tmpdir}
     echo_info "Done."
   fi
+  do_mark_deployed
   echo_info "Server deployed"
 }
 
@@ -2464,6 +2465,7 @@ do_start() {
   if ${DEPLOYMENT_DEV_ENABLED:-false} ; then
     echo_info "DEV Mode is enabled."
   fi
+  do_announce_deployed
   )
 }
 
@@ -2644,6 +2646,7 @@ do_undeploy() {
     do_reload_apache ${ADT_DEV_MODE}
     # Delete the server
     rm -rf ${SRV_DIR}/${INSTANCE_KEY}
+    do_forget_deployed
     # Close firewall ports
     do_ufw_close_port ${DEPLOYMENT_RMI_REG_PORT} "JMX RMI REG" ${ADT_DEV_MODE}
     do_ufw_close_port ${DEPLOYMENT_RMI_SRV_PORT} "JMX RMI SRV" ${ADT_DEV_MODE}

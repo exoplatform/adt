@@ -1,4 +1,4 @@
-const CACHE = 'adt-v32';
+const CACHE = 'adt-v33';
 
 const PRECACHE = [
   '/manifest.json',
@@ -91,6 +91,9 @@ self.addEventListener('fetch', function(e) {
   var url = new URL(e.request.url);
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return;
   var sameOrigin = url.origin === self.location.origin;
+
+  // The deployment event stream stays open: never through the cache
+  if (sameOrigin && url.pathname === '/events') return;
 
   if (sameOrigin && url.pathname === '/logout') e.waitUntil(forgetPages());
 

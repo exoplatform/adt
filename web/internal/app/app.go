@@ -5,13 +5,17 @@
 package app
 
 import (
+	"context"
 	"io/fs"
+	"net"
 	"net/http"
 	"sort"
 	"strings"
+	"time"
 
 	"github.com/exoplatform/adt/web/internal/auth"
 	"github.com/exoplatform/adt/web/internal/config"
+	"github.com/exoplatform/adt/web/internal/events"
 	"github.com/exoplatform/adt/web/internal/instances"
 	"github.com/exoplatform/adt/web/static"
 )
@@ -20,6 +24,8 @@ import (
 type App struct {
 	Cfg       config.Config
 	Instances *instances.Store
+	// Events carries the "instance deployed" notifications (see package events).
+	Events *events.Service
 }
 
 type route struct {
@@ -44,7 +50,44 @@ func HandleFunc(pattern string, f func(*App, http.ResponseWriter, *http.Request)
 }
 
 // New builds the App.
-func New(cfg config.Config) *App { return &App{Cfg: cfg, Instances: instances.NewStore(cfg)} }
+func New(cfg config.Config) *App {
+	return &App{Cfg: cfg, Instances: instances.NewStore(cfg), Events: events.NewService()}
+}
+
+// StartEventRelays follows, until ctx ends, the deployment events of every other acceptance server, so that the
+// pages served here hear about the deployments done there. A server that is down is retried in the background.
+//
+// Every event, from here or from another server, also drops the cached lists of instances: what the pages (and the
+// other servers, which read /rest/local-instances) show is then the deployment that just happened, not the
+// copy cached before it. The same happens whenever a relay (re)connects, since the events sent while it was down
+// are lost.
+func (a *App) StartEventRelays(ctx context.Context) {
+	all, unsubscribe := a.Events.All.Subscribe()
+	go func() {
+		defer unsubscribe()
+		for {
+			select {
+			case <-ctx.Done():
+				return
+			case <-all:
+				a.Instances.InvalidateInstances()
+			}
+		}
+	}()
+	// No overall timeout: the streams stay open. Only the connection and the first answer are bounded.
+	client := &http.Client{Transport: &http.Transport{
+		Proxy:                 http.ProxyFromEnvironment,
+		DialContext:           (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
+		TLSHandshakeTimeout:   10 * time.Second,
+		ResponseHeaderTimeout: 15 * time.Second,
+	}}
+	for _, server := range a.Cfg.Servers {
+		if events.IsSelf(server, a.Cfg.AcceptanceHost) {
+			continue
+		}
+		go events.Relay(ctx, client, server, a.Events.All, a.Instances.InvalidateInstances)
+	}
+}
 
 // rootIcons are the files browsers request at the root of the site on their own (the pages of the dashboard link
 // /images/..., but a JSON answer, a raw log or a directory listing does not): the same icons, under those names.

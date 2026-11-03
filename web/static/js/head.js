@@ -560,6 +560,7 @@ function toggleSubscribe(el) {
   if (Object.prototype.hasOwnProperty.call(subs, key)) delete subs[key]; else subs[key] = cardDeployed(card);
   setPref('deploy-subscriptions', JSON.stringify(subs));
   refreshDeploySubs();
+  ensureDeployStream();
   // This click is the user gesture that unlocks the audio of the next notifications
   try { var Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { deployAudio = deployAudio || new Ctx(); deployAudio.resume(); } } catch (e) {}
 }
@@ -577,9 +578,13 @@ function initDeploySubscriptions() {
   });
   if (changed) setPref('deploy-subscriptions', JSON.stringify(subs));
   refreshDeploySubs();
-  if (!notified.length) return;
+  if (notified.length) alertDeployed(notified);
+  ensureDeployStream();
+}
+// Beep, shake the cards (pulse the rows in table view), and scroll the first one into view
+function alertDeployed(cards) {
   playDeployBeep();
-  notified.forEach(function(card) {
+  cards.forEach(function(card) {
     card.classList.add('deploy-notify');
     card.addEventListener('animationend', function done(e) {
       if (e.animationName !== 'deploy-glow') return;
@@ -587,7 +592,42 @@ function initDeploySubscriptions() {
       card.removeEventListener('animationend', done);
     });
   });
-  notified[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  if (cards.length) cards[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+function deployToast(text) {
+  var el = document.createElement('div');
+  el.className = 'deploy-toast';
+  el.setAttribute('role', 'status');
+  el.textContent = text;
+  document.body.appendChild(el);
+  setTimeout(function() { el.classList.add('deploy-toast--out'); }, 5000);
+  setTimeout(function() { el.remove(); }, 5600);
+}
+// The servers announce a deployment (deployed AND started) as it happens, on every acceptance server: /events.
+// The stream is only open while the user is subscribed to something. It does not depend on any cached page.
+var deployStream = null;
+function ensureDeployStream() {
+  var any = Object.keys(deploySubs()).length > 0;
+  if (!any && deployStream) { deployStream.close(); deployStream = null; }
+  if (!any || deployStream || !window.EventSource) return;
+  deployStream = new EventSource('/events');
+  deployStream.onmessage = function(m) {
+    var e;
+    try { e = JSON.parse(m.data); } catch (x) { return; }
+    handleDeployEvent(e);
+  };
+}
+function handleDeployEvent(e) {
+  var subs = deploySubs();
+  if (!e || !Object.prototype.hasOwnProperty.call(subs, e.key)) return;
+  // The page will show this date after its next reload: remember it, so that the comparison made on load
+  // does not announce the same deployment a second time
+  if (e.date) { subs[e.key] = e.date; setPref('deploy-subscriptions', JSON.stringify(subs)); }
+  var cards = [].filter.call(document.querySelectorAll('.instance-card[data-instance-key]'), function(c) {
+    return c.getAttribute('data-instance-key') === e.key;
+  });
+  alertDeployed(cards);
+  deployToast(e.key + ' has been deployed');
 }
 function initInstances() {
   initViewSwitch();

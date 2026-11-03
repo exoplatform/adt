@@ -67,6 +67,8 @@ env_var "AWSTATS_CONF_DIR" "${ADT_DATA}/conf/awstats"
 env_var "ADT_CONF_DIR" "${ADT_DATA}/conf/adt"
 env_var "FEATURES_CONF_DIR" "${ADT_DATA}/conf/features"
 env_var "INSTANCES_CONF_DIR" "${ADT_DATA}/conf/instances"
+# One file per instance that has been deployed and not started yet (see do_mark_deployed)
+env_var "DEPLOYED_MARKER_DIR" "${ADT_DATA}/var/deployed"
 env_var "ETC_DIR" "${ADT_DATA}/etc"
 
 env_var "CURR_DATE" `date -u "+%Y%m%d.%H%M%S"`

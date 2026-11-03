@@ -1926,6 +1926,22 @@ html.is-loading, html.is-loading a { cursor: progress; }
 .instance-card.deploy-notify { animation: deploy-shake 0.7s ease-in-out 2, deploy-glow 1.4s ease-in-out 3; }
 /* Table view: a row only pulses, shaking would break the columns */
 html.view-table .instance-card.deploy-notify { animation: deploy-glow 1.4s ease-in-out 3; }
+.deploy-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1080;
+  max-width: min(24rem, calc(100vw - 2rem));
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  background: var(--bg-elevated);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.35);
+  transition: opacity 0.5s;
+}
+.deploy-toast--out { opacity: 0; }
 @media (prefers-reduced-motion: reduce) {
   .instance-card.deploy-notify, html.view-table .instance-card.deploy-notify { animation: deploy-glow 1.4s ease-in-out 3; }
 }

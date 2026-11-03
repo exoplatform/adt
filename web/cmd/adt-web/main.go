@@ -5,6 +5,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
@@ -40,8 +41,15 @@ func main() {
 		pages.WarmGitActivity(cfg.DataDir)
 		pages.WarmCrowdinHealth(cfg.DataDir)
 	}()
+	// Cancelled when the service stops: it ends the event streams (their requests derive from it) and the relays,
+	// which would otherwise keep the graceful shutdown waiting.
+	baseCtx, cancelBase := context.WithCancel(context.Background())
+	defer cancelBase()
+	a := app.New(cfg)
+	a.StartEventRelays(baseCtx)
 	srv := &http.Server{
-		Handler: app.New(cfg).Handler(),
+		Handler:     a.Handler(),
+		BaseContext: func(net.Listener) context.Context { return baseCtx },
 		// Slow-client protection. No overall write timeout: log downloads can be large.
 		ReadHeaderTimeout: 10 * time.Second,
 		IdleTimeout:       2 * time.Minute,
@@ -54,6 +62,7 @@ func main() {
 	go func() {
 		defer close(done)
 		<-stop
+		cancelBase()
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
 		if err := srv.Shutdown(ctx); err != nil {

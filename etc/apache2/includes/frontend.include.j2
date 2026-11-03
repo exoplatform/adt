@@ -198,6 +198,10 @@
     <Location /rest/>
         Require host exoplatform.org
     </Location>
+    # adt.sh tells adt-web about a deployment on the socket itself (POST /internal/deployed): never from outside
+    <Location /internal/>
+        Require all denied
+    </Location>
     <Location /google*.html>
         Require all granted
     </Location>
@@ -279,5 +283,10 @@
     AliasMatch "^/errors/frontend/(404|500|502|503)\.html$" "{{ ADT_DATA }}/web/static/errors/$1.html"
     ProxyPassMatch "^/errors/frontend/(404|500|502|503)\.html$" !
 
+    # The deployment event streams (server-sent events) stay open: pass every chunk on as soon as adt-web writes it
+    # (adt-web sends a comment line every 25 s, well inside the proxy timeout), and never compress or buffer them
+    SetEnvIf Request_URI "^/(events|rest/local-events)$" no-gzip=1 dont-vary=1
+    ProxyPassMatch "^/events$"            "unix:{{ ADT_WEB_SOCKET }}|http://localhost/events"            flushpackets=on
+    ProxyPassMatch "^/rest/local-events$" "unix:{{ ADT_WEB_SOCKET }}|http://localhost/rest/local-events" flushpackets=on
     ProxyPass /         "unix:{{ ADT_WEB_SOCKET }}|http://localhost/"
     ProxyPassReverse /  "unix:{{ ADT_WEB_SOCKET }}|http://localhost/"

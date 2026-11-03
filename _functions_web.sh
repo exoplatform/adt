@@ -11,6 +11,13 @@ set -u
 #   do_build_web          build ${ADT_WEB_BIN} from web/ (skipped when the sources did not change)
 #   do_deploy_web         build, render ${ADT_WEB_ENV_FILE}, restart ${ADT_WEB_SERVICE} when needed, check it answers
 #   do_load_web_server    development: build, then run adt-web in the foreground (development mode, no Apache)
+#
+# And the "instance deployed" notification of the dashboards. A deployment is "deploy" then "start" (two commands,
+# chained by the Jenkins job), so:
+#   do_mark_deployed      end of "deploy": leave a marker for the instance
+#   do_announce_deployed  end of "start": when the marker is there (a plain restart has none), remove it and tell
+#                         adt-web, which tells the dashboards of every acceptance server
+#   do_forget_deployed    "undeploy": drop the marker
 
 # docker, or sudo docker when the user is not allowed to talk to the daemon
 _web_docker() {
@@ -110,3 +117,37 @@ do_load_web_server() {
 }
 
 _FUNCTIONS_WEB_LOADED=true
+
+# The instance has just been deployed: the next "start" is the end of its deployment, not a restart
+do_mark_deployed() {
+  mkdir -p "${DEPLOYED_MARKER_DIR}" && date +%s > "${DEPLOYED_MARKER_DIR}/${INSTANCE_KEY}" || true
+}
+
+do_forget_deployed() {
+  rm -f "${DEPLOYED_MARKER_DIR}/${INSTANCE_KEY}"
+}
+
+# Run at the end of "start", in the shell that loaded the deployment descriptor. It never fails: a notification
+# is not worth a failed deployment.
+do_announce_deployed() {
+  local _marker="${DEPLOYED_MARKER_DIR}/${INSTANCE_KEY}"
+  [ -f "${_marker}" ] || return 0
+  # A marker older than an hour belongs to a deploy that was never started: this start is a restart
+  local _fresh
+  _fresh="$(find "${_marker}" -mmin -60 2>/dev/null || true)"
+  rm -f "${_marker}"
+  [ -n "${_fresh}" ] || return 0
+  # Development mode runs adt-web on a TCP port, without the socket
+  [ -S "${ADT_WEB_SOCKET}" ] || return 0
+  # The socket, not Apache: the endpoint refuses what comes through the proxy
+  if curl -fsS --max-time 5 --unix-socket "${ADT_WEB_SOCKET}" -X POST \
+       --data-urlencode "key=${INSTANCE_KEY}" \
+       --data-urlencode "host=${DEPLOYMENT_EXT_HOST:-}" \
+       --data-urlencode "date=${DEPLOYMENT_DATE:-}" \
+       http://localhost/internal/deployed >/dev/null 2>&1; then
+    echo_info "Deployment announced to the dashboards"
+  else
+    echo_warn "The dashboards could not be told about this deployment (is ${ADT_WEB_SERVICE} running, and can this user write to ${ADT_WEB_SOCKET} ?)"
+  fi
+  return 0
+}
