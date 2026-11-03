@@ -1,5 +1,5 @@
 
-<div class="instance-card" data-sort-status="{{ .SortStatus }}" data-sort-version="{{ esc .SortVersion }}" data-sort-deployed="{{ esc .SortDeployed }}">
+<div class="instance-card"{{ if .Key }} data-instance-key="{{ esc .Key }}"{{ end }} data-sort-status="{{ .SortStatus }}" data-sort-version="{{ esc .SortVersion }}" data-sort-deployed="{{ esc .SortDeployed }}">
     <div class="instance-card__top">
         <div class="instance-card__status">
             {{ if .Up }}<span class="pulse-dot on" title="Running" role="img" aria-label="Status: Up"></span>{{ else }}<span class="pulse-dot off" title="Stopped" role="img" aria-label="Status: Down"></span>{{ end }}
@@ -21,6 +21,7 @@
             </div>
         </div>
         <div class="instance-card__actions-top">
+            {{ if .Key }}<button type="button" class="instance-card__fav" data-click="toggleFavorite" aria-pressed="false" title="Add to favorites" aria-label="Add to favorites"><i class="far fa-star"></i></button>{{ end }}
             {{ .Tools }}
         </div>
     </div>

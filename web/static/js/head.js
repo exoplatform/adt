@@ -443,8 +443,67 @@ function initViewSwitch() {
   });
   apply(getPref('instances-view', 'cards'));
 }
+// ── Favorite instances: kept in this browser (localStorage), keyed by INSTANCE_KEY ──
+function favoriteKeys() {
+  try { var a = JSON.parse(getPref('favorite-instances', '[]')); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+}
+function refreshFavorites() {
+  var favs = favoriteKeys();
+  document.querySelectorAll('.instance-card[data-instance-key]').forEach(function(card) {
+    var on = favs.indexOf(card.getAttribute('data-instance-key')) !== -1;
+    card.classList.toggle('is-favorite', on);
+    var btn = card.querySelector('.instance-card__fav');
+    if (!btn) return;
+    var label = on ? 'Remove from favorites' : 'Add to favorites';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.setAttribute('title', label);
+    btn.setAttribute('aria-label', label);
+    btn.querySelector('i').className = (on ? 'fas' : 'far') + ' fa-star';
+  });
+  document.querySelectorAll('.instances-section').forEach(function(section) {
+    section.classList.toggle('no-fav', !section.querySelector('.instance-card.is-favorite'));
+  });
+  var filter = document.querySelector('.instances-fav-filter');
+  if (filter) filter.innerHTML = '<i class="' + (favs.length ? 'fas' : 'far') + ' fa-star me-1"></i>Favorites' + (favs.length ? ' (' + favs.length + ')' : '');
+}
+function toggleFavorite(el) {
+  var card = el.closest('.instance-card'), key = card && card.getAttribute('data-instance-key');
+  if (!key) return;
+  var favs = favoriteKeys(), i = favs.indexOf(key);
+  if (i === -1) favs.push(key); else favs.splice(i, 1);
+  setPref('favorite-instances', JSON.stringify(favs));
+  refreshFavorites();
+}
+function initFavorites() {
+  var toolbar = document.querySelector('.instances-toolbar');
+  if (toolbar && document.querySelector('.instance-card[data-instance-key]')) {
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'btn btn-outline-secondary instances-fav-filter';
+    btn.title = 'Show only the favorite instances';
+    btn.addEventListener('click', function() {
+      var on = !document.documentElement.classList.contains('fav-only');
+      document.documentElement.classList.toggle('fav-only', on);
+      btn.classList.toggle('active', on);
+      btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+      setPref('instances-fav-only', on ? '1' : '0');
+    });
+    // Same wrapper as the Cards/Table switch, so both pills get the same height and font
+    var group = document.createElement('div');
+    group.className = 'btn-group btn-group-sm';
+    group.appendChild(btn);
+    toolbar.appendChild(group);
+    if (getPref('instances-fav-only', '0') === '1') {
+      document.documentElement.classList.add('fav-only');
+      btn.classList.add('active');
+    }
+    btn.setAttribute('aria-pressed', btn.classList.contains('active') ? 'true' : 'false');
+  }
+  refreshFavorites();
+}
 function initInstances() {
   initViewSwitch();
+  initFavorites();
   initSearch();
 }
 if (document.readyState === 'loading') {
@@ -459,6 +518,7 @@ if (getPref('crowdin-view', 'cards') === 'table') document.documentElement.class
 // ── Actions of the buttons and fields (data-click / data-input / data-change="name", data-arg="value"):
 // the page carries no inline handler, so it can be served with a Content-Security-Policy without 'unsafe-inline'
 window.ADT_ACTIONS = {
+  toggleFavorite: function(arg, e, el) { toggleFavorite(el); },
   toggleSidebar: function() { toggleSidebar(); },
   toggleSidebarPin: function() { toggleSidebarPin(); },
   toggleScheme: function() { toggleScheme(); },

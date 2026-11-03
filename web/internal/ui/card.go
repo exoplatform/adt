@@ -136,6 +136,7 @@ func (c *Ctx) InstanceCard(inst instances.Instance, o CardOpts) string {
 		sortStatus = "1"
 	}
 	card := cardData{
+		Key: inst.Str("INSTANCE_KEY"),
 		SortStatus: sortStatus, SortVersion: sortVersion, SortDeployed: inst.Str("DEPLOYMENT_DATE"),
 		Up: up, RichName: o.RichName, MetaDownloadFirst: o.MetaDownloadFirst,
 		Download: DownloadIcon(inst), Version: ProductVersion(inst),
@@ -190,6 +191,7 @@ func (c *Ctx) InstanceCard(inst instances.Instance, o CardOpts) string {
 
 // cardData is what card.tmpl prints: the pre-rendered parts of an instance card.
 type cardData struct {
+	Key                                   string
 	SortStatus, SortVersion, SortDeployed string
 	Up, RichName, MetaDownloadFirst       bool
 	InfoIcon, Visibility, Link            string
