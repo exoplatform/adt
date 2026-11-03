@@ -286,7 +286,9 @@
     # The deployment event streams (server-sent events) stay open: pass every chunk on as soon as adt-web writes it
     # (adt-web sends a comment line every 25 s, well inside the proxy timeout), and never compress or buffer them
     SetEnvIf Request_URI "^/(events|rest/local-events)$" no-gzip=1 dont-vary=1
-    ProxyPassMatch "^/events$"            "unix:{{ ADT_WEB_SOCKET }}|http://localhost/events"            flushpackets=on
-    ProxyPassMatch "^/rest/local-events$" "unix:{{ ADT_WEB_SOCKET }}|http://localhost/rest/local-events" flushpackets=on
+    # The path is passed on with $1: with a unix socket, a ProxyPassMatch whose target has no backreference gets the
+    # request path appended to it (adt-web would receive /events/events)
+    ProxyPassMatch "^(/events)$"            "unix:{{ ADT_WEB_SOCKET }}|http://localhost$1" flushpackets=on
+    ProxyPassMatch "^(/rest/local-events)$" "unix:{{ ADT_WEB_SOCKET }}|http://localhost$1" flushpackets=on
     ProxyPass /         "unix:{{ ADT_WEB_SOCKET }}|http://localhost/"
     ProxyPassReverse /  "unix:{{ ADT_WEB_SOCKET }}|http://localhost/"
