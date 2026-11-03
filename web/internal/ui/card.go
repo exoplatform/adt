@@ -136,7 +136,7 @@ func (c *Ctx) InstanceCard(inst instances.Instance, o CardOpts) string {
 		sortStatus = "1"
 	}
 	card := cardData{
-		Key: inst.Str("INSTANCE_KEY"),
+		Key:        inst.Str("INSTANCE_KEY"),
 		SortStatus: sortStatus, SortVersion: sortVersion, SortDeployed: inst.Str("DEPLOYMENT_DATE"),
 		Up: up, RichName: o.RichName, MetaDownloadFirst: o.MetaDownloadFirst,
 		Download: DownloadIcon(inst), Version: ProductVersion(inst),
