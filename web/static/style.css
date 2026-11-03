@@ -2132,7 +2132,7 @@ html:not(.view-table) .instance-card__actions .btn {
     position: sticky;
     top: 0;
     z-index: 3;
-    order: 0;
+    order: -1000000; /* always above the favorites (order: calc(... - 100000)) */
     box-shadow: 0 1px 0 var(--border-card);
     border-bottom: 0;
     background: var(--bg-elevated);

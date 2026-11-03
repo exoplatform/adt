@@ -452,7 +452,7 @@ function refreshFavorites() {
   document.querySelectorAll('.instance-card[data-instance-key]').forEach(function(card) {
     var on = favs.indexOf(card.getAttribute('data-instance-key')) !== -1;
     card.classList.toggle('is-favorite', on);
-    var btn = card.querySelector('.instance-card__fav');
+    var btn = card.querySelector('.instance-card__fav:not(.instance-card__bell)');
     if (!btn) return;
     var label = on ? 'Remove from favorites' : 'Add to favorites';
     btn.setAttribute('aria-pressed', on ? 'true' : 'false');
