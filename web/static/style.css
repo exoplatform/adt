@@ -1910,8 +1910,13 @@ html.is-loading, html.is-loading a { cursor: progress; }
   cursor: pointer;
   transition: color var(--dur-fast);
 }
-.instance-card__fav:hover, .instance-card.is-favorite .instance-card__fav:not(.instance-card__bell) { color: #e8a200; }
-.instance-card__bell:hover, .instance-card__bell[aria-pressed="true"] { color: var(--accent-text); }
+/* Hovering only brightens the icon: it must not look like the "on" color, or an icon that has just been switched off
+   still looks on until the mouse leaves it. Touch screens have no hover (it would stick after a tap). */
+@media (hover: hover) {
+  .instance-card__fav:hover { color: var(--text-primary); }
+}
+.instance-card.is-favorite .instance-card__fav:not(.instance-card__bell) { color: #e8a200; }
+.instance-card__bell[aria-pressed="true"] { color: var(--accent-text); }
 
 /* A subscribed instance has just been deployed (see initDeploySubscriptions) */
 @keyframes deploy-shake {
