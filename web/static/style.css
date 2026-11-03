@@ -1910,7 +1910,25 @@ html.is-loading, html.is-loading a { cursor: progress; }
   cursor: pointer;
   transition: color var(--dur-fast);
 }
-.instance-card__fav:hover, .instance-card.is-favorite .instance-card__fav { color: #e8a200; }
+.instance-card__fav:hover, .instance-card.is-favorite .instance-card__fav:not(.instance-card__bell) { color: #e8a200; }
+.instance-card__bell:hover, .instance-card__bell[aria-pressed="true"] { color: var(--accent-text); }
+
+/* A subscribed instance has just been deployed (see initDeploySubscriptions) */
+@keyframes deploy-shake {
+  0%, 100% { transform: translateX(0) rotate(0); }
+  10%, 50%, 90% { transform: translateX(-6px) rotate(-1deg); }
+  30%, 70% { transform: translateX(6px) rotate(1deg); }
+}
+@keyframes deploy-glow {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; background-color: transparent; }
+  25%, 75% { box-shadow: 0 0 0 3px var(--accent), 0 0 24px var(--accent); background-color: color-mix(in srgb, var(--accent) 18%, transparent); }
+}
+.instance-card.deploy-notify { animation: deploy-shake 0.7s ease-in-out 2, deploy-glow 1.4s ease-in-out 3; }
+/* Table view: a row only pulses, shaking would break the columns */
+html.view-table .instance-card.deploy-notify { animation: deploy-glow 1.4s ease-in-out 3; }
+@media (prefers-reduced-motion: reduce) {
+  .instance-card.deploy-notify, html.view-table .instance-card.deploy-notify { animation: deploy-glow 1.4s ease-in-out 3; }
+}
 .instance-card.is-favorite { order: -1; }
 html.fav-only .instance-card:not(.is-favorite) { display: none; }
 html.fav-only .instances-section.no-fav { display: none; }

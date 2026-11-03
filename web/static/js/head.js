@@ -501,9 +501,98 @@ function initFavorites() {
   }
   refreshFavorites();
 }
+// ── Deployment subscriptions: bell on a card, kept in this browser like the favorites ──
+// Stored as {INSTANCE_KEY: deployment date last seen}. The pages reload themselves every couple of minutes
+// (autorefresh.js), so a deployment is noticed when the card carries another date than the one stored:
+// beep, shake the card (pulse the row in table view).
+function deploySubs() {
+  try { var o = JSON.parse(getPref('deploy-subscriptions', '{}')); return o && typeof o === 'object' && !Array.isArray(o) ? o : {}; } catch (e) { return {}; }
+}
+function cardDeployed(card) { return card.getAttribute('data-sort-deployed') || ''; }
+var deployAudio = null, deployBeepPending = false;
+function playDeployBeep() {
+  try {
+    var Ctx = window.AudioContext || window.webkitAudioContext;
+    if (!Ctx) return;
+    deployAudio = deployAudio || new Ctx();
+    var ctx = deployAudio;
+    var play = function() {
+      [880, 1175].forEach(function(freq, i) {
+        var osc = ctx.createOscillator(), gain = ctx.createGain(), t = ctx.currentTime + i * 0.18;
+        osc.type = 'sine';
+        osc.frequency.value = freq;
+        gain.gain.setValueAtTime(0.0001, t);
+        gain.gain.exponentialRampToValueAtTime(0.15, t + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.16);
+        osc.connect(gain); gain.connect(ctx.destination);
+        osc.start(t); osc.stop(t + 0.18);
+      });
+    };
+    if (ctx.state === 'running') { play(); return; }
+    // The browser may keep audio locked until the user touched the page: play at the first gesture instead
+    ctx.resume().then(function() { if (ctx.state === 'running') play(); }, function() {});
+    if (ctx.state !== 'running') deployBeepPending = true;
+  } catch (e) {}
+}
+document.addEventListener('pointerdown', function() {
+  if (!deployBeepPending) return;
+  deployBeepPending = false;
+  playDeployBeep();
+}, true);
+function refreshDeploySubs() {
+  var subs = deploySubs();
+  document.querySelectorAll('.instance-card[data-instance-key]').forEach(function(card) {
+    var on = Object.prototype.hasOwnProperty.call(subs, card.getAttribute('data-instance-key'));
+    card.classList.toggle('is-subscribed', on);
+    var btn = card.querySelector('.instance-card__bell');
+    if (!btn) return;
+    var label = on ? 'Stop notifying me about deployments' : 'Notify me when this instance is deployed';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+    btn.setAttribute('title', label);
+    btn.setAttribute('aria-label', label);
+    btn.querySelector('i').className = (on ? 'fas' : 'far') + ' fa-bell';
+  });
+}
+function toggleSubscribe(el) {
+  var card = el.closest('.instance-card'), key = card && card.getAttribute('data-instance-key');
+  if (!key) return;
+  var subs = deploySubs();
+  if (Object.prototype.hasOwnProperty.call(subs, key)) delete subs[key]; else subs[key] = cardDeployed(card);
+  setPref('deploy-subscriptions', JSON.stringify(subs));
+  refreshDeploySubs();
+  // This click is the user gesture that unlocks the audio of the next notifications
+  try { var Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { deployAudio = deployAudio || new Ctx(); deployAudio.resume(); } } catch (e) {}
+}
+function initDeploySubscriptions() {
+  var subs = deploySubs(), changed = false, notified = [];
+  document.querySelectorAll('.instance-card[data-instance-key]').forEach(function(card) {
+    var key = card.getAttribute('data-instance-key');
+    if (!Object.prototype.hasOwnProperty.call(subs, key)) return;
+    var now = cardDeployed(card);
+    // No date yet (not deployed): nothing to compare with
+    if (!now || subs[key] === now) return;
+    subs[key] = now;
+    changed = true;
+    notified.push(card);
+  });
+  if (changed) setPref('deploy-subscriptions', JSON.stringify(subs));
+  refreshDeploySubs();
+  if (!notified.length) return;
+  playDeployBeep();
+  notified.forEach(function(card) {
+    card.classList.add('deploy-notify');
+    card.addEventListener('animationend', function done(e) {
+      if (e.animationName !== 'deploy-glow') return;
+      card.classList.remove('deploy-notify');
+      card.removeEventListener('animationend', done);
+    });
+  });
+  notified[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
 function initInstances() {
   initViewSwitch();
   initFavorites();
+  initDeploySubscriptions();
   initSearch();
 }
 if (document.readyState === 'loading') {
@@ -519,6 +608,7 @@ if (getPref('crowdin-view', 'cards') === 'table') document.documentElement.class
 // the page carries no inline handler, so it can be served with a Content-Security-Policy without 'unsafe-inline'
 window.ADT_ACTIONS = {
   toggleFavorite: function(arg, e, el) { toggleFavorite(el); },
+  toggleSubscribe: function(arg, e, el) { toggleSubscribe(el); },
   toggleSidebar: function() { toggleSidebar(); },
   toggleSidebarPin: function() { toggleSidebarPin(); },
   toggleScheme: function() { toggleScheme(); },

@@ -21,7 +21,8 @@
             </div>
         </div>
         <div class="instance-card__actions-top">
-            {{ if .Key }}<button type="button" class="instance-card__fav" data-click="toggleFavorite" aria-pressed="false" title="Add to favorites" aria-label="Add to favorites"><i class="far fa-star"></i></button>{{ end }}
+            {{ if .Key }}<button type="button" class="instance-card__fav instance-card__bell" data-click="toggleSubscribe" aria-pressed="false" title="Notify me when this instance is deployed" aria-label="Notify me when this instance is deployed"><i class="far fa-bell"></i></button>
+            <button type="button" class="instance-card__fav" data-click="toggleFavorite" aria-pressed="false" title="Add to favorites" aria-label="Add to favorites"><i class="far fa-star"></i></button>{{ end }}
             {{ .Tools }}
         </div>
     </div>
