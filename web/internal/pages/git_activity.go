@@ -314,8 +314,10 @@ func gitActivity(a *app.App, w http.ResponseWriter, r *http.Request) {
 
 	type depTarget struct{ Repo, Label string }
 	type depRow struct {
-		Repo, Label, URL string
-		Targets          []depTarget
+		Repo, Label, URL   string
+		Targets, UsedBy    []depTarget // depends on / used by (both within the listed repositories)
+		Used, UsedPct      int         // number of repositories using this one, and that relative to the most used
+		DepsAttr, UsedAttr string      // the same lists as space separated repository names, for the page script
 	}
 	depRows := make([]depRow, 0, len(tableRepos))
 	for _, rp := range tableRepos {
@@ -326,6 +328,38 @@ func gitActivity(a *app.App, w http.ResponseWriter, r *http.Request) {
 			row.Targets = append(row.Targets, depTarget{t, labelOf(t)})
 		}
 		depRows = append(depRows, row)
+	}
+	// the other direction: who uses each repository
+	depIndex := make(map[string]int, len(depRows))
+	for i, r := range depRows {
+		depIndex[r.Repo] = i
+	}
+	for _, r := range depRows {
+		for _, t := range r.Targets {
+			if i, ok := depIndex[t.Repo]; ok {
+				depRows[i].UsedBy = append(depRows[i].UsedBy, depTarget{r.Repo, r.Label})
+			}
+		}
+	}
+	mostUsed := 0
+	for i := range depRows {
+		r := &depRows[i]
+		sort.SliceStable(r.UsedBy, func(a, b int) bool { return gaStrcasecmp(r.UsedBy[a].Label, r.UsedBy[b].Label) < 0 })
+		r.Used = len(r.UsedBy)
+		mostUsed = max(mostUsed, r.Used)
+		names := func(ts []depTarget) string {
+			n := make([]string, len(ts))
+			for j, t := range ts {
+				n[j] = t.Repo
+			}
+			return strings.Join(n, " ")
+		}
+		r.DepsAttr, r.UsedAttr = names(r.Targets), names(r.UsedBy)
+	}
+	for i := range depRows {
+		if mostUsed > 0 {
+			depRows[i].UsedPct = depRows[i].Used * 100 / mostUsed
+		}
 	}
 
 	type commitRow struct {
