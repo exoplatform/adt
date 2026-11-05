@@ -2810,6 +2810,9 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
 .feature-base__row .btn { flex: 0 0 auto; }
 /* Table view: the column header is centred, and the editor stays in the flow (the table wrapper would clip a popover) */
 .features-matrix th .feature-base { display: block; margin-top: 0.25rem; text-align: center; }
+/* A long custom base branch is cut with an ellipsis inside the column (full name in the tooltip), not clipped mid-letter */
+.features-matrix th .feature-base__toggle { max-width: 100%; box-sizing: border-box; }
+.features-matrix th .feature-base__toggle code { display: inline-block; min-width: 0; max-width: 11rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
 .features-matrix th .feature-base__form { position: static; width: auto; max-width: 14rem; margin: 0.35rem auto 0; box-shadow: none; text-align: left; }
 /* Other-branches cards: the base sits on its own line under the branch name */
 .feature-item:not(.feature-card) .feature-base__form { left: 0; right: auto; }

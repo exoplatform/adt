@@ -205,7 +205,10 @@
             background: var(--bg-field); border: 1px solid var(--border-card); color: var(--text-secondary);
         }
         .addons-chip { cursor: help; }
-        .port-chips { display: flex; flex-wrap: wrap; gap: .3rem; }
+        /* One fixed column per kind, so JMX / Mongo / ES line up from row to row even when a port is outside the prefix range */
+        .port-chips { display: grid; grid-template-columns: 5.4rem 6.6rem 4rem; gap: .3rem; justify-content: start; }
+        .port-chip--jmx { grid-column: 1; } .port-chip--mongo { grid-column: 2; } .port-chip--es { grid-column: 3; }
+        .port-chip { justify-content: flex-start; min-width: 0; }
         .port-chip { font-family: var(--font-mono); }
         .port-chip__label { font-family: var(--font-sans); color: var(--text-muted); font-size: .66rem; text-transform: uppercase; letter-spacing: .03em; }
         .port-chip--odd { border-color: color-mix(in srgb, var(--warning) 60%, transparent); color: var(--warning); }

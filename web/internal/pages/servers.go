@@ -113,7 +113,7 @@ func srvStripTags(s string) string {
 // srvTrim trims spaces, tabs, newlines, carriage returns, NUL and vertical tabs.
 func srvTrim(s string) string { return strings.Trim(s, " \t\n\r\x00\x0b") }
 
-type srvChip struct{ Odd, Title, Label, Short, All string }
+type srvChip struct{ Odd, Title, Label, Short, All, Kind string }
 
 // srvPortChip describes a port shown as its suffix when it follows the instance prefix
 // convention (25622 -> "22" for prefix 256), as the full number (highlighted) otherwise; nil without ports.
@@ -141,7 +141,7 @@ func srvPortChip(label string, ports []string, prefix string) *srvChip {
 	if !standard {
 		odd, note = " port-chip--odd", " (outside the instance prefix range)"
 	}
-	return &srvChip{odd, label + ": " + strings.Join(ps, " / ") + note, label, strings.Join(short, "/"), strings.Join(ps, " ")}
+	return &srvChip{odd, label + ": " + strings.Join(ps, " / ") + note, label, strings.Join(short, "/"), strings.Join(ps, " "), strings.ToLower(label)}
 }
 
 func srvPlural(n int) string {
