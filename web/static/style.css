@@ -466,6 +466,24 @@ html.pwa-installable #pwaInstallBtn { display: flex; }
   object-fit: cover;
   border: 1px solid var(--border-subtle);
 }
+.avatar-wrap { position: relative; display: inline-flex; flex-shrink: 0; }
+.avatar-badge {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 15px;
+  height: 15px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  line-height: 1;
+  color: #fff;
+  background: var(--danger);
+  border: 2px solid var(--bg-surface);
+  box-sizing: content-box;
+}
 .sidebar__session {
   display: none;
   margin-left: auto;

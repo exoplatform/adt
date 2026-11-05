@@ -41,13 +41,14 @@ func (c *Ctx) Navigation() {
 	d := struct {
 		Host, Name, Remaining, ExpiresAt, SignOutTitle, MobileAvatar, SidebarAvatar string
 		Expiry                                                                      int64
-		HasName                                                                     bool
+		HasName, IsAdmin                                                            bool
 		Links                                                                       []navLink
 	}{
 		Host:          c.Origin.Host,
 		Name:          name,
 		HasName:       name != "" && name != "0", // empty or "0"
 		Expiry:        expiry,
+		IsAdmin:       c.Cfg.IsAdmin(c.Identity.User),
 		SignOutTitle:  "Sign out",
 		MobileAvatar:  GravatarURL(c.Identity.Mail, 48),
 		SidebarAvatar: GravatarURL(c.Identity.Mail, 64),
