@@ -1,0 +1,11 @@
+{% if DEPLOYMENT_LAM_ENABLED == "true" %}
+    # LDAP Account Manager (the authentication of this URI is done by Apache)
+    location = /lam {
+      return 301 /lam/;
+    }
+    location /lam/ {
+      set $upstream_lam http://lam:80;
+      proxy_pass $upstream_lam;
+    }
+
+{% endif %}

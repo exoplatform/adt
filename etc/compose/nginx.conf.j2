@@ -1,0 +1,181 @@
+{#- The reverse proxy of an instance, rendered by adt.sh (deploy) as ${SRV_DIR}/<instance key>/nginx.conf.
+    It is the only thing published by the instance (127.0.0.1:${DEPLOYMENT_HTTP_PORT}), reached by the Apache virtual host that
+    terminates the TLS of the client and authenticates it. nginx owns every location, the security headers, the compression
+    and the logs of the instance, so that Apache can be replaced by a plain TCP/SNI router later.
+    Switches: DEPLOYMENT_NGINX_TLS (same certificate as Apache), DEPLOYMENT_APACHE_HTTPSONLY_ENABLED (HSTS). -#}
+{% set tls = DEPLOYMENT_NGINX_TLS == "true" -%}
+# Rendered by ADT from etc/compose/nginx.conf.j2: do not edit, the next deploy overwrites it.
+worker_processes auto;
+pid /tmp/nginx.pid;
+
+events {
+  worker_connections 1024;
+}
+
+http {
+  include       /etc/nginx/mime.types;
+  default_type  application/octet-stream;
+  server_tokens off;
+
+  log_format combined_duration '$remote_addr - $remote_user [$time_local] "$request" $status $body_bytes_sent '
+                               '"$http_referer" "$http_user_agent" $request_time';
+  access_log /var/log/nginx/access.log combined_duration;
+  error_log  /var/log/nginx/error.log warn;
+
+  # Docker's embedded DNS: the application is resolved at request time, so that a recreated container is found again
+  resolver 127.0.0.11 valid=5s ipv6=off;
+
+  sendfile on;
+  keepalive_timeout 65;
+
+  # Compression of the text types only (archives, images and fonts are already compressed)
+  gzip on;
+  gzip_proxied any;
+  gzip_comp_level 5;
+  gzip_vary on;
+  gzip_types text/plain text/css text/xml text/javascript application/javascript application/x-javascript application/json
+             application/manifest+json application/xml application/xhtml+xml application/rss+xml application/atom+xml image/svg+xml;
+
+  # The client address comes from Apache (X-Forwarded-For). The connection arrives from the gateway of the docker network.
+  set_real_ip_from 10.0.0.0/8;
+  set_real_ip_from 172.16.0.0/12;
+  set_real_ip_from 192.168.0.0/16;
+  real_ip_header X-Forwarded-For;
+  real_ip_recursive on;
+
+  # Apache tells the scheme the client used ; direct access (development mode) uses the one of the connection
+  map $http_x_forwarded_proto $the_scheme {
+    default $http_x_forwarded_proto;
+    ""      $scheme;
+  }
+  map $http_upgrade $connection_upgrade {
+    default upgrade;
+    ""      "";
+  }
+
+  # Security headers: set when the application does not set them itself (the application ones are hidden then sent again, so that
+  # the client never gets a duplicate)
+  map $upstream_http_x_content_type_options $h_content_type_options { "" "nosniff"; default $upstream_http_x_content_type_options; }
+  map $upstream_http_x_frame_options $h_frame_options { "" "SAMEORIGIN"; default $upstream_http_x_frame_options; }
+  map $upstream_http_referrer_policy $h_referrer_policy { "" "strict-origin-when-cross-origin"; default $upstream_http_referrer_policy; }
+  map $upstream_http_permissions_policy $h_permissions_policy { "" "camera=(self), microphone=(self), geolocation=()"; default $upstream_http_permissions_policy; }
+
+  # Used by the health check of the container only
+  server {
+    listen 127.0.0.1:8081;
+    access_log off;
+    location = /nginx-health {
+      return 200 "ok\n";
+    }
+  }
+
+  server {
+{% if tls %}
+    listen 443 ssl default_server;
+    # the containers of the instance call it on the public name with the scheme of DEPLOYMENT_URL (this port is not published)
+    listen 80;
+    http2 on;
+{% if DEPLOYMENT_CERTBOT_ENABLED == "true" %}
+    ssl_certificate     /etc/letsencrypt/live/{{ DEPLOYMENT_CERTBOT_DOMAIN }}/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/{{ DEPLOYMENT_CERTBOT_DOMAIN }}/privkey.pem;
+{% else %}
+    ssl_certificate     /etc/nginx/certs/fullchain.pem;
+    ssl_certificate_key /etc/nginx/certs/privkey.pem;
+{% endif %}
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+    ssl_prefer_server_ciphers on;
+    ssl_session_tickets off;
+    ssl_session_cache shared:ssl:2m;
+{% else %}
+    listen 80 default_server;
+{% endif %}
+    server_name _;
+
+    # What every proxied location sends to its service: the host the client used, who it is, the scheme Apache tells, and the
+    # websocket upgrade when there is one. A location only adds what is specific to it.
+    proxy_http_version 1.1;
+    proxy_set_header Host              $http_host;
+    proxy_set_header X-Real-IP         $remote_addr;
+    proxy_set_header X-Forwarded-For   $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Host  $http_host;
+    proxy_set_header X-Forwarded-Proto $the_scheme;
+    proxy_set_header Upgrade           $http_upgrade;
+    proxy_set_header Connection        $connection_upgrade;
+    proxy_request_buffering off;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+
+    # The redirections of nginx (/mailpit -> /mailpit/...) are relative: the client knows the host, the port and the scheme it used
+    absolute_redirect off;
+
+    # Uploads: the limit of the application (MB) plus the multipart overhead
+    client_max_body_size {{ (DEPLOYMENT_UPLOAD_MAX_FILE_SIZE | int) + 1 }}m;
+
+    proxy_hide_header X-Content-Type-Options;
+    proxy_hide_header X-Frame-Options;
+    proxy_hide_header Referrer-Policy;
+    proxy_hide_header Permissions-Policy;
+    add_header X-Content-Type-Options $h_content_type_options always;
+    add_header X-Frame-Options $h_frame_options always;
+    add_header Referrer-Policy $h_referrer_policy always;
+    add_header Permissions-Policy $h_permissions_policy always;
+{% if tls and DEPLOYMENT_APACHE_HTTPSONLY_ENABLED == "true" %}
+    add_header Strict-Transport-Security "max-age=31536000" always;
+{% endif %}
+
+    # Friendly pages when the application does not answer (starting, stopped...), as Apache did
+    error_page 404 /errors/instance/404.html;
+    error_page 500 /errors/instance/500.html;
+    error_page 502 504 /errors/instance/502.html;
+    error_page 503 /errors/instance/503.html;
+
+    location /errors/instance/ {
+      alias /srv/static/errors/instance/;
+      internal;
+    }
+    location = /style.css {
+      alias /srv/static/style.css;
+    }
+    location ~ ^/images/(favicon\.ico|favicon-16x16\.png|favicon-32x32\.png|favicon-48x48\.png|apple-touch-icon\.png|logo\.svg)$ {
+      alias /srv/static/images/$1;
+    }
+    location = /robots.txt {
+      default_type text/plain;
+      return 200 "User-agent: *\nDisallow: /\n";
+    }
+
+    # The logs of the application (the authentication of this URI is done by Apache)
+    location = /logs {
+      return 301 /logs/;
+    }
+    location /logs/ {
+      alias /var/log/app/;
+      autoindex on;
+      default_type text/plain;
+    }
+
+    # The search server, for the administrators (the authentication of this URI is done by Apache)
+    location /elasticsearch {
+      set $upstream_search http://search:9200;
+      rewrite ^/elasticsearch/?(.*)$ /$1 break;
+      proxy_pass $upstream_search;
+    }
+
+{% include "locations/mailpit.conf.j2" %}
+{% include "locations/iframely.conf.j2" %}
+{% include "locations/lam.conf.j2" %}
+{% include "locations/cloudbeaver.conf.j2" %}
+{% include "locations/caldav.conf.j2" %}
+{% include "locations/frontail.conf.j2" %}
+{% include "locations/onlyoffice.conf.j2" %}
+{% include "locations/matrix.conf.j2" %}
+{% include "locations/keycloak.conf.j2" %}
+{% include "locations/jitsi.conf.j2" %}
+{% include "locations/debug.conf.j2" %}
+    location / {
+      set $upstream_app http://exo:8080;
+      proxy_pass $upstream_app;
+    }
+  }
+}

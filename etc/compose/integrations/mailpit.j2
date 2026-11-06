@@ -1,0 +1,4 @@
+{% if DEPLOYMENT_MAILPIT_ENABLED == "true" %}
+{# the application sends its mails to Mailpit instead of a real SMTP server #}
+{% set _ = app_env.update({P ~ "_MAIL_SMTP_HOST": "mailpit", P ~ "_MAIL_SMTP_PORT": "1025", P ~ "_MAIL_SMTP_STARTTLS": "false"}) %}
+{% endif %}

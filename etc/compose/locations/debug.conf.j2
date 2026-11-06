@@ -1,0 +1,9 @@
+{% if DEPLOYMENT_DEBUG_ENABLED == "true" %}
+    # Remote debug (JDWP) over a websocket (the authentication of this URI is done by Apache)
+    location /debug-ws {
+      set $upstream_debug http://debugproxy:8001;
+      rewrite ^/debug-ws/?(.*)$ /$1 break;
+      proxy_pass $upstream_debug;
+    }
+
+{% endif %}
