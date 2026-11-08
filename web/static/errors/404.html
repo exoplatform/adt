@@ -243,6 +243,9 @@
     function $(id) { return document.getElementById(id); }
     function setText(id, v) { var el = $(id); if (el) el.textContent = v; }
 
+    var TITLE_PARTS = document.title.split(" - ");
+    var TITLE_SUFFIX = TITLE_PARTS.length > 2 ? " - " + TITLE_PARTS[TITLE_PARTS.length - 1] : "";
+
     function switchLang(lang) {
         var t = translations[lang];
         if (!t) return;
@@ -254,6 +257,7 @@
         document.documentElement.lang = lang;
         document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
         setText('lang-announce', t.title);
+        document.title = TITLE_PARTS[0] + " - " + t.title + TITLE_SUFFIX;
         try { localStorage.setItem('preferred-lang', lang); } catch (e) {}
     }
     document.querySelectorAll('.lang button').forEach(function (b) { b.addEventListener('click', function () { switchLang(b.dataset.lang); }); });
