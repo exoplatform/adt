@@ -228,6 +228,31 @@
     var TITLE_PARTS = document.title.split(" - ");
     var TITLE_SUFFIX = TITLE_PARTS.length > 2 ? " - " + TITLE_PARTS[TITLE_PARTS.length - 1] : "";
 
+    // Strings shared by every error page (the page-specific ones are in "translations")
+    var META = document.querySelector('meta[name=description]');
+    var META_PARTS = META ? META.content.split(' - ') : [];
+    var COMMON = {
+        en: { lang: 'Language', rights: 'All rights reserved, eXo Platform SAS.', mail: 'Contact support by email at ', toLight: 'Switch to light mode', toDark: 'Switch to dark mode', toggle: 'Toggle dark / light mode' },
+        fr: { lang: 'Langue', rights: 'Tous droits réservés, eXo Platform SAS.', mail: 'Contacter le support par e-mail à ', toLight: 'Passer en mode clair', toDark: 'Passer en mode sombre', toggle: 'Basculer entre mode sombre et clair' },
+        de: { lang: 'Sprache', rights: 'Alle Rechte vorbehalten, eXo Platform SAS.', mail: 'Support per E-Mail kontaktieren: ', toLight: 'Zum hellen Modus wechseln', toDark: 'Zum dunklen Modus wechseln', toggle: 'Zwischen dunklem und hellem Modus wechseln' }
+    };
+    var curLang = 'en';
+    function themeLabel() {
+        var c = COMMON[curLang] || COMMON.en, th = $('th');
+        if (!th) return;
+        th.setAttribute('aria-label', document.documentElement.getAttribute('data-bs-theme') === 'dark' ? c.toLight : c.toDark);
+        th.title = c.toggle;
+    }
+    function applyCommon(lang, title) {
+        var c = COMMON[lang] || COMMON.en, g = document.querySelector('.lang'), a = $('contact') && $('contact').parentNode;
+        curLang = lang;
+        if (META && META_PARTS.length > 2) META.content = META_PARTS[0] + ' - ' + META_PARTS[1] + ' - ' + title;
+        if (g) g.setAttribute('aria-label', c.lang);
+        setText('rights', c.rights);
+        if (a && a.getAttribute('href')) a.setAttribute('aria-label', c.mail + a.getAttribute('href').replace('mailto:', ''));
+        themeLabel();
+    }
+
     function switchLang(lang) {
         var t = translations[lang];
         if (!t) return;
@@ -242,6 +267,7 @@
         document.querySelectorAll('.lang button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.lang === lang ? 'true' : 'false'); });
         setText('lang-announce', t.title);
         document.title = TITLE_PARTS[0] + " - " + t.title + TITLE_SUFFIX;
+        applyCommon(lang, t.title);
         try { localStorage.setItem('preferred-lang', lang); } catch (e) {}
     }
     document.querySelectorAll('.lang button').forEach(function (b) { b.addEventListener('click', function () { switchLang(b.dataset.lang); }); });
