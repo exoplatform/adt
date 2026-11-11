@@ -297,6 +297,7 @@
     ProxyPassMatch    "^\/(coauthoring\/.*)$"                           http://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/$1
     ProxyPassMatch    "^\/(downloadfile\/.*)$"                          http://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/$1
     ProxyPassMatch    "^\/(converter.*)$"                               http://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/$1
+    ProxyPassMatch    "^\/(docbuilder.*)$"                              http://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/$1
     # OO Healthcheck
     ProxyPass               /oohealthcheck               http://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/healthcheck
     ProxyPassReverse        /oohealthcheck               http://localhost:{{ DEPLOYMENT_ONLYOFFICE_HTTP_PORT }}/healthcheck
