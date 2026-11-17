@@ -259,6 +259,10 @@ do_start_jitsi_rootless() {
   else
     jitsi_major_version="10" # default latest version
   fi
+  jibri_recordings_dir="/storage/recordings"
+  jibri_logs_dir="/storage/logs"
+  # jitsi-web listens on 8443 (not 443) in rootless mode: jibri chrome must be told, it would use https://<domain>
+  jibri_base_url="https://${DEPLOYMENT_JITSI_NETWORK_NAME}:8443"
   evaluate_file_content ${ETC_DIR}/jitsi/jitsi.env.j2 ${DEPLOYMENT_DIR}/jitsi.env
   echo_info "Starting Jitsi call container ${DEPLOYMENT_JITSI_CALL_CONTAINER_NAME} based on image ${DEPLOYMENT_JITSI_IMAGE}:${DEPLOYMENT_JITSI_CALL_IMAGE_VERSION:-latest}"
   # Ensure there is no container with the same name
@@ -332,12 +336,18 @@ do_start_jitsi_rootless() {
   delete_docker_container ${DEPLOYMENT_JITSI_JIBRI_CONTAINER_NAME}
   cp -v ${ETC_DIR}/jitsi/finalize.sh ${DEPLOYMENT_DIR}/finalize.sh
   chmod +x ${DEPLOYMENT_DIR}/finalize.sh
+  # The rootless image regenerates /run/jibri/config/jibri.conf from its env vars on every start and
+  # /etc/jitsi/jibri is a symlink to that root-less tmpfs dir: bind-mounting on it makes docker create it as
+  # root, so the image can no longer write xorg-video-dummy.conf (Xorg: "no screens found").
+  # Our settings go in /config/custom-jibri.conf (copied then included last by the image) and the only
+  # writable dir is /storage.
   evaluate_file_content ${ETC_DIR}/jitsi/jibri/jibri.conf.j2 ${DEPLOYMENT_DIR}/jibri.conf
   ${DOCKER_CMD} run \
     -d \
     -v /dev/shm:/dev/shm \
-    -v ${DEPLOYMENT_DIR}/jibri.conf:/etc/jitsi/jibri/jibri.conf:ro \
+    -v ${DEPLOYMENT_DIR}/jibri.conf:/config/custom-jibri.conf:ro \
     -v ${DEPLOYMENT_DIR}/finalize.sh:/tmp/finalize.sh \
+    --env JIBRI_LOGS_DIR=${jibri_logs_dir} \
     --memory "${DEPLOYMENT_JITSI_MEM_LIMIT}" \
     --cap-add SYS_ADMIN \
     --cap-add NET_BIND_SERVICE \
@@ -356,9 +366,15 @@ do_start_jitsi_rootless() {
   echo_info "Starting Jitsi Web container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} based on image exoplatform/jitsi-web:${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME}
+  # The image copies /config to /run/web/config and appends these two files to the generated
+  # config.js / interface_config.js (a docker exec appending to /config/interface_config.js has no effect)
+  evaluate_file_content ${ETC_DIR}/jitsi/web/custom-config.js.j2 ${DEPLOYMENT_DIR}/jitsi-web-custom-config.js
+  cp -v ${ETC_DIR}/jitsi/web/custom-interface_config.js ${DEPLOYMENT_DIR}/jitsi-web-custom-interface_config.js
   ${DOCKER_CMD} run \
     -d \
     --mount type=tmpfs,destination=/config \
+    -v ${DEPLOYMENT_DIR}/jitsi-web-custom-config.js:/config/custom-config.js:ro \
+    -v ${DEPLOYMENT_DIR}/jitsi-web-custom-interface_config.js:/config/custom-interface_config.js:ro \
     -p "127.0.0.1:${DEPLOYMENT_JITSI_WEB_HTTP_PORT}:8000" \
     -p "${DEPLOYMENT_JITSI_WEB_HTTPS_PORT}:8443" \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
@@ -372,8 +388,6 @@ do_start_jitsi_rootless() {
     --name ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} exoplatform/jitsi-web:"${DEPLOYMENT_JITSI_IMAGE_VERSION}"
   echo_info "${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} container started"
   check_jitsi_web_availability
-  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> \"/config/interface_config.js\""
-  ${DOCKER_CMD} exec ${DEPLOYMENT_JITSI_WEB_CONTAINER_NAME} bash -c "echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> \"/config/interface_config.js\""
 
   echo_info "Starting Jitsi excalidraw backend container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME} based on image exoplatform/exo-excalidraw-backend:${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_IMAGE_VERSION}"
   delete_docker_container ${DEPLOYMENT_JITSI_EXCALIDRAW_BACKEND_CONTAINER_NAME}
