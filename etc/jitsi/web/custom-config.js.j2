@@ -1,0 +1,14 @@
+/* Appended to the generated config.js by the jitsi-web container
+   (s6 01-config service picks up custom-config.js from the /config volume).
+   defaultLogoUrl is the watermark logo shown in meetings and therefore in
+   jibri recordings; it replaced interfaceConfig.DEFAULT_LOGO_URL. */
+config.defaultLogoUrl = '{{ DEPLOYMENT_URL }}/jitsicall/images/logo.png';
+
+/* Mute the "recording on/off" announcements: jibri plays them in its browser,
+   so they would be captured in the recording. */
+config.disabledSounds = (config.disabledSounds || []).concat([
+  'RECORDING_ON_SOUND',
+  'RECORDING_OFF_SOUND',
+  'RECORDING_AND_TRANSCRIPTION_ON_SOUND',
+  'RECORDING_AND_TRANSCRIPTION_OFF_SOUND'
+]);

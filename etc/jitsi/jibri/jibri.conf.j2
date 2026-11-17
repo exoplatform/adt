@@ -32,6 +32,10 @@ jibri {
 
                 // The base XMPP domain
                 xmpp-domain = "{{ DEPLOYMENT_JITSI_NETWORK_NAME }}"
+{% if jibri_base_url | default('', true) %}
+                // URL of the call page when jitsi-web is not on 443 (rootless images)
+                base-url = "{{ jibri_base_url }}"
+{% endif %}
 
                 // The MUC we'll join to announce our presence for
                 // recording and streaming services
@@ -72,7 +76,7 @@ jibri {
       }
     }
     recording {
-      recordings-directory = "/config/recordings"
+      recordings-directory = "{{ jibri_recordings_dir | default('/config/recordings', true) }}"
       finalize-script = "/tmp/finalize.sh"
       }
 
