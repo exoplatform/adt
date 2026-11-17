@@ -90,7 +90,7 @@ do_stop_jitsi() {
 
 
 # #############################################################################
-# Legacy startup — PLF < 7.3, root-based containers (jitsi stable-10888 and earlier)
+# Legacy startup — root-based containers (jitsi stable-10888 and earlier)
 # jitsi-web nginx listens on 80 (http) / 443 (https)
 # #############################################################################
 do_start_jitsi_legacy() {
@@ -240,7 +240,7 @@ do_start_jitsi_legacy() {
 }
 
 # #############################################################################
-# Rootless startup — PLF >= 7.3 (jitsi stable-11146 and later, uid 1000)
+# Rootless startup — jitsi stable-11146 and later (uid 1000)
 # Differences vs do_start_jitsi_legacy:
 #   - Image registry: ghcr.io/jitsi/* instead of Docker Hub jitsi/*
 #   - jitsi-web nginx listens on 8000 (http) / 8443 (https) instead of 80/443
@@ -394,12 +394,15 @@ do_start_jitsi_rootless() {
 }
 
 do_start_jitsi() {
-  if [[ "${PRODUCT_VERSION}" =~ ^(7\.[3-9]|[89]\.|[1-9][0-9]\.) ]]; then
-    echo_info "PLF version ${PRODUCT_VERSION} > 7.3: using rootless Jitsi startup"
-    do_start_jitsi_rootless
+  # The startup mode follows the Jitsi image, not the PLF version: rootless images (uid 1000,
+  # ghcr.io/jitsi/*) start with stable-11146. Non stable-NNNN tags (latest, unstable) are rootless.
+  local rootless_min_build=11146
+  if [[ "${DEPLOYMENT_JITSI_IMAGE_VERSION}" =~ ^stable-([0-9]+) ]] && (( BASH_REMATCH[1] < rootless_min_build )); then
+    echo_info "Jitsi image ${DEPLOYMENT_JITSI_IMAGE_VERSION} < stable-${rootless_min_build}: using legacy Jitsi startup"
+    do_start_jitsi_legacy
   else
-    echo_info "PLF version ${PRODUCT_VERSION} < 7.3: using legacy Jitsi startup"
-      do_start_jitsi_legacy
+    echo_info "Jitsi image ${DEPLOYMENT_JITSI_IMAGE_VERSION} >= stable-${rootless_min_build}: using rootless Jitsi startup"
+    do_start_jitsi_rootless
   fi
 }
 
