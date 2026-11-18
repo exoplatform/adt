@@ -408,6 +408,11 @@ do_start_jitsi_rootless() {
 }
 
 do_start_jitsi() {
+  echo_info "Starting Jitsi..."
+  if [ "${DEPLOYMENT_JITSI_ENABLED}" == "false" ]; then
+    echo_info "Jitsi not specified, skiping its containers startup"
+    return
+  fi
   # The startup mode follows the Jitsi image, not the PLF version: rootless images (uid 1000,
   # ghcr.io/jitsi/*) start with stable-11146. Non stable-NNNN tags (latest, unstable) are rootless.
   local rootless_min_build=11146
