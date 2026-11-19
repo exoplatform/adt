@@ -16,6 +16,9 @@
     "enabled": true,
     "alwaysDisplayInConsole": false,
     "clientAuthenticatorType": "client-secret",
+{% if not saml -%}
+    "secret": "{{ DEPLOYMENT_KEYCLOAK_OIDC_SECRET }}",
+{% endif -%}
     "redirectUris": [
         "{{ "*" if saml else DEP_URL ~ "/portal/*" }}"
     ],

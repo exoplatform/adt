@@ -1,0 +1,21 @@
+{% if DEPLOYMENT_SFTP_ENABLED == "true" %}
+{% from "macros.j2" import y %}
+  sftp:
+    image: {{ y(DEPLOYMENT_SFTP_IMAGE ~ ":" ~ DEPLOYMENT_SFTP_IMAGE_VERSION) }}
+    container_name: {{ y(INSTANCE_KEY ~ "_sftp") }}
+    labels:
+      adt.instance: {{ y(INSTANCE_KEY) }}
+      adt.role: "sftp"
+    command: ["root:password:::upload"]
+    # published on the server, for the users of the instance: it is not an HTTP service
+    ports:
+      - "{{ DEPLOYMENT_SFTP_PORT }}:22"
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/22"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+    logging: *logging
+
+{% endif %}

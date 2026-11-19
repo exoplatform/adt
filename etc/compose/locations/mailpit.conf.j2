@@ -1,0 +1,11 @@
+{% if DEPLOYMENT_MAILPIT_ENABLED == "true" %}
+    # Mailpit: the mails the application sent (the authentication of this URI is done by Apache)
+    location = /mailpit {
+      return 301 /mailpit/;
+    }
+    location /mailpit/ {
+      set $upstream_mailpit http://mailpit:8025;
+      proxy_pass $upstream_mailpit;
+    }
+
+{% endif %}
