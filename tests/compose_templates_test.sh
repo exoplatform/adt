@@ -66,6 +66,7 @@ render() {
     DEPLOYMENT_JITSI_EXO_JWT_SECRET=exo-jwt DEPLOYMENT_JITSI_JWT_APP_SECRET=jwt-app DEPLOYMENT_JITSI_JIBRI_RECORDER_PASSWORD=recorder
     DEPLOYMENT_JITSI_JIBRI_XMPP_PASSWORD=jibri-xmpp DEPLOYMENT_JITSI_JICOFO_AUTH_PASSWORD=jicofo DEPLOYMENT_JITSI_JICOFO_COMPONENT_SECRET=component
     DEPLOYMENT_JITSI_JVB_AUTH_PASSWORD=jvb jitsi_major_version=11
+    jibri_recordings_dir=/storage/recordings jibri_logs_dir=/storage/logs jibri_base_url=https://plfent-7.3.0-m16.jitsi:8443
     DEPLOYMENT_LICENSE_MOUNT= DEPLOYMENT_PROPERTIES_SHA=0123abcd
     DEPLOYMENT_DEBUG_ENABLED=false DEPLOYMENT_DEBUGPROXY_IMAGE=ghcr.io/vi/websocat DEPLOYMENT_DEBUGPROXY_IMAGE_VERSION=v1.14.1
   )
@@ -76,6 +77,8 @@ render() {
   local file
   mkdir -p "${dir}/jitsi"
   python3 "${SCRIPT_DIR}/tests/render_template.py" "${SCRIPT_DIR}/etc/jitsi/jitsi.env.j2" "${dir}/jitsi/jitsi.env" "${vars[@]}" "$@"
+  python3 "${SCRIPT_DIR}/tests/render_template.py" "${SCRIPT_DIR}/etc/jitsi/web/custom-config.js.j2" "${dir}/jitsi/web-custom-config.js" "${vars[@]}" "$@"
+  cp "${SCRIPT_DIR}/etc/jitsi/web/custom-interface_config.js" "${dir}/jitsi/web-custom-interface_config.js"
   for file in etc/jitsi/jibri/jibri.conf.j2 etc/matrix/homeserver.yaml.j2 etc/matrix/initialize.sh.j2 \
               etc/matrix/client.j2 etc/matrix/server.j2 etc/keycloak/client_def.json.j2; do
     python3 "${SCRIPT_DIR}/tests/render_template.py" "${SCRIPT_DIR}/${file}" "${dir}/$(basename "${file}" .j2)" "${vars[@]}" "$@"
@@ -128,7 +131,7 @@ check "keycloak (saml)"   c-kc-saml  DEPLOYMENT_KEYCLOAK_ENABLED=true
 check "keycloak (saml, before 7.2)" c-kc-saml-old DEPLOYMENT_KEYCLOAK_ENABLED=true DEPLOYMENT_SAML_SP_NAMING=false
 check "keycloak (openid), https only" c-kc-oidc DEPLOYMENT_KEYCLOAK_ENABLED=true DEPLOYMENT_KEYCLOAK_MODE=OPENID DEPLOYMENT_APACHE_HTTPSONLY_ENABLED=true
 check "jitsi (rootless images)" c-jitsi DEPLOYMENT_JITSI_ENABLED=true
-check "jitsi (7.2 images)"      c-jitsi-old DEPLOYMENT_JITSI_ENABLED=true DEPLOYMENT_JITSI_ROOTLESS=false DEPLOYMENT_JITSI_IMAGE_VERSION=stable-10888 jitsi_major_version=10
+check "jitsi (7.2 images)"      c-jitsi-old DEPLOYMENT_JITSI_ENABLED=true DEPLOYMENT_JITSI_ROOTLESS=false DEPLOYMENT_JITSI_IMAGE_VERSION=stable-10888 jitsi_major_version=10 jibri_recordings_dir= jibri_logs_dir= jibri_base_url=
 check "remote debug"  c-debug       DEPLOYMENT_DEBUG_ENABLED=true
 check "all of them, TLS, PostgreSQL" c-all DEPLOYMENT_NGINX_TLS=true DEPLOYMENT_PROXY_SSL=true DEPLOYMENT_PROXY_PORT=443 \
   DEPLOYMENT_DB_TYPE=POSTGRES DEPLOYMENT_DB_ENV_TYPE=pgsql DEPLOYMENT_DATABASE_PORT=5432 DEPLOYMENT_DATABASE_VERSION=17 \
@@ -150,6 +153,13 @@ for prop in "io.meeds.iframely.url=https://plfent-7.3.0-M16.a.test/oembed" "meed
   grep -qxF -- "${prop}" "${p}" && echo "ok   exo.properties has ${prop%%=*}" || { echo "FAIL exo.properties lacks ${prop}"; failures=$((failures+1)); }
 done
 grep -q 'location /jitsiweb/colibri-ws/' "${WORK}/c-jitsi-old/nginx.conf" && ! grep -q 'colibri-ws' "${WORK}/c-jitsi/nginx.conf" && echo "ok   the colibri location only exists for the images that need it" || { echo "FAIL colibri location"; failures=$((failures+1)); }
+j="${WORK}/c-jitsi/docker-compose.yml"; o="${WORK}/c-jitsi-old/docker-compose.yml"
+grep -q '/config/custom-jibri.conf:ro' "${j}" && grep -q 'JIBRI_LOGS_DIR: "/storage/logs"' "${j}" && grep -q '/config/custom-config.js:ro' "${j}" \
+  && grep -q 'base-url = "https://plfent-7.3.0-m16.jitsi:8443"' "${WORK}/c-jitsi/jibri.conf" && grep -q '^JIBRI_RECORDING_DIR=/storage/recordings' "${WORK}/c-jitsi/jitsi/jitsi.env" \
+  && grep -q '/etc/jitsi/jibri/jibri.conf:ro' "${o}" && ! grep -q 'custom-jibri.conf\|custom-config.js' "${o}" \
+  && grep -q '^JIBRI_RECORDING_DIR=/config/recordings' "${WORK}/c-jitsi-old/jitsi/jitsi.env" && ! grep -q 'base-url' "${WORK}/c-jitsi-old/jibri.conf" \
+  && echo "ok   jibri and jitsi-web follow the rootless or legacy image" || { echo "FAIL jitsi rootless/legacy"; failures=$((failures+1)); }
+grep -q 'docbuilder' "${WORK}/c-onlyoffice/nginx.conf" 2>/dev/null && echo "ok   /docbuilder goes to OnlyOffice" || { echo "FAIL docbuilder"; failures=$((failures+1)); }
 ! grep -q '^$' "${p}" && echo "ok   exo.properties has no empty line" || { echo "FAIL exo.properties has empty lines"; failures=$((failures+1)); }
 grep -q '^      JAVA_OPTS' "${c}" && { echo "FAIL JAVA_OPTS without DEPLOYMENT_OPTS"; failures=$((failures+1)); } || echo "ok   no JAVA_OPTS unless DEPLOYMENT_OPTS is set"
 grep -qxF 'onlyoffice.documentserver.secret=a\\b' "${WORK}/backslash/exo.properties" && echo "ok   the backslash of a property is escaped" || { echo "FAIL backslash escaping"; failures=$((failures+1)); }

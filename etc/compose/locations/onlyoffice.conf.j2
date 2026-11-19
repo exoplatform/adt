@@ -5,7 +5,7 @@
       set $upstream_onlyoffice http://onlyoffice;
       proxy_pass $upstream_onlyoffice;
     }
-    location ~ ^/(OfficeWeb|printfile|cache|web-apps|coauthoring|downloadfile|converter|doc)(/|$) {
+    location ~ ^/(OfficeWeb|printfile|cache|web-apps|coauthoring|downloadfile|converter|docbuilder|doc)(/|$) {
       set $upstream_onlyoffice http://onlyoffice;
       proxy_pass $upstream_onlyoffice;
     }

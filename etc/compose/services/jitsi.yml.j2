@@ -91,6 +91,10 @@
       adt.instance: {{ y(INSTANCE_KEY) }}
       adt.role: "jitsi"
     env_file: ./jitsi/jitsi.env
+{% if rootless %}
+    environment:
+      JIBRI_LOGS_DIR: {{ y(jibri_logs_dir) }}
+{% endif %}
     mem_limit: {{ y(DEPLOYMENT_JITSI_MEM_LIMIT) }}
     shm_size: 2gb
     cap_add:
@@ -99,7 +103,13 @@
     devices:
       - /dev/snd:/dev/snd
     volumes:
+{% if rootless %}
+      # the rootless image regenerates /etc/jitsi/jibri/jibri.conf (a link to a tmpfs) from its environment on every start, and
+      # a bind mount on it would be created as root: our settings go in the file it includes last
+      - ./jitsi/jibri.conf:/config/custom-jibri.conf:ro
+{% else %}
       - ./jitsi/jibri.conf:/etc/jitsi/jibri/jibri.conf:ro
+{% endif %}
       - ./jitsi/finalize.sh:/tmp/finalize.sh:ro
     depends_on:
       jitsi-prosody:
@@ -124,6 +134,10 @@
 {% if rootless %}
     tmpfs:
       - /config
+    volumes:
+      # appended by the image to the config.js and interface_config.js it generates
+      - ./jitsi/web-custom-config.js:/config/custom-config.js:ro
+      - ./jitsi/web-custom-interface_config.js:/config/custom-interface_config.js:ro
 {% endif %}
     networks:
       default:

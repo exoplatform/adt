@@ -53,13 +53,22 @@ do_get_companion_settings() {
     fi
   fi
 
-  # Jitsi: the images of 7.3 and later are the rootless ones; the XMPP domains are names of the network of the instance
-  env_var "DEPLOYMENT_JITSI_ROOTLESS" "false"
-  if [[ "${PRODUCT_VERSION}" =~ ^(7\.[3-9]|[89]\.|[1-9][0-9]\.) ]]; then
-    env_var "DEPLOYMENT_JITSI_ROOTLESS" "true"
+  # Jitsi: the startup follows the image, not the product version: the rootless images (uid 1000, ghcr.io/jitsi) start with
+  # stable-11146, and the tags that are not stable-NNNN (latest, unstable) are rootless. The XMPP domains are names of the
+  # network of the instance
+  env_var "DEPLOYMENT_JITSI_ROOTLESS" "true"
+  if [[ "${DEPLOYMENT_JITSI_IMAGE_VERSION}" =~ ^stable-([0-9]+) ]] && (( BASH_REMATCH[1] < 11146 )); then
+    env_var "DEPLOYMENT_JITSI_ROOTLESS" "false"
   fi
   env_var "DEPLOYMENT_JITSI_NETWORK_NAME" "$(tolower "${INSTANCE_KEY}").jitsi"
   env_var "DEPLOYMENT_JITSI_JVB_PORT" "${DEPLOYMENT_PORT_PREFIX}84"
+  if [ "${DEPLOYMENT_JITSI_ROOTLESS}" == "true" ]; then
+    # /storage is the only writable directory of the rootless jibri; jitsi-web listens on 8443 (not 443) there, so jibri
+    # has to be told where the call page is
+    env_var "jibri_recordings_dir" "/storage/recordings"
+    env_var "jibri_logs_dir" "/storage/logs"
+    env_var "jibri_base_url" "https://${DEPLOYMENT_JITSI_NETWORK_NAME}:8443"
+  fi
   # the major version of the stable-XXXXX image (the environment of its services depends on it)
   env_var "jitsi_major_version" "10"
   if [[ "${DEPLOYMENT_JITSI_IMAGE_VERSION}" =~ ^stable-([0-9]+) ]]; then
@@ -171,6 +180,12 @@ do_render_companion_files() {
     evaluate_file_content "${ETC_DIR}/jitsi/jitsi.env.j2" "${DEPLOYMENT_DIR}/jitsi/jitsi.env"
     evaluate_file_content "${ETC_DIR}/jitsi/jibri/jibri.conf.j2" "${DEPLOYMENT_DIR}/jitsi/jibri.conf"
     cp "${ETC_DIR}/jitsi/finalize.sh" "${DEPLOYMENT_DIR}/jitsi/finalize.sh"
+    if [ "${DEPLOYMENT_JITSI_ROOTLESS}" == "true" ]; then
+      # the web image appends these two files to the config.js / interface_config.js it generates
+      evaluate_file_content "${ETC_DIR}/jitsi/web/custom-config.js.j2" "${DEPLOYMENT_DIR}/jitsi/web-custom-config.js"
+      cp "${ETC_DIR}/jitsi/web/custom-interface_config.js" "${DEPLOYMENT_DIR}/jitsi/web-custom-interface_config.js"
+      chmod 644 "${DEPLOYMENT_DIR}/jitsi/web-custom-config.js" "${DEPLOYMENT_DIR}/jitsi/web-custom-interface_config.js"
+    fi
     chmod 600 "${DEPLOYMENT_DIR}/jitsi/jitsi.env"
     chmod 644 "${DEPLOYMENT_DIR}/jitsi/jibri.conf"
     chmod 755 "${DEPLOYMENT_DIR}/jitsi/finalize.sh"
@@ -527,14 +542,16 @@ do_provision_companions() {
   fi
 }
 
-# The logo and the watermark link of the Jitsi web application (its configuration is generated when the container starts)
+# The logo, the watermark link and the sounds of the legacy Jitsi web application (its configuration is generated when the
+# container starts). The rootless one is given custom-config.js and custom-interface_config.js instead
 do_provision_jitsi() {
+  if [ "${DEPLOYMENT_JITSI_ROOTLESS}" == "true" ]; then
+    return 0
+  fi
   local _web="${INSTANCE_KEY}_jitsi_web" _config="/config/interface_config.js"
   ${DOCKER_CMD} exec "${_web}" bash -c "grep -q DEFAULT_LOGO_URL ${_config} || echo \"interfaceConfig['DEFAULT_LOGO_URL'] = '${DEPLOYMENT_URL}/jitsicall/images/logo.png';\" >> ${_config}"
   ${DOCKER_CMD} exec "${_web}" bash -c "grep -q JITSI_WATERMARK_LINK ${_config} || echo \"interfaceConfig['JITSI_WATERMARK_LINK'] = '';\" >> ${_config}"
-  if [ "${DEPLOYMENT_JITSI_ROOTLESS}" != "true" ]; then
-    ${DOCKER_CMD} exec "${_web}" bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3"
-  fi
+  ${DOCKER_CMD} exec "${_web}" bash -c "rm -fv /usr/share/jitsi-meet/sounds/recordingOff.mp3 /usr/share/jitsi-meet/sounds/recordingOn.mp3"
 }
 
 #
