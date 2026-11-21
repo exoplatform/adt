@@ -180,6 +180,19 @@ function initFeatureFilters(target) {
         search.focus();
     });
 
+    // Called by head.js once autorefresh.js has swapped the sections in place (no reload: the filters, the view and the scroll stay).
+    // The new sections know nothing of the filters; the list of the features in the toolbar may have changed (a branch appeared
+    // or went), and a saved feature that is gone falls back to all of them in apply()
+    window.adtPageAfterSwap = function (fresh) {
+        var freshNames = fresh && fresh.getElementById('featureName');
+        if (freshNames) {
+            while (nameSelect.firstChild) nameSelect.removeChild(nameSelect.firstChild);
+            [].forEach.call(freshNames.childNodes, function (n) { nameSelect.appendChild(document.importNode(n, true)); });
+        }
+        apply(false);
+        highlightHashTarget();
+    };
+
     apply(false);
     // A shared #feature link must stay visible: show everything for this
     // visit without overwriting the saved filters

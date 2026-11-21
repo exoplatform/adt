@@ -1,15 +1,22 @@
 // Keeps the dashboard up to date WITHOUT reloading it. When the server says something changed (a deployment, pushed
 // on the /ws socket, see live.js), when the socket came back after a loss, and as a slow safety net, the page asks
 // the server for its own URL again (with its own cookies: every access rule applies to what comes back, nothing about
-// the page travels on the socket) and swaps the parts that changed: the figures at the top and each section of
-// instances. Scroll position, search, view, sort, favorites, bells, open menus and focus stay as they are.
+// the page travels on the socket) and swaps the parts that changed: the figures at the top, each section of instances,
+// each section of feature branches. Scroll position, search, filters, view, sort, favorites, bells, open menus and focus stay
+// as they are: what a page decorates its parts with is applied again by its own hook (head.js adtAfterSwap, features.js
+// adtPageAfterSwap).
 //
 // A part is left alone while the person is using it (a modal is open, a field has the focus, a details control or a
 // menu is open, some text is selected in it) and tried again shortly. Nothing is fetched while the tab is hidden: it
 // is done when the tab is shown again.
 //
 // The status of an instance (up, down) is not pushed: the safety net looks every 10 minutes while the socket is open,
-// every 2 minutes without it (blocked by a proxy, server restarting).
+// every 2 minutes without it (blocked by a proxy, server restarting). A change of the feature branches is announced by the
+// server ("branches": adt.sh fetched the repositories).
+//
+// A page that cannot be updated part by part sets window.adtLiveMode = 'reload' in its own script: it is then reloaded whole
+// when idle, every 2 minutes, as every page used to be (STOPGAP: the Git Activity page, see git_activity.js for what is
+// missing). A page with nothing to swap and no mode (Servers polls its own data) is left alone: no fetch for nothing.
 (function() {
   var NO_SOCKET = 120000, SAFETY_NET = 600000, RETRY = 15000, MIN_GAP = 10000, AFTER_DEPLOY = 2000;
 
@@ -50,7 +57,7 @@
   // back when the server answers again
   if (document.querySelector('meta[name="adt-offline"]')) return;
   var live = window.adtLive;
-  var KINDS = ['.bento', '.instances-section'];
+  var KINDS = ['.bento', '.instances-section', '.features-section'];
   var sigs = new WeakMap(); // part of the page -> signature of the HTML the server sent for it
   var last = Date.now(), timer = null, inflight = false, dirty = false;
 
@@ -87,7 +94,13 @@
         next = document.importNode(freshEls[i], true);
         sigs.set(next, freshEls[i].outerHTML);
         if (op === 'replace') { disposeOverlays(el); el.replaceWith(next); }
-        else if (prev) prev.after(next); else m.prepend(next);
+        else {
+          // The first part of its kind: where the fresh page has it, after the element it follows there (when that one is on the
+          // page too: the section of features comes after #featuresNoMatch), else after the header
+          var before = freshEls[i].previousElementSibling, anchor = before && before.id && document.getElementById(before.id);
+          if (!liveEls.length && anchor) prev = anchor;
+          if (prev) prev.after(next); else m.prepend(next);
+        }
         prev = next;
         out.changed = true;
       });
@@ -116,7 +129,7 @@
         if (doc.querySelector('meta[name="adt-offline"]') || !doc.getElementById('main')) return;
         var r = apply(doc);
         if (r.skipped) dirty = true; // in use: the check below tries again
-        if (r.changed && window.adtAfterSwap) window.adtAfterSwap();
+        if (r.changed && window.adtAfterSwap) window.adtAfterSwap(doc);
       })
       .catch(function() { /* unreachable: the page stays as it is, the next trigger tries again */ })
       .then(function() { inflight = false; });
@@ -129,12 +142,32 @@
     if (timer) return;
     timer = setTimeout(function() { timer = null; refresh(); }, delay(Date.now(), last, wait));
   }
+  // Busy with the page: a modal, a field, an editor open (the reload of the stopgap waits for it as the swaps do)
+  function busy() {
+    var a = document.activeElement;
+    return document.visibilityState === 'hidden' || document.querySelector('.modal.show') ||
+      document.querySelector('.feature-more[open], .feature-base[open]') || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
+  }
+
   function start() {
     snapshot();
     if (!main()) return;
+    // STOPGAP for the pages that cannot be swapped part by part (window.adtLiveMode = 'reload'): reload when idle, as before
+    if (window.adtLiveMode === 'reload') {
+      setTimeout(function again() {
+        if (busy()) { setTimeout(again, RETRY); return; }
+        window.location.reload();
+      }, NO_SOCKET);
+      return;
+    }
+    // Nothing to swap on this page (Servers refreshes its own data): do not ask the server for a page that changes nothing
+    if (!main().querySelector(KINDS.join(',') + ', #featureFilters')) return;
     if (live) {
       // A short wait: the server has dropped its cached lists when it announced the deployment
       live.on('deployed', function() { soon(AFTER_DEPLOY); });
+      // adt.sh fetched the repositories and says which ones moved: the feature branches changed. Only the page that lists them cares
+      // (the cards of the instances do not show them): asking the server for a page that cannot have changed would be load for nothing
+      if (main().querySelector('.features-section, #featureFilters')) live.on('branches', function() { soon(AFTER_DEPLOY); });
       live.on('reconnect', function() { soon(0); });
     }
     // Checked often rather than with one long timer: a timer of a background tab can be throttled or frozen

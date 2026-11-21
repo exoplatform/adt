@@ -637,12 +637,14 @@ function handleDeployEvent(e) {
 // What autorefresh.js calls once it has swapped parts of the page in place: everything this file decorates the
 // instances with (the new HTML has none of it): sort and table heads, favorites, the search in progress, the bells (a
 // subscribed card whose deployment date changed rings, as it did after a reload), tooltips.
-function adtAfterSwap() {
+function adtAfterSwap(fresh) {
   if (window.adtReapplyView) window.adtReapplyView();
   refreshFavorites();
   var si = document.getElementById('instanceSearch');
   if (si && si.value) doSearch(si.value);
   initDeploySubscriptions();
+  // what the page itself decorates its parts with (the filters of the features page): it gets the fresh document too
+  if (window.adtPageAfterSwap) window.adtPageAfterSwap(fresh);
   if (window.adtInitOverlays) window.adtInitOverlays(document.getElementById('main'));
 }
 window.adtAfterSwap = adtAfterSwap;

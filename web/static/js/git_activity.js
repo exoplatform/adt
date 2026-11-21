@@ -1,3 +1,13 @@
+// STOPGAP (to do): this page is reloaded whole when idle, every 2 minutes, like every page used to be, because autorefresh.js
+// cannot update it part by part yet. What an in-place update needs here:
+//   - the numbers of the five charts (commitsChart, repoTrendChart, repoChart, authorChart, dowChart) come from the JSON block
+//     #chartData: keep the Chart instances, parse the fresh #chartData and set data.labels / data.datasets, then chart.update()
+//   - the stat tiles (.bento) and the table of the activity are plain server markup: swap them like the other pages
+//   - the dependency explorer (#depExplorer) keeps its selection and filter in closures: re-apply them after a swap, as
+//     features.js does (window.adtPageAfterSwap)
+// Then delete the next line.
+window.adtLiveMode = 'reload';
+
 document.addEventListener('DOMContentLoaded', function() {
   // the numbers of the page, written by the server as JSON
   var chartData = JSON.parse(document.getElementById('chartData').textContent);
