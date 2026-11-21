@@ -88,6 +88,9 @@ jobs:
             echo "bash -n $f"
             bash -n "$f"
           done
+      # A <ProxyMatch> is tested against the URL sent to the backend and can skip the LDAP rule of an instance
+      - name: No ProxyMatch exception in the Apache templates
+        run: bash etc/apache2/tests/no-proxymatch.sh
 
   templates:
     name: Jinja templates compile

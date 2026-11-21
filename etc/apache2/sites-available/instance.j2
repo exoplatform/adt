@@ -37,19 +37,11 @@
 {{ protected("^/logs/.*") }}
     Include {{ APACHE_CONF_DIR }}/includes/{{ DEPLOYMENT_EXT_HOST }}.include
 
-    # No security for gadgets
-    <ProxyMatch "^.*/(eXoGadgetServer|exo-gadget-resources|rest|.*Resources)/.*$">
-        Require all granted
-    </ProxyMatch>
-{% if DEPLOYMENT_CHAT_EMBEDDED != "true" %}
-
-    # No security for chat local access
-    <ProxyMatch "^.*/chatServer/.*$">
-        Require host exoplatform.org
-    </ProxyMatch>
-{% endif %}
-
-    # Everything else is secured
+    # Everything is secured. There used to be <ProxyMatch> exceptions here ("no security for gadgets", "chat local access")
+    # in front of this section: they never applied (the later <Proxy *> overrides them, so the rest of the vhost was
+    # already behind LDAP) and would have opened the whole vhost had they been moved below it: a ProxyMatch is tested against
+    # the URL sent to the backend, so "/rest/..;/portal/" (Tomcat strips ";" and resolves "..") or "/debug-ws/rest/x" (the
+    # JDWP tunnel) matched "rest" anywhere and skipped LDAP. Do not add one back (etc/apache2/tests/no-proxymatch.sh).
     <Proxy *>
 {{ ldap_auth("            ") }}
     </Proxy>
