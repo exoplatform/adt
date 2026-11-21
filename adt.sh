@@ -165,6 +165,8 @@ case "${ACTION}" in
     configurable_env_var "APACHE_SSL_CERTIFICATE_KEY_FILE" ""
     validate_env_var "CROWD_ACCEPTANCE_APP_NAME"
     validate_env_var "CROWD_ACCEPTANCE_APP_PASSWORD"
+    # The version of Apache decides what the front-end template may ask of it (upgrade=websocket needs 2.4.47)
+    set_apache_version_defaults
     evaluate_file_content ${ETC_DIR}/apache2/conf.d/adt.conf.j2 ${APACHE_CONF_DIR}/conf.d/adt.conf
     # The parts the virtual hosts share: compression, TLS settings and the security headers
     for _include in compression tls security-headers; do

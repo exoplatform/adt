@@ -20,6 +20,33 @@ fi
 # #############################################################################
 source "${SCRIPT_DIR}/_functions_core.sh"
 
+# Prints "<2.4> <patch>" (for 2.4.66: "2.4 66") for the Apache that serves the instances, or nothing when it cannot be told.
+# $1 (optional): the command to ask, instead of looking for apache2 / httpd (tests).
+detect_apache_version() {
+  local _bin _out
+  for _bin in ${1:-apache2 /usr/sbin/apache2 httpd /usr/sbin/httpd}; do
+    command -v "${_bin}" >/dev/null 2>&1 || continue
+    _out="$("${_bin}" -v 2>/dev/null)" || continue
+    if [[ "${_out}" =~ Apache/([0-9]+\.[0-9]+)\.([0-9]+) ]]; then
+      echo "${BASH_REMATCH[1]} ${BASH_REMATCH[2]}"
+      return 0
+    fi
+  done
+  return 0
+}
+
+# ADT_APACHE_VERSION and ADT_APACHE_VERSION_MINOR (the patch level: 66 for 2.4.66) are rendered in the Apache configuration, and
+# the front-end only asks for upgrade=websocket (the live channel of the pages) from 2.4.47. Nothing sets them on the hosts, so
+# they are read from the installed Apache when they are empty; what the environment says is never replaced.
+set_apache_version_defaults() {
+  local _version _minor
+  [ -z "${ADT_APACHE_VERSION:-}" ] || [ -z "${ADT_APACHE_VERSION_MINOR:-}" ] || return 0
+  read -r _version _minor <<< "$(detect_apache_version "$@")"
+  [ -n "${_minor:-}" ] || return 0
+  [ -n "${ADT_APACHE_VERSION:-}" ] || env_var "ADT_APACHE_VERSION" "${_version}"
+  [ -n "${ADT_APACHE_VERSION_MINOR:-}" ] || env_var "ADT_APACHE_VERSION_MINOR" "${_minor}"
+}
+
 # Reload Apache
 # $1 : Dev Mode (warning message instead of error)
 do_reload_apache(){
