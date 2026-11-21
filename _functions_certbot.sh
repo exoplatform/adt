@@ -30,9 +30,24 @@ do_get_certbot_settings() {
   fi
 }
 
+# The domain names a folder of the certificates of Let's Encrypt (removed with sudo rm -rf when an instance is undeployed) and is an
+# argument of sudo certbot: a host name, nothing else (not '..', not an option, not two words).
+certbot_domain_is_valid() {
+  [[ "$1" =~ ^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$ ]] && [[ "$1" != *..* ]]
+}
+
+# Issuing a certificate for something else is refused.
+certbot_check_domain() {
+  if ! certbot_domain_is_valid "$1"; then
+    echo_error "'$1' is not a valid domain name for a certificate"
+    exit 1
+  fi
+}
+
 do_generate_certbot_certificate() {
   local certbotAction="certonly"
-  local certbot_domain=$(getdomainfromUrl ${DEPLOYMENT_URL})
+  local certbot_domain=$(getdomainfromUrl "${DEPLOYMENT_URL}")
+  certbot_check_domain "${certbot_domain}"
   local certbot_certs_folder="${DEPLOYMENT_CERTBOT_CONFIG_FOLDER}/live"
   local certFile="${certbot_certs_folder}/${certbot_domain}/cert.pem"
   if [ "${DEPLOYMENT_CERTBOT_FORCE_RENEWAL:-false}" == "false" ] && sudo test -f "${certFile}"; then
@@ -46,32 +61,33 @@ do_generate_certbot_certificate() {
     fi
   fi
 
-  local certbotMethodArgs="webroot --webroot-path ${DEPLOYMENT_CERTBOT_WEBROOT_PATH}"
-
-  local eabOptions=""
-  if [[ -n "${DEPLOYMENT_CERTBOT_EAB_KID:-}" && -n "${DEPLOYMENT_CERTBOT_EAB_HMAC_KEY:-}" ]]; then
-    eabOptions="--eab-kid ${DEPLOYMENT_CERTBOT_EAB_KID} --eab-hmac-key ${DEPLOYMENT_CERTBOT_EAB_HMAC_KEY}"
-  fi
-
-  local domainOptions=""
-  local renewalOptions=""
-  if [[ "${certbotAction}" == "renew" ]] && [[ "${DEPLOYMENT_CERTBOT_FORCE_RENEWAL:-false}" == "true" ]]; then
-    echo_info "Forcing Certificate renewal..."
-    renewalOptions="--force-renewal"
-  fi
+  # The arguments of sudo certbot are an array, each value one argument, and every option that takes a value is written
+  # --option=value: the values of the EAB account come from CI parameters, they were word-split ('x --deploy-hook cmd' ran cmd as
+  # root after the issuance), and with the = form a value that starts with '-' can never be taken for an option of its own
+  local -a certbotArgs=(--config-dir="${DEPLOYMENT_CERTBOT_CONFIG_FOLDER}" --text --agree-tos --non-interactive "${certbotAction}"
+    --rsa-key-size=4096 --authenticator=webroot --webroot-path="${DEPLOYMENT_CERTBOT_WEBROOT_PATH}" --cert-name="${certbot_domain}")
 
   if [[ "${certbotAction}" == "certonly" ]]; then
-    domainOptions="-d ${certbot_domain}"
+    certbotArgs+=(--domains="${certbot_domain}")
+  fi
+  certbotArgs+=(--server="${DEPLOYMENT_CERTBOT_ACME_SERVER}" --email="certificates@exoplatform.com")
+
+  if [[ -n "${DEPLOYMENT_CERTBOT_EAB_KID:-}" && -n "${DEPLOYMENT_CERTBOT_EAB_HMAC_KEY:-}" ]]; then
+    validate_value DEPLOYMENT_CERTBOT_EAB_KID      '^[A-Za-z0-9_-]{1,512}$' "letters, digits, '-' and '_' only (the key id of the ACME account)"
+    validate_value DEPLOYMENT_CERTBOT_EAB_HMAC_KEY '^[A-Za-z0-9_=+/-]{1,1024}$' "base64 characters only (the HMAC key of the ACME account)"
+    certbotArgs+=(--eab-kid="${DEPLOYMENT_CERTBOT_EAB_KID}" --eab-hmac-key="${DEPLOYMENT_CERTBOT_EAB_HMAC_KEY}")
+  fi
+
+  if [[ "${certbotAction}" == "renew" ]] && [[ "${DEPLOYMENT_CERTBOT_FORCE_RENEWAL:-false}" == "true" ]]; then
+    echo_info "Forcing Certificate renewal..."
+    certbotArgs+=(--force-renewal)
   fi
 
   echo_info "Deploying Basic Apache instance configuration for generating/renewing certificate..."
   evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-certbot.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
   do_reload_apache ${ADT_DEV_MODE}
 
-  sudo certbot --config-dir "${DEPLOYMENT_CERTBOT_CONFIG_FOLDER}" --text --agree-tos --non-interactive ${certbotAction} \
-    --rsa-key-size 4096 -a ${certbotMethodArgs} \
-    --cert-name "${certbot_domain}" ${domainOptions} \
-    --server "${DEPLOYMENT_CERTBOT_ACME_SERVER}" --email "certificates@exoplatform.com" ${eabOptions} ${renewalOptions}
+  sudo certbot "${certbotArgs[@]}"
 
   echo_info "Certificate has been generated/renewed successfully"
 
@@ -87,11 +103,16 @@ do_check_certificate_expiration() {
 }
 
 do_unregister_certbot_certificate() {
-  local certbot_domain=$(getdomainfromUrl ${DEPLOYMENT_URL})
+  local certbot_domain=$(getdomainfromUrl "${DEPLOYMENT_URL}")
+  # Undeploying must not stop for a name no certificate can have been issued for: nothing is removed, the rest goes on
+  if ! certbot_domain_is_valid "${certbot_domain}"; then
+    echo_warn "'${certbot_domain}' is not a valid domain name for a certificate: no certificate removed"
+    return 0
+  fi
 
   echo_info "Attempting to unregister certificate: $certbot_domain"
 
-  sudo certbot delete --cert-name "${certbot_domain}" 2>/dev/null || \
+  sudo certbot delete --cert-name="${certbot_domain}" 2>/dev/null || \
   echo_warn "certbot delete failed or cert already removed"
 
   local paths=(
