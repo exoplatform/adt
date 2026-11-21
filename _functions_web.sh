@@ -151,3 +151,25 @@ do_announce_deployed() {
   fi
   return 0
 }
+
+# Run after the repositories were fetched (init, update-repos): tells the dashboards which repositories moved (GIT_REPOS_CHANGED,
+# set by clone_or_fetch_git_repos), so that they recompute the branches of these only and the page of the features shows
+# the new branches at once. Nothing moved, nothing is said. It never fails: a notification is not worth a failed run.
+do_announce_repositories_updated() {
+  local _repos=${GIT_REPOS_CHANGED:-}
+  [ -n "${_repos// /}" ] || return 0
+  # Development mode runs adt-web on a TCP port, without the socket
+  [ -S "${ADT_WEB_SOCKET}" ] || return 0
+  local -a _args=()
+  local _repo
+  for _repo in ${_repos}; do
+    _args+=(--data-urlencode "repos=${_repo}")
+  done
+  # The socket, not Apache: the endpoint refuses what comes through the proxy
+  if curl -fsS --max-time 5 --unix-socket "${ADT_WEB_SOCKET}" -X POST "${_args[@]}" http://localhost/internal/refresh >/dev/null 2>&1; then
+    echo_info "The dashboards were told which repositories moved: ${_repos}"
+  else
+    echo_warn "The dashboards could not be told about the updated repositories (is ${ADT_WEB_SERVICE} running, and can this user write to ${ADT_WEB_SOCKET} ?)"
+  fi
+  return 0
+}

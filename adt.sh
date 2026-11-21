@@ -208,6 +208,8 @@ case "${ACTION}" in
       else
         echo_error "It is impossible to reload Apache. Did you install Apache2 ?"
       fi
+      # adt-web is up to date and answering: the dashboards learn which repositories moved
+      do_announce_repositories_updated
     else
       echo_warn "Development Mode: No Apache server reload."
     fi
@@ -276,6 +278,8 @@ case "${ACTION}" in
   ;;
   update-repos)
     clone_or_fetch_git_repos ${ADT_OFFLINE} ${SRC_DIR} ${REPOS_LIST}
+    # the dashboards learn which repositories moved: the page of the features shows the new branches at once
+    do_announce_repositories_updated
   ;;
   build-web)
     do_build_web
