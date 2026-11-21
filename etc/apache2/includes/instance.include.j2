@@ -49,11 +49,20 @@
     </Directory>
 
 {% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+    # Only the two discovery files are public. The directory also holds homeserver.yaml (registration shared secret,
+    # macaroon, form and JWT secrets), initialize.sh (the admin password) and the signing key: it is never listed and
+    # nothing else in it is served, whatever the security mode of the instance.
     Alias /.well-known/matrix/ "{{ DEPLOYMENT_DIR }}/matrix/"
     <Directory "{{ DEPLOYMENT_DIR }}/matrix/">
-        Options Indexes MultiViews
+        Options MultiViews
         AllowOverride None
-        Require all granted
+        Require all denied
+        <Files "client">
+            Require all granted
+        </Files>
+        <Files "server">
+            Require all granted
+        </Files>
     </Directory>
 
 {% endif %}
