@@ -257,6 +257,11 @@ find_instance_file() {
 initialize_product_settings() {
   validate_env_var "ACTION"
 
+  # What a deployment starts from comes from CI parameters and developers: checked before anything uses it
+  validate_value PRODUCT_NAME    '^[A-Za-z][A-Za-z0-9_-]{0,40}$'            "letters, digits, '-' and '_' only (41 at most), starting with a letter"
+  validate_value PRODUCT_VERSION '^[A-Za-z0-9][A-Za-z0-9._+-]{0,80}$'       "letters, digits, '.', '_', '+' and '-' only (81 at most)"
+  validate_value INSTANCE_ID     '^[A-Za-z0-9][A-Za-z0-9._-]{0,40}$'        "letters, digits, '.', '_' and '-' only (41 at most)"
+
   # Docker properties
   configurable_env_var "DEPLOYMENT_DOCKER_HOST"     "unix://"
   configurable_env_var "DEPLOYMENT_DOCKER_CMD"      "docker"
@@ -1794,6 +1799,10 @@ do_configure_apache() {
   unset DOMAIN
   echo_info "Done."
 
+  # The alias and the domain are written in the Apache virtual host and in file names
+  validate_value DEPLOYMENT_APACHE_VHOST_ALIAS '^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$' "a host name (letters, digits, '.' and '-')"
+  validate_value INSTANCE_DOMAIN               '^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$' "a domain name (letters, digits, '.' and '-')"
+
   # Auto extract domain name
   if [ ! -z "${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" ] && [ -z "${INSTANCE_DOMAIN:-}" ]; then
     env_var "INSTANCE_DOMAIN" "$(echo ${DEPLOYMENT_APACHE_VHOST_ALIAS} | cut -d'.' -f2,3)"
@@ -1910,6 +1919,7 @@ do_load_deployment_descriptor() {
 do_deploy() {
   configurable_env_var "DEPLOYMENT_APACHE_SECURITY" "private"
   configurable_env_var "DEPLOYMENT_APACHE_VHOST_ALIAS" ""
+  validate_value DEPLOYMENT_APACHE_VHOST_ALIAS '^[A-Za-z0-9]([A-Za-z0-9.-]{0,251}[A-Za-z0-9])?$' "a host name (letters, digits, '.' and '-')"
   configurable_env_var "DEPLOYMENT_DB_TYPE" "HSQLDB"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MAX" "2g"
   configurable_env_var "DEPLOYMENT_JVM_SIZE_MIN" "512m"

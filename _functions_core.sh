@@ -48,6 +48,22 @@ validate_env_var() {
   set -u
 }
 
+# Stops unless the variable is empty (the callers say elsewhere when it is required) or its value matches the pattern.
+# The identifiers of a deployment (product, version, instance id, host names) end up in file names, in the Apache
+# and logrotate configuration (rendered by Jinja, not quoted for them), in sed expressions and on the command line of sudo:
+# they are checked where they enter, with a pattern as narrow as what is legitimate.
+validate_value() {
+  local _name=$1 _pattern=$2 _what=$3
+  set +u
+  local _value=${!_name}
+  set -u
+  [ -z "${_value}" ] && return 0
+  if [[ ! "${_value}" =~ ${_pattern} ]]; then
+    echo_error "${_name} is not valid: ${_what}"
+    exit 1
+  fi
+}
+
 # Setup an env var
 # The user can override the value in its environment.
 # In that case the default value won't be used.
