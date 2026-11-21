@@ -91,6 +91,15 @@ func editFeature(a *app.App, w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Bad Request: the specifications link must be an http or https URL", http.StatusBadRequest)
 			return
 		}
+		// the issue key is put in the path of a link, the status is one of the options of the form
+		if v := get("issue"); !editValueEmpty(v) && !ui.ValidIssueKey(v) {
+			http.Error(w, "Bad Request: the issue key is made of letters, digits, '-', '_' and '.' (40 at most)", http.StatusBadRequest)
+			return
+		}
+		if v := get("status"); !editValueEmpty(v) && !ui.ValidFeatureStatus(v) {
+			http.Error(w, "Bad Request: unknown status", http.StatusBadRequest)
+			return
+		}
 		st := confedit.Store{Dir: filepath.Join(a.Cfg.DataDir, "conf", "features")}
 		fields := []string{}
 		for _, f := range []string{"specifications", "status", "issue", "description", "branch"} {

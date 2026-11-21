@@ -3,6 +3,8 @@ package ui
 import (
 	"github.com/exoplatform/adt/web/internal/gitx"
 	"github.com/exoplatform/adt/web/internal/instances"
+	"regexp"
+	"strings"
 )
 
 // fbStatuses are the options of the STATUS select, in order.
@@ -43,3 +45,19 @@ func FormEditFeatureBranch(c *Ctx, d instances.Instance) string {
 		product, instanceID, d.Str("BASE_VERSION"), d.Str("BRANCH_NAME"), d.Str("BRANCH_DESC"),
 		d.Str("SPECIFICATIONS_LINK"), d.Str("ISSUE_NUM"), statuses, branches})
 }
+
+// ValidFeatureStatus tells whether s is one of the options of the STATUS select.
+func ValidFeatureStatus(s string) bool {
+	for _, o := range fbStatuses {
+		if s == o {
+			return true
+		}
+	}
+	return false
+}
+
+var issueKeyRe = regexp.MustCompile(`^[A-Za-z0-9_.-]{1,40}$`)
+
+// ValidIssueKey tells whether s can be the issue key of a feature (XXX-nnnn, or the id of a task): it is put in the path of
+// a link to the community site, so nothing that can climb in it ("../", "?", "#", "/") is accepted.
+func ValidIssueKey(s string) bool { return issueKeyRe.MatchString(s) && !strings.Contains(s, "..") }
