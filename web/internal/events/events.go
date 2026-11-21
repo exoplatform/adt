@@ -5,8 +5,8 @@
 //
 //   - Local: only what happened on this server. It is what /rest/local-events streams, and what the other
 //     acceptance servers relay. Peers never publish on it, so an event cannot travel in circles.
-//   - All: the local events plus the ones relayed from the other acceptance servers. It is what /events streams
-//     to the browsers, so a page served by one server learns about a deployment done on another one.
+//   - All: the local events plus the ones relayed from the other acceptance servers. It is what /events (server-sent
+//     events) and /ws (the live WebSocket of the pages) stream to the browsers, so a page served by one server learns about a deployment done on another one.
 //
 // Events are not stored: a browser that is not connected when the instance is deployed misses it (the page still
 // compares the deployment date it last saw).

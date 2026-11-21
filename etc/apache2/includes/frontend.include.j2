@@ -285,10 +285,22 @@
 
     # The deployment event streams (server-sent events) stay open: pass every chunk on as soon as adt-web writes it
     # (adt-web sends a comment line every 25 s, well inside the proxy timeout), and never compress or buffer them
-    SetEnvIf Request_URI "^/(events|rest/local-events)$" no-gzip=1 dont-vary=1
+    SetEnvIf Request_URI "^/(events|ws|rest/local-events)$" no-gzip=1 dont-vary=1
     # The path is passed on with $1: with a unix socket, a ProxyPassMatch whose target has no backreference gets the
     # request path appended to it (adt-web would receive /events/events)
-    ProxyPassMatch "^(/events)$"            "unix:{{ ADT_WEB_SOCKET }}|http://localhost$1" flushpackets=on
-    ProxyPassMatch "^(/rest/local-events)$" "unix:{{ ADT_WEB_SOCKET }}|http://localhost$1" flushpackets=on
+    # ONE worker serves all of these: the lines share the target (the socket), so the parameters of the FIRST one are
+    # the only ones Apache applies (AH01146 "Ignoring parameter ... because of worker sharing" for the others).
+    #   flushpackets=on  every chunk of the event streams goes on at once
+    #   upgrade=websocket  the live channel of the pages, /ws: mod_proxy_http hands the connection over on
+    #                      "Upgrade: websocket" (Apache 2.4.47+, no mod_proxy_wstunnel needed; the parameter is left out on an older or unknown Apache); a request without that
+    #                      header is not affected. adt-web pings every 25 s, inside the proxy timeout.
+    # Because the worker is shared, "Upgrade: websocket" would be tunnelled on ANY path whose handler answers 101: only
+    # /ws is meant to, so the header is dropped from every other request (a handler added later cannot inherit it)
+    RequestHeader unset Upgrade "expr=%{REQUEST_URI} != '/ws'"
+{#- upgrade=websocket is unknown to Apache before 2.4.47: it would fail the configuration test and take every virtual host down. Without it
+    (version older, or unknown: ADT_APACHE_VERSION_MINOR unset) the page falls back to its timed refresh. "66" and "2.4.66" both work. -#}
+{% set apache_patch = (ADT_APACHE_VERSION_MINOR | default("0") | string).split(".")[-1] | int %}
+    ProxyPassMatch "^(/events)$"            "unix:{{ ADT_WEB_SOCKET }}|http://localhost$1" flushpackets=on{% if apache_patch >= 47 %} upgrade=websocket{% endif %}
+    ProxyPassMatch "^(/rest/local-events)$" "unix:{{ ADT_WEB_SOCKET }}|http://localhost$1"
     ProxyPass /         "unix:{{ ADT_WEB_SOCKET }}|http://localhost/"
     ProxyPassReverse /  "unix:{{ ADT_WEB_SOCKET }}|http://localhost/"

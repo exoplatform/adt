@@ -1,7 +1,7 @@
-const CACHE = 'adt-v34';
+const CACHE = 'adt-v35';
 
 const PRECACHE = [
-  '/manifest.json',
+  '/manifest.json', '/offline.html',
   '/images/icon-192.png', '/images/icon-512.png',
   '/images/icon-maskable-192.png', '/images/icon-maskable-512.png', '/images/logo.svg',
   // not the 403 page: it is answered by the application with the 403 status (addAll would refuse it) and differs per visitor
@@ -19,7 +19,8 @@ const STATIC = /\.(css|js|json|png|jpe?g|gif|svg|ico|webp|woff2?|ttf|html)$/;
 const CDN_HOSTS = ['cdn.jsdelivr.net', 'cdnjs.cloudflare.com'];
 
 function putInCache(request, response) {
-  if (response && (response.status === 200 || response.type === 'opaque')) {
+  // not a redirected answer: with an expired session the file would be the login page, kept under the URL of a script
+  if (response && !response.redirected && (response.status === 200 || response.type === 'opaque')) {
     var clone = response.clone();
     caches.open(CACHE).then(function(cache) {
       return cache.put(request, clone).then(function() { return dropOlderVersions(cache, request); });
@@ -48,7 +49,38 @@ function cacheablePage(url, response) {
     response.status === 200 && response.type === 'basic' && !response.redirected;
 }
 
-// Signing out removes the pages the previous visitor saw
+// Served instead of a page that cannot be fetched (server down, network lost)
+const OFFLINE = '/offline.html';
+
+// The copy of a dashboard page kept for the offline case, marked as such: a <meta name="adt-offline"> carrying the
+// date the server sent it (js/offline.js shows the banner and goes back to the live page once the server answers).
+function offlineCopy(cached) {
+  var date = cached.headers.get('Date') || '';
+  if (!/^[A-Za-z0-9 ,:+-]{1,40}$/.test(date)) date = '';
+  return cached.text().then(function(html) {
+    var meta = '<meta name="adt-offline" content="' + date + '">';
+    var marked = html.replace(/<head[^>]*>/i, function(h) { return h + meta; });
+    var headers = new Headers(cached.headers);
+    // the body is the decoded text, with another length
+    headers.delete('Content-Length');
+    headers.delete('Content-Encoding');
+    return new Response(marked, { status: 200, statusText: 'OK', headers: headers });
+  });
+}
+
+// What a page request gets when the network failed (failure is null) or the proxy answered 502/503/504 because
+// adt-web is down (failure is that answer): the copy kept of the page, else the error the proxy sent, else the
+// offline page (navigations only: a script asking for a page must not receive HTML it did not ask for)
+function offlineFallback(request, url, failure) {
+  return caches.match(request).then(function(cached) {
+    if (cached && cacheablePage(url, cached)) return offlineCopy(cached);
+    if (failure) return failure;
+    if (request.mode !== 'navigate') return new Response('', { status: 408 });
+    return caches.match(OFFLINE).then(function(page) { return page || new Response('', { status: 408 }); });
+  });
+}
+
+// Removes the saved pages (they show the name and the menu of the person who was signed in)
 function forgetPages() {
   return caches.open(CACHE).then(function(cache) {
     return cache.keys().then(function(keys) {
@@ -84,6 +116,10 @@ self.addEventListener('message', function(e) {
   if (e.data && e.data.action === 'skipWaiting') {
     self.skipWaiting();
   }
+  // The session ended (evicted from /debug-sessions): the pages of this person are not kept for the next visitor
+  if (e.data && e.data.action === 'forgetPages') {
+    e.waitUntil(forgetPages());
+  }
 });
 
 self.addEventListener('fetch', function(e) {
@@ -95,20 +131,19 @@ self.addEventListener('fetch', function(e) {
   // The deployment event stream stays open: never through the cache
   if (sameOrigin && url.pathname === '/events') return;
 
-  if (sameOrigin && url.pathname === '/logout') e.waitUntil(forgetPages());
+  // Signing out removes the pages the previous visitor saw. So does the login page: it is shown when a session expired
+  // or was never closed (nobody pressed Logout), and the next person to sign in on this browser must not be offered the
+  // saved dashboard of the previous one when the server is down
+  if (sameOrigin && (url.pathname === '/logout' || (url.pathname === '/login' && e.request.mode === 'navigate'))) e.waitUntil(forgetPages());
 
-  // Pages: network-first, cached copy only as offline fallback
+  // Pages: network-first, the kept copy when the server cannot be reached
   if (e.request.mode === 'navigate' || (sameOrigin && PAGES.indexOf(url.pathname) !== -1)) {
     e.respondWith(
       fetch(e.request).then(function(response) {
+        // Apache answers 502/503/504 while adt-web is down: that is not a page to show instead of the kept copy
+        if (response.status >= 502 && response.status <= 504 && sameOrigin) return offlineFallback(e.request, url, response);
         return cacheablePage(url, response) ? putInCache(e.request, response) : response;
-      }).catch(function() {
-        return caches.match(e.request).then(function(cached) {
-          return cached || caches.match('/errors/frontend/404.html').then(function(fb) {
-            return fb || new Response('', { status: 408 });
-          });
-        });
-      })
+      }).catch(function() { return offlineFallback(e.request, url, null); })
     );
     return;
   }

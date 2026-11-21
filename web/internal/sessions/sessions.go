@@ -68,6 +68,9 @@ type Store struct {
 	lastSeen map[string]int64 // in-memory throttle of Track
 	once     sync.Once
 	secret   []byte
+
+	changeMu sync.Mutex
+	changed  chan struct{} // closed, and replaced, each time revoked.txt changes (see Changed)
 }
 
 var (
@@ -90,6 +93,27 @@ func For(dataDir string) *Store {
 // New builds a Store on dataDir/var/sessions; it audits through audit.For(dataDir).
 func New(dataDir string) *Store {
 	return &Store{dir: filepath.Join(dataDir, "var", "sessions"), audit: audit.For(dataDir), lastSeen: map[string]int64{}}
+}
+
+// Changed returns a channel that is closed the next time revoked.txt changes: a session was evicted or a user
+// blocked (or a block expired). Call it again after it fired. An open WebSocket waits on it, so that an eviction
+// logs the person out at once instead of at the next check.
+func (s *Store) Changed() <-chan struct{} {
+	s.changeMu.Lock()
+	defer s.changeMu.Unlock()
+	if s.changed == nil {
+		s.changed = make(chan struct{})
+	}
+	return s.changed
+}
+
+func (s *Store) notifyChanged() {
+	s.changeMu.Lock()
+	defer s.changeMu.Unlock()
+	if s.changed != nil {
+		close(s.changed)
+		s.changed = nil
+	}
 }
 
 // Dir is the sessions directory.
@@ -332,7 +356,9 @@ func (s *Store) rewriteRevokedLocked(sessions []Session) {
 	if old, err := os.ReadFile(file); err == nil && string(old) == b.String() {
 		return
 	}
-	_ = writeFileAtomic(file, []byte(b.String()))
+	if writeFileAtomic(file, []byte(b.String())) == nil {
+		s.notifyChanged()
+	}
 }
 
 // Evict flags one tracked session as evicted (by the user of r). False if not found.

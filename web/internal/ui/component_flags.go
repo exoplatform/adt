@@ -4,6 +4,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"unicode"
 
 	"github.com/exoplatform/adt/web/internal/instances"
 	"github.com/exoplatform/adt/web/internal/phpx"
@@ -21,7 +22,34 @@ var safeChars = strings.NewReplacer("<", "&lt;", ">", "&gt;", `"`, "&quot;", "'"
 // strings), only the characters that can leave an attribute or open a tag.
 func safe(s string) string { return safeChars.Replace(strings.ToValidUTF8(s, "�")) }
 
-func init() { funcs["compSafe"] = safe }
+// scriptSchemes are the URL schemes that run code or carry a document when followed: never a link target taken from a
+// descriptor. Tabs and newlines inside the scheme are ignored by browsers ("java\tscript:"), so they are ignored here.
+var scriptSchemes = []string{"javascript:", "data:", "vbscript:"}
+
+// hrefTarget returns s unless it is a script URL, then "#". The CSP also blocks them (no 'unsafe-inline'), this keeps the
+// page safe when the policy is switched off (ADT_WEB_CSP=off).
+func hrefTarget(s string) string {
+	l := strings.ToLower(strings.Map(func(r rune) rune {
+		if r <= ' ' || r == 0x7f || unicode.IsSpace(r) {
+			return -1
+		}
+		return r
+	}, s))
+	for _, p := range scriptSchemes {
+		if strings.HasPrefix(l, p) {
+			return "#"
+		}
+	}
+	return s
+}
+
+// href is safe() for a value used as a link target (href, src).
+func href(s string) string { return safe(hrefTarget(s)) }
+
+func init() {
+	funcs["compSafe"] = safe
+	funcs["compHref"] = href
+}
 
 // asciiLower lower-cases ASCII letters only.
 func asciiLower(s string) string {

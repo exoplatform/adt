@@ -90,7 +90,7 @@ func categoriesDump(b *instances.Branches) debugx.Array {
 		b.Each(func(k string, l []instances.Instance) {
 			vals := make([]any, len(l))
 			for i, in := range l {
-				vals[i] = phpValue(in)
+				vals[i] = phpValue(in.Public()) // secrets masked as on /rest/local-instances: the dump is for reading, not for secrets
 			}
 			a = append(a, debugx.Item{Key: k, Val: debugx.List(vals)})
 		})

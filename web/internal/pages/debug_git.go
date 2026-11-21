@@ -51,7 +51,7 @@ func debugGit(a *app.App, w http.ResponseWriter, r *http.Request) {
 	for _, g := range translation {
 		translationNames = append(translationNames, g.Name)
 	}
-	debugx.Open(c, "debug - git", true)
+	debugx.Open(c, "debug - git", false)
 	c.WriteString(tpl.Must("debug_git.tmpl", map[string]any{
 		"Menu":             debugx.Menu(c),
 		"Repos":            debugx.VarToggle(repos),

@@ -18,7 +18,7 @@ func debugIndex(a *app.App, w http.ResponseWriter, r *http.Request) {
 	if dbgCheckCaches(c) {
 		return
 	}
-	debugx.Open(c, "debug", true)
+	debugx.Open(c, "debug", false)
 	c.WriteString(tpl.Must("debug_index.tmpl", map[string]string{"Menu": debugx.Menu(c)}))
 	dbgEnd(c)
 }

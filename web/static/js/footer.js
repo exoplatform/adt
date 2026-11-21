@@ -25,19 +25,36 @@ document.addEventListener('click', function(e) {
   });
 });
 
-document.addEventListener('DOMContentLoaded', function() {
-  // Bootstrap comes from a CDN: without it the page still works, only the tooltips and popovers are missing
-  if (typeof bootstrap === 'undefined') return;
+// Tooltips and popovers of root (the page, or a part that was swapped in place, see autorefresh.js). Bootstrap comes
+// from a CDN: without it the page still works, only the tooltips and popovers are missing.
+window.adtInitOverlays = function(root) {
+  if (typeof bootstrap === 'undefined' || !root) return;
   // Icon-only tooltip triggers get their tooltip text as aria-label (set by
   // Bootstrap), which is only allowed on an element with a role
-  document.querySelectorAll('span[rel=tooltip]:not([role]), i[rel=tooltip]:not([role])').forEach(function(el) {
+  root.querySelectorAll('span[rel=tooltip]:not([role]), i[rel=tooltip]:not([role])').forEach(function(el) {
     if (!el.textContent.trim()) el.setAttribute('role', 'img');
   });
-  // Initialize Bootstrap tooltips
-  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[rel=tooltip]'));
-  var tooltipList = tooltipTriggerList.map(function(tooltipTriggerEl) {
-    return new bootstrap.Tooltip(tooltipTriggerEl);
+  root.querySelectorAll('[rel=tooltip]').forEach(function(el) {
+    if (!bootstrap.Tooltip.getInstance(el)) new bootstrap.Tooltip(el);
   });
+  // Popovers with HTML support
+  root.querySelectorAll('[rel=popover]').forEach(function(el) {
+    if (bootstrap.Popover.getInstance(el)) return;
+    new bootstrap.Popover(el, { trigger: 'hover', html: true, sanitize: false, container: 'body', animation: true, delay: { show: 100, hide: 100 } });
+  });
+};
+// Before a part is replaced: its tooltips would stay on screen, attached to nodes that are gone
+window.adtDisposeOverlays = function(root) {
+  if (typeof bootstrap === 'undefined' || !root) return;
+  root.querySelectorAll('[rel=tooltip], [rel=popover]').forEach(function(el) {
+    var t = bootstrap.Tooltip.getInstance(el) || bootstrap.Popover.getInstance(el);
+    if (t) t.dispose();
+  });
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof bootstrap === 'undefined') return;
+  window.adtInitOverlays(document);
 
   // On touch devices a tap leaves the tooltip stuck (hover/focus never
   // ends), notably when the tap opens a modal: hide tooltips on tap and
@@ -60,22 +77,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }, 0);
     });
   }
-
-  // Initialize Bootstrap popovers with HTML support
-  var popoverTriggerList = [].slice.call(document.querySelectorAll('[rel=popover]'));
-  var popoverList = popoverTriggerList.map(function(popoverTriggerEl) {
-    return new bootstrap.Popover(popoverTriggerEl, {
-      trigger: 'hover',
-      html: true,
-      sanitize: false,
-      container: 'body',
-      animation: true,
-      delay: {
-        show: 100,
-        hide: 100
-      }
-    });
-  });
 });
 
 // Scroll-to-top button

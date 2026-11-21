@@ -57,6 +57,10 @@ jobs:
       - name: JavaScript parses
         run: |
           for f in static/js/*.js static/sw.js; do node --check "$f"; done
+      # live.js, autorefresh.js and the service worker run in a sandbox with a fake WebSocket, clock and Cache Storage
+      # (no dependency: the test runner of Node)
+      - name: JavaScript unit tests
+        run: node --test 'jstest/*.test.js'
       # The Content-Security-Policy of the pages allows scripts from /js and the CDNs only
       - name: Every script URL of the pages is allowed by the policy
         run: |

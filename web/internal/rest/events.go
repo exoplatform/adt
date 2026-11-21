@@ -13,7 +13,8 @@ import (
 //
 //	POST /internal/deployed   adt.sh, on the local socket only: the instance has been deployed and started
 //	GET  /rest/local-events   the deployments of this server, as server-sent events (the other servers relay it)
-//	GET  /events              the deployments of every server, for the pages
+//	GET  /events              the deployments of every server, as server-sent events
+//	GET  /ws                  the same for the pages, over a WebSocket (ws.go), which also tells a session it was evicted
 func init() {
 	app.HandleFunc("POST /internal/deployed", internalDeployed)
 	app.HandleFunc("GET /rest/local-events", func(a *app.App, w http.ResponseWriter, r *http.Request) {

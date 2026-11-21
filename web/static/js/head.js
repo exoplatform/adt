@@ -346,19 +346,23 @@ function initViewSwitch() {
     '<button type="button" class="btn btn-outline-secondary" data-view="cards" title="Card view"><i class="fas fa-th-large me-1"></i>Cards</button>' +
     '<button type="button" class="btn btn-outline-secondary" data-view="table" title="Table view"><i class="fas fa-list me-1"></i>Table</button>';
   toolbar.appendChild(group);
-  // Column headers, only displayed in table view
-  document.querySelectorAll('.instance-grid').forEach(function(grid) {
-    var head = document.createElement('div');
-    head.className = 'instance-table-head';
-    head.setAttribute('aria-hidden', 'true');
-    head.innerHTML =
-      '<button type="button" data-sort="status" title="Sort by status"><span class="visually-hidden">Status</span></button>' +
-      '<button type="button" data-sort="name">Instance</button>' +
-      '<button type="button" data-sort="version">Version</button>' +
-      '<button type="button" data-sort="deployed" title="Sort by deployment date">Database / Deployed</button>' +
-      '<span>Badges</span><span></span><span>Actions</span>';
-    grid.insertBefore(head, grid.firstChild);
-  });
+  // Column headers, only displayed in table view. Also run after a section was swapped in place (autorefresh.js)
+  function ensureTableHeads() {
+    document.querySelectorAll('.instance-grid').forEach(function(grid) {
+      if (grid.querySelector(':scope > .instance-table-head')) return;
+      var head = document.createElement('div');
+      head.className = 'instance-table-head';
+      head.setAttribute('aria-hidden', 'true');
+      head.innerHTML =
+        '<button type="button" data-sort="status" title="Sort by status"><span class="visually-hidden">Status</span></button>' +
+        '<button type="button" data-sort="name">Instance</button>' +
+        '<button type="button" data-sort="version">Version</button>' +
+        '<button type="button" data-sort="deployed" title="Sort by deployment date">Database / Deployed</button>' +
+        '<span>Badges</span><span></span><span>Actions</span>';
+      grid.insertBefore(head, grid.firstChild);
+    });
+  }
+  ensureTableHeads();
   // Each section is its own grid: share the widest tools/actions columns
   // across all of them so the table columns line up from one section to the next
   function syncColumns() {
@@ -442,6 +446,13 @@ function initViewSwitch() {
     apply(btn.getAttribute('data-view'));
   });
   apply(getPref('instances-view', 'cards'));
+  // After a section was swapped in place: its table head, the sort order, the column widths and the version tooltips
+  window.adtReapplyView = function() {
+    ensureTableHeads();
+    applySort(getPref('instances-sort', ''));
+    syncColumns();
+    syncVersionTitles();
+  };
 }
 // ── Favorite instances: kept in this browser (localStorage), keyed by INSTANCE_KEY ──
 function favoriteKeys() {
@@ -502,7 +513,7 @@ function initFavorites() {
   refreshFavorites();
 }
 // ── Deployment subscriptions: bell on a card, kept in this browser like the favorites ──
-// Stored as {INSTANCE_KEY: deployment date last seen}. The pages reload themselves every couple of minutes
+// Stored as {INSTANCE_KEY: deployment date last seen}. The pages update themselves when a deployment is announced
 // (autorefresh.js), so a deployment is noticed when the card carries another date than the one stored:
 // beep, shake the card (pulse the row in table view).
 function deploySubs() {
@@ -603,19 +614,13 @@ function deployToast(text) {
   setTimeout(function() { el.classList.add('deploy-toast--out'); }, 5000);
   setTimeout(function() { el.remove(); }, 5600);
 }
-// The servers announce a deployment (deployed AND started) as it happens, on every acceptance server: /events.
-// The stream is only open while the user is subscribed to something. It does not depend on any cached page.
-var deployStream = null;
+// The servers announce a deployment (deployed AND started) as it happens, on every acceptance server, on the
+// live socket (live.js, /ws). It does not depend on any cached page. Listening starts when the user subscribes.
+var deployListening = false;
 function ensureDeployStream() {
-  var any = Object.keys(deploySubs()).length > 0;
-  if (!any && deployStream) { deployStream.close(); deployStream = null; }
-  if (!any || deployStream || !window.EventSource) return;
-  deployStream = new EventSource('/events');
-  deployStream.onmessage = function(m) {
-    var e;
-    try { e = JSON.parse(m.data); } catch (x) { return; }
-    handleDeployEvent(e);
-  };
+  if (deployListening || !window.adtLive || Object.keys(deploySubs()).length === 0) return;
+  deployListening = true;
+  window.adtLive.on('deployed', handleDeployEvent); // handleDeployEvent ignores what the user is not subscribed to
 }
 function handleDeployEvent(e) {
   var subs = deploySubs();
@@ -629,6 +634,18 @@ function handleDeployEvent(e) {
   alertDeployed(cards);
   deployToast(e.key + ' has been deployed');
 }
+// What autorefresh.js calls once it has swapped parts of the page in place: everything this file decorates the
+// instances with (the new HTML has none of it): sort and table heads, favorites, the search in progress, the bells (a
+// subscribed card whose deployment date changed rings, as it did after a reload), tooltips.
+function adtAfterSwap() {
+  if (window.adtReapplyView) window.adtReapplyView();
+  refreshFavorites();
+  var si = document.getElementById('instanceSearch');
+  if (si && si.value) doSearch(si.value);
+  initDeploySubscriptions();
+  if (window.adtInitOverlays) window.adtInitOverlays(document.getElementById('main'));
+}
+window.adtAfterSwap = adtAfterSwap;
 function initInstances() {
   initViewSwitch();
   initFavorites();

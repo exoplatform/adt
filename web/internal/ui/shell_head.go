@@ -4,7 +4,8 @@ package ui
 // theme, sidebar, instance search and view switch). It also records the
 // session. The caller writes <head> ... </head> around it.
 //
-// autoRefresh reloads the page every 2 minutes; pass false on pages with live-updating JS state.
+// autoRefresh keeps the instances on the page up to date, in place and without a reload, when a deployment is
+// announced on the live socket (and as a safety net, see static/js/autorefresh.js); pass false on pages with live-updating JS state.
 func (c *Ctx) Head(title string, autoRefresh bool) {
 	c.trackSession()
 	c.WriteString(tpl.Must("shell_head.tmpl", struct {

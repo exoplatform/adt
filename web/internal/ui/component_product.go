@@ -166,7 +166,7 @@ func DeploymentActions(d instances.Instance) string {
 	deploymentURL = safe(deploymentURL)
 	var actions []deploymentAction
 	btn := func(href, title string, blank bool, icon string) {
-		actions = append(actions, deploymentAction{Href: href, Title: title, Icon: icon, Blank: blank})
+		actions = append(actions, deploymentAction{Href: hrefTarget(href), Title: title, Icon: icon, Blank: blank})
 	}
 	copyBtn := func(text, title, icon string) {
 		actions = append(actions, deploymentAction{Copy: text, Title: title, Icon: icon})

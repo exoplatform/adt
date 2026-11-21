@@ -108,7 +108,7 @@ func debugCaches(a *app.App, w http.ResponseWriter, r *http.Request) {
 		rows = append(rows, entryRow{cacheKeyText(e.Key), age(e), left(e), e.Hits})
 	}
 
-	debugx.Open(c, "debug - caches", true)
+	debugx.Open(c, "debug - caches", false)
 	c.WriteString(tpl.Must("debug_caches.tmpl", map[string]any{
 		"Menu":    debugx.Menu(c),
 		"Well":    well,
