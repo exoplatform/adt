@@ -70,6 +70,10 @@ func main() {
 		}
 	}()
 
+	if cfg.DevMode {
+		// Dev mode fakes the identity and makes everybody an admin: it must never be on in production.
+		log.Printf("WARNING: ADT_DEV_MODE is on: identity is faked (user %q) and every user is an admin", cfg.DevUser)
+	}
 	log.Printf("adt-web listening on %s (dev=%v, data=%s)", where, cfg.DevMode, cfg.DataDir)
 	if err := srv.Serve(l); err != nil && !errors.Is(err, http.ErrServerClosed) {
 		log.Fatal(err)
