@@ -76,8 +76,9 @@
     Alias /awstatsclasses "/usr/share/awstats/lib/"
     Alias /awstats-icon/ "/usr/share/awstats/icon/"
     Alias /awstatscss "/usr/share/doc/awstats/examples/css"
-    ScriptAlias /stats/ /usr/lib/cgi-bin/
-    RedirectMatch "^stats/?$" "/stats/awstats.pl"
+    # Only awstats is a CGI of the site: aliasing the whole directory made every script in it executable by any employee
+    ScriptAlias /stats/awstats.pl /usr/lib/cgi-bin/awstats.pl
+    RedirectMatch "^/stats/?$" "/stats/awstats.pl"
     <Directory /usr/lib/cgi-bin>
         Options -Indexes +ExecCGI -MultiViews +SymLinksIfOwnerMatch
     </Directory>
