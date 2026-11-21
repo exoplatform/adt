@@ -39,7 +39,11 @@
     return /text\/html/.test(contentType || '') ? 'apply' : 'ignore';
   }
 
-  var core = { plan: plan, interval: interval, delay: delay, classify: classify, AFTER_DEPLOY: AFTER_DEPLOY };
+  // The parts of one kind, in document order, wherever they are under #main: the home page keeps them directly in #main,
+  // the QA, Sales, Company and Customers pages inside .container-fluid > .row > .col-12
+  function parts(root, kind) { return [].slice.call(root.querySelectorAll(kind)); }
+
+  var core = { parts: parts, plan: plan, interval: interval, delay: delay, classify: classify, AFTER_DEPLOY: AFTER_DEPLOY };
   if (typeof module !== 'undefined' && module.exports) { module.exports = core; return; } // the unit tests
 
   // The copy kept for when the server is down (see sw.js) does not update itself: js/offline.js brings the live page
@@ -51,7 +55,6 @@
   var last = Date.now(), timer = null, inflight = false, dirty = false;
 
   function main() { return document.getElementById('main'); }
-  function parts(root, kind) { return [].slice.call(root.querySelectorAll(':scope > ' + kind)); }
   // Taken before any script decorates the page. This script runs in <head>, where #main does not exist yet: everything
   // starts on DOMContentLoaded, and this listener is registered before the one of head.js (which decorates).
   function snapshot() {

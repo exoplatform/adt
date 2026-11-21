@@ -61,3 +61,14 @@ test('classify: a signed-out answer needs the page itself, server trouble keeps 
   assert.equal(core.classify('basic', 200, 'application/json'), 'ignore', 'not a page');
   assert.equal(core.classify('basic', 200, null), 'ignore');
 });
+
+// The parts to swap are found anywhere under #main: the QA, Sales, Company and Customers pages keep them inside
+// .container-fluid > .row > .col-12, only the home page directly in #main. A selector for direct children matched nothing there,
+// and those four pages stopped updating (they used to be reloaded as a whole).
+test('parts: the selector looks under the whole of #main, not at its direct children', () => {
+  const asked = [];
+  const root = { querySelectorAll(sel) { asked.push(sel); return ['a', 'b']; } };
+  assert.deepEqual(core.parts(root, '.instances-section'), ['a', 'b']);
+  assert.deepEqual(asked, ['.instances-section']);
+  for (const sel of asked) assert.ok(!/:scope|>/.test(sel), `selector ${sel} only matches direct children`);
+});
