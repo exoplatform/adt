@@ -213,6 +213,11 @@
             AuthLDAPURL ldaps://ldap2.exoplatform.org/ou=users,ou=portal,dc=exoplatform,dc=org?cn,mail,displayName
             <RequireAll>
                 Require    ldap-group cn=exo-employees,ou=groups,dc=exoplatform,dc=org
+                # A user blocked from /debug-sessions (same list as the pages above) is not let in here either: these
+                # paths do not use the session, so the block is the only thing that can cut them
+                <RequireNone>
+                    Require expr "file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1(tolower(%{REMOTE_USER})) . '*'"
+                </RequireNone>
                 AuthLDAPMaxSubGroupDepth 1
             </RequireAll>
     </LocationMatch>
