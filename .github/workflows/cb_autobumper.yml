@@ -3,6 +3,9 @@ on:
   schedule:
     - cron: "0 11 * * 0-4" # Everyday at 11 AM UTC from Sunday to Thursday
   workflow_dispatch:
+# The push uses SWF_TOKEN (given to checkout); the token of the workflow itself needs no right
+permissions:
+  contents: read
 env:
   BASE_IMAGE: exoplatform/cloudbeaver
 jobs:
@@ -10,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           token: ${{ secrets.SWF_TOKEN }}
       - name: Looking for Cloubdeaver updates
