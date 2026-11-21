@@ -30,23 +30,45 @@ fake weird "something else entirely"
 printf '#!/bin/sh\nexit 3\n' > "$W/bin/failing"; chmod +x "$W/bin/failing"
 [ -z "$(run detect_apache_version failing)" ] || bad "a failing command gave a version"
 
+# the installed package, when no binary can be asked (dpkg on Ubuntu/Debian, rpm elsewhere)
+mkdir -p "$W/pkg"; printf '#!/bin/sh\n[ "$1" = -W ] && printf "2.4.66-1ubuntu1.3"\n' > "$W/pkg/dpkg-query"; chmod +x "$W/pkg/dpkg-query"
+got="$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u; PATH="$W/pkg:/usr/bin:/bin"; detect_apache_version_from_package )"
+[ "$got" = "2.4 66" ] || bad "dpkg-query 2.4.66-1ubuntu1.3 gave [$got]"
+printf '#!/bin/sh\nprintf "2.4.37"\n' > "$W/pkg/rpm"; chmod +x "$W/pkg/rpm"; rm -f "$W/pkg/dpkg-query"
+got="$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u; PATH="$W/pkg:/usr/bin:/bin"; detect_apache_version_from_package )"
+[ "$got" = "2.4 37" ] || bad "rpm 2.4.37 gave [$got]"
+for txt in "Apache/2.4.66 (Ubuntu)" "2.4.66-1ubuntu1" "2.4.37" "Server version: Apache/2.4.58"; do
+  [ "$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; apache_version_from_text "$txt" | cut -d' ' -f1 )" = "2.4" ] || bad "[$txt] not read"
+done
+[ -z "$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; apache_version_from_text "nothing here 12" )" ] || bad "a text without a version gave one"
+
 # set_apache_version_defaults: fills what is empty, never replaces what is set, and does nothing when the version is unknown
 fake apache2 "Server version: Apache/2.4.66 (Ubuntu)"
 got="$(run bash -c 'true' ; ( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u; PATH="$W/bin:$PATH"
-  unset ADT_APACHE_VERSION ADT_APACHE_VERSION_MINOR; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION:-}][${ADT_APACHE_VERSION_MINOR:-}]" ))"
+  unset ADT_APACHE_VERSION ADT_APACHE_VERSION_MINOR; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION:-}][${ADT_APACHE_VERSION_MINOR:-}]" ))"; got="${got##*$'\n'}"   # the last line: the log lines come first
 [ "$got" = "[2.4][66]" ] || bad "unset variables are filled from Apache: $got"
 got="$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u; PATH="$W/bin:$PATH"
-  export ADT_APACHE_VERSION=2.4 ADT_APACHE_VERSION_MINOR=41; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION}][${ADT_APACHE_VERSION_MINOR}]" )"
+  export ADT_APACHE_VERSION=2.4 ADT_APACHE_VERSION_MINOR=41; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION}][${ADT_APACHE_VERSION_MINOR}]" )"; got="${got##*$'\n'}"   # the last line: the log lines come first
 [ "$got" = "[2.4][41]" ] || bad "what the environment says was replaced: $got"
 got="$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u; PATH="$W/bin:$PATH"
-  export ADT_APACHE_VERSION= ADT_APACHE_VERSION_MINOR=; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION}][${ADT_APACHE_VERSION_MINOR}]" )"
+  export ADT_APACHE_VERSION= ADT_APACHE_VERSION_MINOR=; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION}][${ADT_APACHE_VERSION_MINOR}]" )"; got="${got##*$'\n'}"   # the last line: the log lines come first
 [ "$got" = "[2.4][66]" ] || bad "variables set to the empty string are filled too: $got"
 got="$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u; PATH="$W/bin:$PATH"
-  export ADT_APACHE_VERSION=2.4; unset ADT_APACHE_VERSION_MINOR; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION}][${ADT_APACHE_VERSION_MINOR:-}]" )"
+  export ADT_APACHE_VERSION=2.4; unset ADT_APACHE_VERSION_MINOR; set_apache_version_defaults apache2; echo "[${ADT_APACHE_VERSION}][${ADT_APACHE_VERSION_MINOR:-}]" )"; got="${got##*$'\n'}"   # the last line: the log lines come first
 [ "$got" = "[2.4][66]" ] || bad "one set, one missing: $got"
 got="$( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u
-  unset ADT_APACHE_VERSION ADT_APACHE_VERSION_MINOR; set_apache_version_defaults no-such-command; echo "[${ADT_APACHE_VERSION:-}][${ADT_APACHE_VERSION_MINOR:-}]" )"
+  unset ADT_APACHE_VERSION ADT_APACHE_VERSION_MINOR; set_apache_version_defaults no-such-command; echo "[${ADT_APACHE_VERSION:-}][${ADT_APACHE_VERSION_MINOR:-}]" )"; got="${got##*$'\n'}"   # the last line: the log lines come first
 [ "$got" = "[][]" ] || bad "an undetectable Apache must leave the variables empty: $got"
+
+# what the log of the job says (nobody could tell from it why the live channel was off)
+msg() { ( SCRIPT_DIR="$ROOT"; ADT_DEBUG=false; source "$ROOT/_functions_core.sh"; source "$ROOT/_functions_apache.sh"; set -u; PATH="$W/bin:$PATH"
+  echo_info() { echo "INFO: $*"; }; echo_warn() { echo "WARN: $*"; }; "$@" ); }
+got="$(unset ADT_APACHE_VERSION ADT_APACHE_VERSION_MINOR; msg set_apache_version_defaults apache2)"
+case "$got" in "INFO: Apache 2.4.66: the live channel (WebSocket) is enabled"*) ;; *) bad "log for 2.4.66: $got";; esac
+got="$(export ADT_APACHE_VERSION=2.4 ADT_APACHE_VERSION_MINOR=41; msg set_apache_version_defaults apache2)"
+case "$got" in "INFO: Apache 2.4.41: older than 2.4.47"*) ;; *) bad "log for 2.4.41: $got";; esac
+got="$(unset ADT_APACHE_VERSION ADT_APACHE_VERSION_MINOR; msg set_apache_version_defaults no-such-command)"
+case "$got" in "WARN: The version of Apache is unknown"*"left out"*) ;; *) bad "log for an unknown Apache: $got";; esac
 
 # the result decides the front-end template: Apache 2.4.66 -> the live channel is on (python3 + jinja2 needed, skipped without)
 if python3 -c 'import jinja2' 2>/dev/null; then
