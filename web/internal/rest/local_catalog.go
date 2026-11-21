@@ -41,6 +41,7 @@ func init() {
 var (
 	plfVersionRe = regexp.MustCompile(`^[0-9]\.[0-9]\.[0-9](-(exo|meed))?(-([0-9]{8,10}|(M|RC|CP)[0-9]{2}))?$`)
 	plfSuffixRe  = regexp.MustCompile(`^[0-9]\.[0-9]\.[0-9](-(exo|meed))?`)
+	remoteNameRe = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$`)
 )
 
 const (
@@ -50,7 +51,7 @@ const (
 
 // Remote catalogs (variables so that tests can point them at a local server).
 var (
-	remoteBase    = "http://addons.exoplatform.org/"
+	remoteBase    = "http://addons.exoplatform.org/" // plain HTTP on purpose: the https site asks for a login
 	remoteDefault = "https://www.exoplatform.com/addons/catalog"
 )
 
@@ -111,12 +112,13 @@ func localCatalog(a *app.App, w http.ResponseWriter, r *http.Request) {
 
 	remoteURL := remoteDefault
 	if rem, ok := lastParam(r, "remote"); ok {
-		// only the path of the add-ons host can be chosen; reject anything that is not a plain URL path/query
-		for _, c := range []byte(rem) {
-			if c <= ' ' || c == 0x7f {
-				plain(w, http.StatusBadRequest, "Error! Invalid remote parameter value!")
-				return
-			}
+		// Only one file name of the add-ons host can be chosen: the callers send the last segment of the catalog URL
+		// (adt.sh: ${DEPLOYMENT_ADDONS_CATALOG##*/}). Nothing that moves in the path or adds a query ("/", "..", "?", "#",
+		// "%", "@", spaces, control characters) is accepted: this endpoint answers hosts by name only (Apache: Require host
+		// exoplatform.org), so the request it makes must not be theirs to shape.
+		if !remoteNameRe.MatchString(rem) || strings.Contains(rem, "..") {
+			plain(w, http.StatusBadRequest, "Error! Invalid remote parameter value!")
+			return
 		}
 		remoteURL = remoteBase + rem
 	}
