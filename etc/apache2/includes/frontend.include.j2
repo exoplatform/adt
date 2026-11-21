@@ -189,7 +189,13 @@
         SessionMaxAge 604800
         Require all granted
     </Location>
+    # Sign out in two steps. /logout (public: an expired session must still be able to sign out) is adt-web: it ends the
+    # session on the server (revoked.txt, so a copy of the cookie is dead too: the cookie is encrypted and stateless, clearing
+    # it in the browser invalidates nothing) and redirects to /do-logout, which clears the cookie and goes to the login page.
     <Location /logout>
+        Require all granted
+    </Location>
+    <Location /do-logout>
         SetHandler form-logout-handler
         AuthFormLogoutLocation "/login"
         Require all granted
@@ -280,10 +286,10 @@
     RequestHeader set X-Forwarded-Proto "expr=%{REQUEST_SCHEME}"
 
     # Handled by Apache itself, never proxied. ProxyPass runs before SetHandler, so without the first three the
-    # mod_auth_form login/logout handlers would answer 404 from adt-web.
+    # mod_auth_form login/logout handlers would answer 404 from adt-web (/logout itself is adt-web: see its Location).
     ProxyPass /dologin          !
     ProxyPass /dologin-remember !
-    ProxyPass /logout           !
+    ProxyPass /do-logout        !
     # Alias / ScriptAlias above
     ProxyPass /icons/           !
     ProxyPass /downloads/       !

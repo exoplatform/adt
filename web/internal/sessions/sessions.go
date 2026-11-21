@@ -382,6 +382,31 @@ func (s *Store) Evict(r *http.Request, id string) bool {
 	return true
 }
 
+// Logout ends the session of the request for good, as the person pressing "Sign out": it is flagged as evicted, so its
+// sha1 goes into revoked.txt and a copy of the cookie (shared computer, proxy log, backup) is as dead as the browser's
+// own. The sessions are encrypted cookies that Apache alone cannot invalidate: clearing the cookie in the browser is
+// not a logout. It reports whether a tracked live session was found. Holding the cookie is the only way to name it.
+func (s *Store) Logout(r *http.Request) bool {
+	id := ID(r)
+	if !hexIDRe.MatchString(id) {
+		return false
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	file := filepath.Join(s.dir, id+".json")
+	rec, ok := readSession(file)
+	if !ok || rec.Evicted {
+		return false
+	}
+	rec.Evicted, rec.EvictedAt, rec.EvictedBy = true, time.Now().Unix(), rec.User
+	if writeJSON(file, rec) != nil {
+		return false
+	}
+	s.listLocked() // regenerates revoked.txt, and wakes the sockets of this session (Changed)
+	s.audit.Add(r, "session.logout", "user", rec.User, "session", id[:8])
+	return true
+}
+
 func (s *Store) evictWhere(r *http.Request, match func(Session) bool) int {
 	n := 0
 	for _, x := range s.listLocked() {

@@ -20,7 +20,7 @@ func init() {
 
 var (
 	unsafeTarget = regexp.MustCompile(`[\x00-\x1f\x7f\\]`)
-	loopTarget   = regexp.MustCompile(`(?i)^/(login|dologin|logout)([/?#]|$)`)
+	loopTarget   = regexp.MustCompile(`(?i)^/(login|dologin|logout|do-logout)([/?#]|$)`)
 	loginPath    = regexp.MustCompile(`^/login$`)
 	portSuffix   = regexp.MustCompile(`:\d+$`)
 )

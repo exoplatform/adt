@@ -345,3 +345,86 @@ func TestReloginAfterBlock(t *testing.T) {
 		})
 	}
 }
+
+func (e *sessionEnv) get(p *person, path string) *httptest.ResponseRecorder {
+	r := httptest.NewRequest("GET", path, nil)
+	if p != nil {
+		r.Header.Set("Cookie", "adt_session="+p.cookie)
+		r.Header.Set(auth.HeaderUser, p.user)
+	}
+	w := httptest.NewRecorder()
+	e.a.Handler().ServeHTTP(w, r)
+	return w
+}
+
+// "Sign out" ends the session on the server: Apache's own logout only clears the cookie in the browser, and the cookie is
+// encrypted and stateless, so a copy of it (shared computer, proxy log, backup) would stay valid until it expires. The
+// session joins revoked.txt (which Apache checks on every request), its open socket is told to log out at once, and the
+// sessions of other people (an administrator, or the same person elsewhere) are not touched.
+func TestLogoutEndsTheSessionOnTheServer(t *testing.T) {
+	for _, p := range []person{alice, bob} {
+		t.Run(p.user, func(t *testing.T) {
+			e := newSessionEnv(t)
+			other := alice
+			if p == alice {
+				other = bob
+			}
+			mine, theirs := e.connect(p), e.connect(other)
+
+			w := e.get(&p, "/logout")
+			if w.Code != http.StatusFound || w.Header().Get("Location") != "/do-logout" {
+				t.Fatalf("/logout: %d -> %q, want 302 /do-logout (Apache clears the cookie there)", w.Code, w.Header().Get("Location"))
+			}
+			if !e.store.IsRevoked(e.request(p)) {
+				t.Fatal("the session is not in revoked.txt: a copy of the cookie still works")
+			}
+			expectLogout(t, p.user, mine) // the tabs of that session leave at once
+			if status, _, _ := e.open(p, ""); !strings.Contains(status, "403") {
+				t.Errorf("the signed-out cookie opens a socket: %q", status)
+			}
+			// nobody else is affected
+			if e.store.IsRevoked(e.request(other)) {
+				t.Fatalf("the session of %s was revoked too", other.user)
+			}
+			deploy(e)
+			if m := wsMessage(t, theirs); !strings.Contains(m, `"type":"deployed"`) {
+				t.Fatalf("%s lost the socket: %q", other.user, m)
+			}
+			// signing in again is a new session
+			again := loggedAgain(p)
+			e.login(again)
+			e.connect(again)
+		})
+	}
+}
+
+// A request that has no session of its own (a visitor, an unknown cookie, a second sign-out) changes nothing and still
+// ends on /do-logout: the page must never answer an error to someone trying to sign out.
+func TestLogoutWithoutSessionIsHarmless(t *testing.T) {
+	e := newSessionEnv(t)
+	unknown := person{"mallory", "never-seen-cookie", false}
+	for name, p := range map[string]*person{"no cookie": nil, "unknown cookie": &unknown} {
+		w := e.get(p, "/logout")
+		if w.Code != http.StatusFound || w.Header().Get("Location") != "/do-logout" {
+			t.Errorf("%s: %d -> %q", name, w.Code, w.Header().Get("Location"))
+		}
+	}
+	if e.store.IsRevoked(e.request(alice)) || e.store.IsRevoked(e.request(bob)) {
+		t.Fatal("a stranger's sign-out revoked a session")
+	}
+	// twice in a row
+	if w := e.get(&bob, "/logout"); w.Code != http.StatusFound {
+		t.Fatal(w.Code)
+	}
+	if w := e.get(&bob, "/logout"); w.Code != http.StatusFound || w.Header().Get("Location") != "/do-logout" {
+		t.Fatalf("second sign-out: %d", w.Code)
+	}
+	// only GET: nothing else is registered on the path
+	r := httptest.NewRequest("POST", "/logout", nil)
+	r.Header.Set("Cookie", "adt_session="+alice.cookie)
+	w := httptest.NewRecorder()
+	e.a.Handler().ServeHTTP(w, r)
+	if w.Code == http.StatusFound || e.store.IsRevoked(e.request(alice)) {
+		t.Fatalf("POST /logout: %d, the session is revoked: %v", w.Code, e.store.IsRevoked(e.request(alice)))
+	}
+}
