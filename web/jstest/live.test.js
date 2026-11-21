@@ -183,3 +183,17 @@ test('without WebSocket support the page works: listeners are accepted, nothing 
   w.adtLive.on('deployed', () => {});
   assert.equal(w.adtLive.connected(), false);
 });
+
+test('"state" tells when the socket opens and when an open socket is lost (not for a failed attempt, not at logout)', () => {
+  const e = env();
+  const states = [];
+  e.live.on('state', (m) => states.push(m.up));
+  e.sockets[0].open();
+  e.sockets[0].drop(1006);
+  e.advance(1000);
+  e.sockets[1].drop(1006); // never opened: nothing new to say
+  e.advance(2000);
+  e.sockets[2].open();
+  e.sockets[2].say({ type: 'logout' });
+  assert.deepEqual(states, [true, false, true]);
+});

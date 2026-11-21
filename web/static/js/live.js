@@ -2,6 +2,7 @@
 // when something happened ({"type":"deployed",...}); adtLive.on(type, fn) listens to one type. "reconnect" is made
 // up here: the socket was lost and is back, so what was pushed meanwhile was missed (nothing is stored).
 // connected() tells whether the socket is open right now: callers keep a slow timer as a safety net when it is not.
+// "state" is made up here too: {up: true|false} each time the socket opens or is lost (the page tells the person, autorefresh.js).
 (function() {
   if (!window.WebSocket) { window.adtLive = { on: function() {}, connected: function() { return false; } }; return; }
   var handlers = {}, sock = null, up = false, wasUp = false, quiet = false, delay = 1000, timer = null, closing = false, loggedOut = false;
@@ -15,6 +16,7 @@
     try { sock = new WebSocket(proto + '//' + location.host + '/ws'); } catch (e) { sock = null; again(); return; }
     sock.onopen = function() {
       up = true;
+      emit('state', { up: true });
       delay = 1000;
       if (wasUp && !quiet) emit('reconnect', {});
       quiet = false;
@@ -30,6 +32,7 @@
       var wasOpen = up;
       sock = null;
       up = false;
+      if (wasOpen && !loggedOut) emit('state', { up: false });
       // 1000: the server ended the socket on purpose (its maximum lifetime, which makes Apache check the session
       // again): nothing was missed, so the next connection is quiet, and it comes at once. If that attempt fails,
       // the connection that follows is not quiet any more: messages may have been missed meanwhile.

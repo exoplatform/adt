@@ -149,6 +149,45 @@
       document.querySelector('.feature-more[open], .feature-base[open]') || (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName));
   }
 
+  // A small dot to the right of the page title says whether the page is kept up to date: green while the live channel
+  // is open (hovering it says the person does not need to refresh), amber when it has been down for a while (the page then
+  // looks every 2 minutes instead of being told, and reconnects by itself). A short loss (a restart, a reconnection) does
+  // not turn it amber. Only the pages that use the channel have it (this runs only where the parts are swapped).
+  var DOWN_AFTER = 10000;
+  function healthText(up, since) {
+    return up ? 'Live: this page updates by itself. No need to refresh it.' :
+      'Live updates paused since ' + since.toLocaleTimeString() + ': reconnecting by itself, checking every 2 minutes. No need to refresh it.';
+  }
+  function watchHealth(l) {
+    var el = null, text = null, timer = null, since = null;
+    function show(up) {
+      if (!el) {
+        el = document.createElement('div');
+        el.setAttribute('role', 'status');
+        el.tabIndex = 0;
+        text = document.createElement('span');
+        text.className = 'live-status__text';
+        el.appendChild(text);
+        // To the right of the page title; in a corner of the page when it has none
+        var title = document.querySelector('.page-header__title');
+        if (title) title.appendChild(el);
+        else { el.classList.add('live-status--corner'); document.body.appendChild(el); }
+      }
+      el.classList.add('live-status');
+      el.classList.toggle('live-status--up', up);
+      el.classList.toggle('live-status--down', !up);
+      text.textContent = healthText(up, since || new Date());
+    }
+    function down() {
+      if (timer) return;
+      since = new Date();
+      timer = setTimeout(function() { timer = null; show(false); }, DOWN_AFTER);
+    }
+    function up() { clearTimeout(timer); timer = null; since = null; show(true); }
+    l.on('state', function(m) { if (m.up) up(); else down(); });
+    if (l.connected()) up(); else down(); // not open yet: the same wait before it is amber
+  }
+
   function start() {
     snapshot();
     if (!main()) return;
@@ -169,6 +208,7 @@
       // (the cards of the instances do not show them): asking the server for a page that cannot have changed would be load for nothing
       if (main().querySelector('.features-section, #featureFilters')) live.on('branches', function() { soon(AFTER_DEPLOY); });
       live.on('reconnect', function() { soon(0); });
+      watchHealth(live);
     }
     // Checked often rather than with one long timer: a timer of a background tab can be throttled or frozen
     setInterval(function() {
