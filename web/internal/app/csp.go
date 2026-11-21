@@ -27,12 +27,12 @@ func (a *App) policy(scriptHashes ...string) string {
 	// The CDN scripts by exact URL, not by host: jsdelivr serves any package or GitHub repository, and a tag manager
 	// serves whatever its owner configured, so a host-wide rule would make any injected <script src> work. The
 	// pages also carry the integrity hash of the CDN files they load. A new version of a library is a new line here
-	// (the CI checks that every script URL of the templates is listed).
+	// (the CI checks that every script URL of the templates is listed). Nothing here carries a query string: CSP ignores it when
+	// the listed URL has none, so googletagmanager.com/gtag/js (unused) would have let /gtag/js?id=<any container> run any script.
 	script := []string{"'self'",
 		"https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js",
 		"https://cdn.jsdelivr.net/npm/chart.js@4.6.1/dist/chart.umd.min.js",
-		"https://www.google-analytics.com/analytics.js",
-		"https://www.googletagmanager.com/gtag/js"}
+		"https://www.google-analytics.com/analytics.js"}
 	script = append(script, scriptHashes...)
 	form := []string{"'self'"}
 	seen := map[string]bool{}
