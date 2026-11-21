@@ -48,10 +48,10 @@
 {% else %}
 {{ protected("^/logs/.*") }}
 {%- if ssl and DEPLOYMENT_MATRIX_ENABLED == "true" %}
-    <LocationMatch "^/.well-known/matrix/.*">
-        Options None
-        AllowOverride None
-        Require all granted
+    # Headers of the two discovery documents only. NO "Require" here: a <Location> is merged after the <Directory> and <Files> of
+    # the include, so a "Require all granted" would override their rules and serve everything in the directory
+    # (homeserver.yaml, initialize.sh, the signing key). Who may read what is decided in includes/instance.include.j2.
+    <LocationMatch "^/.well-known/matrix/(client|server)$">
         Header set Content-Type application/json
         Header always set Access-Control-Allow-Origin "https://app.element.io"
         Header always set Access-Control-Allow-Methods "GET, POST, OPTIONS"
