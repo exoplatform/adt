@@ -114,6 +114,13 @@
                 # by the dashboard); the 403 error page then sends the user back to the login page.
                 # Uses the raw cookie: the decrypted HTTP_SESSION is only set after authorization.
                 Require    expr "!(%{req:Cookie} =~ /(?:^|; ?)adt_session=([^;]+)/ && file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1($1) . '*')"
+                # mod_session reads the cookie with ap_cookie_read, which is more tolerant than the regex above: it splits
+                # on "," as well as ";", skips any whitespace (tabs, several spaces) before the name, and also reads a
+                # Cookie2 header. A variant of an evicted cookie ("a=b;  adt_session=R", "adt_session=R, x=1", Cookie2)
+                # would not be matched by the check yet still open the session. Refuse every header that is not in the
+                # strict form the check understands (a comma in ANOTHER cookie, or no session cookie, is fine).
+                Require    expr "-z %{req:Cookie2}"
+                Require    expr "%{req:Cookie} !~ /(?<=[,;[:space:]])(?<!; )adt_session=/ && %{req:Cookie} !~ /adt_session=[^;]*,/"
                 # Users blocked from /debug-sessions (sha1 of the lowercased login, same file). RequireNone, not a negated
                 # expr: a false expr using REMOTE_USER ends as a bare 401 instead of the 403 page
                 <RequireNone>
@@ -144,6 +151,13 @@
                 # by the dashboard); the 403 error page then sends the user back to the login page.
                 # Uses the raw cookie: the decrypted HTTP_SESSION is only set after authorization.
                 Require    expr "!(%{req:Cookie} =~ /(?:^|; ?)adt_session=([^;]+)/ && file('{{ ADT_DATA }}/var/sessions/revoked.txt') -strmatch '*' . sha1($1) . '*')"
+                # mod_session reads the cookie with ap_cookie_read, which is more tolerant than the regex above: it splits
+                # on "," as well as ";", skips any whitespace (tabs, several spaces) before the name, and also reads a
+                # Cookie2 header. A variant of an evicted cookie ("a=b;  adt_session=R", "adt_session=R, x=1", Cookie2)
+                # would not be matched by the check yet still open the session. Refuse every header that is not in the
+                # strict form the check understands (a comma in ANOTHER cookie, or no session cookie, is fine).
+                Require    expr "-z %{req:Cookie2}"
+                Require    expr "%{req:Cookie} !~ /(?<=[,;[:space:]])(?<!; )adt_session=/ && %{req:Cookie} !~ /adt_session=[^;]*,/"
                 # Users blocked from /debug-sessions (sha1 of the lowercased login, same file). RequireNone, not a negated
                 # expr: a false expr using REMOTE_USER ends as a bare 401 instead of the 403 page
                 <RequireNone>
