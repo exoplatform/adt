@@ -19,12 +19,25 @@ fi
 # Environments functions
 # #################
 
+# The values of the env vars come from CI parameters and from developers (INSTANCE_ID, PRODUCT_VERSION, ...) and the defaults
+# embed them: they are assigned with printf -v and read with an indirect expansion, never through eval. With
+# eval NAME="value" the value, already expanded by the caller, was expanded a second time: INSTANCE_ID='x$(cmd)' or a
+# double quote in a value ran commands as the deploy user.
+
+# Stops unless the argument is the name of a variable
+_check_env_var_name() {
+  if [[ ! "$1" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]]; then
+    echo_error "'$1' is not an environment variable name"
+    exit 1
+  fi
+}
+
 # Checks that the env var with the name provided in param is defined
 validate_env_var() {
   set +u
   PARAM_NAME=$1
-  PARAM_VALUE=$(eval echo \${$1-UNSET})
-  if [ "${PARAM_VALUE}" = "UNSET" ]; then
+  _check_env_var_name "${PARAM_NAME}"
+  if [ -z "${!PARAM_NAME+x}" ]; then
     echo_error "Environment variable $PARAM_NAME is not set";
     echo_error "Please set it either : "
     echo_error "- in your shell environment (export $PARAM_NAME=xxx)"
@@ -41,11 +54,13 @@ validate_env_var() {
 configurable_env_var() {
   set +u
   PARAM_NAME=$1
-  PARAM_VALUE=$(eval echo \${$1-UNSET})
-  if [ "${PARAM_VALUE}" = "UNSET" ]; then
+  _check_env_var_name "${PARAM_NAME}"
+  if [ -z "${!PARAM_NAME+x}" ]; then
     PARAM_VALUE=$2
-    eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
-    export eval ${PARAM_NAME}
+    printf -v "${PARAM_NAME}" '%s' "${PARAM_VALUE}"
+    export "${PARAM_NAME}"
+  else
+    PARAM_VALUE=${!PARAM_NAME}
   fi
   echo_debug "$PARAM_NAME=$PARAM_VALUE"
   set -u
@@ -56,9 +71,10 @@ configurable_env_var() {
 env_var() {
   set +u
   PARAM_NAME=$1
+  _check_env_var_name "${PARAM_NAME}"
   PARAM_VALUE=$2
-  eval ${PARAM_NAME}=\"${PARAM_VALUE}\"
-  export eval ${PARAM_NAME}
+  printf -v "${PARAM_NAME}" '%s' "${PARAM_VALUE}"
+  export "${PARAM_NAME}"
   echo_debug "$PARAM_NAME=$PARAM_VALUE"
   set -u
 }
