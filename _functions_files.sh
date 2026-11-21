@@ -27,9 +27,21 @@ source "${SCRIPT_DIR}/_functions_core.sh"
 #
 # Replace in file $1 the value $2 by $3
 #
+# When $2 is a placeholder (@NAME@), $3 is a value taken from the environment (a port, a URL, a database name, ...): it is
+# data, so what means something in the replacement of a sed expression is escaped: the delimiter |, & (the matched text),
+# the backslash and the newline. Unescaped, 'x|g;e cmd;s|a|b' ends the substitution and GNU sed's e command runs cmd.
+# Any other $2 is the legacy form (the escape of single quotes in evaluate_file_content), whose $3 is sed syntax on purpose.
+#
 replace_in_file() {
+  local _to=$3
+  if [[ "$2" =~ ^@[A-Za-z0-9_]+@$ ]]; then
+    _to=${_to//\\/\\\\}
+    _to=${_to//|/\\|}
+    _to=${_to//&/\\&}
+    _to=${_to//$'\n'/\\$'\n'}
+  fi
   mv $1 $1.orig
-  ${CMD_SED} "s|$2|$3|g" $1.orig > $1
+  ${CMD_SED} "s|$2|${_to}|g" $1.orig > $1
   rm $1.orig
 }
 
