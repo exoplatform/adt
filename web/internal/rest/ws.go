@@ -45,6 +45,24 @@ type wsEvent struct {
 	At   int64  `json:"at"`
 }
 
+// wsBranches is the message that says the feature branches were refreshed: no key, no host, nothing about an instance; the
+// names of the repositories whose branches moved (public: they are listed on the dashboard), when they are known.
+type wsBranches struct {
+	Type  string   `json:"type"`
+	ID    string   `json:"id"`
+	At    int64    `json:"at"`
+	Repos []string `json:"repos,omitempty"`
+}
+
+// eventMessage is what a socket sends for an event of the hub.
+func eventMessage(e events.Event) []byte {
+	if e.Kind == events.KindBranches {
+		b, _ := json.Marshal(wsBranches{Type: "branches", ID: e.ID, At: e.At, Repos: e.Repos})
+		return b
+	}
+	return deployedMessage(e)
+}
+
 func deployedMessage(e events.Event) []byte {
 	b, _ := json.Marshal(wsEvent{Type: "deployed", ID: e.ID, Key: e.Key, Host: e.Host, Date: e.Date, At: e.At})
 	return b
@@ -104,7 +122,7 @@ func init() {
 			case <-r.Context().Done():
 				return
 			case e := <-ch:
-				if c.Send(deployedMessage(e)) != nil {
+				if c.Send(eventMessage(e)) != nil {
 					return
 				}
 			case <-chg:

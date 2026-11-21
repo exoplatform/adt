@@ -96,6 +96,41 @@ func (s *Stale[T]) Invalidate() {
 	}
 }
 
+// Refresh recomputes every value that was ever asked for, now and in parallel, and returns when all of them are ready:
+// Invalidate refreshes in the background and callers keep getting the previous values meanwhile, this is for who must
+// announce that the new values are there.
+func (s *Stale[T]) Refresh() { s.RefreshMatching(func(string) bool { return true }) }
+
+// RefreshMatching is Refresh for the keys that match: the others are not touched and cost nothing.
+func (s *Stale[T]) RefreshMatching(match func(key string) bool) {
+	s.mu.Lock()
+	entries := make([]*staleEntry[T], 0, len(s.m))
+	for k, e := range s.m {
+		if match(k) {
+			entries = append(entries, e)
+		}
+	}
+	s.mu.Unlock()
+	var wg sync.WaitGroup
+	for _, e := range entries {
+		e.mu.Lock()
+		build, has := e.build, e.has
+		e.mu.Unlock()
+		if !has || build == nil {
+			continue
+		}
+		wg.Add(1)
+		go func(e *staleEntry[T], build func() T) {
+			defer wg.Done()
+			v := build()
+			e.mu.Lock()
+			e.val, e.at = v, time.Now()
+			e.mu.Unlock()
+		}(e, build)
+	}
+	wg.Wait()
+}
+
 // InvalidateAll invalidates every Stale set: what "clear the caches" means for the values that are never dropped.
 func InvalidateAll() {
 	staleMu.Lock()

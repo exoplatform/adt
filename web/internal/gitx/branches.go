@@ -135,13 +135,132 @@ func cached(key string, build func() []BranchGroup) []BranchGroup {
 	return branchLists.Get(key, branchTTL, build)
 }
 
+// featureProjects keeps, for each project, what its repository says about its feature branches: the listing of the branches
+// and the commits behind and ahead of the base of each (the git commands, the costly part). One entry per project, so that the
+// fetch of one repository recomputes that one only (RefreshFeatureBranches) and not the thirty others; assembling the
+// listing of all the projects from the entries is cheap. An out-of-date entry keeps being served while a background refresh runs.
+var featureProjects = cache.NewStale[featureProject]()
+
+// featureItem is one feature branch of a project: its base, and the commits behind and ahead of it. skip: it has no usable base;
+// ok: both counts could be made.
+type featureItem struct {
+	branch, base  string
+	behind, ahead int
+	skip, ok      bool
+}
+
+// featureProject is what is known of one project: the URL of its origin (when it has feature branches) and its branches, in
+// the order of the listing.
+type featureProject struct {
+	url   string
+	items []featureItem
+}
+
+func featureProjectKey(dataDir, project, bases string) string {
+	return "feature\x00" + dataDir + "\x00" + project + "\x00" + bases
+}
+
+// RefreshFeatureBranches recomputes the feature listings of these projects now, and returns when they are ready; the other
+// projects are not touched. With no project, every listing that was asked for (translation branches included) is recomputed.
+// It is what a fetch of the repositories calls before the pages are told.
+func RefreshFeatureBranches(dataDir string, projects []string) {
+	want := map[string]bool{}
+	for _, p := range projects {
+		want[p] = true
+	}
+	featureProjects.RefreshMatching(func(key string) bool {
+		parts := strings.Split(key, "\x00")
+		return len(parts) >= 4 && parts[1] == dataDir && (len(want) == 0 || want[parts[2]])
+	})
+	if len(want) == 0 {
+		branchLists.Refresh()
+	}
+}
+
 // FeatureBranches lists the origin/feature/* branches of the projects, each compared with its base branch
 // (FeatureBase).
 func FeatureBranches(dataDir string, projects []string) []BranchGroup {
 	bases := FeatureBases(dataDir)
-	return cached("features\x00"+dataDir+"\x00"+strings.Join(projects, "\x00")+"\x00"+basesCacheKey(bases), func() []BranchGroup {
-		return buildFeatureBranches(dataDir, projects, bases)
+	basesKey := basesCacheKey(bases)
+	results := make([]featureProject, len(projects))
+	// The projects are asked for in parallel: the first visitor waits for all the git commands once, as before
+	forEach(len(projects), func(i int) {
+		results[i] = featureProjects.Get(featureProjectKey(dataDir, projects[i], basesKey), branchTTL, func() featureProject {
+			return buildFeatureProject(dataDir, projects[i], bases)
+		})
 	})
+	return assembleFeatureBranches(projects, results)
+}
+
+// assembleFeatureBranches walks the projects in order. The GitHub org/repo of a previous match survives a remote that does
+// not match (every branch of the listing updates them, even one that is then skipped): this is the order of the original
+// walk, which the per-project entries keep.
+func assembleFeatureBranches(projects []string, results []featureProject) []BranchGroup {
+	var gs groupSet
+	var org, repo string
+	for i, project := range projects {
+		fp := results[i]
+		for _, it := range fp.items {
+			if m := githubSSH.FindStringSubmatch(fp.url); m != nil {
+				org, repo = m[1], m[2]
+			}
+			if it.skip || !it.ok {
+				continue
+			}
+			gs.add(it.branch, BranchProject{
+				Project:       project,
+				HTTPURL:       "https://github.com/" + org + "/" + repo + "/tree/feature/" + it.branch,
+				HTTPURLBehind: "https://github.com/" + org + "/" + repo + "/compare/feature/" + it.branch + "..." + it.base,
+				HTTPURLAhead:  "https://github.com/" + org + "/" + repo + "/compare/" + it.base + "...feature/" + it.branch,
+				BehindCommits: it.behind,
+				AheadCommits:  it.ahead,
+			})
+		}
+	}
+	return gs.sorted()
+}
+
+// buildFeatureProject asks one repository for its feature branches and counts the commits of each against its base.
+func buildFeatureProject(dataDir, project string, bases map[string]string) featureProject {
+	r, err := OpenSource(dataDir, project)
+	if err != nil {
+		return featureProject{}
+	}
+	var valid []string
+	for _, branch := range remoteBranches(r, "origin/feature/", "feature") {
+		if ValidRef("feature/" + branch) {
+			valid = append(valid, branch)
+		}
+	}
+	var fp featureProject
+	if len(valid) > 0 {
+		fp.url = r.RemoteOriginURL()
+	}
+	var tasks []*branchTask
+	for _, branch := range valid {
+		base := FeatureBase(bases, branch)
+		if base != DefaultBaseBranch && !r.RefExists("origin/"+base) {
+			base = DefaultBaseBranch // this project has no such branch
+		}
+		it := featureItem{branch: branch, base: base}
+		if ValidRef(base) {
+			tasks = append(tasks, &branchTask{project: project, branch: branch, remote: "origin", base: base, r: r})
+		} else {
+			it.skip = true
+		}
+		fp.items = append(fp.items, it)
+	}
+	countBranches(tasks, "feature")
+	n := 0
+	for i := range fp.items {
+		if fp.items[i].skip {
+			continue
+		}
+		t := tasks[n]
+		n++
+		fp.items[i].behind, fp.items[i].ahead, fp.items[i].ok = t.behind, t.ahead, t.ok
+	}
+	return fp
 }
 
 // branchTask is one branch of one project whose distance to the base branch is to be counted.
@@ -154,9 +273,15 @@ type branchTask struct {
 	ok                                bool
 }
 
+// gitSlots bounds the counting commands in flight whoever asks: the listings of the projects are built in parallel and each
+// counts its branches in parallel, which without a bound would multiply (the first visit used to run eight at a time).
+var gitSlots = make(chan struct{}, 8)
+
 // countBranches fills behind/ahead of every task, in parallel (two git commands each).
 func countBranches(tasks []*branchTask, ref string) {
 	forEach(len(tasks), func(i int) {
+		gitSlots <- struct{}{}
+		defer func() { <-gitSlots }()
 		t := tasks[i]
 		head := "origin/" + ref + "/" + t.branch
 		base := t.remote + "/" + t.base

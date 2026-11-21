@@ -191,3 +191,28 @@ func TestRelayIgnoresGarbageAndUnknownKeys(t *testing.T) {
 		t.Fatalf("a bad frame went through: %+v", got)
 	}
 }
+
+// The refresh of the branches reaches the pages of this server (All) and is never relayed (Local): the other servers' branches are
+// their own business, and a peer that relayed it would make every dashboard refresh for a fetch done elsewhere.
+func TestPublishBranchesGoesOnAllOnly(t *testing.T) {
+	svc := NewService()
+	all, cancelAll := svc.All.Subscribe()
+	local, cancelLocal := svc.Local.Subscribe()
+	defer cancelAll()
+	defer cancelLocal()
+	e := svc.PublishBranches([]string{"commons", "social"})
+	if e.Kind != KindBranches || e.Key != "" || e.ID == "" || e.At == 0 || len(e.Repos) != 2 {
+		t.Fatalf("event %+v", e)
+	}
+	if got := recv(t, all); got.ID != e.ID || got.Kind != KindBranches {
+		t.Fatalf("All received %+v", got)
+	}
+	select {
+	case got := <-local:
+		t.Fatalf("the relayed hub received %+v", got)
+	case <-time.After(150 * time.Millisecond):
+	}
+	if again := svc.PublishBranches(nil); again.ID == e.ID {
+		t.Fatal("two events share an id")
+	}
+}

@@ -3,20 +3,27 @@ package rest
 import (
 	"log"
 	"net/http"
+	"regexp"
+	"strings"
+	"sync"
 
 	"github.com/exoplatform/adt/web/internal/app"
 	"github.com/exoplatform/adt/web/internal/auth"
 	"github.com/exoplatform/adt/web/internal/events"
+	"github.com/exoplatform/adt/web/internal/gitx"
 )
 
 // The deployment notifications (see package events):
 //
 //	POST /internal/deployed   adt.sh, on the local socket only: the instance has been deployed and started
+//	POST /internal/refresh    adt.sh, on the local socket only: the repositories were fetched, the feature branches are refreshed
+//	                          and the pages are told ("branches" on /ws)
 //	GET  /rest/local-events   the deployments of this server, as server-sent events (the other servers relay it)
 //	GET  /events              the deployments of every server, as server-sent events
 //	GET  /ws                  the same for the pages, over a WebSocket (ws.go), which also tells a session it was evicted
 func init() {
 	app.HandleFunc("POST /internal/deployed", internalDeployed)
+	app.HandleFunc("POST /internal/refresh", internalRefresh)
 	app.HandleFunc("GET /rest/local-events", func(a *app.App, w http.ResponseWriter, r *http.Request) {
 		events.Stream(w, r, a.Events.Local)
 	})
@@ -71,6 +78,56 @@ func internalDeployed(a *app.App, w http.ResponseWriter, r *http.Request) {
 	a.Instances.InvalidateInstances()
 	e := a.Events.PublishLocal(key, host, date)
 	log.Printf("events: %s deployed (%s)", e.Key, e.ID)
+	w.Header().Set("Cache-Control", "no-store")
+	w.WriteHeader(http.StatusNoContent)
+}
+
+var (
+	repoNameRe     = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$`)
+	refreshMu      sync.Mutex // one refresh at a time: a burst of announcements must not pile up git commands
+	maxRepoNames   = 200
+	maxRefreshBody = int64(16 << 10)
+)
+
+// repoNames reads the repos= values of a refresh announcement: names of repositories, nothing else, each once, at most maxRepoNames.
+func repoNames(values []string) []string {
+	var out []string
+	seen := map[string]bool{}
+	for _, v := range values {
+		if !repoNameRe.MatchString(v) || seen[v] || strings.Contains(v, "..") {
+			continue
+		}
+		seen[v] = true
+		out = append(out, v)
+		if len(out) == maxRepoNames {
+			break
+		}
+	}
+	return out
+}
+
+// internalRefresh: adt.sh has fetched the repositories (init, update-repos) and names, with repos=, those whose branches moved
+// (several repos= values; none means "all of them"). Only their branch listings are recomputed (the others stay as they are: no
+// git work for them), then the pages are told, so that the page that asks for itself again gets the new branches and not the
+// cached ones. It answers at once: adt.sh does not wait for git.
+func internalRefresh(a *app.App, w http.ResponseWriter, r *http.Request) {
+	if !directRequest(r) {
+		http.Error(w, "forbidden", http.StatusForbidden)
+		return
+	}
+	r.Body = http.MaxBytesReader(w, r.Body, maxRefreshBody)
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "bad request", http.StatusBadRequest)
+		return
+	}
+	repos := repoNames(r.PostForm["repos"])
+	go func() {
+		refreshMu.Lock()
+		defer refreshMu.Unlock()
+		gitx.RefreshFeatureBranches(a.Cfg.DataDir, repos)
+		e := a.Events.PublishBranches(repos)
+		log.Printf("events: branches refreshed (%d repositories, %s)", len(repos), e.ID)
+	}()
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusNoContent)
 }

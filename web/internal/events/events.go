@@ -27,13 +27,17 @@ import (
 	"time"
 )
 
-// Event is one deployment: the instance (INSTANCE_KEY), the host it answers on and its DEPLOYMENT_DATE.
+// Event is one deployment: the instance (INSTANCE_KEY), the host it answers on and its DEPLOYMENT_DATE. Kind is empty for
+// a deployment; KindBranches says the feature branches were refreshed (adt.sh fetched the repositories): it has no key.
 type Event struct {
 	ID   string `json:"id"`
+	Kind string `json:"kind,omitempty"`
 	Key  string `json:"key"`
-	Host string `json:"host,omitempty"`
-	Date string `json:"date,omitempty"`
-	At   int64  `json:"at"`
+	// Repos, for KindBranches: the repositories whose branches moved (one or several); empty when it is not known
+	Repos []string `json:"repos,omitempty"`
+	Host  string   `json:"host,omitempty"`
+	Date  string   `json:"date,omitempty"`
+	At    int64    `json:"at"`
 }
 
 const (
@@ -92,6 +96,9 @@ func (h *Hub) Publish(e Event) bool {
 	return true
 }
 
+// KindBranches is the Kind of the event that says the feature branches were refreshed.
+const KindBranches = "branches"
+
 // Service is the two hubs of a server.
 type Service struct {
 	Local, All *Hub
@@ -104,6 +111,15 @@ func NewService() *Service { return &Service{Local: NewHub(), All: NewHub()} }
 func (s *Service) PublishLocal(key, host, date string) Event {
 	e := Event{ID: newID(), Key: key, Host: host, Date: date, At: time.Now().Unix()}
 	s.Local.Publish(e)
+	s.All.Publish(e)
+	return e
+}
+
+// PublishBranches tells the pages of this server that the feature branches of these repositories (all of them when none is
+// named) were refreshed. It goes on All only, never on
+// Local: the other servers relay Local, and their branches are their own business.
+func (s *Service) PublishBranches(repos []string) Event {
+	e := Event{ID: newID(), Kind: KindBranches, Repos: repos, At: time.Now().Unix()}
 	s.All.Publish(e)
 	return e
 }

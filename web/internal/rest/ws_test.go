@@ -2,9 +2,11 @@ package rest
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"io"
 	"net"
+	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"os"
@@ -205,5 +207,130 @@ func TestWSEvictedSession(t *testing.T) {
 	}
 	if status, _, _ := wsDial(t, srv, "", "Cookie: adt_session=another"); !strings.Contains(status, "101") {
 		t.Fatalf("another session: %q", status)
+	}
+}
+
+// POST /internal/refresh (adt.sh fetched the repositories): the pages are told with a message that carries no instance, no host
+// and no key, only its type, an id and the time; a request that came through Apache is refused and tells nobody.
+func TestInternalRefreshTellsThePages(t *testing.T) {
+	a := app.New(config.Config{DevMode: true})
+	h := a.Handler()
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	status, _, br := wsDial(t, srv, "")
+	if !strings.Contains(status, "101") {
+		t.Fatalf("status %q", status)
+	}
+	skipHandshake(t, br)
+	wsMessage(t, br) // hello
+
+	// through the proxy: refused, nothing is sent
+	r := httptest.NewRequest("POST", "/internal/refresh", nil)
+	r.Header.Set("X-Forwarded-For", "10.0.0.1")
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, r)
+	if w.Code != http.StatusForbidden {
+		t.Fatalf("proxied refresh: %d, want 403", w.Code)
+	}
+
+	// direct (the socket): answered at once, and the page hears of it
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, httptest.NewRequest("POST", "/internal/refresh", nil))
+	if w.Code != http.StatusNoContent {
+		t.Fatalf("refresh: %d, want 204", w.Code)
+	}
+	var got map[string]any
+	if err := json.Unmarshal([]byte(wsMessage(t, br)), &got); err != nil {
+		t.Fatal(err)
+	}
+	if got["type"] != "branches" {
+		t.Fatalf("message %v", got)
+	}
+	for k := range got {
+		if k != "type" && k != "id" && k != "at" && k != "repos" {
+			t.Errorf("the branches message carries %q", k)
+		}
+	}
+	for _, k := range []string{"type", "id", "at"} {
+		if _, ok := got[k]; !ok {
+			t.Errorf("the branches message lacks %q", k)
+		}
+	}
+}
+
+// The refresh of the branches has nothing to do with the instances: it must not drop their cached lists (a deployment does).
+func TestBranchesEventDoesNotDropTheInstanceLists(t *testing.T) {
+	a := app.New(config.Config{DevMode: true})
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	a.StartEventRelays(ctx)
+	a.Instances.Cache.Set("all_instances", 1, time.Hour)
+
+	a.Events.PublishBranches(nil)
+	time.Sleep(200 * time.Millisecond)
+	if _, ok := a.Instances.Cache.Get("all_instances"); !ok {
+		t.Fatal("a branches event dropped the cached instance lists")
+	}
+	a.Events.PublishLocal("plf-7.3.x", "h.example.org", "20261121.101500")
+	deadline := time.Now().Add(2 * time.Second)
+	for time.Now().Before(deadline) {
+		if _, ok := a.Instances.Cache.Get("all_instances"); !ok {
+			return
+		}
+		time.Sleep(20 * time.Millisecond)
+	}
+	t.Fatal("a deployment no longer drops the cached instance lists")
+}
+
+// The announcement names the repositories whose branches moved (one, several or none): only well-formed names, each once, go on
+// to the pages; what is not a repository name is dropped, and without a name the message carries no list (everything moved).
+func TestInternalRefreshNamesTheRepositories(t *testing.T) {
+	a := app.New(config.Config{DevMode: true})
+	h := a.Handler()
+	srv := httptest.NewServer(h)
+	defer srv.Close()
+	_, _, br := wsDial(t, srv, "")
+	skipHandshake(t, br)
+	wsMessage(t, br) // hello
+
+	announce := func(repos ...string) map[string]any {
+		form := url.Values{"repos": repos}
+		r := httptest.NewRequest("POST", "/internal/refresh", strings.NewReader(form.Encode()))
+		r.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+		w := httptest.NewRecorder()
+		h.ServeHTTP(w, r)
+		if w.Code != http.StatusNoContent {
+			t.Fatalf("refresh: %d", w.Code)
+		}
+		var got map[string]any
+		if err := json.Unmarshal([]byte(wsMessage(t, br)), &got); err != nil {
+			t.Fatal(err)
+		}
+		return got
+	}
+	list := func(m map[string]any) []string {
+		var out []string
+		for _, v := range m["repos"].([]any) {
+			out = append(out, v.(string))
+		}
+		return out
+	}
+
+	if got := list(announce("commons")); len(got) != 1 || got[0] != "commons" {
+		t.Fatalf("one repository: %v", got)
+	}
+	if got := list(announce("commons", "social", "platform-ui")); strings.Join(got, ",") != "commons,social,platform-ui" {
+		t.Fatalf("several repositories: %v", got)
+	}
+	bad := []string{"../etc", "a b", "x;y", "-rf", ".hidden", "a/b", "", "<script>", strings.Repeat("a", 101), "a..b"}
+	got := list(announce(append([]string{"commons", "commons"}, bad...)...))
+	if len(got) != 1 || got[0] != "commons" {
+		t.Fatalf("hostile and repeated names: %v (want [commons])", got)
+	}
+	if m := announce(); m["repos"] != nil {
+		t.Fatalf("no name, but a list: %v", m["repos"])
+	}
+	if m := announce(bad...); m["repos"] != nil {
+		t.Fatalf("only hostile names, but a list: %v", m["repos"])
 	}
 }

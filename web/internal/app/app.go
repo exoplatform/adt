@@ -69,8 +69,10 @@ func (a *App) StartEventRelays(ctx context.Context) {
 			select {
 			case <-ctx.Done():
 				return
-			case <-all:
-				a.Instances.InvalidateInstances()
+			case e := <-all:
+				if e.Kind == "" { // a deployment: not the refresh of the branches, which has nothing to do with the instances
+					a.Instances.InvalidateInstances()
+				}
 			}
 		}
 	}()
