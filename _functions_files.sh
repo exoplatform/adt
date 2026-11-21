@@ -100,6 +100,75 @@ export_template_vars() {
 }
 
 #
+# A file that bash will "source" later (the deployment descriptor of an instance, read at every list, start, stop and
+# undeploy, possibly by a more privileged operator) must not be able to run anything.
+#
+# The values are written raw, NAME="<value>", and bash reads them as the inside of a double-quoted string: callers rely on
+# that, as documented for DEPLOYMENT_OPTS in adt.sh (it holds \"0 0/60 * * * *\" for the quotes of a cron expression, \$ in a regular expression, ${VAR} references,
+# bare "..." pairs around a token). That language is kept as it is. What is refused is what executes or breaks out of the string:
+# a command substitution $( ) or $[ ], a backtick, ${...} other than ${NAME}, a quote that leaves the string with something other
+# than plain word characters outside it (a space, ; & | < > ( ) end the assignment and start a command), an unbalanced quote.
+#
+# _dq_value_is_safe takes what follows NAME=" up to the end of the line, closing quote included.
+#
+_dq_value_is_safe() {
+  local _s=$1 _i=0 _n _c _next _inquote=1
+  local _braced='^\$\{[A-Za-z_][A-Za-z0-9_]*\}'
+  local _word='[]A-Za-z0-9._/:@%+,=~^*?!#{}[-]'
+  _n=${#_s}
+  while [ "${_i}" -lt "${_n}" ]; do
+    _c=${_s:${_i}:1}
+    case "${_c}" in
+      '\')
+        # a backslash makes the next character data, inside the quotes and outside
+        [ $((_i + 1)) -lt "${_n}" ] || return 1
+        _i=$((_i + 2)); continue ;;
+      '"') _inquote=$((1 - _inquote)) ;;
+      '`') return 1 ;;
+      '$')
+        _next=${_s:$((_i + 1)):1}
+        case "${_next}" in
+          '(' | '[') return 1 ;;
+          '{')
+            [[ "${_s:${_i}}" =~ ${_braced} ]] || return 1
+            _i=$((_i + ${#BASH_REMATCH[0]})); continue ;;
+          "'") [ "${_inquote}" -eq 1 ] || return 1 ;;
+        esac ;;
+      *)
+        if [ "${_inquote}" -eq 0 ] && [[ ! "${_c}" =~ ${_word} ]]; then
+          return 1
+        fi ;;
+    esac
+    _i=$((_i + 1))
+  done
+  [ "${_inquote}" -eq 0 ]
+}
+
+#
+# Returns 1 unless every line of the file is empty, a comment, NAME="value" (see above) or NAME=value with a value made of
+# characters that mean nothing to bash outside quotes. The message names the line and the variable, never the value (it may be
+# a password).
+#
+assert_sourceable() {
+  local _file=$1 _line _n=0
+  local _quoted='^[A-Za-z_][A-Za-z0-9_]*="(.*)$'
+  local _plain='^[A-Za-z_][A-Za-z0-9_]*=[]A-Za-z0-9._/:@%+,=~^*?!#{}[-]*$'
+  while IFS= read -r _line || [ -n "${_line}" ]; do
+    _n=$((_n + 1))
+    [ -z "${_line}" ] && continue
+    [[ "${_line}" == \#* ]] && continue
+    if [[ "${_line}" =~ ${_quoted} ]]; then
+      _dq_value_is_safe "${BASH_REMATCH[1]}" && continue
+    elif [[ "${_line}" =~ ${_plain} ]]; then
+      continue
+    fi
+    echo_error "${_file}, line ${_n} (${_line%%=*}): the value cannot be sourced safely by bash (command substitution, backtick, unbalanced or breaking quotes, shell syntax), refusing the file"
+    return 1
+  done < "${_file}"
+  return 0
+}
+
+#
 # Render the template $1 and push the result in $2
 #  - *.j2 files are rendered with Jinja2 (conditions, loops, filters ...) : use them for any new template
 #  - DEPRECATED: any other file only gets its environment variables (${XXX}) replaced

@@ -195,6 +195,13 @@ do_download_maven_artifact() {
       exit 1;
     fi
     rm -f ${_metadataFile}.bck
+    # It comes from the repository (anybody who can publish a snapshot, or sits on the path to an http repository). It is put
+    # in file names, in a sed expression, in a URL and in the .info file that is sourced: a Maven timestamp has none of the
+    # characters that could climb in a path or run something.
+    if [[ ! "$_artifactTimestamp" =~ ^[A-Za-z0-9][A-Za-z0-9._+-]{0,120}$ ]]; then
+      echo_error "The timestamp returned by the repository is not valid: it is not used."
+      exit 1
+    fi
     echo_info "Latest timestamp : $_artifactTimestamp"
     _artifactDate=`expr "$_artifactTimestamp" : '.*-\(.*\)-.*'`
   fi
@@ -360,17 +367,18 @@ do_download_maven_artifact() {
   #
   local _artifactInfo="$_downloadDirectory/$_fileBaseName-$_artifactTimestamp.info"
   echo_info "Creating archive descriptor ..."
-  cat << EOF > ${_artifactInfo}
-${_prefix}_VERSION="${_artifactVersion}"
-${_prefix}_ARTIFACT_GROUPID="${_artifactGroupId}"
-${_prefix}_ARTIFACT_ARTIFACTID="${_artifactArtifactId}"
-${_prefix}_ARTIFACT_TIMESTAMP="${_artifactTimestamp}"
-${_prefix}_ARTIFACT_DATE="${_artifactDate}"
-${_prefix}_ARTIFACT_CLASSIFIER="${_artifactClassifier}"
-${_prefix}_ARTIFACT_PACKAGING="${_artifactPackaging}"
-${_prefix}_ARTIFACT_URL="${_artifactUrl}"
-${_prefix}_ARTIFACT_LOCAL_PATH="${_artifactFile}"
-EOF
+  # NAME="value" with the value escaped: it is sourced by do_load_artifact_descriptor
+  {
+    printf '%s_VERSION="%s"\n'                "${_prefix}" "$(dq_escape "${_artifactVersion}")"
+    printf '%s_ARTIFACT_GROUPID="%s"\n'       "${_prefix}" "$(dq_escape "${_artifactGroupId}")"
+    printf '%s_ARTIFACT_ARTIFACTID="%s"\n'    "${_prefix}" "$(dq_escape "${_artifactArtifactId}")"
+    printf '%s_ARTIFACT_TIMESTAMP="%s"\n'     "${_prefix}" "$(dq_escape "${_artifactTimestamp}")"
+    printf '%s_ARTIFACT_DATE="%s"\n'          "${_prefix}" "$(dq_escape "${_artifactDate}")"
+    printf '%s_ARTIFACT_CLASSIFIER="%s"\n'    "${_prefix}" "$(dq_escape "${_artifactClassifier}")"
+    printf '%s_ARTIFACT_PACKAGING="%s"\n'     "${_prefix}" "$(dq_escape "${_artifactPackaging}")"
+    printf '%s_ARTIFACT_URL="%s"\n'           "${_prefix}" "$(dq_escape "${_artifactUrl}")"
+    printf '%s_ARTIFACT_LOCAL_PATH="%s"\n'    "${_prefix}" "$(dq_escape "${_artifactFile}")"
+  } > "${_artifactInfo}"
 
   echo_info "Done."
   #Display the deployment descriptor

@@ -1900,6 +1900,12 @@ do_create_deployment_descriptor() {
   echo_info "Creating deployment descriptor ..."
   mkdir -p ${ADT_CONF_DIR}
   evaluate_file_content ${ETC_DIR}/adt/config.j2 ${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}
+  # The descriptor is sourced by bash at every later list/start/stop/undeploy: keep none that could run something
+  # (the quoted values are escaped by the template; this checks them, and the few lines that are not quoted)
+  if ! assert_sourceable "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}"; then
+    rm -f "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}"
+    exit 1
+  fi
   echo_info "Done."
 }
 

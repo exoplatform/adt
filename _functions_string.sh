@@ -20,6 +20,18 @@ fi
 # #############################################################################
 source "${SCRIPT_DIR}/_functions_core.sh"
 
+# Escapes a value for the inside of a double-quoted bash string: \ " $ and the backtick get a backslash. What is written as
+# NAME="$(dq_escape "$value")" and sourced later stays data, whatever the value holds (a CI parameter, a field read from a remote
+# repository).
+dq_escape() {
+  local _v=$1
+  _v=${_v//\\/\\\\}
+  _v=${_v//\"/\\\"}
+  _v=${_v//\$/\\\$}
+  _v=${_v//\`/\\\`}
+  printf '%s' "${_v}"
+}
+
 # Converts $1 in upper case
 toupper() {
   echo "$1" | tr '[:lower:]' '[:upper:]'
