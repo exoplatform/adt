@@ -205,3 +205,29 @@ jobs:
           apache2ctl configtest
           echo "== instance vhosts (3 scenarios): ok"
           SCRIPT
+      # The rules behind the security fixes (who may read /.well-known/matrix/, the revocation cookie rules, the error pages...)
+      # run on a real httpd: a config that parses can still serve what it should deny. As a normal user (Apache does not run
+      # pages as root), and a SKIP is a failure here: the tests must not pass without having run.
+      - name: Apache behaviour tests on a real httpd
+        run: |
+          docker run --rm -i -v "$PWD:/repo:ro" ubuntu:26.04 bash -s <<'SCRIPT'
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends apache2 apache2-utils python3-jinja2 curl ca-certificates >/dev/null
+          useradd -m runner
+          mkdir -p /home/runner/w && cp -r /repo/etc /repo/web /home/runner/w/ && chown -R runner /home/runner/w
+          su runner -s /bin/bash <<'RUN'
+          set -u
+          cd /home/runner/w
+          fail=0
+          for t in etc/apache2/tests/*.sh; do
+            [ "$(basename "$t")" = lib.sh ] && continue
+            echo "== $t"
+            out="$(bash "$t" 2>&1)" || fail=1
+            echo "$out"
+            if echo "$out" | grep -q '^SKIP'; then echo "::error::$t was skipped"; fail=1; fi
+          done
+          exit $fail
+          RUN
+          SCRIPT
