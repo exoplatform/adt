@@ -62,6 +62,9 @@
   var last = Date.now(), timer = null, inflight = false, dirty = false;
 
   function main() { return document.getElementById('main'); }
+  // The page of the features says so itself (data-live="features"): with no branch at all it has no section and no filters,
+  // and must still listen, to show the first branch when it comes
+  function featuresPage() { var m = main(); return !!m && m.getAttribute('data-live') === 'features'; }
   // Taken before any script decorates the page. This script runs in <head>, where #main does not exist yet: everything
   // starts on DOMContentLoaded, and this listener is registered before the one of head.js (which decorates).
   function snapshot() {
@@ -127,6 +130,12 @@
         var doc = new DOMParser().parseFromString(html, 'text/html');
         // The service worker answers with the saved copy when the server is down: that is not news
         if (doc.querySelector('meta[name="adt-offline"]') || !doc.getElementById('main')) return;
+        // The page of the features goes from "no branch" to some (or back): its filters and sections do not exist on one side,
+        // there is nothing to swap part by part. The page is loaded again, once nobody is using it.
+        if (featuresPage() && main().getAttribute('data-state') !== doc.getElementById('main').getAttribute('data-state')) {
+          if (busy()) dirty = true; else window.location.reload();
+          return;
+        }
         var r = apply(doc);
         if (r.skipped) dirty = true; // in use: the check below tries again
         if (r.changed && window.adtAfterSwap) window.adtAfterSwap(doc);
@@ -208,13 +217,13 @@
       return;
     }
     // Nothing to swap on this page (Servers refreshes its own data): do not ask the server for a page that changes nothing
-    if (!main().querySelector(KINDS.join(',') + ', #featureFilters')) return;
+    if (!featuresPage() && !main().querySelector(KINDS.join(',') + ', #featureFilters')) return;
     if (live) {
       // A short wait: the server has dropped its cached lists when it announced the deployment
       live.on('deployed', function() { soon(AFTER_DEPLOY); });
       // adt.sh fetched the repositories and says which ones moved: the feature branches changed. Only the page that lists them cares
       // (the cards of the instances do not show them): asking the server for a page that cannot have changed would be load for nothing
-      if (main().querySelector('.features-section, #featureFilters')) live.on('branches', function() { soon(AFTER_DEPLOY); });
+      if (featuresPage() || main().querySelector('.features-section, #featureFilters')) live.on('branches', function() { soon(AFTER_DEPLOY); });
       live.on('reconnect', function() { soon(0); });
       watchHealth(live);
     }
