@@ -4,7 +4,10 @@
     LogLevel        warn
     CustomLog       {{ ADT_DATA }}/var/log/apache2/{{ DEPLOYMENT_EXT_HOST }}-access.log combined
 
-    # Error pages
+    # Error pages. A local path, never a URL: a URL makes Apache redirect, and a 401 then loses its WWW-Authenticate header
+    # (the browser would not ask for a login any more). /errors/instance/ is served by Apache without authentication (below).
+    ErrorDocument 401 /errors/instance/401.html
+    ErrorDocument 403 /errors/instance/403.html
     ErrorDocument 404 /errors/instance/404.html
     ErrorDocument 500 /errors/instance/500.html
     ErrorDocument 502 /errors/instance/502.html
