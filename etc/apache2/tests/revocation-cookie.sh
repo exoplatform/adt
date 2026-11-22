@@ -5,6 +5,7 @@
 #
 #   etc/apache2/tests/revocation-cookie.sh        (needs httpd or apache2, and curl)
 set -u
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATE="$HERE/../includes/frontend.include.j2"
 HTTPD="$(command -v httpd || command -v apache2 || true)"
@@ -45,6 +46,7 @@ $2
   </RequireAll>
 </Directory>
 CONF
+  prune_modules "$W/httpd.conf"
   "$HTTPD" -f "$W/httpd.conf" -t >/dev/null 2>&1 || { echo "FAIL: $1 rule does not parse"; "$HTTPD" -f "$W/httpd.conf" -t; exit 1; }
   "$HTTPD" -f "$W/httpd.conf" 2>/dev/null; sleep 1
 }

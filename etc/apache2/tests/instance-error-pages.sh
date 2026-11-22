@@ -8,6 +8,7 @@
 #
 #   etc/apache2/tests/instance-error-pages.sh     (needs httpd or apache2, python3 with jinja2, htpasswd and curl)
 set -u
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ETC="$HERE/.."; STATIC="$HERE/../../../web/static"
 HTTPD="$(command -v httpd || command -v apache2 || true)"
@@ -71,6 +72,7 @@ $LINES
     Require all denied
 </Location>
 CONF
+prune_modules "$W/httpd.conf"
 "$HTTPD" -f "$W/httpd.conf" -t >/dev/null 2>&1 || { echo "FAIL: the config does not parse"; "$HTTPD" -f "$W/httpd.conf" -t; exit 1; }
 "$HTTPD" -f "$W/httpd.conf" 2>/dev/null; sleep 1.5
 U=http://127.0.0.1:18144

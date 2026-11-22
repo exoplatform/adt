@@ -10,6 +10,7 @@
 #
 #   etc/apache2/tests/matrix-wellknown.sh      (needs httpd or apache2, python3 with jinja2, and curl)
 set -u
+source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ETC="$HERE/.."
 HTTPD="$(command -v httpd || command -v apache2 || true)"
@@ -59,6 +60,7 @@ LoadModule headers_module $MODS/mod_headers.so
 LoadModule log_config_module $MODS/mod_log_config.so
 $rules
 CONF
+  prune_modules "$W/httpd.conf"
   "$HTTPD" -f "$W/httpd.conf" -t >/dev/null 2>&1 || { echo "FAIL $1: the rules do not parse"; "$HTTPD" -f "$W/httpd.conf" -t; return 1; }
   "$HTTPD" -f "$W/httpd.conf" 2>/dev/null; sleep 1.5
   local rc=0 code f
