@@ -1081,12 +1081,16 @@ body {
 .tooltip-inner {
   background: var(--bg-elevated);
   color: var(--text-primary);
-  border-radius: var(--r-sm);
-  border: 1px solid var(--border-card);
-  padding: 0.4rem 0.7rem;
+  border-radius: 1rem; /* a pill for one line; still rounded when a long text wraps */
+  border: 1px solid var(--border-active-base);
+  padding: 0.35rem 0.8rem;
   font-size: 0.78rem;
   font-weight: 500;
+  max-width: 24rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
+/* the caret is Bootstrap's own arrow, filled like the pill (the one look for every title and for the live status dot) */
+.tooltip { --bs-tooltip-max-width: 24rem; --bs-tooltip-bg: var(--bg-elevated); --bs-tooltip-opacity: 1; }
 .popover {
   border-radius: var(--r-md);
   border: 1px solid var(--border-card);
@@ -2851,51 +2855,12 @@ a:has(> .ci-dot)::after { content: ""; position: absolute; inset: -8px -9px; }
   vertical-align: middle;
   border-radius: 50%;
   cursor: help;
-  /* the title around it is big and bold: the pill is not */
-  font-size: 0.8rem;
-  font-weight: 400;
-  line-height: 1.2;
-  letter-spacing: 0;
-  text-transform: none;
 }
 /* green: the page is kept up to date by the live channel; amber: it is not for the moment */
 .live-status--up { background: #3fb950; box-shadow: 0 0 0 3px rgba(63, 185, 80, 0.25); }
 .live-status--down { background: #f0ad4e; box-shadow: 0 0 0 3px rgba(240, 173, 78, 0.25); }
 /* a bigger target than the dot itself */
 .live-status::before { content: ""; position: absolute; inset: -8px; }
-.live-status__text {
-  display: none;
-  position: absolute;
-  left: calc(100% + 0.6rem);
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 1080;
-  padding: 0.35rem 0.75rem;
-  border: 1px solid var(--border-active-base);
-  border-radius: 999px;
-  background: var(--bg-elevated);
-  color: var(--text-primary);
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-}
-.live-status:hover .live-status__text,
-.live-status:focus .live-status__text { display: block; }
-/* narrow screens: the pill takes the width of the screen, at the bottom, rather than running off the side */
-@media (max-width: 640px) {
-  .live-status__text {
-    position: fixed;
-    left: 1rem;
-    right: 1rem;
-    bottom: 1rem;
-    top: auto;
-    transform: none;
-    white-space: normal;
-    text-align: center;
-    border-radius: 0.75rem;
-  }
-  .live-status.live-status--corner .live-status__text { left: 1rem; right: 1rem; }
-}
-.live-status--corner .live-status__text { left: auto; right: calc(100% + 0.6rem); }
 .live-status--corner {
   position: fixed;
   right: 1rem;

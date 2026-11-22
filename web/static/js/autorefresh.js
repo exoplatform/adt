@@ -159,24 +159,32 @@
       'Live updates paused since ' + since.toLocaleTimeString() + ': reconnecting by itself, checking every 2 minutes. No need to refresh it.';
   }
   function watchHealth(l) {
-    var el = null, text = null, timer = null, since = null;
+    var el = null, tip = null, timer = null, since = null, isUp = true;
     function show(up) {
+      isUp = up;
       if (!el) {
         el = document.createElement('div');
         el.setAttribute('role', 'status');
         el.tabIndex = 0;
-        text = document.createElement('span');
-        text.className = 'live-status__text';
-        el.appendChild(text);
         // To the right of the page title; in a corner of the page when it has none
         var title = document.querySelector('.page-header__title');
         if (title) title.appendChild(el);
         else { el.classList.add('live-status--corner'); document.body.appendChild(el); }
+        // The text is a pill like every title of the pages (see pills.js). Given as a function: it is read each time the
+        // pill opens, so it follows the state. Without Bootstrap, the browser's own tooltip.
+        if (window.bootstrap && window.bootstrap.Tooltip) {
+          tip = new window.bootstrap.Tooltip(el, {
+            title: function() { return healthText(isUp, since || new Date()); },
+            placement: title ? 'right' : 'left', container: 'body', trigger: 'hover focus'
+          });
+        }
       }
       el.classList.add('live-status');
       el.classList.toggle('live-status--up', up);
       el.classList.toggle('live-status--down', !up);
-      text.textContent = healthText(up, since || new Date());
+      var text = healthText(up, since || new Date());
+      el.setAttribute('aria-label', text);
+      if (!tip) el.title = text;
     }
     function down() {
       if (timer) return;

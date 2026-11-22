@@ -46,7 +46,7 @@ window.adtInitOverlays = function(root) {
 // Before a part is replaced: its tooltips would stay on screen, attached to nodes that are gone
 window.adtDisposeOverlays = function(root) {
   if (typeof bootstrap === 'undefined' || !root) return;
-  root.querySelectorAll('[rel=tooltip], [rel=popover]').forEach(function(el) {
+  root.querySelectorAll('[rel=tooltip], [rel=popover], [data-bs-original-title]').forEach(function(el) {
     var t = bootstrap.Tooltip.getInstance(el) || bootstrap.Popover.getInstance(el);
     if (t) t.dispose();
   });
