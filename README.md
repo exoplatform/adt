@@ -145,6 +145,27 @@ The most useful ones:
 | `DEPLOYMENT_APACHE_HTTPS_ENABLED` | Add an HTTPS vhost |
 | `LDAP_ACCEPTANCE_*` | LDAP bind and admin group used by the front-end |
 
+### Keycloak: SAML, OpenID or both
+
+With `DEPLOYMENT_KEYCLOAK_ENABLED=true` an instance gets its own Keycloak, and
+the platform is wired to it. These options are not in `./adt.sh -h`:
+
+| Variable | Purpose |
+| --- | --- |
+| `DEPLOYMENT_KEYCLOAK_MODE` | `SAML` (default, needs the `exo-saml` add-on), `OPENID`, or `SAML,OPENID` (both providers on the login page, which needs the option below) |
+| `DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE` | `true` keeps the portal login page next to a "Sign in with SAML" button, so that local passwords work; by default every visitor is sent to Keycloak. Platform 7.3 or later, with an `exo-saml` add-on that has the mode; refused on older versions |
+| `DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE` | With the login page (default `true`): the valve of the add-on that keeps the logout of a user whose portal session expired ending the Keycloak session too |
+| `DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS` | With the login page: comma-separated addresses, CIDR blocks or `a-b` ranges whose clients still go straight to Keycloak, e.g. `10.0.0.0/8,192.168.1.10` |
+
+For example, SAML and OpenID on the login page:
+
+```sh
+DEPLOYMENT_KEYCLOAK_ENABLED=true
+DEPLOYMENT_KEYCLOAK_MODE=SAML,OPENID
+DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE=true
+DEPLOYMENT_ADDONS=exo-saml:7.3.x-SNAPSHOT
+```
+
 ## Remote debug of an instance
 
 The JDWP port has no authentication or encryption, so it is **not** exposed.

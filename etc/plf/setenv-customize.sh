@@ -99,18 +99,42 @@ fi
 if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
   # Make URL to lowercase to avoid Keycloak matching conflicts
   DEP_URL="$(echo ${EXO_DEPLOYMENT_URL} | sed -e 's/\(.*\)/\L\1/')"
-  if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ]; then
+  # DEPLOYMENT_KEYCLOAK_MODE: SAML, OPENID or SAML,OPENID (this file is read by catalina.sh, a POSIX sh script: no [[ ]])
+  KEYCLOAK_SAML=false
+  KEYCLOAK_OPENID=false
+  case ",${DEPLOYMENT_KEYCLOAK_MODE:-SAML}," in *,SAML,*) KEYCLOAK_SAML=true ;; esac
+  case ",${DEPLOYMENT_KEYCLOAK_MODE:-SAML}," in *,OPENID,*) KEYCLOAK_OPENID=true ;; esac
+  if ${KEYCLOAK_SAML}; then
+    SAML_VALVE_CLASS="org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"
+    SAML_LOGOUT_CLASS="org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter"
+    if ${DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE:-false}; then
+      # The portal login page stays, with a "Sign in with SAML" button (exo-saml add-on): its logout filter starts the SAML
+      # logout only for the users who signed in with SAML, the others get the regular portal logout
+      SAML_LOGOUT_CLASS="org.exoplatform.addons.saml.extensions.HybridSAML2LogoutFilter"
+      if ${DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE:-true}; then
+        SAML_VALVE_CLASS="org.exoplatform.addons.saml.extensions.SamlServiceProviderAuthenticator"
+      fi
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.skip.jsp.redirection=false"
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.login.page.enabled=true"
+      if [ -n "${DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS:-}" ]; then
+        CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.login.enforced.ips=${DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS}"
+      fi
+    fi
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.enabled=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.sp.enabled=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.callback.enabled=true"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.enabled=true"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.class=org.gatein.sso.agent.login.SAML2IntegrationLoginModule"
+    if ! ${DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE:-false}; then
+      # Not with the login page: this login module (required in the JAAS chain) refuses the logins that do not come from SAML,
+      # the local passwords and OpenID; the valve and the callback sign the SAML users in
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.enabled=true"
+      CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.login.module.class=org.gatein.sso.agent.login.SAML2IntegrationLoginModule"
+    fi
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.enabled=true"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.class=org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.valve.class=${SAML_VALVE_CLASS}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.login.sso.url=/portal/dologin"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.initiatelogin.enabled=false"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.enabled=true"
-    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.class=org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter"
+    CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.class=${SAML_LOGOUT_CLASS}"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.sp.url=${DEP_URL}/portal/dologin"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.filter.logout.url=${DEP_URL}/portal/dologin?GLO=true"
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.idp.host=$(echo ${DEP_URL} | sed -e 's|^[^/]*//||' -e 's|/.*$||')"
@@ -128,7 +152,8 @@ if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
       CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.picketlink.keystore=${DEPLOYMENT_DIR}/gatein/conf/saml2/jbid_test_keystore.jks"
     fi
     CATALINA_OPTS="${CATALINA_OPTS} -Dgatein.sso.saml.config.file=${DEPLOYMENT_DIR}/gatein/conf/saml2/picketlink-sp.xml"
-  else
+  fi
+  if ${KEYCLOAK_OPENID}; then
     # Fetch admin token, then acquire exooidc client Id, then get client Secret; adminToken has short life
     keycloakAdminToken=$(curl -X POST "${DEP_URL}/auth/realms/master/protocol/openid-connect/token" -H "Content-Type: application/x-www-form-urlencoded" \
       -d "username=root" -d "password=password" -d 'grant_type=password' -d 'client_id=admin-cli' | jq -r '.access_token')
