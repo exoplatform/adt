@@ -403,7 +403,14 @@ initialize_product_settings() {
       configurable_env_var "DEPLOYMENT_KEYCLOAK_ENABLED" false
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE" "quay.io/keycloak/keycloak"
       configurable_env_var "DEPLOYMENT_KEYCLOAK_IMAGE_VERSION" "26.8"
+      # SAML, OPENID, or SAML,OPENID (both on the login page, which needs DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE=true)
       configurable_env_var "DEPLOYMENT_KEYCLOAK_MODE" "SAML"
+      # SAML mode: keep the portal login page next to a "Sign in with SAML" button (exo-saml add-on, EXO-94422)
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE" false
+      # ... and send the clients of these addresses (IPs, CIDR blocks, ranges, comma separated) straight to Keycloak
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS" ""
+      # ... with the valve of the add-on, so that the logout of a user whose portal session expired still ends the Keycloak session (EXO-94871)
+      configurable_env_var "DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE" true
 
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_ENABLED" false
       configurable_env_var "DEPLOYMENT_CLOUDBEAVER_IMAGE" "exoplatform/cloudbeaver"
@@ -1375,6 +1382,14 @@ initialize_product_settings() {
         env_var "DEPLOYMENT_SAML_SP_NAMING" "false"
       fi
 
+      # The login page mode of the exo-saml add-on (the hybrid logout filter and the session valve) exists from 7.3: older versions
+      # keep the SAML-only deployment, and refuse the options below instead of failing at startup on a missing class
+      if [[ "${PRODUCT_VERSION}" =~ ^(7\.([3-9]|[1-9][0-9])|[89]\.|[1-9][0-9]\.) ]]; then
+        env_var "DEPLOYMENT_SAML_LOGIN_PAGE_SUPPORTED" "true"
+      else
+        env_var "DEPLOYMENT_SAML_LOGIN_PAGE_SUPPORTED" "false"
+      fi
+
       ## Global configuration checks
       if ${DEPLOYMENT_PUSH_NOTIFICATIONS_ENABLED:-} && [ -z "${DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE}" ]; then
         echo_warn "Push notification are enabled but the firebase configuration file is not specified (\"DEPLOYMENT_PUSH_NOTIFICATIONS_CONFIGURATION_FILE\" property)"
@@ -1964,13 +1979,46 @@ do_deploy() {
   fi
 
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID)$ ]]; then 
-        echo_error "Keycloak deployment mode should be SAML or OPENID."
+    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID|SAML,OPENID|OPENID,SAML)$ ]]; then 
+        echo_error "Keycloak deployment mode should be SAML, OPENID or SAML,OPENID."
         exit 1
     fi
-    if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ] && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
+    if keycloak_mode_has SAML && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
       echo_error "Keycloak deployment with saml2 mode is enabled, the exo-saml addon must be specified on the addon list."
       exit 1
+    fi
+    # an instance deployed before these options has none of them: false, true and no address list are the former behaviour
+    local _kcLoginPage=${DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE:-false} _kcSessionValve=${DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE:-true} _kcEnforcedIps=${DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS:-}
+    if [[ ! "${_kcLoginPage}" =~ ^(true|false)$ ]]; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE should be true or false."
+      exit 1
+    fi
+    if [[ ! "${_kcSessionValve}" =~ ^(true|false)$ ]]; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE should be true or false."
+      exit 1
+    fi
+    if ${_kcLoginPage} && ! ${DEPLOYMENT_SAML_LOGIN_PAGE_SUPPORTED:-false}; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE needs the platform 7.3 or later (the exo-saml add-on of the older versions has no login page mode)."
+      exit 1
+    fi
+    if ${_kcLoginPage} && ! keycloak_mode_has SAML; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE needs the SAML mode (DEPLOYMENT_KEYCLOAK_MODE)."
+      exit 1
+    fi
+    if keycloak_mode_has SAML && keycloak_mode_has OPENID && ! ${_kcLoginPage}; then
+      echo_error "The SAML and OPENID modes together need the login page (DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE=true): without it every visitor is sent to SAML and the OpenID button is never shown."
+      exit 1
+    fi
+    if [ -n "${_kcEnforcedIps}" ]; then
+      if ! ${_kcLoginPage}; then
+        echo_error "DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS needs DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE=true."
+        exit 1
+      fi
+      # one list, commas only (it ends up in the JVM options): IPv4, IPv6, CIDR blocks and a-b ranges
+      if [[ ! "${_kcEnforcedIps}" =~ ^[0-9A-Fa-f:./,-]+$ ]]; then
+        echo_error "DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS should be a comma separated list of IP addresses, CIDR blocks or a-b ranges, without spaces."
+        exit 1
+      fi
     fi
   fi  
 

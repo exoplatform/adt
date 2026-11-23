@@ -1,4 +1,4 @@
-{% set saml = (DEPLOYMENT_KEYCLOAK_MODE | default("SAML", true)) == "SAML" -%}
+{% set saml = (KEYCLOAK_CLIENT_PROTOCOL | default("SAML", true)) == "SAML" -%}
 {
 {% if saml -%}
     "clientId": "{{ DEP_URL }}/portal/dologin",

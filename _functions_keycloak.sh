@@ -15,6 +15,11 @@ elif test "${SCRIPT_DIR:0:1}" != "/"; then
   SCRIPT_DIR="$PWD/${SCRIPT_DIR}"
 fi
 
+# keycloak_mode_has <SAML|OPENID>: true when DEPLOYMENT_KEYCLOAK_MODE (SAML, OPENID or SAML,OPENID) includes the mode
+keycloak_mode_has() {
+  [[ ",${DEPLOYMENT_KEYCLOAK_MODE:-SAML}," == *",$1,"* ]]
+}
+
 do_get_keycloak_settings() {  
   if [ "${DEPLOYMENT_KEYCLOAK_ENABLED}" == "false" ]; then
     return;
@@ -77,7 +82,14 @@ do_start_keycloak() {
   # Ensure there is no container with the same name
   delete_docker_container ${DEPLOYMENT_KEYCLOAK_CONTAINER_NAME}
   env_var DEP_URL "$(echo ${DEPLOYMENT_URL} | sed -e 's/\(.*\)/\L\1/')"
-  evaluate_file_content ${ETC_DIR}/keycloak/client_def.json.j2 ${DEPLOYMENT_DIR}/client_def.json
+  if keycloak_mode_has SAML; then
+    env_var KEYCLOAK_CLIENT_PROTOCOL "SAML"
+    evaluate_file_content ${ETC_DIR}/keycloak/client_def.json.j2 ${DEPLOYMENT_DIR}/client_def_saml.json
+  fi
+  if keycloak_mode_has OPENID; then
+    env_var KEYCLOAK_CLIENT_PROTOCOL "OPENID"
+    evaluate_file_content ${ETC_DIR}/keycloak/client_def.json.j2 ${DEPLOYMENT_DIR}/client_def_oidc.json
+  fi
   local _startArgs=""
   if ${DEPLOYMENT_APACHE_HTTPSONLY_ENABLED:-false}; then 
     _startArgs="--proxy-headers=xforwarded --hostname-strict=false"
@@ -258,25 +270,35 @@ do_provision_keycloak_clients() {
    -H "Authorization: Bearer ${token}" \
    -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":\"root@gatein.com\",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
      && echo_info "Keycloak root user updated"
-  # Upsert client: update if exists, create if new
+  if keycloak_mode_has SAML; then
+    do_upsert_keycloak_client "${token}" "${DEP_URL}/portal/dologin" "${DEPLOYMENT_DIR}/client_def_saml.json"
+  fi
+  if keycloak_mode_has OPENID; then
+    do_upsert_keycloak_client "${token}" "exooidc" "${DEPLOYMENT_DIR}/client_def_oidc.json"
+  fi
+}
+
+# Upsert a client: update it if its clientId exists, create it if new
+do_upsert_keycloak_client() {
+  local token=$1 _wantedClientId=$2 _definition=$3
   local _clientId=$(curl -s -H "Authorization: Bearer ${token}" \
-    "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients?clientId=${DEP_URL}/portal/dologin" | jq -r '.[0].id')
+    "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients?clientId=${_wantedClientId}" | jq -r '.[0].id')
   if [ -n "${_clientId}" ] && [ "${_clientId}" != "null" ]; then
     curl -s -X PUT --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients/${_clientId}" \
       -H 'Content-type: application/json' \
       -H "Authorization: Bearer ${token}" \
-      -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client updated"
+      -d "@${_definition}" && echo_info "Keycloak client ${_wantedClientId} updated"
   else
     curl -s -X POST --output /dev/null "http://localhost:${DEPLOYMENT_KEYCLOAK_HTTP_PORT}/auth/admin/realms/master/clients" \
       -H 'Content-type: application/json' \
       -H "Authorization: Bearer ${token}" \
-      -d "@${DEPLOYMENT_DIR}/client_def.json" && echo_info "Keycloak client added"
+      -d "@${_definition}" && echo_info "Keycloak client ${_wantedClientId} added"
   fi
 }
 
 # Provision SAML keystore from Keycloak (SP keypair + IDP public cert)
 do_provision_saml_keystore() {
-  if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" != "SAML" ]; then
+  if ! keycloak_mode_has SAML; then
     return
   fi
   echo_info "Provisioning SAML keystore from Keycloak..."
