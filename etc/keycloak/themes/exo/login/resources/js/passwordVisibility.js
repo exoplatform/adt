@@ -14,17 +14,45 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-document.querySelectorAll("[data-password-toggle]").forEach(function(button) {
-    button.addEventListener("click", function() {
-        var passwordInput = document.getElementById(button.getAttribute("aria-controls"));
-        if (passwordInput) {
-            var isPassword = passwordInput.type === "password";
-            passwordInput.type = isPassword ? "text" : "password";
-            button.setAttribute("aria-label", isPassword ? button.dataset.labelHide : button.dataset.labelShow);
-            var icon = button.querySelector("i");
-            if (icon) {
-                icon.className = isPassword ? button.dataset.iconHide : button.dataset.iconShow;
+// Show/hide password toggle. The stock markup is kept (button[data-password-toggle] with aria-controls);
+// the icon is drawn in CSS from aria-pressed, so no icon font is needed.
+(function () {
+    var buttons = Array.prototype.slice.call(document.querySelectorAll("[data-password-toggle]"));
+
+    function setVisible(button, visible) {
+        var input = document.getElementById(button.getAttribute("aria-controls"));
+        if (!input) {
+            return;
+        }
+        input.type = visible ? "text" : "password";
+        button.setAttribute("aria-pressed", visible ? "true" : "false");
+        // The label names the action a click performs
+        button.setAttribute("aria-label", visible ? button.dataset.labelHide : button.dataset.labelShow);
+        button.setAttribute("title", visible ? button.dataset.labelHide : button.dataset.labelShow);
+    }
+
+    buttons.forEach(function (button) {
+        setVisible(button, false);
+        button.addEventListener("click", function () {
+            var input = document.getElementById(button.getAttribute("aria-controls"));
+            if (!input) {
+                return;
             }
+            setVisible(button, input.type === "password");
+            // Keep the caret where the user was typing
+            input.focus({ preventScroll: true });
+        });
+        var form = button.closest("form");
+        if (form) {
+            // Never leave a password readable once it is sent
+            form.addEventListener("submit", function () { setVisible(button, false); });
         }
     });
-});
+
+    // Page restored from the back/forward cache: hide again
+    window.addEventListener("pageshow", function (event) {
+        if (event.persisted) {
+            buttons.forEach(function (button) { setVisible(button, false); });
+        }
+    });
+})();
