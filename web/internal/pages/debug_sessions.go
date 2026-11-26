@@ -112,12 +112,18 @@ func debugSessions(a *app.App, w http.ResponseWriter, r *http.Request) {
 	type sessionRow struct {
 		Name, User, IP, UA, ID, Connected, LastSeen, Expires string
 		You, Evicted                                         bool
+		// Push: browsers of this session registered for deployment notifications (an evicted session gets none)
+		PushBrowsers, PushInstances int
 	}
+	pushed := a.Push.BySession()
 	sessionRows := make([]sessionRow, len(list))
 	for i, s := range list {
-		sessionRows[i] = sessionRow{s.Name, s.User, s.IP, s.UA, s.ID,
-			sessions.DurationLabel(now - s.FirstSeen), sessions.DurationLabel(now - s.LastSeen), sessions.DurationLabel(s.Expiry - now),
-			s.ID == current, s.Evicted}
+		sessionRows[i] = sessionRow{Name: s.Name, User: s.User, IP: s.IP, UA: s.UA, ID: s.ID,
+			Connected: sessions.DurationLabel(now - s.FirstSeen), LastSeen: sessions.DurationLabel(now - s.LastSeen), Expires: sessions.DurationLabel(s.Expiry - now),
+			You: s.ID == current, Evicted: s.Evicted}
+		if !s.Evicted {
+			sessionRows[i].PushBrowsers, sessionRows[i].PushInstances = pushed[s.ID].Browsers, pushed[s.ID].Instances
+		}
 	}
 	type userRow struct {
 		Name, User     string

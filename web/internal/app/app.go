@@ -9,6 +9,7 @@ import (
 	"io/fs"
 	"net"
 	"net/http"
+	"path/filepath"
 	"sort"
 	"strings"
 	"time"
@@ -17,6 +18,8 @@ import (
 	"github.com/exoplatform/adt/web/internal/config"
 	"github.com/exoplatform/adt/web/internal/events"
 	"github.com/exoplatform/adt/web/internal/instances"
+	"github.com/exoplatform/adt/web/internal/push"
+	"github.com/exoplatform/adt/web/internal/sessions"
 	"github.com/exoplatform/adt/web/static"
 )
 
@@ -26,6 +29,8 @@ type App struct {
 	Instances *instances.Store
 	// Events carries the "instance deployed" notifications (see package events).
 	Events *events.Service
+	// Push sends the Web Push notifications of the deployments to the browsers that follow an instance.
+	Push *push.Service
 }
 
 type route struct {
@@ -51,8 +56,23 @@ func HandleFunc(pattern string, f func(*App, http.ResponseWriter, *http.Request)
 
 // New builds the App.
 func New(cfg config.Config) *App {
-	return &App{Cfg: cfg, Instances: instances.NewStore(cfg), Events: events.NewService()}
+	dir := ""
+	if cfg.DataDir != "" {
+		dir = filepath.Join(cfg.DataDir, "conf", "push")
+	}
+	p := push.Open(dir)
+	if cfg.DataDir != "" {
+		p.Revoked = sessions.For(cfg.DataDir).IsRevokedID
+	}
+	p.Subject = config.PrimaryFrontEnd
+	if cfg.AcceptanceHost != "" {
+		p.Subject = "https://" + cfg.AcceptanceHost
+	}
+	return &App{Cfg: cfg, Instances: instances.NewStore(cfg), Events: events.NewService(), Push: p}
 }
+
+// StartPush sends a Web Push notification for each deployment, on every server (relayed ones included), until ctx ends.
+func (a *App) StartPush(ctx context.Context) { go a.Push.Run(ctx, a.Events.All) }
 
 // StartEventRelays follows, until ctx ends, the deployment events of every other acceptance server, so that the
 // pages served here hear about the deployments done there. A server that is down is retried in the background.

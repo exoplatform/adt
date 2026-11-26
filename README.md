@@ -273,6 +273,18 @@ flowchart LR
   A -.->|"ACCEPTANCE_SERVERS"| cfg{{Config}}
 ```
 
+### Push notifications
+
+The bell on an instance card follows that instance in the browser. When the browser allows notifications it also
+registers with `adt-web` (`POST /push/subscribe`), which sends a Web Push message (VAPID + aes128gcm, standard library
+only) when the instance is deployed on any acceptance server, even with no page open. A browser's subscription is tied to the login session that registered it: signing out, an
+eviction or a block stops the notifications (`/debug-sessions` shows which sessions have browsers subscribed; the end of the 8 hours of the session does not: the point is to hear of a
+deployment while away). Each server keeps its own
+VAPID key and subscriptions in `${ADT_DATA}/conf/push/` (mode 0600; the service user must be able to write there,
+otherwise they are lost at restart and browsers register again on their next visit). The server needs outbound HTTPS to
+the browser vendors' push services (for example `fcm.googleapis.com`), directly: `HTTP(S)_PROXY` is not used. The site
+must be served over HTTPS.
+
 ## Repository layout
 
 | Path | Content |

@@ -1,4 +1,4 @@
-const CACHE = 'adt-v35';
+const CACHE = 'adt-v36';
 
 const PRECACHE = [
   '/manifest.json', '/offline.html',
@@ -120,6 +120,40 @@ self.addEventListener('message', function(e) {
   if (e.data && e.data.action === 'forgetPages') {
     e.waitUntil(forgetPages());
   }
+});
+
+// Web Push: the server tells that an instance this browser follows was deployed (see internal/push). The notification is
+// always shown, even over a visible dashboard page that announces the deployment itself: a push that shows nothing
+// makes Chrome display its own "This site has been updated in the background" message (and may end up revoking the
+// permission), and "visible" is not what Chrome counts as the person looking at the site.
+self.addEventListener('push', function(e) {
+  var data = {};
+  try { data = e.data ? e.data.json() : {}; } catch (x) { /* a message that is not ours */ }
+  var title = typeof data.title === 'string' && data.title ? data.title.slice(0, 200) : 'ADT';
+  e.waitUntil(self.registration.showNotification(title, {
+    body: typeof data.body === 'string' ? data.body.slice(0, 300) : '',
+    icon: '/images/icon-192.png',
+    badge: '/images/icon-192.png',
+    tag: 'deploy-' + (typeof data.key === 'string' ? data.key.slice(0, 200) : ''),
+    renotify: true, // the same instance deployed again replaces the notification still shown, and must alert again
+    data: { url: openUrl(data.url) }
+  }));
+});
+
+// Only a page of this site: the payload is not trusted to send somebody elsewhere
+function openUrl(u) {
+  return typeof u === 'string' && /^\/(?!\/)[^\s\\]*$/.test(u) ? u : '/';
+}
+
+self.addEventListener('notificationclick', function(e) {
+  e.notification.close();
+  var url = openUrl(e.notification.data && e.notification.data.url);
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function(list) {
+    for (var i = 0; i < list.length; i++) {
+      if (new URL(list[i].url).origin === self.location.origin && 'focus' in list[i]) return list[i].focus();
+    }
+    return self.clients.openWindow(url);
+  }));
 });
 
 self.addEventListener('fetch', function(e) {

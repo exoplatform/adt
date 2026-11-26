@@ -28,7 +28,7 @@
                 <div class="table-responsive">
                 <table class="table table-hover table-themed table-sm align-middle">
                   <thead><tr>
-                    <th>User</th><th>IP</th><th>Browser</th><th>Connected</th><th>Last seen</th><th>Expires in</th><th></th>
+                    <th>User</th><th>IP</th><th>Browser</th><th>Connected</th><th>Last seen</th><th>Expires in</th><th>Push</th><th></th>
                   </tr></thead>
                   <tbody>
 {{ range .Sessions }}                    <tr>
@@ -38,6 +38,7 @@
                       <td>{{ .Connected }} ago</td>
                       <td>{{ .LastSeen }} ago</td>
                       <td>{{ .Expires }}</td>
+                      <td>{{ if .PushBrowsers }}<span class="badge bg-success" title="{{ .PushBrowsers }} browser(s) of this session follow {{ .PushInstances }} instance(s): they get a push notification when one is deployed"><i class="fas fa-bell me-1"></i><span>subscribed{{ if gt .PushBrowsers 1 }} ×{{ .PushBrowsers }}{{ end }}</span></span>{{ else }}<span class="text-muted">-</span>{{ end }}</td>
                       <td>
 {{ if .Evicted }}                        <span class="badge bg-danger">Evicted</span>
 {{ else if .You }}                        <button class="btn btn-sm btn-outline-secondary" disabled>Evict</button>
@@ -48,7 +49,7 @@
                         </form>
 {{ end }}                      </td>
                     </tr>
-{{ else }}                    <tr><td colspan="7" class="text-muted">No tracked session.</td></tr>
+{{ else }}                    <tr><td colspan="8" class="text-muted">No tracked session.</td></tr>
 {{ end }}                  </tbody>
                 </table>
                 </div>

@@ -47,6 +47,7 @@ func main() {
 	defer cancelBase()
 	a := app.New(cfg)
 	a.StartEventRelays(baseCtx)
+	a.StartPush(baseCtx)
 	srv := &http.Server{
 		Handler:     a.Handler(),
 		BaseContext: func(net.Listener) context.Context { return baseCtx },

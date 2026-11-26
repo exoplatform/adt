@@ -1,6 +1,7 @@
 package pages
 
 import (
+	"log"
 	"net/http"
 
 	"github.com/exoplatform/adt/web/internal/app"
@@ -18,6 +19,10 @@ import (
 func init() {
 	app.HandleFunc("GET /logout", func(a *app.App, w http.ResponseWriter, r *http.Request) {
 		sessions.For(a.Cfg.DataDir).Logout(r)
+		// the browsers that registered for push notifications under this session stop receiving them
+		if err := a.Push.RemoveSession(sessions.ID(r)); err != nil {
+			log.Printf("logout: push: %v", err)
+		}
 		w.Header().Set("Cache-Control", "no-store")
 		http.Redirect(w, r, "/do-logout", http.StatusFound)
 	})
