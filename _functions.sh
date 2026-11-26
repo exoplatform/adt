@@ -894,6 +894,7 @@ do_deploy() {
 
   do_prepare_compose_dirs
   do_render_companion_files
+  do_link_service_logs
   # the images are pulled before anything is stopped: the instance that is replaced is down for the time of its restart only
   # (the compose file of the instance is rewritten here, the names of everything docker holds are the ones of the instance key)
   do_render_compose_files

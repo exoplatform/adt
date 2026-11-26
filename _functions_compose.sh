@@ -83,6 +83,29 @@ do_check_docker_network_capacity() {
 
 # Create the directories bind mounted in the containers. They are world writable
 # because the containers run as their own uid (999, 101...), not as the user of ADT.
+#
+# The logs of the services next to the ones of the application, under /logs/ (Apache protects the whole path). nginx serves
+# logs/app there; the directories of the services are mounted in its container next to it (/var/log/matrix, /var/log/keycloak), so
+# a relative link logs/app/<service> -> ../<service> is resolved inside the container, and the index of /logs/ lists the folder.
+# Links, not mounts inside logs/app: Docker would create the mount point as root in that directory, which a non-root undeploy
+# could not remove. The link of a service that is not enabled any more is removed.
+#
+do_link_service_logs() {
+  local _service _enabled _link
+  for _service in matrix keycloak; do
+    _link="${DEPLOYMENT_LOG_DIR}/app/${_service}"
+    _enabled="DEPLOYMENT_$(toupper "${_service}")_ENABLED"
+    [ -L "${_link}" ] && rm -f "${_link}"
+    if [ "${!_enabled:-false}" = "true" ]; then
+      if [ -e "${_link}" ]; then
+        echo_warn "${_link} exists and is not a link: the logs of ${_service} are not listed under /logs/"
+      else
+        ln -s "../${_service}" "${_link}"
+      fi
+    fi
+  done
+}
+
 do_prepare_compose_dirs() {
   mkdir -p "${DEPLOYMENT_DIR}" "${DEPLOYMENT_LOG_DIR}/app" "${DEPLOYMENT_LOG_DIR}/nginx"
   chmod 777 "${DEPLOYMENT_LOG_DIR}/app" "${DEPLOYMENT_LOG_DIR}/nginx"

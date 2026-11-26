@@ -62,6 +62,12 @@ services:
 {% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
       # the discovery files only (the directory of the Matrix server holds its secrets)
       - ./matrix-wellknown:/srv/matrix:ro
+      # the logs of Synapse, next to the ones of the application: /logs/matrix/ (logs/app/matrix is a link to this directory)
+      - ./logs/matrix:/var/log/matrix:ro
+{% endif %}
+{% if DEPLOYMENT_KEYCLOAK_ENABLED == "true" %}
+      # the logs of Keycloak, next to the ones of the application: /logs/keycloak/ (logs/app/keycloak is a link to this directory)
+      - ./logs/keycloak:/var/log/keycloak:ro
 {% endif %}
 {% if tls and DEPLOYMENT_CERTBOT_ENABLED == "true" %}
       # certbot renews the certificate in this tree: mount the directory, a file bind mount would keep the old inode

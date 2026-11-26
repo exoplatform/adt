@@ -166,6 +166,14 @@ grep -qxF 'gatein.sso.saml.login.page.enabled=true' "${kc}" && grep -qxF 'gatein
 grep -q 'tmpfs' "${WORK}/c-jitsi-old/docker-compose.yml" && grep -q '/config/data:uid=100,gid=102' "${WORK}/c-jitsi-old/docker-compose.yml" && ! grep -q 'uid=100' "${WORK}/c-jitsi/docker-compose.yml" \
   && echo "ok   the prosody data of the legacy images is a tmpfs" || { echo "FAIL prosody tmpfs"; failures=$((failures+1)); }
 j="${WORK}/c-jitsi/docker-compose.yml"; o="${WORK}/c-jitsi-old/docker-compose.yml"
+m="${WORK}/c-matrix"
+grep -q '\./logs/matrix:/var/log/matrix:ro' "${m}/docker-compose.yml" && grep -q 'alias /var/log/app/;' "${m}/nginx.conf" \
+  && ! grep -q 'logs/matrix' "${WORK}/mysql/docker-compose.yml" \
+  && echo "ok   the logs of Synapse are mounted in nginx (only with Matrix)" || { echo "FAIL synapse logs"; failures=$((failures+1)); }
+k="${WORK}/c-kc-saml"
+grep -q '\./logs/keycloak:/var/log/keycloak:ro' "${k}/docker-compose.yml" \
+  && ! grep -q 'logs/keycloak' "${WORK}/mysql/docker-compose.yml" \
+  && echo "ok   the logs of Keycloak are mounted in nginx (only with Keycloak)" || { echo "FAIL keycloak logs"; failures=$((failures+1)); }
 grep -q '/config/custom-jibri.conf:ro' "${j}" && grep -q 'JIBRI_LOGS_DIR: "/storage/logs"' "${j}" && grep -q '/config/custom-config.js:ro' "${j}" \
   && grep -q 'base-url = "https://plfent-7.3.0-m16.jitsi:8443"' "${WORK}/c-jitsi/jibri.conf" && grep -q '^JIBRI_RECORDING_DIR=/storage/recordings' "${WORK}/c-jitsi/jitsi/jitsi.env" \
   && grep -q '/etc/jitsi/jibri/jibri.conf:ro' "${o}" && ! grep -q 'custom-jibri.conf\|custom-config.js' "${o}" \
