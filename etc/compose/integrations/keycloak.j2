@@ -4,19 +4,40 @@
    properties of the SAML valve are in exo.properties. #}
 {# Keycloak matches the URLs case sensitively #}
 {% set kc_url = DEPLOYMENT_URL | lower %}
-{% if DEPLOYMENT_KEYCLOAK_MODE == "SAML" %}
+{# DEPLOYMENT_KEYCLOAK_MODE: SAML, OPENID or SAML,OPENID #}
+{% set kc_modes = ("," ~ DEPLOYMENT_KEYCLOAK_MODE ~ ",") %}
+{% set saml_login_page = DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE | default("false", true) == "true" %}
+{% if ",SAML," in kc_modes %}
 {% set saml_dir = "/opt/" ~ app ~ "/gatein/conf/saml2" %}
 {% set _ = app_props.update({"gatein.sso.enabled": "true"}) %}
 {% set _ = app_props.update({"gatein.sso.saml.sp.enabled": "true"}) %}
 {% set _ = app_props.update({"gatein.sso.callback.enabled": "true"}) %}
+{% set saml_valve = "org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator" %}
+{% set saml_logout = "org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter" %}
+{% if saml_login_page %}
+{# The portal login page stays, with a "Sign in with SAML" button (exo-saml add-on): its logout filter starts the SAML logout only for
+   the users who signed in with SAML, the others get the regular portal logout #}
+{% set saml_logout = "org.exoplatform.addons.saml.extensions.HybridSAML2LogoutFilter" %}
+{% if DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE | default("true", true) == "true" %}
+{% set saml_valve = "org.exoplatform.addons.saml.extensions.SamlServiceProviderAuthenticator" %}
+{% endif %}
+{% set _ = app_props.update({"gatein.sso.skip.jsp.redirection": "false"}) %}
+{% set _ = app_props.update({"gatein.sso.saml.login.page.enabled": "true"}) %}
+{% if DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS | default("", true) %}
+{% set _ = app_props.update({"gatein.sso.saml.login.enforced.ips": DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS}) %}
+{% endif %}
+{% else %}
+{# Not with the login page: this login module (required in the JAAS chain) refuses the logins that do not come from SAML, the local
+   passwords and OpenID; the valve and the callback sign the SAML users in #}
 {% set _ = app_props.update({"gatein.sso.login.module.enabled": "true"}) %}
 {% set _ = app_props.update({"gatein.sso.login.module.class": "org.gatein.sso.agent.login.SAML2IntegrationLoginModule"}) %}
+{% endif %}
 {% set _ = app_props.update({"gatein.sso.valve.enabled": "true"}) %}
-{% set _ = app_props.update({"gatein.sso.valve.class": "org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator"}) %}
+{% set _ = app_props.update({"gatein.sso.valve.class": saml_valve}) %}
 {% set _ = app_props.update({"gatein.sso.filter.login.sso.url": "/portal/dologin"}) %}
 {% set _ = app_props.update({"gatein.sso.filter.initiatelogin.enabled": "false"}) %}
 {% set _ = app_props.update({"gatein.sso.filter.logout.enabled": "true"}) %}
-{% set _ = app_props.update({"gatein.sso.filter.logout.class": "org.gatein.sso.saml.plugin.filter.SAML2LogoutFilter"}) %}
+{% set _ = app_props.update({"gatein.sso.filter.logout.class": saml_logout}) %}
 {% set _ = app_props.update({"gatein.sso.sp.url": kc_url ~ "/portal/dologin"}) %}
 {% set _ = app_props.update({"gatein.sso.filter.logout.url": kc_url ~ "/portal/dologin?GLO=true"}) %}
 {% set _ = app_props.update({"gatein.sso.idp.host": (kc_url | replace("https://", "") | replace("http://", "")).split("/")[0].split(":")[0]}) %}
@@ -37,7 +58,8 @@
 {% set _ = app_props.update({"gatein.sso.picketlink.keystore": saml_dir ~ "/jbid_test_keystore.jks"}) %}
 {% endif %}
 {% set _ = app_props.update({"gatein.sso.saml.config.file": saml_dir ~ "/picketlink-sp.xml"}) %}
-{% else %}
+{% endif %}
+{% if ",OPENID," in kc_modes %}
 {% set _ = app_props.update({"exo.oauth.openid.clientId": "exooidc"}) %}
 {% set _ = app_props.update({"exo.oauth.openid.clientSecret": DEPLOYMENT_KEYCLOAK_OIDC_SECRET}) %}
 {% set _ = app_props.update({"exo.oauth.openid.redirectURL": kc_url ~ "/portal/openidAuth"}) %}

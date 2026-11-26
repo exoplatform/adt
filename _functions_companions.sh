@@ -114,13 +114,46 @@ do_check_companions() {
     exit 1
   fi
   if ${DEPLOYMENT_KEYCLOAK_ENABLED}; then
-    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID)$ ]]; then
-      echo_error "Keycloak deployment mode should be SAML or OPENID."
+    if [[ ! "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" =~ ^(SAML|OPENID|SAML,OPENID|OPENID,SAML)$ ]]; then
+      echo_error "Keycloak deployment mode should be SAML, OPENID or SAML,OPENID."
       exit 1
     fi
-    if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" = "SAML" ] && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
+    if keycloak_mode_has SAML && [[ ! "${DEPLOYMENT_ADDONS}" =~ .*exo-saml.* ]]; then
       echo_error "Keycloak deployment with saml2 mode is enabled, the exo-saml addon must be specified on the addon list."
       exit 1
+    fi
+    # an instance deployed before these options has none of them: false, true and no address list are the former behaviour
+    local _kcLoginPage=${DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE:-false} _kcSessionValve=${DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE:-true} _kcEnforcedIps=${DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS:-}
+    if [[ ! "${_kcLoginPage}" =~ ^(true|false)$ ]]; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE should be true or false."
+      exit 1
+    fi
+    if [[ ! "${_kcSessionValve}" =~ ^(true|false)$ ]]; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_SESSION_VALVE should be true or false."
+      exit 1
+    fi
+    if ${_kcLoginPage} && ! ${DEPLOYMENT_SAML_LOGIN_PAGE_SUPPORTED:-false}; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE needs the platform 7.3 or later (the exo-saml add-on of the older versions has no login page mode)."
+      exit 1
+    fi
+    if ${_kcLoginPage} && ! keycloak_mode_has SAML; then
+      echo_error "DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE needs the SAML mode (DEPLOYMENT_KEYCLOAK_MODE)."
+      exit 1
+    fi
+    if keycloak_mode_has SAML && keycloak_mode_has OPENID && ! ${_kcLoginPage}; then
+      echo_error "The SAML and OPENID modes together need the login page (DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE=true): without it every visitor is sent to SAML and the OpenID button is never shown."
+      exit 1
+    fi
+    if [ -n "${_kcEnforcedIps}" ]; then
+      if ! ${_kcLoginPage}; then
+        echo_error "DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS needs DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE=true."
+        exit 1
+      fi
+      # one list, commas only (it ends up in the properties of the application): IPv4, IPv6, CIDR blocks and a-b ranges
+      if [[ ! "${_kcEnforcedIps}" =~ ^[0-9A-Fa-f:./,-]+$ ]]; then
+        echo_error "DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS should be a comma separated list of IP addresses, CIDR blocks or a-b ranges, without spaces."
+        exit 1
+      fi
     fi
   fi
   if ${DEPLOYMENT_MATRIX_ENABLED} && [ -z "${DEPLOYMENT_APACHE_VHOST_ALIAS}" ]; then
@@ -172,8 +205,17 @@ do_render_companion_files() {
     chmod -R a+rX "${DEPLOYMENT_DIR}/keycloak/themes"
     # Keycloak matches the URLs case sensitively
     env_var DEP_URL "$(echo "${DEPLOYMENT_URL}" | tr '[:upper:]' '[:lower:]')"
-    evaluate_file_content "${ETC_DIR}/keycloak/client_def.json.j2" "${DEPLOYMENT_DIR}/keycloak/client_def.json"
-    chmod 600 "${DEPLOYMENT_DIR}/keycloak/client_def.json"
+    rm -f "${DEPLOYMENT_DIR}/keycloak/client_def.json"
+    if keycloak_mode_has SAML; then
+      env_var KEYCLOAK_CLIENT_PROTOCOL "SAML"
+      evaluate_file_content "${ETC_DIR}/keycloak/client_def.json.j2" "${DEPLOYMENT_DIR}/keycloak/client_def_saml.json"
+      chmod 600 "${DEPLOYMENT_DIR}/keycloak/client_def_saml.json"
+    fi
+    if keycloak_mode_has OPENID; then
+      env_var KEYCLOAK_CLIENT_PROTOCOL "OPENID"
+      evaluate_file_content "${ETC_DIR}/keycloak/client_def.json.j2" "${DEPLOYMENT_DIR}/keycloak/client_def_oidc.json"
+      chmod 600 "${DEPLOYMENT_DIR}/keycloak/client_def_oidc.json"
+    fi
   fi
   if ${DEPLOYMENT_JITSI_ENABLED}; then
     mkdir -p "${DEPLOYMENT_DIR}/jitsi"
@@ -310,6 +352,11 @@ do_keytool() {
 
 # Wait for Keycloak, then create what the application needs: a permanent administrator, the client of the application and, for SAML,
 # the keystore with the keys Keycloak generated for it. It is repeated at every start (everything is idempotent).
+# keycloak_mode_has <SAML|OPENID>: true when DEPLOYMENT_KEYCLOAK_MODE (SAML, OPENID or SAML,OPENID) includes the mode
+keycloak_mode_has() {
+  [[ ",${DEPLOYMENT_KEYCLOAK_MODE:-SAML}," == *",$1,"* ]]
+}
+
 do_provision_keycloak() {
   do_get_keycloak_api_base
   env_var DEP_URL "$(echo "${DEPLOYMENT_URL}" | tr '[:upper:]' '[:lower:]')"
@@ -413,24 +460,34 @@ do_provision_keycloak_clients() {
    -H "Authorization: Bearer ${token}" \
    -d "{\"id\":\"${keycloakRootUserId}\",\"createdTimestamp\":${keycloakCreatedTimestamp},\"username\":\"root\",\"enabled\":true,\"totp\":false,\"emailVerified\":false,\"disableableCredentialTypes\":[],\"requiredActions\":[],\"notBefore\":0,\"access\":{\"manageGroupMembership\":true,\"view\":true,\"mapRoles\":true,\"impersonate\":true,\"manage\":true},\"attributes\":{},\"email\":\"root@gatein.com\",\"firstName\":\"Root\",\"lastName\":\"Root\"}" \
      && echo_info "Keycloak root user updated"
-  # Upsert client: update if exists, create if new
+  if keycloak_mode_has SAML; then
+    do_upsert_keycloak_client "${token}" "${DEP_URL}/portal/dologin" "${DEPLOYMENT_DIR}/keycloak/client_def_saml.json"
+  fi
+  if keycloak_mode_has OPENID; then
+    do_upsert_keycloak_client "${token}" "exooidc" "${DEPLOYMENT_DIR}/keycloak/client_def_oidc.json"
+  fi
+}
+
+# Upsert a client: update it if its clientId exists, create it if new
+do_upsert_keycloak_client() {
+  local token=$1 _wantedClientId=$2 _definition=$3
   local _clientId=$(curl -s -H "Authorization: Bearer ${token}" \
-    "${DEPLOYMENT_KEYCLOAK_API_BASE}/auth/admin/realms/master/clients?clientId=${DEP_URL}/portal/dologin" | jq -r '.[0].id')
+    "${DEPLOYMENT_KEYCLOAK_API_BASE}/auth/admin/realms/master/clients?clientId=${_wantedClientId}" | jq -r '.[0].id')
   if [ -n "${_clientId}" ] && [ "${_clientId}" != "null" ]; then
     curl -s -X PUT --output /dev/null "${DEPLOYMENT_KEYCLOAK_API_BASE}/auth/admin/realms/master/clients/${_clientId}" \
       -H 'Content-type: application/json' \
       -H "Authorization: Bearer ${token}" \
-      -d "@${DEPLOYMENT_DIR}/keycloak/client_def.json" && echo_info "Keycloak client updated"
+      -d "@${_definition}" && echo_info "Keycloak client ${_wantedClientId} updated"
   else
     curl -s -X POST --output /dev/null "${DEPLOYMENT_KEYCLOAK_API_BASE}/auth/admin/realms/master/clients" \
       -H 'Content-type: application/json' \
       -H "Authorization: Bearer ${token}" \
-      -d "@${DEPLOYMENT_DIR}/keycloak/client_def.json" && echo_info "Keycloak client added"
+      -d "@${_definition}" && echo_info "Keycloak client ${_wantedClientId} added"
   fi
 }
 
 do_provision_saml_keystore() {
-  if [ "${DEPLOYMENT_KEYCLOAK_MODE:-SAML}" != "SAML" ]; then
+  if ! keycloak_mode_has SAML; then
     return
   fi
   echo_info "Provisioning SAML keystore from Keycloak..."
@@ -475,8 +532,8 @@ do_provision_saml_keystore() {
 
   if [ -z "${_spKeyB64}" ] || [ "${_spKeyB64}" = "null" ]; then
     # Keycloak keeps it to itself: it is the key of the client definition ADT sent (etc/keycloak/client_def.json.j2)
-    _spKeyB64=$(jq -r '.attributes["saml.signing.private.key"]' "${DEPLOYMENT_DIR}/keycloak/client_def.json")
-    _spCertB64=$(jq -r '.attributes["saml.signing.certificate"]' "${DEPLOYMENT_DIR}/keycloak/client_def.json")
+    _spKeyB64=$(jq -r '.attributes["saml.signing.private.key"]' "${DEPLOYMENT_DIR}/keycloak/client_def_saml.json")
+    _spCertB64=$(jq -r '.attributes["saml.signing.certificate"]' "${DEPLOYMENT_DIR}/keycloak/client_def_saml.json")
   fi
 
   local _tmpdir="${TMP_DIR}/keycloak-saml-${INSTANCE_KEY}"

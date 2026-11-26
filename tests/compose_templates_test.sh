@@ -130,6 +130,8 @@ check "matrix + mailpit + clamav" c-matrix DEPLOYMENT_MATRIX_ENABLED=true DEPLOY
 check "keycloak (saml)"   c-kc-saml  DEPLOYMENT_KEYCLOAK_ENABLED=true
 check "keycloak (saml, before 7.2)" c-kc-saml-old DEPLOYMENT_KEYCLOAK_ENABLED=true DEPLOYMENT_SAML_SP_NAMING=false
 check "keycloak (openid), https only" c-kc-oidc DEPLOYMENT_KEYCLOAK_ENABLED=true DEPLOYMENT_KEYCLOAK_MODE=OPENID DEPLOYMENT_APACHE_HTTPSONLY_ENABLED=true
+check "keycloak (saml + openid, login page)" c-kc-both DEPLOYMENT_KEYCLOAK_ENABLED=true DEPLOYMENT_KEYCLOAK_MODE=SAML,OPENID \
+  DEPLOYMENT_KEYCLOAK_SAML_LOGIN_PAGE=true DEPLOYMENT_KEYCLOAK_SAML_ENFORCED_IPS=10.0.0.0/8,192.168.1.10
 check "jitsi (rootless images)" c-jitsi DEPLOYMENT_JITSI_ENABLED=true
 check "jitsi (7.2 images)"      c-jitsi-old DEPLOYMENT_JITSI_ENABLED=true DEPLOYMENT_JITSI_ROOTLESS=false DEPLOYMENT_JITSI_IMAGE_VERSION=stable-10888 jitsi_major_version=10 jibri_recordings_dir= jibri_logs_dir= jibri_base_url=
 check "remote debug"  c-debug       DEPLOYMENT_DEBUG_ENABLED=true
@@ -153,6 +155,16 @@ for prop in "io.meeds.iframely.url=https://plfent-7.3.0-M16.a.test/oembed" "meed
   grep -qxF -- "${prop}" "${p}" && echo "ok   exo.properties has ${prop%%=*}" || { echo "FAIL exo.properties lacks ${prop}"; failures=$((failures+1)); }
 done
 grep -q 'location /jitsiweb/colibri-ws/' "${WORK}/c-jitsi-old/nginx.conf" && ! grep -q 'colibri-ws' "${WORK}/c-jitsi/nginx.conf" && echo "ok   the colibri location only exists for the images that need it" || { echo "FAIL colibri location"; failures=$((failures+1)); }
+kc="${WORK}/c-kc-both/exo.properties"; ks="${WORK}/c-kc-saml/exo.properties"
+grep -qxF 'gatein.sso.saml.login.page.enabled=true' "${kc}" && grep -qxF 'gatein.sso.saml.login.enforced.ips=10.0.0.0/8,192.168.1.10' "${kc}" \
+  && grep -qxF 'gatein.sso.filter.logout.class=org.exoplatform.addons.saml.extensions.HybridSAML2LogoutFilter' "${kc}" \
+  && grep -qxF 'gatein.sso.valve.class=org.exoplatform.addons.saml.extensions.SamlServiceProviderAuthenticator' "${kc}" \
+  && ! grep -q 'gatein.sso.login.module' "${kc}" && grep -qxF 'exo.oauth.openid.enabled=true' "${kc}" \
+  && grep -qxF 'gatein.sso.login.module.enabled=true' "${ks}" && ! grep -q 'login.page.enabled\|openid' "${ks}" \
+  && grep -qxF 'gatein.sso.valve.class=org.gatein.sso.saml.plugin.valve.ServiceProviderAuthenticator' "${ks}" \
+  && echo "ok   keycloak: SAML, OpenID, or both with the login page" || { echo "FAIL keycloak modes"; failures=$((failures+1)); }
+grep -q 'tmpfs' "${WORK}/c-jitsi-old/docker-compose.yml" && grep -q '/config/data:uid=100,gid=102' "${WORK}/c-jitsi-old/docker-compose.yml" && ! grep -q 'uid=100' "${WORK}/c-jitsi/docker-compose.yml" \
+  && echo "ok   the prosody data of the legacy images is a tmpfs" || { echo "FAIL prosody tmpfs"; failures=$((failures+1)); }
 j="${WORK}/c-jitsi/docker-compose.yml"; o="${WORK}/c-jitsi-old/docker-compose.yml"
 grep -q '/config/custom-jibri.conf:ro' "${j}" && grep -q 'JIBRI_LOGS_DIR: "/storage/logs"' "${j}" && grep -q '/config/custom-config.js:ro' "${j}" \
   && grep -q 'base-url = "https://plfent-7.3.0-m16.jitsi:8443"' "${WORK}/c-jitsi/jibri.conf" && grep -q '^JIBRI_RECORDING_DIR=/storage/recordings' "${WORK}/c-jitsi/jitsi/jitsi.env" \

@@ -25,6 +25,12 @@
       adt.instance: {{ y(INSTANCE_KEY) }}
       adt.role: "jitsi"
     env_file: ./jitsi/jitsi.env
+{% if not rootless %}
+    # the data of prosody (accounts) must be fresh at every start, and writable by its user (uid 100, gid 102): a stale one makes
+    # the components loop on "not-authorized"
+    tmpfs:
+      - /config/data:uid=100,gid=102
+{% endif %}
     networks:
       default:
         aliases:

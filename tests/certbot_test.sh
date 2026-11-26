@@ -29,14 +29,14 @@ run() { # function, VAR=value...
 }
 runq() { run "$@" | grep -v "^STATUS="; }   # the output without the exit status line
 BASE=( DEPLOYMENT_URL=https://try.example.org DEPLOYMENT_CERTBOT_CONFIG_FOLDER=/etc/letsencrypt DEPLOYMENT_CERTBOT_WEBROOT_PATH=/srv/wwwcertbot
-       DEPLOYMENT_CERTBOT_ACME_SERVER=https://acme.example.org/dir DEPLOYMENT_EXT_HOST=h.example.org APACHE_CONF_DIR=/x ETC_DIR=/y ADT_DEV_MODE=false )
+       DEPLOYMENT_CERTBOT_ACME_SERVER=https://acme.example.org/dir DEPLOYMENT_EXT_HOST=h.example.org APACHE_CONF_DIR=/x ETC_DIR=/y ADT_DEV_MODE=false DOCKER_CMD=docker INSTANCE_KEY=k-1 )
 
 # 1. what a normal issuance looks like: every value is one argument
-want='SUDO [certbot] [--config-dir=/etc/letsencrypt] [--text] [--agree-tos] [--non-interactive] [certonly] [--rsa-key-size=4096] [--authenticator=webroot] [--webroot-path=/srv/wwwcertbot] [--cert-name=try.example.org] [--domains=try.example.org] [--server=https://acme.example.org/dir] [--email=certificates@exoplatform.com] [--eab-kid=kid-123_ABC] [--eab-hmac-key=aGVsbG8_d29ybGQ=]'
+want='SUDO [certbot] [--config-dir=/etc/letsencrypt] [--text] [--agree-tos] [--non-interactive] [certonly] [--rsa-key-size=4096] [--authenticator=webroot] [--webroot-path=/srv/wwwcertbot] [--cert-name=try.example.org] [--domains=try.example.org] [--server=https://acme.example.org/dir] [--email=certificates@exoplatform.com] [--eab-kid=kid-123_ABC] [--eab-hmac-key=aGVsbG8_d29ybGQ=] [--deploy-hook=docker exec k-1_web nginx -s reload || true; [ -x /usr/sbin/service ] && service apache2 reload || true]'
 got="$(runq do_generate_certbot_certificate "${BASE[@]}" DEPLOYMENT_CERTBOT_EAB_KID=kid-123_ABC DEPLOYMENT_CERTBOT_EAB_HMAC_KEY=aGVsbG8_d29ybGQ=)"
 [ "$got" = "$want" ] || bad "a normal issuance: got [$got]"
 # the = form: no option of the call is followed by a separate value (a value starting with '-' could then be taken for an option)
-for opt in --config-dir --rsa-key-size --authenticator --webroot-path --cert-name --domains --server --email --eab-kid --eab-hmac-key -a -d; do
+for opt in --config-dir --rsa-key-size --authenticator --webroot-path --cert-name --domains --server --email --eab-kid --eab-hmac-key --deploy-hook -a -d; do
   case "$got" in *"[$opt] ["*) bad "option $opt is given its value as a separate argument: $got";; esac
 done
 got="$(runq do_generate_certbot_certificate "${BASE[@]}")"

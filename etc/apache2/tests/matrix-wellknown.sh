@@ -3,6 +3,7 @@
 # every mode of an instance. The directory also holds homeserver.yaml (registration, macaroon, form and JWT secrets),
 # initialize.sh (the admin password) and the federation signing key.
 #
+# (the instance serves a directory that only holds the two documents; the test puts the secrets next to them to prove the deny rules)
 # The rules come from BOTH templates, rendered as they are deployed: the Alias and <Directory> of the shared include, and the
 # <LocationMatch> of the vhost. Apache merges <Location> sections AFTER <Directory> and <Files>: a "Require all granted" in the
 # <LocationMatch> overrides the <Directory> rule for every file under the path (public instances with https were serving
@@ -20,10 +21,10 @@ MODS="$(dirname "$(find /usr/lib64/httpd /usr/lib/apache2 /usr/lib/httpd -name m
 [ -d "$MODS" ] || { echo "SKIP: modules directory not found"; exit 0; }
 
 W="$(mktemp -d)"; trap 'kill "$(cat "$W/httpd.pid" 2>/dev/null)" 2>/dev/null; rm -rf "$W"' EXIT
-mkdir -p "$W/logs" "$W/matrix"
-echo '{"m.homeserver":{"base_url":"https://x"}}' > "$W/matrix/client"
-echo '{"m.server":"x:443"}' > "$W/matrix/server"
-for f in homeserver.yaml initialize.sh matrix.host.signing.key; do echo "SECRET-$f" > "$W/matrix/$f"; done
+mkdir -p "$W/logs" "$W/matrix-wellknown"
+echo '{"m.homeserver":{"base_url":"https://x"}}' > "$W/matrix-wellknown/client"
+echo '{"m.server":"x:443"}' > "$W/matrix-wellknown/server"
+for f in homeserver.yaml initialize.sh matrix.host.signing.key; do echo "SECRET-$f" > "$W/matrix-wellknown/$f"; done
 
 # The rendered rules of one mode: the Alias + Directory of the include, and the LocationMatch of the vhost if it has one
 render() { # security ssl

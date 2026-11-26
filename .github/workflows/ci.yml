@@ -90,7 +90,12 @@ jobs:
           done
       # The values of the env vars come from CI parameters: they must stay data (no eval)
       - name: Shell unit tests
-        run: for t in tests/*_test.sh; do echo "== $t"; bash "$t"; done
+        # (the tests of the image tags, datasets, properties and compose templates need docker, zstd and Jinja2: the job below)
+        run: |
+          for t in tests/*_test.sh; do
+            case "$(basename "$t")" in registry_test.sh|dataset_test.sh|properties_test.sh|compose_templates_test.sh) continue;; esac
+            echo "== $t"; bash "$t"
+          done
       # A <ProxyMatch> is tested against the URL sent to the backend and can skip the LDAP rule of an instance
       - name: No ProxyMatch exception in the Apache templates
         run: bash etc/apache2/tests/no-proxymatch.sh
