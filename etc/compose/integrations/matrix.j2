@@ -1,0 +1,11 @@
+{% if DEPLOYMENT_MATRIX_ENABLED == "true" %}
+{# the application registers its users on the Matrix server of the instance, which it needs when it starts #}
+{% set matrix_url = DEPLOYMENT_URL | lower %}
+{% set _ = app_props.update({"meeds.matrix.server.url": matrix_url}) %}
+{% set _ = app_props.update({"meeds.matrix.server.name": (matrix_url | replace("https://", "") | replace("http://", ""))}) %}
+{% set _ = app_props.update({"meeds.matrix.user.name": DEPLOYMENT_MATRIX_ADMIN_USERNAME}) %}
+{% set _ = app_props.update({"meeds.matrix.shared_secret_registration": DEPLOYMENT_MATRIX_REGISTRATION_SHARED_KEY}) %}
+{% set _ = app_props.update({"meeds.matrix.jwt.secret": DEPLOYMENT_MATRIX_JWT_SECRET}) %}
+{% set _ = app_env.update({P ~ "_WAIT_FOR_MATRIX": "true", P ~ "_MATRIX_HOST": "matrix", P ~ "_MATRIX_PORT": "8008"}) %}
+{% set _ = app_depends.append("matrix") %}
+{% endif %}

@@ -1,0 +1,4 @@
+{% if DEPLOYMENT_CALDAV_ENABLED == "true" %}
+{% set _ = app_props.update({"exo.agenda.caldav.connector.enabled": "true"}) %}
+{% set _ = app_props.update({"exo.agenda.caldav.connector.url": DEPLOYMENT_URL ~ "/baikal/cal.php/calendars/{username}/"}) %}
+{% endif %}

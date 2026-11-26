@@ -70,7 +70,8 @@ do_generate_certbot_certificate() {
   if [[ "${certbotAction}" == "certonly" ]]; then
     certbotArgs+=(--domains="${certbot_domain}")
   fi
-  certbotArgs+=(--server="${DEPLOYMENT_CERTBOT_ACME_SERVER}" --email="certificates@exoplatform.com")
+  validate_value DEPLOYMENT_CERTBOT_EMAIL '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+$' "an e-mail address"
+  certbotArgs+=(--server="${DEPLOYMENT_CERTBOT_ACME_SERVER}" --email="${DEPLOYMENT_CERTBOT_EMAIL:-certificates@exoplatform.com}")
 
   if [[ -n "${DEPLOYMENT_CERTBOT_EAB_KID:-}" && -n "${DEPLOYMENT_CERTBOT_EAB_HMAC_KEY:-}" ]]; then
     validate_value DEPLOYMENT_CERTBOT_EAB_KID      '^[A-Za-z0-9_-]{1,512}$' "letters, digits, '-' and '_' only (the key id of the ACME account)"
@@ -86,6 +87,11 @@ do_generate_certbot_certificate() {
   echo_info "Deploying Basic Apache instance configuration for generating/renewing certificate..."
   evaluate_file_content ${ETC_DIR}/apache2/sites-available/instance-certbot.j2 ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
   do_reload_apache ${ADT_DEV_MODE}
+
+  # certbot saves this hook with the certificate and runs it, as root, after every renewal: the nginx of the instance and Apache read
+  # the certificate when they start or reload only
+  local deployHook="${DOCKER_CMD} exec ${INSTANCE_KEY}_web nginx -s reload || true; [ -x /usr/sbin/service ] && service apache2 reload || true"
+  certbotArgs+=(--deploy-hook="${deployHook}")
 
   sudo certbot "${certbotArgs[@]}"
 

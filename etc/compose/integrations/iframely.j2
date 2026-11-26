@@ -1,0 +1,3 @@
+{% if DEPLOYMENT_IFRAMELY_ENABLED == "true" %}
+{% set _ = app_props.update({"io.meeds.iframely.url": DEPLOYMENT_URL ~ "/oembed"}) %}
+{% endif %}
