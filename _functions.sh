@@ -275,7 +275,6 @@ initialize_product_settings() {
 
       configurable_env_var "DEPLOYMENT_MATRIX_ENABLED" false
       configurable_env_var "DEPLOYMENT_MATRIX_IMAGE" "matrixdotorg/synapse"
-      configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
       configurable_env_var "DEPLOYMENT_MATRIX_ADMIN_USERNAME" "root"
       configurable_env_var "DEPLOYMENT_MATRIX_ADMIN_PASSWORD" "$(fqdn_rand_string 32 'admin-password' ${INSTANCE_KEY})"
       configurable_env_var "DEPLOYMENT_MATRIX_REGISTRATION_SHARED_KEY" "$(fqdn_rand_string 32 'reg-secret' ${INSTANCE_KEY})"
@@ -478,6 +477,7 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
           env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.0"
           configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-9457"
+          configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
           configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "8.2.2"
         ;;
         7.1.x)
@@ -486,6 +486,7 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.1.0"
           env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.1"
           configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10431"
+          configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
           configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.1.0"
         ;;
         7.2.x)
@@ -494,6 +495,7 @@ initialize_product_settings() {
           env_var "DEPLOYMENT_MYSQL_ADDON_VERSION" "2.2.0"
           env_var "DEPLOYMENT_POSTGRESQL_ADDON_VERSION" "2.5.3"
           configurable_env_var "DEPLOYMENT_JITSI_IMAGE_VERSION" "stable-10888"
+          configurable_env_var "DEPLOYMENT_MATRIX_IMAGE_VERSION" "v1.118.0"
           configurable_env_var "DEPLOYMENT_ONLYOFFICE_IMAGE_VERSION" "9.4.0"
         ;;
         7.3.x)
