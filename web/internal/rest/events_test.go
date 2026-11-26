@@ -153,3 +153,20 @@ func TestDeployedHostIsAnAddressWithoutProtocol(t *testing.T) {
 		}
 	}
 }
+
+// The alias travels with the deployment like the host, as an address.
+func TestDeployedAliasIsAnnounced(t *testing.T) {
+	a := app.New(config.Config{})
+	h := a.Handler()
+	ch, cancel := a.Events.All.Subscribe()
+	defer cancel()
+	post(h, url.Values{"key": {"k1"}, "host": {"real.example.org"}, "alias": {"https://try.example.org/"}}, nil)
+	e := <-ch
+	if e.Host != "real.example.org" || e.Alias != "try.example.org" || e.DisplayName() != "try.example.org" {
+		t.Errorf("event %+v", e)
+	}
+	post(h, url.Values{"key": {"k2"}, "host": {"real.example.org"}, "alias": {"not an address/x?y"}}, nil)
+	if e := <-ch; e.Alias != "" || e.DisplayName() != "real.example.org" {
+		t.Errorf("a bad alias must be dropped, the host stands in: %+v", e)
+	}
+}

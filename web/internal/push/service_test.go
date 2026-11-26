@@ -381,3 +381,34 @@ func TestNotificationFallsBackToTheKeyWithoutHost(t *testing.T) {
 		t.Errorf("payload %s", plain)
 	}
 }
+
+// The notification names the instance by its alias, else its virtual host, else its key.
+func TestNotificationNameOrder(t *testing.T) {
+	var got []byte
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got, _ = io.ReadAll(r.Body)
+		w.WriteHeader(http.StatusCreated)
+	}))
+	defer srv.Close()
+	s := Open("")
+	s.Client = srv.Client()
+	b := newBrowser(t)
+	sub := b.sub(srv.URL + "/x")
+	sub.User, sub.Instances = "u", []string{"exo-7.0.x-SNAPSHOT"}
+	s.subs[sub.Endpoint] = sub
+	for _, c := range []struct{ host, alias, want string }{
+		{"exo-7.0.x-SNAPSHOT.acceptance.example.org", "try.example.org", "try.example.org"},
+		{"exo-7.0.x-SNAPSHOT.acceptance.example.org", "", "exo-7.0.x-SNAPSHOT.acceptance.example.org"},
+		{"", "", "exo-7.0.x-SNAPSHOT"},
+	} {
+		got = nil
+		s.Notify(context.Background(), events.Event{Key: "exo-7.0.x-SNAPSHOT", Host: c.host, Alias: c.alias})
+		salt, idlen := got[:16], int(got[20])
+		asPub, _ := ecdh.P256().NewPublicKey(got[21 : 21+idlen])
+		secret, _ := b.priv.ECDH(asPub)
+		plain := string(decrypt(t, got[21+idlen:], secret, b.auth, b.priv.PublicKey().Bytes(), got[21:21+idlen], salt))
+		if !strings.Contains(plain, `"title":"`+c.want+` has been deployed"`) {
+			t.Errorf("host %q alias %q: %s, want the name %q", c.host, c.alias, plain, c.want)
+		}
+	}
+}

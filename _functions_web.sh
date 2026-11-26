@@ -143,6 +143,7 @@ do_announce_deployed() {
   if curl -fsS --max-time 5 --unix-socket "${ADT_WEB_SOCKET}" -X POST \
        --data-urlencode "key=${INSTANCE_KEY}" \
        --data-urlencode "host=${DEPLOYMENT_EXT_HOST:-}" \
+       --data-urlencode "alias=${DEPLOYMENT_APACHE_VHOST_ALIAS:-}" \
        --data-urlencode "date=${DEPLOYMENT_DATE:-}" \
        http://localhost/internal/deployed >/dev/null 2>&1; then
     echo_info "Deployment announced to the dashboards"

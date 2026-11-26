@@ -68,7 +68,7 @@ func TestPublishLocalGoesToBothHubs(t *testing.T) {
 	a, ca := s.All.Subscribe()
 	defer cl()
 	defer ca()
-	e := s.PublishLocal("exo-6.5.x", "h.example.org", "20260101.101010")
+	e := s.PublishLocal("exo-6.5.x", "h.example.org", "", "20260101.101010")
 	if e.ID == "" || e.At == 0 {
 		t.Fatalf("id/time not set: %+v", e)
 	}
@@ -168,7 +168,7 @@ func TestRelay(t *testing.T) {
 	default:
 		t.Fatal("onConnect not called when the stream was established")
 	}
-	e := peer.PublishLocal("exo-6.5.x", "h", "20260101.000000")
+	e := peer.PublishLocal("exo-6.5.x", "h", "", "20260101.000000")
 	got := recv(t, ch)
 	if got.ID != e.ID || got.Key != "exo-6.5.x" {
 		t.Fatalf("relayed event: %+v", got)
@@ -214,5 +214,21 @@ func TestPublishBranchesGoesOnAllOnly(t *testing.T) {
 	}
 	if again := svc.PublishBranches(nil); again.ID == e.ID {
 		t.Fatal("two events share an id")
+	}
+}
+
+// How a person knows the instance: its friendly alias, else its virtual host, else its key.
+func TestDisplayName(t *testing.T) {
+	for _, c := range []struct {
+		e    Event
+		want string
+	}{
+		{Event{Key: "k", Host: "real.example.org", Alias: "try.example.org"}, "try.example.org"},
+		{Event{Key: "k", Host: "real.example.org"}, "real.example.org"},
+		{Event{Key: "k"}, "k"},
+	} {
+		if got := c.e.DisplayName(); got != c.want {
+			t.Errorf("%+v: %q, want %q", c.e, got, c.want)
+		}
 	}
 }

@@ -141,12 +141,12 @@ func TestWSMessageFields(t *testing.T) {
 	_, _, br := wsDial(t, srv, "")
 	skipHandshake(t, br)
 	wsMessage(t, br) // hello
-	post(a.Handler(), url.Values{"key": {"plf-7.3.x"}, "host": {"h.example.org"}, "date": {"20261121.101500"}}, nil)
+	post(a.Handler(), url.Values{"key": {"plf-7.3.x"}, "host": {"h.example.org"}, "alias": {"try.example.org"}, "date": {"20261121.101500"}}, nil)
 	var got map[string]any
 	if err := json.Unmarshal([]byte(wsMessage(t, br)), &got); err != nil {
 		t.Fatal(err)
 	}
-	want := map[string]bool{"type": true, "id": true, "key": true, "host": true, "date": true, "at": true}
+	want := map[string]bool{"type": true, "id": true, "key": true, "host": true, "alias": true, "date": true, "at": true}
 	for k := range got {
 		if !want[k] {
 			t.Errorf("the socket sends %q: not in the reviewed set of fields", k)
@@ -271,7 +271,7 @@ func TestBranchesEventDoesNotDropTheInstanceLists(t *testing.T) {
 	if _, ok := a.Instances.Cache.Get("all_instances"); !ok {
 		t.Fatal("a branches event dropped the cached instance lists")
 	}
-	a.Events.PublishLocal("plf-7.3.x", "h.example.org", "20261121.101500")
+	a.Events.PublishLocal("plf-7.3.x", "h.example.org", "", "20261121.101500")
 	deadline := time.Now().Add(2 * time.Second)
 	for time.Now().Before(deadline) {
 		if _, ok := a.Instances.Cache.Get("all_instances"); !ok {

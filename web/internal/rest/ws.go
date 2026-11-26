@@ -41,8 +41,10 @@ type wsEvent struct {
 	ID   string `json:"id"`
 	Key  string `json:"key"`
 	Host string `json:"host,omitempty"`
-	Date string `json:"date,omitempty"`
-	At   int64  `json:"at"`
+	// Alias: the friendlier address of the instance, when it has one (the toast shows it first)
+	Alias string `json:"alias,omitempty"`
+	Date  string `json:"date,omitempty"`
+	At    int64  `json:"at"`
 }
 
 // wsBranches is the message that says the feature branches were refreshed: no key, no host, nothing about an instance; the
@@ -64,7 +66,7 @@ func eventMessage(e events.Event) []byte {
 }
 
 func deployedMessage(e events.Event) []byte {
-	b, _ := json.Marshal(wsEvent{Type: "deployed", ID: e.ID, Key: e.Key, Host: e.Host, Date: e.Date, At: e.At})
+	b, _ := json.Marshal(wsEvent{Type: "deployed", ID: e.ID, Key: e.Key, Host: e.Host, Alias: e.Alias, Date: e.Date, At: e.At})
 	return b
 }
 

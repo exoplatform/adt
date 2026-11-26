@@ -702,8 +702,9 @@ function handleDeployEvent(e) {
     return c.getAttribute('data-instance-key') === e.key;
   });
   alertDeployed(cards);
-  // by the address the instance answers on (as the push notification does), not by its key; the key when it is unknown
-  deployToast((e.host || e.key) + ' has been deployed');
+  // by the address the instance answers on, as the push notification does (the friendly alias, else the virtual host), not
+  // by its key; the key when neither is known
+  deployToast((e.alias || e.host || e.key) + ' has been deployed');
 }
 // What autorefresh.js calls once it has swapped parts of the page in place: everything this file decorates the
 // instances with (the new HTML has none of it): sort and table heads, favorites, the search in progress, the bells (a

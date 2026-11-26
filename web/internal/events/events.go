@@ -36,8 +36,10 @@ type Event struct {
 	// Repos, for KindBranches: the repositories whose branches moved (one or several); empty when it is not known
 	Repos []string `json:"repos,omitempty"`
 	Host  string   `json:"host,omitempty"`
-	Date  string   `json:"date,omitempty"`
-	At    int64    `json:"at"`
+	// Alias is the friendlier address the instance may also answer on (DEPLOYMENT_APACHE_VHOST_ALIAS), when it has one
+	Alias string `json:"alias,omitempty"`
+	Date  string `json:"date,omitempty"`
+	At    int64  `json:"at"`
 }
 
 const (
@@ -96,6 +98,18 @@ func (h *Hub) Publish(e Event) bool {
 	return true
 }
 
+// DisplayName is how a person knows the deployed instance: the address it answers on, the friendly alias first, else
+// the real virtual host, else (an announcement that carries neither) its key.
+func (e Event) DisplayName() string {
+	switch {
+	case e.Alias != "":
+		return e.Alias
+	case e.Host != "":
+		return e.Host
+	}
+	return e.Key
+}
+
 // KindBranches is the Kind of the event that says the feature branches were refreshed.
 const KindBranches = "branches"
 
@@ -108,8 +122,8 @@ type Service struct {
 func NewService() *Service { return &Service{Local: NewHub(), All: NewHub()} }
 
 // PublishLocal publishes an event that happened on this server and returns it (with its id and time).
-func (s *Service) PublishLocal(key, host, date string) Event {
-	e := Event{ID: newID(), Key: key, Host: host, Date: date, At: time.Now().Unix()}
+func (s *Service) PublishLocal(key, host, alias, date string) Event {
+	e := Event{ID: newID(), Key: key, Host: host, Alias: alias, Date: date, At: time.Now().Unix()}
 	s.Local.Publish(e)
 	s.All.Publish(e)
 	return e

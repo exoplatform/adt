@@ -41,6 +41,17 @@ var proxiedHeaders = []string{
 	auth.HeaderRequestLine,
 }
 
+// address cleans a host announced with a deployment: shown as it is in the notifications, so an address and never a URL
+// (DEPLOYMENT_EXT_HOST and DEPLOYMENT_APACHE_VHOST_ALIAS have no protocol, but a scheme that sneaked in must not turn the
+// name into "unknown"), or "" when it is not one.
+func address(v string) string {
+	v = strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(v, "https://"), "http://"), "/")
+	if v != "" && !events.ValidKey(v) {
+		return ""
+	}
+	return v
+}
+
 func directRequest(r *http.Request) bool {
 	for _, h := range proxiedHeaders {
 		if r.Header.Get(h) != "" {
@@ -65,21 +76,15 @@ func internalDeployed(a *app.App, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "invalid key", http.StatusBadRequest)
 		return
 	}
-	// host and date are compared or shown by the pages: the alphabet of a key is enough (a date is 20060102.150405)
-	// the host is shown as it is in the notifications: an address, never a URL (DEPLOYMENT_EXT_HOST has no protocol, but
-	// a scheme that sneaked in must not turn the host into "unknown")
-	host, date := r.PostFormValue("host"), r.PostFormValue("date")
-	host = strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(host, "https://"), "http://"), "/")
-	if host != "" && !events.ValidKey(host) {
-		host = ""
-	}
+	// host, alias and date are compared or shown by the pages: the alphabet of a key is enough (a date is 20060102.150405)
+	host, alias, date := address(r.PostFormValue("host")), address(r.PostFormValue("alias")), r.PostFormValue("date")
 	if date != "" && !events.ValidKey(date) {
 		date = ""
 	}
 	// Before the announcement: the servers that hear of it read this server's list straight away, and must not
 	// get the copy cached before the deployment
 	a.Instances.InvalidateInstances()
-	e := a.Events.PublishLocal(key, host, date)
+	e := a.Events.PublishLocal(key, host, alias, date)
 	log.Printf("events: %s deployed (%s)", e.Key, e.ID)
 	w.Header().Set("Cache-Control", "no-store")
 	w.WriteHeader(http.StatusNoContent)
