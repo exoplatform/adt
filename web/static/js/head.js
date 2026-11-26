@@ -580,7 +580,7 @@ function toggleSubscribe(el) {
     if (pushSupported() && Notification.permission === 'denied' && Object.prototype.hasOwnProperty.call(subs, key)) {
       deployToast('Notifications are blocked for this site: deployments are announced only while this page is open');
     }
-    return syncPush();
+    return syncPush(true);
   });
   // This click is the user gesture that unlocks the audio of the next notifications
   try { var Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { deployAudio = deployAudio || new Ctx(); deployAudio.resume(); } } catch (e) {}
@@ -609,14 +609,26 @@ function swReady() {
     setTimeout(function() { reject(new Error('no service worker')); }, 10000);
   })]);
 }
+// Brave keeps the push service of Google (FCM) off by default, so that subscribing fails with an AbortError ("push service
+// error"): the bell would look on and nothing would ever arrive. Only there, and only when the person has just clicked the
+// bell (not at every page load), say what to switch on. Other browsers fail without a word, as before.
+function isBrave() {
+  try { return navigator.brave && navigator.brave.isBrave ? Promise.resolve(navigator.brave.isBrave()).then(Boolean, function() { return false; }) : Promise.resolve(false); } catch (e) { return Promise.resolve(false); }
+}
+function braveHint(err, clicked) {
+  if (!clicked || !err || err.name !== 'AbortError') return Promise.resolve();
+  return isBrave().then(function(brave) {
+    if (brave) deployToast('Push notifications are off in Brave: turn on "Use Google Services for Push Messaging" in brave://settings/privacy, then click the bell again. Until then deployments are announced only while this page is open.', 14000);
+  });
+}
 var pushChain = Promise.resolve();
 // Makes the server follow what the bells say; calls are queued so that two clicks do not race
-function syncPush() {
+function syncPush(clicked) {
   if (!pushSupported()) return pushChain;
-  pushChain = pushChain.then(doSyncPush).catch(function() { /* no push (blocked, offline, not signed in): the page announces deployments itself */ });
+  pushChain = pushChain.then(function() { return doSyncPush(clicked); }).catch(function() { /* no push (blocked, offline, not signed in): the page announces deployments itself */ });
   return pushChain;
 }
-function doSyncPush() {
+function doSyncPush(clicked) {
   var keys = Object.keys(deploySubs()).sort();
   if (Notification.permission !== 'granted') return null;
   return swReady().then(function(reg) {
@@ -634,7 +646,9 @@ function doSyncPush() {
         var current = sub && sub.options && sub.options.applicationServerKey; // some browsers do not tell it: then it is kept
         var fresh = current && !sameBytes(current, bytes) ? sub.unsubscribe().then(function() { return null; }) : Promise.resolve(sub);
         return fresh.then(function(s) {
-          return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes });
+          return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes }).catch(function(err) {
+            return braveHint(err, clicked).then(function() { throw err; });
+          });
         });
       }).then(function(s) {
         // Told at every page load, not once: the server forgets a subscription the push service reports gone, and a
@@ -675,14 +689,15 @@ function alertDeployed(cards) {
   });
   if (cards.length) cards[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
-function deployToast(text) {
+function deployToast(text, ms) {
+  ms = ms || 5000;
   var el = document.createElement('div');
   el.className = 'deploy-toast';
   el.setAttribute('role', 'status');
   el.textContent = text;
   document.body.appendChild(el);
-  setTimeout(function() { el.classList.add('deploy-toast--out'); }, 5000);
-  setTimeout(function() { el.remove(); }, 5600);
+  setTimeout(function() { el.classList.add('deploy-toast--out'); }, ms);
+  setTimeout(function() { el.remove(); }, ms + 600);
 }
 // The servers announce a deployment (deployed AND started) as it happens, on every acceptance server, on the
 // live socket (live.js, /ws). It does not depend on any cached page. Listening starts when the user subscribes.
