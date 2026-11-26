@@ -572,8 +572,78 @@ function toggleSubscribe(el) {
   setPref('deploy-subscriptions', JSON.stringify(subs));
   refreshDeploySubs();
   ensureDeployStream();
+  // Asked now, in the click: browsers refuse the question otherwise. Granted, the server pushes the deployment even
+  // when no page of this site is open.
+  var ask = pushSupported() && Object.prototype.hasOwnProperty.call(subs, key) && Notification.permission === 'default'
+    ? Notification.requestPermission() : null;
+  Promise.resolve(ask).then(function() {
+    if (pushSupported() && Notification.permission === 'denied' && Object.prototype.hasOwnProperty.call(subs, key)) {
+      deployToast('Notifications are blocked for this site: deployments are announced only while this page is open');
+    }
+    return syncPush();
+  });
   // This click is the user gesture that unlocks the audio of the next notifications
   try { var Ctx = window.AudioContext || window.webkitAudioContext; if (Ctx) { deployAudio = deployAudio || new Ctx(); deployAudio.resume(); } } catch (e) {}
+}
+// ── Web Push: the instances followed with the bells are also sent to the server (/push/subscribe), which pushes a
+// notification to this browser when one of them is deployed, whether a page is open or not (sw.js shows it).
+function pushSupported() { return 'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window; }
+function pushKeyBytes(b64) {
+  var s = atob(b64.replace(/-/g, '+').replace(/_/g, '/')), a = new Uint8Array(s.length);
+  for (var i = 0; i < s.length; i++) a[i] = s.charCodeAt(i);
+  return a;
+}
+function sameBytes(buf, bytes) {
+  var a = new Uint8Array(buf || []);
+  if (a.length !== bytes.length) return false;
+  for (var i = 0; i < a.length; i++) if (a[i] !== bytes[i]) return false;
+  return true;
+}
+function pushPost(path, body) {
+  return fetch(path, { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(function(r) { if (!r.ok) throw new Error(path + ' ' + r.status); });
+}
+// "ready" never settles when the service worker cannot be installed: give up, or the queue below would be stuck for good
+function swReady() {
+  return Promise.race([navigator.serviceWorker.ready, new Promise(function(resolve, reject) {
+    setTimeout(function() { reject(new Error('no service worker')); }, 10000);
+  })]);
+}
+var pushChain = Promise.resolve();
+// Makes the server follow what the bells say; calls are queued so that two clicks do not race
+function syncPush() {
+  if (!pushSupported()) return pushChain;
+  pushChain = pushChain.then(doSyncPush).catch(function() { /* no push (blocked, offline, not signed in): the page announces deployments itself */ });
+  return pushChain;
+}
+function doSyncPush() {
+  var keys = Object.keys(deploySubs()).sort();
+  if (Notification.permission !== 'granted') return null;
+  return swReady().then(function(reg) {
+    return reg.pushManager.getSubscription().then(function(sub) {
+      if (!keys.length) {
+        if (!sub) return null;
+        return pushPost('/push/unsubscribe', { endpoint: sub.endpoint }).then(function() { return sub.unsubscribe(); });
+      }
+      return fetch('/push/key', { credentials: 'same-origin' }).then(function(r) {
+        if (!r.ok) throw new Error('/push/key ' + r.status);
+        return r.text();
+      }).then(function(pub) {
+        var bytes = pushKeyBytes(pub.trim());
+        // a subscription made with the key of another server (or before the key was renewed) cannot be used
+        var current = sub && sub.options && sub.options.applicationServerKey; // some browsers do not tell it: then it is kept
+        var fresh = current && !sameBytes(current, bytes) ? sub.unsubscribe().then(function() { return null; }) : Promise.resolve(sub);
+        return fresh.then(function(s) {
+          return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: bytes });
+        });
+      }).then(function(s) {
+        // Told at every page load, not once: the server forgets a subscription the push service reports gone, and a
+        // browser that believed itself registered would then never hear of a deployment again
+        var json = s.toJSON();
+        return pushPost('/push/subscribe', { endpoint: json.endpoint, keys: json.keys, instances: keys });
+      });
+    });
+  });
 }
 function initDeploySubscriptions() {
   var subs = deploySubs(), changed = false, notified = [];
@@ -649,6 +719,7 @@ function adtAfterSwap(fresh) {
 }
 window.adtAfterSwap = adtAfterSwap;
 function initInstances() {
+  syncPush();
   initViewSwitch();
   initFavorites();
   initDeploySubscriptions();

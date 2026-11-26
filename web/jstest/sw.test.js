@@ -10,7 +10,7 @@ const PAGE = '<!DOCTYPE html><html><head><title>t</title></head><body>dashboard<
 function env() {
   const stores = new Map(); // cache name -> Map(url -> {body, init})
   const handlers = {};
-  const state = { fetch: () => Promise.reject(new TypeError('network down')), added: [] };
+  const state = { fetch: () => Promise.reject(new TypeError('network down')), added: [], clients: [], shown: [], opened: [] };
   const keyOf = (req) => new URL(typeof req === 'string' ? req : req.url, ORIGIN).href; // the Cache API resolves relative URLs
   function cacheOf(name) {
     if (!stores.has(name)) stores.set(name, new Map());
@@ -41,7 +41,9 @@ function env() {
   const self = {
     location: { origin: ORIGIN },
     addEventListener: (type, fn) => { handlers[type] = fn; },
-    skipWaiting() {}, clients: { claim: async () => {} },
+    skipWaiting() {},
+    registration: { showNotification: async (title, options) => { state.shown.push({ title, options }); } },
+    clients: { claim: async () => {}, matchAll: async () => state.clients, openWindow: async (u) => { state.opened.push(u); } },
   };
   const w = load('sw.js', { self, caches, fetch: (...a) => state.fetch(...a), Request: class { constructor(u, o) { this.url = u; Object.assign(this, o); } } });
   // a top-level const is not a property of the sandbox: read the name the way the file spells it
@@ -214,4 +216,53 @@ test('the live socket path and non-GET requests are left to the browser', async 
   const e = env();
   assert.equal(await e.request('/ws', { mode: 'cors' }), undefined);
   assert.equal(await e.request('/qa', { method: 'POST' }), undefined);
+});
+
+// ── Web Push ──
+async function pushed(e, payload) {
+  let p;
+  e.handlers.push({ data: { json: () => { if (payload instanceof Error) throw payload; return payload; } }, waitUntil: (x) => { p = x; } });
+  await p;
+}
+
+test('push: a deployment the person is not looking at is shown as a notification', async () => {
+  const e = env();
+  await pushed(e, { title: 'exo-7.0.x-SNAPSHOT has been deployed', body: 'Deployed on h.example.org', key: 'exo-7.0.x-SNAPSHOT', url: '/' });
+  assert.equal(e.state.shown.length, 1);
+  const { title, options } = e.state.shown[0];
+  assert.equal(title, 'exo-7.0.x-SNAPSHOT has been deployed');
+  assert.equal(options.body, 'Deployed on h.example.org');
+  assert.equal(options.tag, 'deploy-exo-7.0.x-SNAPSHOT');
+  assert.equal(options.renotify, true); // a second deployment of the instance must alert again, not replace silently
+  assert.equal(options.data.url, '/');
+});
+
+test('push: always shown, also over a visible, focused dashboard page (a push that shows nothing makes Chrome show its own message)', async () => {
+  const e = env();
+  e.state.clients = [{ url: ORIGIN + '/qa', visibilityState: 'visible', focused: true }];
+  await pushed(e, { title: 't', key: 'k' });
+  assert.equal(e.state.shown.length, 1);
+});
+
+test('push: a message that is not ours still shows something (the browser requires a notification), with a safe link', async () => {
+  const e = env();
+  await pushed(e, new SyntaxError('not json'));
+  assert.equal(e.state.shown[0].title, 'ADT');
+  for (const url of ['https://evil.example/', '//evil.example', 'javascript:alert(1)', '/a b', 42]) {
+    await pushed(e, { title: 't', key: 'k', url });
+    assert.equal(e.state.shown.at(-1).options.data.url, '/', String(url));
+  }
+});
+
+test('clicking the notification closes it and focuses the open dashboard, else opens one', async () => {
+  const e = env();
+  let closed = 0, focused = 0, p;
+  const click = () => e.handlers.notificationclick({ notification: { close: () => { closed++; }, data: { url: '/' } }, waitUntil: (x) => { p = x; } });
+  click(); await p;
+  assert.deepEqual(e.state.opened, ['/']);
+  e.state.clients = [{ url: ORIGIN + '/qa', focus: async () => { focused++; } }];
+  click(); await p;
+  assert.equal(focused, 1);
+  assert.equal(closed, 2);
+  assert.equal(e.state.opened.length, 1);
 });

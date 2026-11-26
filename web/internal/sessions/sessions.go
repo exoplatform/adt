@@ -175,6 +175,13 @@ func (s *Store) IsRevoked(r *http.Request) bool {
 	return id != "" && s.revokedLines()[id]
 }
 
+// IsRevokedID reports whether revoked.txt lists the session id, or the user (blocked): what a notification to a browser
+// of that session must check, since no request of it is there to ask Apache.
+func (s *Store) IsRevokedID(id, user string) bool {
+	set := s.revokedLines()
+	return (id != "" && set[id]) || (user != "" && set[UserHash(user)])
+}
+
 // IsUserListed reports whether revoked.txt currently lists the user (a block, possibly a stale one).
 func (s *Store) IsUserListed(user string) bool { return s.revokedLines()[UserHash(user)] }
 
