@@ -902,6 +902,9 @@ do_deploy() {
     do_compose_down true
   fi
   env_var "ARTIFACT_DATE" "$(do_get_image_build_date "${DEPLOYMENT_IMAGE}")"
+  # The virtual host is registered before anything starts: during the startup (which takes minutes) the visitors get the page of
+  # an instance that is down, not the dashboard or an unknown host
+  do_configure_apache
   if [ "${DEPLOYMENT_MODE}" = "RESTORE_DATASET" ]; then
     # the volumes have to exist, empty, to receive the dataset before anything starts
     do_compose up --no-start --remove-orphans
@@ -913,7 +916,6 @@ do_deploy() {
     do_start_instance
   fi
   do_companion_firewall open
-  do_configure_apache
   do_create_deployment_descriptor
   do_mark_deployed
   echo_info "Server deployed"
@@ -986,6 +988,19 @@ do_restart() {
 #
 # Function that undeploys the instance: its containers, network, volumes, files and virtual host
 #
+#
+# Removes the Apache virtual host of the instance, its AWStats configuration, and reloads Apache (DEPLOYMENT_EXT_HOST is set)
+#
+do_remove_apache_vhost() {
+  # Delete Awstat config
+  rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
+  # Delete the vhost
+  rm -f ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
+  rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
+  # Reload Apache to deactivate the config
+  do_reload_apache ${ADT_DEV_MODE}
+}
+
 do_undeploy() {
   if [ ! -e "${ADT_CONF_DIR}/${INSTANCE_KEY}.${ACCEPTANCE_HOST}" ]; then
     # a deployment that failed after its containers were created has a compose project but no descriptor yet
@@ -995,6 +1010,9 @@ do_undeploy() {
       do_get_compose_settings
       do_compose_down true
       do_remove_instance_dir
+      # its virtual host is registered before the containers start
+      do_get_deployment_urls
+      do_remove_apache_vhost
       )
       echo_info "Server undeployed"
       exit 0
@@ -1015,13 +1033,7 @@ do_undeploy() {
     do_remove_instance_dir
     do_forget_deployed
     do_companion_firewall close
-    # Delete Awstat config
-    rm -f ${AWSTATS_CONF_DIR}/awstats.${DEPLOYMENT_EXT_HOST}.conf
-    # Delete the vhost
-    rm -f ${APACHE_CONF_DIR}/includes/${DEPLOYMENT_EXT_HOST}.include
-    rm -f ${APACHE_CONF_DIR}/sites-available/${DEPLOYMENT_EXT_HOST}
-    # Reload Apache to deactivate the config
-    do_reload_apache ${ADT_DEV_MODE}
+    do_remove_apache_vhost
 
     if [ "${DEPLOYMENT_CERTBOT_ENABLED}" == "true" ] && [ "${DEPLOYMENT_CERTBOT_UNDEPLOY_CERT_REMOVAL:-true}" == "true" ]; then
       do_unregister_certbot_certificate
