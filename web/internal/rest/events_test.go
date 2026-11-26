@@ -127,3 +127,29 @@ func TestRelayConnectionInvalidatesTheCaches(t *testing.T) {
 		time.Sleep(20 * time.Millisecond)
 	}
 }
+
+// The external host reaches the notifications as an address: without protocol, whatever adt.sh sent.
+func TestDeployedHostIsAnAddressWithoutProtocol(t *testing.T) {
+	a := app.New(config.Config{})
+	h := a.Handler()
+	ch, cancel := a.Events.All.Subscribe()
+	defer cancel()
+	for sent, want := range map[string]string{
+		"exo-7.0.x-SNAPSHOT.acceptance.example.org":         "exo-7.0.x-SNAPSHOT.acceptance.example.org",
+		"https://exo-7.0.x-SNAPSHOT.acceptance.example.org": "exo-7.0.x-SNAPSHOT.acceptance.example.org",
+		"http://exo-7.0.x-SNAPSHOT.acceptance.example.org/": "exo-7.0.x-SNAPSHOT.acceptance.example.org",
+		"https://evil.example/path?x=1":                     "", // not an address: dropped, the key stands in
+	} {
+		if w := post(h, url.Values{"key": {"k1"}, "host": {sent}}, nil); w.Code != http.StatusNoContent {
+			t.Fatalf("%q: %d", sent, w.Code)
+		}
+		select {
+		case e := <-ch:
+			if e.Host != want {
+				t.Errorf("host %q became %q, want %q", sent, e.Host, want)
+			}
+		case <-time.After(2 * time.Second):
+			t.Fatalf("%q: not published", sent)
+		}
+	}
+}

@@ -66,7 +66,10 @@ func internalDeployed(a *app.App, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// host and date are compared or shown by the pages: the alphabet of a key is enough (a date is 20060102.150405)
+	// the host is shown as it is in the notifications: an address, never a URL (DEPLOYMENT_EXT_HOST has no protocol, but
+	// a scheme that sneaked in must not turn the host into "unknown")
 	host, date := r.PostFormValue("host"), r.PostFormValue("date")
+	host = strings.TrimSuffix(strings.TrimPrefix(strings.TrimPrefix(host, "https://"), "http://"), "/")
 	if host != "" && !events.ValidKey(host) {
 		host = ""
 	}

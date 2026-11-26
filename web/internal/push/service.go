@@ -311,11 +311,13 @@ func (s *Service) Run(ctx context.Context, hub *events.Hub) {
 
 // Notify sends the notification of one deployment to the browsers that follow its instance.
 func (s *Service) Notify(ctx context.Context, e events.Event) {
-	body := "Deployed"
-	if e.Host != "" {
-		body = "Deployed on " + e.Host
+	// The person knows the instance by the address it answers on (DEPLOYMENT_EXT_HOST, the external FQDN), not by its key
+	// (which only identifies it internally and stays the notification's tag); the key stands in when the host is unknown
+	name := e.Host
+	if name == "" {
+		name = e.Key
 	}
-	payload, _ := json.Marshal(message{Title: e.Key + " has been deployed", Body: body, Key: e.Key, URL: "/"})
+	payload, _ := json.Marshal(message{Title: name + " has been deployed", Body: "Deployed and started", Key: e.Key, URL: "/"})
 	var targets []Subscription
 	s.mu.Lock()
 	for _, sub := range s.subs {

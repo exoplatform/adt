@@ -123,10 +123,14 @@ func TestNotifySendsToTheFollowersOnly(t *testing.T) {
 	asPub, _ := ecdh.P256().NewPublicKey(body[21 : 21+idlen])
 	secret, _ := follower.priv.ECDH(asPub)
 	plain := string(decrypt(t, body[21+idlen:], secret, follower.auth, follower.priv.PublicKey().Bytes(), body[21:21+idlen], salt))
-	for _, want := range []string{`"title":"exo-7.0.x-SNAPSHOT has been deployed"`, `"body":"Deployed on h.example.org"`, `"key":"exo-7.0.x-SNAPSHOT"`} {
+	for _, want := range []string{`"title":"h.example.org has been deployed"`, `"body":"Deployed and started"`, `"key":"exo-7.0.x-SNAPSHOT"`} {
 		if !strings.Contains(plain, want) {
 			t.Errorf("payload %s lacks %s", plain, want)
 		}
+	}
+	// the instance key is for the machines: the person reads the external FQDN
+	if strings.Contains(plain, `"title":"exo-7.0.x-SNAPSHOT`) || strings.Contains(plain, `"body":"Deployed on`) {
+		t.Errorf("the instance key is shown in %s", plain)
 	}
 	// 410 Gone: the browser unsubscribed, it is forgotten
 	if _, still := s.subs[srv.URL+"/gone"]; still {
@@ -351,5 +355,29 @@ func TestUnsortedInstancesInTheFileAreStillFound(t *testing.T) {
 	i := sort.SearchStrings(got, "mmm")
 	if i >= len(got) || got[i] != "mmm" {
 		t.Errorf("instances %v: mmm not found", got)
+	}
+}
+
+// An announcement without the external host (an older adt.sh) still says which instance: by its key.
+func TestNotificationFallsBackToTheKeyWithoutHost(t *testing.T) {
+	var got []byte
+	srv := httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		got, _ = io.ReadAll(r.Body)
+		w.WriteHeader(http.StatusCreated)
+	}))
+	defer srv.Close()
+	s := Open("")
+	s.Client = srv.Client()
+	b := newBrowser(t)
+	sub := b.sub(srv.URL + "/x")
+	sub.User, sub.Instances = "u", []string{"exo-7.0.x-SNAPSHOT"}
+	s.subs[sub.Endpoint] = sub
+	s.Notify(context.Background(), events.Event{Key: "exo-7.0.x-SNAPSHOT"})
+	salt, idlen := got[:16], int(got[20])
+	asPub, _ := ecdh.P256().NewPublicKey(got[21 : 21+idlen])
+	secret, _ := b.priv.ECDH(asPub)
+	plain := string(decrypt(t, got[21+idlen:], secret, b.auth, b.priv.PublicKey().Bytes(), got[21:21+idlen], salt))
+	if !strings.Contains(plain, `"title":"exo-7.0.x-SNAPSHOT has been deployed"`) {
+		t.Errorf("payload %s", plain)
 	}
 }
