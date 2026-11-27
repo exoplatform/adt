@@ -126,7 +126,7 @@ do_start_jitsi_legacy() {
   delete_docker_container ${DEPLOYMENT_JITSI_PROSODY_CONTAINER_NAME}
   ${DOCKER_CMD} run \
     -d \
-    --mount type=tmpfs,destination=/config/data,tmpfs-uid=100,tmpfs-gid=102 \
+    --tmpfs /config/data:rw,uid=100,gid=102,mode=0755 \
     --env-file ${DEPLOYMENT_DIR}/jitsi.env \
     --network "${DEPLOYMENT_JITSI_NETWORK_NAME}" \
     --network-alias "xmpp.${DEPLOYMENT_JITSI_NETWORK_NAME}" \
